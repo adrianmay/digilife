@@ -13,7 +13,7 @@ reset_drive:
         mov bx, 0x1000          ; Destination address = 0000:1000
 
         mov ah, 02h             ; READ SECTOR-command
-        mov al, 0ah             ; Number of sectors to read = 1
+        mov al, 0fh             ; Number of sectors to read = 1
         mov ch, 0               ; Cylinder = 0
         mov cl, 02h             ; Sector = 2
         mov dh, 0               ; Head = 0
@@ -39,6 +39,9 @@ reset_drive:
 clear_pipe:
         mov ax, 10h             ; Save data segment identifyer
         mov ds, ax              ; Move a valid data segment into the data segment register
+        mov es, ax              ; Move a valid data segment into the data segment register
+        mov fs, ax              ; Move a valid data segment into the data segment register
+        mov gs, ax              ; Move a valid data segment into the data segment register
         mov ss, ax              ; Move a valid data segment into the stack segment register
         mov esp, 090000h        ; Move the stack pointer to 090000h
 
@@ -56,7 +59,7 @@ gdt_code:               ; Code segment, read/execute, nonconforming
         dw 0
         db 0
         db 10011010b
-        db 11001111b
+        db 01001111b
         db 0
 
 gdt_data:               ; Data segment, read/write, expand down

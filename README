@@ -1,2 +1,4 @@
-Thanks to Gregor Brunmar for getting me this far.
+Thanks to Gregor Brunmar's MuOS for the startup, GDT and screen output stuff.
+Thanks to Alexander Blessing's Flick for the interrupt handling.
+
 

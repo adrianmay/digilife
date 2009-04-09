@@ -5,6 +5,14 @@
 [global start_interrupts]
 [extern printfoo]
 align 8
+ 
+; Plan:
+;   Use %rep and %assign macros to declare idt pointing to different functions. 
+;   They're all the same size so don't need a pointer array
+;   They push the int number (more macros) and jump to the standard handler which
+;       does cleanup stuff according to int number, e.g. telling irq controllers if its a hardware int, 
+;               trying to continue,etc
+;       and tries a table of c functions
 
 idt:
 %rep 256

@@ -23,6 +23,27 @@ reset_drive:
 
         cli                     ; Disable interrupts, we want to be alone
 
+	;remap hardware interrupts from 32
+	
+	mov al, 11h
+	out 020h, al
+	out 0A0h, al
+	mov al, 20h
+	out 021h, al
+	mov al, 28h
+	out 0A1h, al
+	mov al, 4
+	out 021h, al
+	mov al, 2
+	out 0A1h, al
+	mov al, 1
+	out 021h, al
+	out 0A1h, al
+	mov al, 0
+	out 021h, al
+	out 0A1h, al
+	
+	
         xor ax, ax
         mov ds, ax              ; Set DS-register to 0 - used by lgdt
 

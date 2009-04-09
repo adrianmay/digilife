@@ -8,6 +8,7 @@ void start()
   clrscr();
   start_interrupts();
   put_handler(0,printbar,GATE_DEFAULT);
+  put_handler(32,printbar,GATE_DEFAULT);
   print(tutorial3);
  // *((int*)0xffffffff)=1;
   a = 1/0;

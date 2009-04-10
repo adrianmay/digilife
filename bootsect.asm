@@ -2,6 +2,7 @@
 
 [ORG 0x7C00]    ; The BIOS loads the boot sector into memory location 0x7C00
 
+
 reset_drive:
         mov ah, 0               ; RESET-command
         int 13h                 ; Call interrupt 13h

@@ -1,10 +1,12 @@
 void printbar();
+void enable_A20();
 const char *tutorial3;
 void put_handler(unsigned int, void *, unsigned short int);
 #define GATE_DEFAULT 0x8E00
 void start()
 {
   int a;
+  enable_A20();
   clrscr();
   start_interrupts();
   put_handler(0,printbar,GATE_DEFAULT);

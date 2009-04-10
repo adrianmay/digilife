@@ -15,7 +15,7 @@ all: clean $(TARGET).img
 makeboot.exe: makeboot.C
 	gcc -o makeboot.exe -x c makeboot.C -x none
 
-OBJFILES := $(patsubst %.c,%.o,$(wildcard *.c)) $(patsubst %.a,%.o,$(wildcard *.s))
+OBJFILES := $(patsubst %.c,%.o,$(wildcard *.c)) $(patsubst %.s,%.o,$(wildcard *.s))
 
 $(TARGET).img: makeboot.exe bootsect.bin kernel.bin
 	./makeboot.exe $(TARGET).img bootsect.bin kernel.bin

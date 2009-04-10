@@ -14,12 +14,60 @@ align 8
 ;               trying to continue,etc
 ;       and tries a table of c functions
 
+%macro isr_frontline_pushdummy 1 
+isr_head_%1:
+	cli
+	push byte 0
+	push byte %1
+	jmp isr_common
+%endmacro
+
+%macro isr_frontline_nopushdummy 1 
+isr_head_%1:
+	cli
+	push byte %1
+	jmp isr_common
+%endmacro
+
+isr_common:
+    pusha
+    push ds
+    push es
+    push fs
+    push gs
+    mov ax, 0x10   ; Load the Kernel Data Segment descriptor!
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov eax, esp   ; Push us the stack
+    push eax
+    mov eax, _fault_handler
+    call eax       ; A special call, preserves the 'eip' register
+    pop eax
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    mov ax, [sp+36] ; int number
+    ; acknowledge whichever PICs
+    popa
+    add esp, 8     ; Cleans up the pushed error code and pushed ISR number
+    iret           ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP!
+
+
+%macro idt_entry 1
+	dw isr_head_%1
+	dw 08h
+	dw 0x8e00
+	dw 0
+%endmacro
+
 idt:
+%assign i 0
 %rep 256
-	dw 0	; offset 15:0
-	dw 08h	; selector
-	dw 0x8E00	; present, ring 0, '386 interrupt gate
-	dw 0	; offset 31:16
+idt_entry i
+%assign i i+1
 %endrep
 idt_end: 
 

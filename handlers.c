@@ -24,6 +24,8 @@ void interrupt_handler(struct registers *r)
 	    if (!ticks)
 		print("tock ");
     }
+    else if (r->int_no==33)
+	    keyboard_handler();
 }
 
 const char faultmsg[32][20] = 

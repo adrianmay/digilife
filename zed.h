@@ -8,6 +8,7 @@ struct registers
 
 unsigned char in(unsigned short _port);
 void out(unsigned short _port, unsigned char _data);
+void keyboard_handler();
 
 void print(const char *_message);
 void printfoo();
@@ -19,7 +20,7 @@ void start_interrupts();
 const char *tutorial3;
 const char * foomsg;
 const char * barmsg;
-void finterrupt_handler(struct registers *r);
+void interrupt_handler(struct registers *r);
 void put_handler(unsigned int, void *, unsigned short int);//obsolete
 #define GATE_DEFAULT 0x8E00
 

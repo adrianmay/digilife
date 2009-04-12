@@ -20,12 +20,15 @@ void clrscr()
 }
 
 char printme[2]="-";
-
+void printc(char c)
+{
+	printme[0]=c;
+	print (printme);
+}
 void printn(int n)
 {
 	if (n>9) printn(n/10);
-	printme[0]='0'+n%10;
-	print (printme);
+	printc('0'+n%10);
 }
 void print(const char *_message)
 {

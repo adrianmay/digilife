@@ -1,4 +1,5 @@
 [BITS 32]	; protected mode
+[global start]
 [global put_handler]	; called by an extern function
 [global idt]
 [global idt_ptr]

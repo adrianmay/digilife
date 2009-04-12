@@ -1,3 +1,5 @@
+#include "zed.h"
+
 unsigned char in(unsigned short _port)
 {
   // "=a" (result) means: put AL register in variable result when finished

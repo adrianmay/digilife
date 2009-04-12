@@ -10,12 +10,12 @@ COMPILE = $(CC) $(CFLAGS) -c
 LINK = $(CCL) $(LINKFLAGS) 
 ASSEMBLE = $(ASM) $(ASMFLAGS)
 
-all: clean $(TARGET).img
+all: $(TARGET).img
 
 makeboot.exe: makeboot.C
 	gcc -o makeboot.exe -x c makeboot.C -x none
 
-OBJFILES := $(patsubst %.c,%.o,$(wildcard *.c)) $(patsubst %.s,%.o,$(wildcard *.s))
+OBJFILES := more.o main.o handlers.o video.o ports.o
 
 $(TARGET).img: makeboot.exe bootsect.bin kernel.bin
 	./makeboot.exe $(TARGET).img bootsect.bin kernel.bin

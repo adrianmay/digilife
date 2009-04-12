@@ -1,4 +1,5 @@
 Thanks to Gregor Brunmar's MuOS for the startup, GDT and screen output stuff.
 Thanks to Alexander Blessing's Flick for the interrupt handling.
+Thanks to Brandon Friesen for the otherwise elusive secrets of hardware interrupts in PM.
 
 

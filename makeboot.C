@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 int main(int argnr, char *args[])
 {
@@ -9,8 +10,8 @@ int main(int argnr, char *args[])
   if (argnr < 4) {
     printf("Invalid number of parameters.\n\n");
     printf("USAGE: %s [output] [input 1] [input 2] ... [input n]\n", args[0]);
-    printf("Example: %s a.img bootsect.bin kernel.bin");
-    exit(0);
+    printf("Example: a.img bootsect.bin kernel.bin");
+    return 1;
   }
 
   output = fopen(args[1], "w");
@@ -21,7 +22,7 @@ int main(int argnr, char *args[])
     if (input == NULL) {
       printf("Missing input file %s. Aborting operation...", args[i]);
       fclose(output);
-      exit(1);
+      return 1;
     }
 
     bytes_read = 512;

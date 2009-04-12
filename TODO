@@ -1,0 +1,9 @@
+TODO
+
+Try shrinking kernel segments and control GP faults
+Have bootloader figure out kernel size automatically: makeboot can write it in image around byte 508ish
+Random number supply
+Tank
+Impressive looking Van-der-Graaff style apparatus, a big thunderstorm, wild beard and spectacles, then lurch maniacly around the house while it comes to life.
+
+

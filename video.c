@@ -1,3 +1,5 @@
+#include "zed.h"
+
 void clrscr()
 {
   unsigned char *vidmem = (unsigned char *)0xB8000;
@@ -17,6 +19,14 @@ void clrscr()
   out(0x3D5, 0);
 }
 
+char printme[2]="-";
+
+void printn(int n)
+{
+	if (n>9) printn(n/10);
+	printme[0]='0'+n%10;
+	print (printme);
+}
 void print(const char *_message)
 {
   unsigned short offset;
@@ -46,58 +56,16 @@ void print(const char *_message)
   out(0x3D5, (unsigned char)(offset >> 8));
 }
 
-const char * foomsg;
 void printfoo()
 {
   print(foomsg);
 }
 const char * foomsg="Foo!";
 
-const char * barmsg;
 void printbar()
 {
   print(barmsg);
-freeze:
-  goto freeze;
+
 }
 const char * barmsg="Bar!";
-
-const char * faultmsg[32] = 
-{
-	"Divide",
-	"Debug",
-	"NMI",
-	"Breakpoint",
-	"Overflow",
-	"Bounds",
-	"Unknown opcode",
-	"No math copro",
-	"Double",
-	"FP segment overrun",
-	"Invalid TSS",
-	"Segment not present",
-	"Stack",
-	"General protection",
-	"Page",
-	"Reserved",
-	"Math",
-	"Alignment",
-	"Machine check",
-	"SIMD",
-	"Reserved",
-	"Reserved",
-	"Reserved",
-	"Reserved",
-	"Reserved",
-	"Reserved",
-	"Reserved",
-	"Reserved",
-	"Reserved",
-	"Reserved",
-	"Reserved",
-	"Reserved"
-};
-
-
-
 

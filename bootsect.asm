@@ -73,9 +73,8 @@ clear_pipe:
         mov gs, ax              ; Move a valid data segment into the data segment register
         mov ss, ax              ; Move a valid data segment into the stack segment register
         mov esp, 090000h        ; Move the stack pointer to 090000h
-enable_A20:
-        cli
 
+;enable_A20:
         call    a20wait
         mov     al,0xAD
         out     0x64,al
@@ -125,20 +124,20 @@ gdt_null:               ; Null Segment
         dd 0
 
 gdt_code:               ; Code segment, read/execute, nonconforming
-        dw 0FFFFh
-        dw 0
-        db 0
-        db 10011010b
-        db 01001111b
-        db 0
+        dw 0ffffh       ; limit 15:0
+        dw 0            ; base 15:0
+        db 0            ; base 23:16
+        db 10011010b    ; present, dpl*2, sys/code, type*4
+        db 11001111b    ; gran, 16/32, 0, avail, limit 19:16
+        db 0            ; base 31:24
 
 gdt_data:               ; Data segment, read/write, expand down
-        dw 0FFFFh
-        dw 0
-        db 0
-        db 10010010b
-        db 11001111b
-        db 0
+        dw 0h        ; limit 15:0
+        dw 0            ; base 15:0
+        db 0            ; base 23:16
+        db 10010010b    ; present, dpl*2, sys/code, type*4
+        db 01001100b    ; gran, 16/32, 0, avail, limit 19:16
+        db 0            ; base 31:24
 
 gdt_end:                ; Used to calculate the size of the GDT
 

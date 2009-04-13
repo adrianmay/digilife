@@ -132,10 +132,6 @@ idt_ptr:
 	dw idt_end - idt - 1; IDT limit
 	dd idt	; start of IDT
 
-start_interrupts:
-	lidt [idt_ptr];
-	sti;
-	ret;
 
 ; obsolete...
 put_handler:
@@ -167,7 +163,8 @@ put_handler:
 	ret	; return to caller
 
 crash:
-	int 3
+;        mov eax, [0xffffffff]
+;	int 3
 	ret
 	mov ax, 8
 	mov  ds, ax

@@ -39,3 +39,7 @@ bootsect.bin: bootsect.asm
 clean:
 	rm *.exe *.o *.img *.bin *.map 2> /dev/null;  true
  
+run: 
+	VirtualBox -startvm Zed
+	
+	

@@ -124,11 +124,11 @@ gdt_null:               ; Null Segment
         dd 0
 
 gdt_code:               ; Code segment, read/execute, nonconforming
-        dw 0ffffh       ; limit 15:0
+        dw 08000h       ; limit 15:0
         dw 0            ; base 15:0
         db 0            ; base 23:16
         db 10011010b    ; present, dpl*2, sys/code, type*4
-        db 11001111b    ; gran, 16/32, 0, avail, limit 19:16
+        db 01000000b    ; gran, 16/32, 0, avail, limit 19:16
         db 0            ; base 31:24
 
 gdt_data:               ; Data segment, read/write, expand down

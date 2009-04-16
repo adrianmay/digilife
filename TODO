@@ -1,9 +1,17 @@
 TODO
 
-Try shrinking kernel segments and control GP faults
 Have bootloader figure out kernel size automatically: makeboot can write it in image around byte 508ish
 Random number supply
-Tank
+Tank:
+    Make two TSSs, one for current boot process, the other for life. 
+    Load Task register with boot process
+    Enter boot TSS in IDT for timer.
+    End of boot process changes to: jump other task, label {print tock, iret, jmp label} or something like that
+    Other task prints dots
+    Then:
+        Tank at ring 3: need ring 3 descriptor for screen, code, data. Check crashes on ring 0 segments, or int 32
+	Catch tank faults and jump back in: just write PC in TSS
+	Make some services available to tank through interrupts
 Impressive looking Van-der-Graaff style apparatus, a big thunderstorm, wild beard and spectacles, then lurch maniacly around the house while it comes to life.
 
 

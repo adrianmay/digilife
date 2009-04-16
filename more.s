@@ -15,6 +15,8 @@ align 8
  
 ; Need a guzzilion of these just because Intel don't tell us the interrupt number...
 start:
+	call enable_A20
+	call remap_ints
 	lidt [idt_ptr];
 	sti;
 	jmp main;
@@ -169,4 +171,75 @@ crash:
 	mov ax, 8
 	mov  ds, ax
 	mov byte [ds:20], 9
+        ret
+
+remap_ints:
+	mov al, 11h
+	out 020h, al
+	out 0A0h, al
+	mov al, 20h
+	out 021h, al
+	mov al, 28h
+	out 0A1h, al
+	mov al, 4
+	out 021h, al
+	mov al, 2
+	out 0A1h, al
+	mov al, 1
+	out 021h, al
+	out 0A1h, al
+	mov al, 0
+	out 021h, al
+	out 0A1h, al	
+	
+	;100Hz clock
+	mov al, 34h
+	out 0x43, al
+	mov al, 9Ch
+	out 0x40, al
+	mov al, 2eh
+	out 0x40, al
+	ret
+
+
+enable_A20:
+        call    a20wait
+        mov     al,0xAD
+        out     0x64,al
+
+        call    a20wait
+        mov     al,0xD0
+        out     0x64,al
+
+        call    a20wait2
+        in      al,0x60
+        push    eax
+
+        call    a20wait
+        mov     al,0xD1
+        out     0x64,al
+
+        call    a20wait
+        pop     eax
+        or      al,2
+        out     0x60,al
+
+        call    a20wait
+        mov     al,0xAE
+        out     0x64,al
+
+        call    a20wait
+	ret
+
+a20wait:
+        in      al,0x64
+        test    al,2
+        jnz     a20wait
+        ret
+
+
+a20wait2:
+        in      al,0x64
+        test    al,1
+        jz      a20wait2
         ret

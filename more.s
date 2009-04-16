@@ -1,4 +1,4 @@
-[BITS 32]	; protected mode
+[BITS 16]	; protected mode
 [global start]
 [global put_handler]	; called by an extern function
 [global idt]
@@ -15,6 +15,30 @@ align 8
  
 ; Need a guzzilion of these just because Intel don't tell us the interrupt number...
 start:
+        cli                     ; Disable interrupts, we want to be alone
+
+        xor ax, ax
+        mov ds, ax              ; Set DS-register to 0 - used by lgdt
+
+        lgdt [gdt_desc]         ; Load the GDT descriptor
+
+        mov eax, cr0            ; Copy the contents of CR0 into EAX
+        or eax, 1               ; Set bit 0
+        mov cr0, eax            ; Copy the contents of EAX into CR0
+
+        jmp 08h:clear_pipe      ; Jump to code segment, offset clear_pipe
+
+[BITS 32]                       ; We now need 32-bit instructions
+clear_pipe:
+        mov ax, 10h             ; Save data segment identifyer
+        mov ds, ax              ; Move a valid data segment into the data segment register
+        mov es, ax              ; Move a valid data segment into the data segment register
+        mov fs, ax              ; Move a valid data segment into the data segment register
+        mov gs, ax              ; Move a valid data segment into the data segment register
+        mov ss, ax              ; Move a valid data segment into the stack segment register
+        mov esp, 090000h        ; Move the stack pointer to 090000h
+
+
 	call enable_A20
 	call remap_ints
 	lidt [idt_ptr];
@@ -243,3 +267,32 @@ a20wait2:
         test    al,1
         jz      a20wait2
         ret
+
+
+gdt:                    ; Address for the GDT
+
+gdt_null:               ; Null Segment
+        dd 0
+        dd 0
+
+gdt_code:               ; Code segment, read/execute, nonconforming
+        dw 0f000h       ; limit 15:0
+        dw 0            ; base 15:0
+        db 0            ; base 23:16
+        db 10011010b    ; present, dpl*2, sys/code, type*4
+        db 01000000b    ; gran, 16/32, 0, avail, limit 19:16
+        db 0            ; base 31:24
+
+gdt_data:               ; Data segment, read/write, expand down
+        dw 0h        ; limit 15:0
+        dw 0            ; base 15:0
+        db 0            ; base 23:16
+        db 10010010b    ; present, dpl*2, sys/code, type*4
+        db 01001100b    ; gran, 16/32, 0, avail, limit 19:16
+        db 0            ; base 31:24
+
+gdt_end:                ; Used to calculate the size of the GDT
+
+gdt_desc:                       ; The GDT descriptor
+        dw gdt_end - gdt - 1    ; Limit (size)
+        dd gdt                  ; Address of the GDT

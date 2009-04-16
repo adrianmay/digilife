@@ -11,7 +11,7 @@ reset_drive:
 
         mov ax, 0
         mov es, ax
-        mov bx, 0x1000          ; Destination address = 0000:1000
+        mov bx, 0x8000          ; Destination address = 0000:1000
 
         mov ah, 02h             ; READ SECTOR-command
         mov al, 24             ; Number of sectors to read 
@@ -102,7 +102,7 @@ clear_pipe:
 
         call    a20wait
 
-        jmp 08h:01000h          ; Jump to section 08h (code), offset 01000h
+        jmp 08h:08000h          ; Jump to section 08h (code), offset 01000h
 
 a20wait:
         in      al,0x64
@@ -124,7 +124,7 @@ gdt_null:               ; Null Segment
         dd 0
 
 gdt_code:               ; Code segment, read/execute, nonconforming
-        dw 08000h       ; limit 15:0
+        dw 0f000h       ; limit 15:0
         dw 0            ; base 15:0
         db 0            ; base 23:16
         db 10011010b    ; present, dpl*2, sys/code, type*4

@@ -4,7 +4,7 @@ CCL = ld
 ASM = nasm
 
 CFLAGS = -ffreestanding 
-LINKFLAGS = -nostartfiles -e start -Ttext 0x1000 -Map $(TARGET).map
+LINKFLAGS = -nostartfiles -e start -Ttext 0x8000 -Map $(TARGET).map
 ASMFLAGS = -f bin
 COMPILE = $(CC) $(CFLAGS) -c
 LINK = $(CCL) $(LINKFLAGS) 

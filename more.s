@@ -268,7 +268,7 @@ a20wait2:
         jz      a20wait2
         ret
 
-
+db "GDT is here:"
 gdt:                    ; Address for the GDT
 
 gdt_null:               ; Null Segment

@@ -14,7 +14,7 @@ reset_drive:
         mov bx, 0x8000          ; Destination address = 0000:1000
 
         mov ah, 02h             ; READ SECTOR-command
-        mov al, 24             ; Number of sectors to read 
+        mov al, [length]             ; Number of sectors to read 
         mov ch, 0               ; Cylinder = 0
         mov cl, 02h             ; Sector = 2
         mov dh, 0               ; Head = 0
@@ -26,7 +26,8 @@ reset_drive:
 
 
 
-times 510-($-$$) db 0           ; Fill up the file with zeros
-
+times 509-($-$$) db 0           ; Fill up the file with zeros
+length:
+	db 0
         dw 0AA55h                ; Boot sector identifyer
 

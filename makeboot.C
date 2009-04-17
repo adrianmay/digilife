@@ -3,6 +3,7 @@
 
 int main(int argnr, char *args[])
 {
+  int total_sectors = -1;
   FILE *output, *input;
   int i, bytes_read, sectors_read, bytes_from_file;
   char buffer[512];
@@ -43,10 +44,12 @@ int main(int argnr, char *args[])
     }
 
     printf("%d sectors, %d bytes read from file %s...\n", sectors_read, bytes_from_file, args[i]);
-
+    total_sectors+=sectors_read;
     fclose(input);
   }
-
+  printf("Total sectors=%d\n", total_sectors);
+  fseek(output, 509, SEEK_SET);
+  fwrite((char*)&total_sectors, 1, 1, output);
   fclose(output);
   return 0;
 }

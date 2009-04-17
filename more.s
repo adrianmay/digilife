@@ -2,6 +2,7 @@
 [global start]
 [global put_handler]	; called by an extern function
 [global idt]
+[global gdt]
 [global idt_ptr]
 [global crash]
 [global isr_nothing]
@@ -10,14 +11,15 @@
 [extern printbar]
 [extern printn]
 [extern interrupt_handler]
+[extern setup_gdt]
 [extern main]
+[extern KERNEL_CODE_END]
 ALIGN 8
 
 SECTION .text
 
 start:
         cli                     ; Disable interrupts, we want to be alone
-
         xor ax, ax
         mov ds, ax              ; Set DS-register to 0 - used by lgdt
 
@@ -278,16 +280,24 @@ idt_ptr:
 	dw idt_end - idt - 1; IDT limit
 	dd idt	; start of IDT
 
-
 db "GDT starts here:"
 gdt:                    ; Address for the GDT
+
+%if 0
+
+%rep 3
+	dd 0
+	dd 0
+%endrep
+
+%else
 
 gdt_null:               ; Null Segment
         dd 0
         dd 0
 
 gdt_code:               ; Code segment, read/execute, nonconforming
-        dw 0f000h       ; limit 15:0
+        dw KERNEL_CODE_END ;0f000h       ; limit 15:0
         dw 0            ; base 15:0
         db 0            ; base 23:16
         db 10011010b    ; present, dpl*2, sys/code, type*4
@@ -301,6 +311,13 @@ gdt_data:               ; Data segment, read/write, expand down
         db 10010010b    ; present, dpl*2, sys/code, type*4
         db 01001100b    ; gran, 16/32, 0, avail, limit 19:16
         db 0            ; base 31:24
+
+%endif
+
+%rep 16
+	dd 0
+	dd 0
+%endrep
 
 gdt_end:                ; Used to calculate the size of the GDT
 db ":GDT ended there"

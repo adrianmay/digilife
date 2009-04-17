@@ -3,5 +3,6 @@
 *.img
 *.map
 *.exe
+*.log
 *~
 

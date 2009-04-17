@@ -6,11 +6,39 @@ struct registers
     unsigned int eip, cs, eflags, useresp, ss;   /* pushed by the processor automatically */ 
 };
 
+struct segment_descriptor {
+  unsigned long 
+	limit,
+	base_l;
+  unsigned short 
+	base_m,
+	access,
+	attribs,
+	base_h;
+};
+/* Access byte's flags */
+#define ACS_PRESENT     0x80            /* present segment */
+#define ACS_CSEG        0x18            /* code segment */
+#define ACS_DSEG        0x10            /* data segment */
+#define ACS_CONFORM     0x04            /* conforming segment */
+#define ACS_READ        0x02            /* readable segment */
+#define ACS_WRITE       0x02            /* writable segment */
+#define ACS_CODE        (ACS_PRESENT | ACS_CSEG | ACS_READ)
+#define ACS_DATA        (ACS_PRESENT | ACS_DSEG | ACS_WRITE)
+#define ACS_STACK       (ACS_PRESENT | ACS_DSEG | ACS_WRITE)
+
+#define MAX_GDT 16
+typedef enum {null, kernel_code, kernel_data, kernel_stack, screen, tank_code, tank_data, tank_stack} gd_label;
+extern struct segment_descriptor gdt[MAX_GDT];
+
 unsigned char in(unsigned short _port);
 void out(unsigned short _port, unsigned char _data);
 void keyboard_handler();
+void setup_gdt();
 
 void print(const char *_message);
+void printc(char c);
+void printx(unsigned char c);
 void printfoo();
 void printbar();
 void isr_nothing();
@@ -29,10 +57,40 @@ const char faultmsg[32][20];
 void main()
 {
 	int a;
+	setup_gdt();
 	//put_handler(32, isr_nothing, GATE_DEFAULT);
 	clrscr();
 	printfoo();
 	for(;;);
+}
+
+void put_gd (gd_label which, unsigned long base, unsigned long limit, unsigned char access, unsigned char attribs) 
+{
+	//return;
+	struct segment_descriptor * item = &(gdt[which]);
+	item->base_l = base & 0xFFFF;
+	item->base_m = (base >> 16) & 0xFF;
+	item->base_h = base >> 24;
+	item->limit = limit & 0xFFFF;
+	item->attribs = attribs | ((limit >> 16) & 0x0F);
+	item->access = access;
+}
+
+void dump_mem(char * buf, int len)
+{
+	int i;
+	for (i=0;i<len;i++)
+		printc(buf[i]);
+	printc('\n');
+}
+void setup_gdt()
+{
+	put_gd(tank_code, 0, 0xffff, ACS_CODE, 0);
+	return;
+	put_gd(tank_data, 0, 0xffff, ACS_DATA, 0);
+	dump_mem((unsigned char*)gdt, 3*8);
+loop:
+	goto loop;
 }
 
 const char *tutorial3 = "MuOS Tutorial 3";
@@ -147,6 +205,22 @@ void printn(int n)
 	if (n>9) printn(n/10);
 	printc('0'+n%10);
 }
+
+void printx(unsigned char n)
+{
+	unsigned char hi=n/16;
+	if (hi>9)
+		printc('A'+hi-10);
+	else
+		printc('0'+hi);
+	hi=n&16;
+	if (hi>9)
+		printc('A'+hi-10);
+	else
+		printc('0'+hi);
+	printc(' ');
+}
+
 void print(const char *_message)
 {
   unsigned short offset;

@@ -15,7 +15,7 @@ all: $(TARGET).img
 makeboot.exe: makeboot.C
 	gcc -o makeboot.exe -x c makeboot.C -x none
 
-OBJFILES := more.o main.o handlers.o video.o ports.o kb.o
+OBJFILES := more.o main.o handlers.o peripherals.o 
 
 $(TARGET).img: makeboot.exe bootsect.bin kernel.bin
 	./makeboot.exe $(TARGET).img bootsect.bin kernel.bin

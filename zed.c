@@ -1,4 +1,105 @@
-#include "zed.h"
+struct registers
+{
+    unsigned int gs, fs, es, ds;      /* pushed the segs last */
+    unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;  /* pushed by 'pusha' */
+    unsigned int int_no, err_code;    /* our 'push byte #' and ecodes do this */
+    unsigned int eip, cs, eflags, useresp, ss;   /* pushed by the processor automatically */ 
+};
+
+unsigned char in(unsigned short _port);
+void out(unsigned short _port, unsigned char _data);
+void keyboard_handler();
+
+void print(const char *_message);
+void printfoo();
+void printbar();
+void isr_nothing();
+void enable_A20();
+void clrscr();
+void start_interrupts();
+const char *tutorial3;
+const char * foomsg;
+const char * barmsg;
+void interrupt_handler(struct registers *r);
+void put_handler(unsigned int, void *, unsigned short int);//obsolete
+#define GATE_DEFAULT 0x8E00
+
+const char faultmsg[32][20];
+
+void main()
+{
+	int a;
+	//put_handler(32, isr_nothing, GATE_DEFAULT);
+	clrscr();
+	printfoo();
+	for(;;);
+}
+
+const char *tutorial3 = "MuOS Tutorial 3";
+/* All of our Exception handling Interrupt Service Routines will
+*  point to this function. This will tell us what exception has
+*  happened!  All ISRs disable interrupts while they are being
+*  serviced as a 'locking' mechanism to prevent an IRQ from
+*  happening and messing up kernel data structures */
+
+int ticks=0;
+void interrupt_handler(struct registers *r)
+{
+    /* Is this a fault whose number is from 0 to 31? */
+    if (r->int_no < 32)
+    {
+        /* Display the description for the Exception that occurred.
+        *  In this tutorial, we will simply halt the system using an
+        *  infinite loop */
+        print(faultmsg[r->int_no]);
+        print(" Exception. System Halted!\n");
+        for (;;);
+    }
+    else if (r->int_no==32)
+    {
+	    ticks = (ticks+1)%100;
+	    if (!ticks)
+		print("tock ");
+    }
+    else if (r->int_no==33)
+	    keyboard_handler();
+}
+
+const char faultmsg[32][20] = 
+{
+	"Divide",
+	"Debug",
+	"NMI",
+	"Breakpoint",
+	"Overflow",
+	"Bounds",
+	"Unknown opcode",
+	"No math copro",
+	"Double",
+	"FP segment overrun",
+	"Invalid TSS",
+	"Segment not present",
+	"Stack",
+	"General protection",
+	"Page",
+	"Reserved",
+	"Math",
+	"Alignment",
+	"Machine check",
+	"SIMD",
+	"Reserved",
+	"Reserved",
+	"Reserved",
+	"Reserved",
+	"Reserved",
+	"Reserved",
+	"Reserved",
+	"Reserved",
+	"Reserved",
+	"Reserved",
+	"Reserved",
+	"Reserved"
+};
 
 unsigned char in(unsigned short _port)
 {

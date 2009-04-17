@@ -16,7 +16,7 @@ all: $(TARGET).img
 makeboot.exe: makeboot.C Makefile
 	gcc -o makeboot.exe -x c makeboot.C -x none
 
-OBJFILES := more.o main.o handlers.o peripherals.o 
+OBJFILES := more.o zed.o 
 
 $(TARGET).img: makeboot.exe bootsect.bin kernel.bin
 	./makeboot.exe $(TARGET).img bootsect.bin kernel.bin
@@ -38,7 +38,7 @@ bootsect.bin: bootsect.asm
 	$(ASSEMBLE) -o $@ $<
 
 clean:
-	rm *.exe *.o *.img *.bin *.map 2> /dev/null;  true
+	rm *.exe *.o *.img *.bin *.map *~ 2> /dev/null;  true
  
 run: 
 	VirtualBox -startvm Zed

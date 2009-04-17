@@ -263,7 +263,7 @@ SECTION .data
 	dw 0
 %endmacro
 
-db "IDT is here:"
+db "IDT starts here:"
 
 idt:
 %assign i 0
@@ -272,6 +272,7 @@ idt_entry i
 %assign i i+1
 %endrep
 idt_end: 
+db ":IDT ended there:"
 
 idt_ptr:
 	dw idt_end - idt - 1; IDT limit

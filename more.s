@@ -157,6 +157,8 @@ crash:
 	mov byte [ds:20], 9
         ret
 
+put_screen:
+	
 
 ; Need a guzzilion of these just because Intel don't tell us the interrupt number...
 
@@ -296,7 +298,7 @@ gdt_null:               ; Null Segment
         dd 0
         dd 0
 
-gdt_code:               ; Code segment, read/execute, nonconforming
+gdt_kernel_code:               ; Code segment, read/execute, nonconforming
         dw KERNEL_CODE_END ;0f000h       ; limit 15:0
         dw 0            ; base 15:0
         db 0            ; base 23:16
@@ -304,12 +306,20 @@ gdt_code:               ; Code segment, read/execute, nonconforming
         db 01000000b    ; gran, 16/32, 0, avail, limit 19:16
         db 0            ; base 31:24
 
-gdt_data:               ; Data segment, read/write, expand down
+gdt_kernel_data:               ; Data segment, read/write, expand down
         dw 0h        ; limit 15:0
         dw 0            ; base 15:0
         db 0            ; base 23:16
         db 10010010b    ; present, dpl*2, sys/code, type*4
         db 01001100b    ; gran, 16/32, 0, avail, limit 19:16
+        db 0            ; base 31:24
+
+gdt_screen:               ; Data segment, read/write, expand down
+        dw 7d0h        ; limit 15:0
+        dw 8000h            ; base 15:0
+        db 0Bh            ; base 23:16
+        db 10010010b    ; present, dpl*2, sys/code, type*4
+        db 01001011b    ; gran, 16/32, 0, avail, limit 19:16
         db 0            ; base 31:24
 
 %endif

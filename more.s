@@ -146,6 +146,8 @@ isr_frontline_pushdummy i
 	dw 0
 %endmacro
 
+db "IDT is here:"
+
 idt:
 %assign i 0
 %rep 256

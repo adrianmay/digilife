@@ -285,15 +285,6 @@ idt_ptr:
 db "GDT starts here:"
 gdt:                    ; Address for the GDT
 
-%if 0
-
-%rep 3
-	dd 0
-	dd 0
-%endrep
-
-%else
-
 gdt_null:               ; Null Segment
         dd 0
         dd 0
@@ -307,13 +298,30 @@ gdt_kernel_code:               ; Code segment, read/execute, nonconforming
         db 0            ; base 31:24
 
 gdt_kernel_data:               ; Data segment, read/write, expand down
-        dw 0h        ; limit 15:0
+        dw 0h        ; limit 15:0 16MB = 1000000h Bytes
         dw 0            ; base 15:0
         db 0            ; base 23:16
         db 10010010b    ; present, dpl*2, sys/code, type*4
-        db 01001100b    ; gran, 16/32, 0, avail, limit 19:16
+        db 01001100b    ; gran, 16/32, 0, avail, limit 19:16 just beyond the screen
         db 0            ; base 31:24
 
+gdt_tank_code:               ; Data segment, read/write, expand down
+	dw 1000h           ; limit 15:0
+	dw 0            ; base 15:0
+	db 0Ch          ; base 23:16 from just after screen
+	db 10010010b    ; present, dpl*2, sys/code, type*4
+	db 11000000b    ; gran, 16/32, 0, avail, limit 19:16 just beyond the screen
+	db 0            ; base 31:24
+
+gdt_tank_data:               ; Data segment, read/write, expand down
+	dw 1000h           ; limit 15:0
+	dw 0            ; base 15:0
+	db 0Ch            ; base 23:16 from just after screen
+	db 10010010b    ; present, dpl*2, sys/code, type*4
+	db 11000000b    ; gran, 16/32, 0, avail, limit 19:16 just beyond the screen
+	db 0            ; base 31:24
+		    
+%if 0 ;got bored of this
 gdt_screen:               ; Data segment, read/write, expand down
         dw 7d0h        ; limit 15:0
         dw 8000h            ; base 15:0
@@ -321,13 +329,7 @@ gdt_screen:               ; Data segment, read/write, expand down
         db 10010010b    ; present, dpl*2, sys/code, type*4
         db 01001011b    ; gran, 16/32, 0, avail, limit 19:16
         db 0            ; base 31:24
-
 %endif
-
-%rep 16
-	dd 0
-	dd 0
-%endrep
 
 gdt_end:                ; Used to calculate the size of the GDT
 db ":GDT ended there"

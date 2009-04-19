@@ -16,6 +16,40 @@ struct segment_descriptor {
 	attribs,
 	base_h;
 };
+
+struct TSS {        /* TSS for 386+ */
+	unsigned long 
+		link,
+		esp0,
+		ss0,
+		esp1,
+		ss1,
+		esp2,
+		ss2,
+		cr3,
+		eip,
+		eflags,
+		eax,
+		ecx,
+		edx,
+		ebx,
+		esp,
+		ebp,
+		esi,
+		edi,
+		es,
+		cs,
+		ss,
+		ds,
+		fs,
+		gs,
+		ldtr;
+	unsigned short  
+		trace,
+		io_map_addr;
+} tss[2];
+
+
 /* Access byte's flags */
 #define ACS_PRESENT     0x80            /* present segment */
 #define ACS_CSEG        0x18            /* code segment */
@@ -57,24 +91,13 @@ const char faultmsg[32][20];
 void main()
 {
 	int a;
-	setup_gdt();
+//	setup_gdt();
 	//put_handler(32, isr_nothing, GATE_DEFAULT);
 	clrscr();
 	printfoo();
 	for(;;);
 }
 
-void put_gd (gd_label which, unsigned long base, unsigned long limit, unsigned char access, unsigned char attribs) 
-{
-	//return;
-	struct segment_descriptor * item = &(gdt[which]);
-	item->base_l = base & 0xFFFF;
-	item->base_m = (base >> 16) & 0xFF;
-	item->base_h = base >> 24;
-	item->limit = limit & 0xFFFF;
-	item->attribs = attribs | ((limit >> 16) & 0x0F);
-	item->access = access;
-}
 
 void dump_mem(char * buf, int len)
 {
@@ -83,15 +106,7 @@ void dump_mem(char * buf, int len)
 		printc(buf[i]);
 	printc('\n');
 }
-void setup_gdt()
-{
-	put_gd(tank_code, 0, 0xffff, ACS_CODE, 0);
-	return;
-	put_gd(tank_data, 0, 0xffff, ACS_DATA, 0);
-	dump_mem((unsigned char*)gdt, 3*8);
-loop:
-	goto loop;
-}
+
 
 const char *tutorial3 = "MuOS Tutorial 3";
 /* All of our Exception handling Interrupt Service Routines will
@@ -339,4 +354,26 @@ void keyboard_handler()
         *  you would add 128 to the scancode when you look for it */
         printc(kbdus[scancode]);
     }
+}
+
+//This didn't really go anywhere:
+void put_gd (gd_label which, unsigned long base, unsigned long limit, unsigned char access, unsigned char attribs) 
+{
+	//return;
+	struct segment_descriptor * item = &(gdt[which]);
+	item->base_l = base & 0xFFFF;
+	item->base_m = (base >> 16) & 0xFF;
+	item->base_h = base >> 24;
+	item->limit = limit & 0xFFFF;
+	item->attribs = attribs | ((limit >> 16) & 0x0F);
+	item->access = access;
+}
+void setup_gdt()
+{
+	put_gd(tank_code, 0, 0xffff, ACS_CODE, 0);
+	return;
+	put_gd(tank_data, 0, 0xffff, ACS_DATA, 0);
+	dump_mem((unsigned char*)gdt, 3*8);
+loop:
+		goto loop;
 }

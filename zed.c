@@ -70,6 +70,7 @@ void out(unsigned short _port, unsigned char _data);
 void keyboard_handler();
 void setup_gdt();
 void jump_tank();
+void tank_main();
 void print(const char *_message);
 void printc(char c);
 void printx(unsigned char c);
@@ -101,15 +102,6 @@ void main()
 	for(;;);
 }
 
-void tank_main()
-{
-	int i;
-	while(1)
-	{
-		for (i=0;i<10000000;i++);
-		printc('.');
-	}
-}
 
 void setup_tasks()
 {

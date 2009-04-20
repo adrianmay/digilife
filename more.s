@@ -17,6 +17,9 @@
 [extern tss_kernel]
 [extern tss_tank]
 [extern KERNEL_CODE_END]
+[extern TANK_START]
+[extern TANK_END]
+[extern TANK_SIZE]
 ALIGN 8
 
 SECTION .text
@@ -297,11 +300,11 @@ gdt_null:               ; Null Segment
         dd 0
 
 gdt_kernel_code:               ; Code segment, read/execute, nonconforming
-        dw KERNEL_CODE_END ;0f000h       ; limit 15:0
+        dw TANK_SIZE ;       ; limit 15:0
         dw 0            ; base 15:0
         db 0            ; base 23:16
         db 10011010b    ; present, dpl*2, sys/code, type*4
-        db 01000000b    ; gran, 16/32, 0, avail, limit 19:16
+        db 11000001b    ; gran, 16/32, 0, avail, limit 19:16
         db 0            ; base 31:24
 
 gdt_kernel_data:               ; Data segment, read/write, expand down
@@ -309,15 +312,15 @@ gdt_kernel_data:               ; Data segment, read/write, expand down
         dw 0            ; base 15:0
         db 0            ; base 23:16
         db 10010010b    ; present, dpl*2, sys/code, type*4
-        db 01001100b    ; gran, 16/32, 0, avail, limit 19:16 just beyond the screen
+        db 11001100b    ; gran, 16/32, 0, avail, limit 19:16 just beyond the screen
         db 0            ; base 31:24
 
 gdt_tank_code:               ; Data segment, read/write, expand down
-	dw 1000h           ; limit 15:0
+	dw 0000h           ; limit 15:0
 	dw 0            ; base 15:0
-	db 0Ch          ; base 23:16 from just after screen
+	db 0h          ; base 23:16 from just after screen
 	db 10010010b    ; present, dpl*2, sys/code, type*4
-	db 11000000b    ; gran, 16/32, 0, avail, limit 19:16 just beyond the screen
+	db 01000000b    ; gran, 16/32, 0, avail, limit 19:16 just beyond the screen
 	db 0            ; base 31:24
 
 gdt_tank_data:               ; Data segment, read/write, expand down

@@ -5,7 +5,7 @@ SECTIONS
 	{
 		more.o (.text)
 		zed.o (.text)
-	}
+}
 	KERNEL_CODE_END = .;
 	.data :
 	{
@@ -14,4 +14,14 @@ SECTIONS
 	}
 	.bss :  { *(.bss)  *(COMMON) }
 	KERNEL_END = .;
+	. = 0xc000;
+	TANK_START = .;
+	.tank :
+	{
+		tank.o (.text)
+		tank.o (.data)		
+	}
+	TANK_END = .;
+	TANK_SIZE = SIZEOF(.tank);
+	
 }

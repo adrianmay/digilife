@@ -13,6 +13,8 @@
 [extern interrupt_handler]
 [extern setup_gdt]
 [extern main]
+[extern tss_kernel]
+[extern tss_tank]
 [extern KERNEL_CODE_END]
 ALIGN 8
 
@@ -39,7 +41,7 @@ clear_pipe:
         mov fs, ax              ; Move a valid data segment into the data segment register
         mov gs, ax              ; Move a valid data segment into the data segment register
         mov ss, ax              ; Move a valid data segment into the stack segment register
-        mov esp, 090000h        ; Move the stack pointer to 090000h
+        mov esp, 0B0000h        ; Move the stack pointer to 090000h
 
 
 	call enable_A20
@@ -321,15 +323,21 @@ gdt_tank_data:               ; Data segment, read/write, expand down
 	db 11000000b    ; gran, 16/32, 0, avail, limit 19:16 just beyond the screen
 	db 0            ; base 31:24
 		    
-%if 0 ;got bored of this
-gdt_screen:               ; Data segment, read/write, expand down
-        dw 7d0h        ; limit 15:0
-        dw 8000h            ; base 15:0
-        db 0Bh            ; base 23:16
-        db 10010010b    ; present, dpl*2, sys/code, type*4
-        db 01001011b    ; gran, 16/32, 0, avail, limit 19:16
-        db 0            ; base 31:24
-%endif
+gdt_kernel_tss:
+	dw 104            ; limit 15:0 
+	dw tss_kernel     ; base 15:0
+	db 0            ; base 23:16 from just after screen
+	db 10001001b    ; present, dpl*2, sys/code, type*4
+	db 00000000b    ; gran, 16/32, 0, avail, limit 19:16 
+	db 0            ; base 31:24
+
+gdt_tank_tss:
+	dw 104            ; limit 15:0 
+	dw tss_tank     ; base 15:0
+	db 0            ; base 23:16 from just after screen
+	db 10001001b    ; present, dpl*2, sys/code, type*4
+	db 00000000b    ; gran, 16/32, 0, avail, limit 19:16 
+	db 0            ; base 31:24
 
 gdt_end:                ; Used to calculate the size of the GDT
 db ":GDT ended there"

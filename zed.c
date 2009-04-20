@@ -47,7 +47,7 @@ struct TSS {        /* TSS for 386+ */
 	unsigned short  
 		trace,
 		io_map_addr;
-} tss[2];
+} tss_kernel, tss_tank;
 
 
 /* Access byte's flags */
@@ -62,7 +62,7 @@ struct TSS {        /* TSS for 386+ */
 #define ACS_STACK       (ACS_PRESENT | ACS_DSEG | ACS_WRITE)
 
 #define MAX_GDT 16
-typedef enum {null, kernel_code, kernel_data, kernel_stack, screen, tank_code, tank_data, tank_stack} gd_label;
+typedef enum {null, kernel_code, kernel_data, tank_code, tank_data, kernel_tss, tank_tss} gd_label;
 extern struct segment_descriptor gdt[MAX_GDT];
 
 unsigned char in(unsigned short _port);
@@ -78,6 +78,7 @@ void printbar();
 void isr_nothing();
 void enable_A20();
 void clrscr();
+void setup_tasks();
 void start_interrupts();
 const char *tutorial3;
 const char * foomsg;
@@ -91,13 +92,37 @@ const char faultmsg[32][20];
 void main()
 {
 	int a;
-//	setup_gdt();
+	setup_tasks();
 	//put_handler(32, isr_nothing, GATE_DEFAULT);
 	clrscr();
 	printfoo();
 	for(;;);
 }
 
+void tank_main()
+{
+	int i;
+	while(1)
+	{
+		for (i=0;i<100000;i++);
+		printc('.');
+	}
+}
+
+void setup_tasks()
+{
+  tss_kernel.trace = tss_tank.trace = 0;
+  tss_kernel.io_map_addr = 
+         tss_tank.io_map_addr = sizeof(TSS);      /* I/O map just after the TSS */
+  tss_kernel.ldtr = tss_tank.ldtr = 0;                /* ldtr = 0 */
+  tss_tank.fs = tss_tank.gs = tss_tank.ds = tss_tank.es = tss_tank.ss = gdt_tank_data;      /* ds=es=ss = data segment */
+  tss_tank.esp = 0x1000000;    /* sp points to task stack top */
+  tss_tank.cs = gdt_tank_code;
+  tss_tank.eip = (unsigned short)&tank_main;                     /* cs:eip point to task() */
+  tss_tank.eflags = 0x202L;                       /* interrupts are enabled */
+
+	
+}
 
 void dump_mem(char * buf, int len)
 {

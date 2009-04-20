@@ -7,6 +7,7 @@
 [global crash]
 [global isr_nothing]
 [global start_interrupts]
+[global jump_tank]
 [extern printfoo]
 [extern printbar]
 [extern printn]
@@ -32,7 +33,7 @@ start:
         mov cr0, eax            ; Copy the contents of EAX into CR0
 
         jmp 08h:clear_pipe      ; Jump to code segment, offset clear_pipe
-
+				
 [BITS 32]                       ; We now need 32-bit instructions
 clear_pipe:
         mov ax, 10h             ; Save data segment identifyer
@@ -41,7 +42,7 @@ clear_pipe:
         mov fs, ax              ; Move a valid data segment into the data segment register
         mov gs, ax              ; Move a valid data segment into the data segment register
         mov ss, ax              ; Move a valid data segment into the stack segment register
-        mov esp, 0B0000h        ; Move the stack pointer to 090000h
+        mov esp, 090000h        ; Move the stack pointer to 090000h
 
 
 	call enable_A20
@@ -49,6 +50,10 @@ clear_pipe:
 	lidt [idt_ptr];
 	sti;
 	jmp main;
+
+jump_tank:
+	pop ax
+	jmp 30h:0
 
 remap_ints:
 	mov al, 11h

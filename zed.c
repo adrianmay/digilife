@@ -69,7 +69,7 @@ unsigned char in(unsigned short _port);
 void out(unsigned short _port, unsigned char _data);
 void keyboard_handler();
 void setup_gdt();
-
+void jump_tank();
 void print(const char *_message);
 void printc(char c);
 void printx(unsigned char c);
@@ -96,6 +96,8 @@ void main()
 	//put_handler(32, isr_nothing, GATE_DEFAULT);
 	clrscr();
 	printfoo();
+	jump_tank();
+	
 	for(;;);
 }
 
@@ -104,7 +106,7 @@ void tank_main()
 	int i;
 	while(1)
 	{
-		for (i=0;i<100000;i++);
+		for (i=0;i<10000000;i++);
 		printc('.');
 	}
 }
@@ -113,11 +115,11 @@ void setup_tasks()
 {
   tss_kernel.trace = tss_tank.trace = 0;
   tss_kernel.io_map_addr = 
-         tss_tank.io_map_addr = sizeof(TSS);      /* I/O map just after the TSS */
+         tss_tank.io_map_addr = sizeof(struct TSS);      /* I/O map just after the TSS */
   tss_kernel.ldtr = tss_tank.ldtr = 0;                /* ldtr = 0 */
-  tss_tank.fs = tss_tank.gs = tss_tank.ds = tss_tank.es = tss_tank.ss = gdt_tank_data;      /* ds=es=ss = data segment */
-  tss_tank.esp = 0x1000000;    /* sp points to task stack top */
-  tss_tank.cs = gdt_tank_code;
+  tss_tank.fs = tss_tank.gs = tss_tank.ds = tss_tank.es = tss_tank.ss = 0x10;      /* ds=es=ss = data segment */
+  tss_tank.esp = 0x80000;    /* sp points to task stack top */
+  tss_tank.cs = 8;
   tss_tank.eip = (unsigned short)&tank_main;                     /* cs:eip point to task() */
   tss_tank.eflags = 0x202L;                       /* interrupts are enabled */
 

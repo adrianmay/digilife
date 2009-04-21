@@ -21,6 +21,8 @@ reset_drive:
         int 13h                 ; Call interrupt 13h
         or ah, ah               ; Check for error code
         jnz reset_drive         ; Try again if ah != 0
+	
+	
 	jmp 0x8000
 	
 

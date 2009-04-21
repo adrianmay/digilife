@@ -20,12 +20,24 @@
 [extern TANK_START]
 [extern TANK_END]
 [extern TANK_SIZE]
+[global dp_heads]
+[global dp_cyl]
+[global dp_secpertrack]
+
 ALIGN 8
 
 SECTION .text
 
 start:
-        cli                     ; Disable interrupts, we want to be alone
+	mov ah, 08
+	mov dl, 0
+	int 13h
+	mov al, dh
+	mov [dp_heads], al
+	mov [dp_cyl], ch
+	mov [dp_secpertrack], cl
+
+	cli                     ; Disable interrupts, we want to be alone
         xor ax, ax
         mov ds, ax              ; Set DS-register to 0 - used by lgdt
 
@@ -353,3 +365,8 @@ db ":GDT ended there"
 gdt_desc:                       ; The GDT descriptor
         dw gdt_end - gdt - 1    ; Limit (size)
         dd gdt                  ; Address of the GDT
+
+dp_heads: db 0
+dp_cyl: db 0 
+dp_secpertrack: db 0
+

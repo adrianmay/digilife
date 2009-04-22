@@ -1,4 +1,4 @@
-char tank_stack[1000];
+char tank_stack[0x1000];
 unsigned char * p = 0xB8001-0xc000; 
 void flash()
 {

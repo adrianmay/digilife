@@ -136,6 +136,7 @@ const char *tutorial3 = "MuOS Tutorial 3";
 int ticks=0;
 void interrupt_handler(struct registers *r)
 {
+    printx(r->int_no); printc(' ');
     /* Is this a fault whose number is from 0 to 31? */
     if (r->int_no < 32)
     {

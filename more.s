@@ -206,9 +206,11 @@ isr_common:
     mov fs, ax
     mov gs, ax
     mov eax, esp   ; Push the stack
+    add eax, 0xc000 ;this proves its because I push a pointer to something on the stack, but cs and ds are not the same
     push eax
     mov eax, interrupt_handler
     call eax       ; A special call, preserves the 'eip' register
+ ;   call interrupt_handler
     pop eax
     pop gs
     pop fs

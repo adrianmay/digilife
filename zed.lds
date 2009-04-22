@@ -15,7 +15,8 @@ SECTIONS
 	.bss :  { *(.bss)  *(COMMON) }
 	KERNEL_END = .;
 	TANK_START = .;
-	.tank :
+	.tank 0 :
+	AT(0xc000)
 	{
 		tank.o (.text)
 		tank.o (.data)		

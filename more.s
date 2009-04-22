@@ -22,6 +22,7 @@
 [extern TANK_SIZE]
 [global dp_heads]
 [global dp_cyl]
+[global zzzzzz]
 [global dp_secpertrack]
 
 ALIGN 8
@@ -37,6 +38,22 @@ start:
 	mov [dp_cyl], ch
 	mov [dp_secpertrack], cl
 
+reset_drive2:
+
+        mov ax, 0
+        mov es, ax
+        mov bx, 0xc800          ; Destination address = 0000:1000
+
+        mov ah, 02h             ; read SECTOR-command
+        mov al, 1             ; Number of sectors to read 
+        mov ch, 1               ; Cylinder = 0
+        mov cl, 01h             ; Sector = 2
+        mov dh, 0               ; Head = 0
+	mov dl, 0               ;drive
+        int 13h                 ; Call interrupt 13h
+        or ah, ah               ; Check for error code
+        jnz reset_drive2         ; Try again if ah != 0
+	
 	cli                     ; Disable interrupts, we want to be alone
         xor ax, ax
         mov ds, ax              ; Set DS-register to 0 - used by lgdt
@@ -370,3 +387,7 @@ dp_heads: db 0
 dp_cyl: db 0 
 dp_secpertrack: db 0
 
+zzzzzz:
+%rep 64
+db 'ZZZZZZZZ'
+%endrep

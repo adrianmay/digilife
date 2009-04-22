@@ -85,6 +85,8 @@ const char * foomsg;
 const char * barmsg;
 void interrupt_handler(struct registers r);
 void put_handler(unsigned int, void *, unsigned short int);//obsolete
+void load_tsr (unsigned int selector);
+extern char * spare_stack;
 #define GATE_DEFAULT 0x8E00
 
 const char faultmsg[32][20];
@@ -108,13 +110,14 @@ void setup_tasks()
   tss_kernel.io_map_addr = 
          tss_tank.io_map_addr = sizeof(struct TSS);      /* I/O map just after the TSS */
   tss_kernel.ldtr = tss_tank.ldtr = 0;                /* ldtr = 0 */
-  tss_tank.fs = tss_tank.gs = tss_tank.ds = tss_tank.es = tss_tank.ss = 0x20;      /* ds=es=ss = data segment */
-  tss_tank.esp = 1000;    /* sp points to task stack top */
-  tss_tank.cs = 0x18;
+  tss_tank.fs = tss_tank.gs = tss_tank.ds = tss_tank.es = tss_tank.ss = 0x20 + 3;      /* ds=es=ss = data segment */
+  tss_tank.esp = 2000; 
+  tss_tank.ss0 = 0x10; tss_tank.esp0 = spare_stack+1000;    /* sp points to task stack top */
+  tss_tank.cs = 0x18+3;
   tss_tank.eip = (unsigned short)&tank_main;                     /* cs:eip point to task() */
-  tss_tank.eflags = 0x202L;                       /* interrupts are enabled */
-
-	
+//  tss_tank.eflags = 0x0202L;                       /* interrupts are enabled */
+  tss_tank.eflags = 0x3202L;                       /* ring3 */
+  load_tsr(0x28);
 }
 
 void dump_mem(char * buf, int len)

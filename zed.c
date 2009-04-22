@@ -64,8 +64,6 @@ struct TSS {        /* TSS for 386+ */
 #define MAX_GDT 16
 typedef enum {null, kernel_code, kernel_data, tank_code, tank_data, kernel_tss, tank_tss} gd_label;
 extern struct segment_descriptor gdt[MAX_GDT];
-extern unsigned char dp_cyl, dp_heads, dp_secpertrack;
-unsigned char zzzzzz;
 unsigned char in(unsigned short _port);
 void out(unsigned short _port, unsigned char _data);
 void keyboard_handler();
@@ -98,15 +96,6 @@ void main()
 	//put_handler(32, isr_nothing, GATE_DEFAULT);
 	clrscr();
 	printfoo();
-	printc(' ');
-	printc(*(char*)0xc800);
-	printc(' ');
-	printx(dp_heads);
-	printc(' ');
-	printx(dp_cyl);
-	printc(' ');
-	printx(dp_secpertrack);
-	printc(' ');
 	jump_tank();
 	
 	for(;;);

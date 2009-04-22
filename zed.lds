@@ -14,7 +14,6 @@ SECTIONS
 	}
 	.bss :  { *(.bss)  *(COMMON) }
 	KERNEL_END = .;
-	. = 0xc5a0;
 	TANK_START = .;
 	.tank :
 	{

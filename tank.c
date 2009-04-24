@@ -8,11 +8,15 @@ void flash()
 
 void tank_main()
 {
-	*p='G';
 	int i;
 	while(1)
 	{
 		for (i=0;i<150000000;i++); //blimey that's fast
 		flash();
 	}
+}
+
+void tank_idle()
+{
+	while(1) {}
 }

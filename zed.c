@@ -1,3 +1,5 @@
+#pragma pack (push, 1)
+#pragma align (push, 8)
 struct registers
 {
     unsigned int gs, fs, es, ds;      /* pushed the segs last */
@@ -6,48 +8,71 @@ struct registers
     unsigned int eip, cs, eflags, useresp, ss;   /* pushed by the processor automatically */ 
 };
 
-struct segment_descriptor {
-  unsigned long 
-	limit,
-	base_l;
-  unsigned short 
-	base_m,
-	access,
-	attribs,
-	base_h;
-};
+#define STACKSIZE 1024
+unsigned char spare_stack_block[STACKSIZE];
 
 struct TSS {        /* TSS for 386+ */
 	unsigned long 
 		link,
-		esp0,
-		ss0,
-		esp1,
-		ss1,
-		esp2,
-		ss2,
+		esp0,ss0,esp1,ss1,esp2,ss2,
 		cr3,
 		eip,
 		eflags,
-		eax,
-		ecx,
-		edx,
-		ebx,
-		esp,
-		ebp,
-		esi,
-		edi,
-		es,
-		cs,
-		ss,
-		ds,
-		fs,
-		gs,
+		eax,ecx,edx,ebx,
+		esp,ebp,esi,edi,
+		es,cs,ss,ds,fs,gs,
 		ldtr;
 	unsigned short  
 		trace,
 		io_map_addr;
-} tss_kernel, tss_tank;
+};
+struct Task
+{
+	struct TSS tss;
+	unsigned char stack[STACKSIZE];
+} tasks[3];
+const void * hack_from=&tasks[0].stack;
+
+typedef enum {null, 
+	kernel_code, kernel_data, 
+	tank_code, tank_data, 
+	spare_stack, 
+	kernel_tss, kernel_stack, 
+	tank_tss, tank_stack, 
+	keyboard_tss, keyboard_stack, GDT_MAX} gd_label;
+
+struct segment_descriptor {
+  unsigned short 
+	limit,
+	base_l;
+  unsigned char 
+	base_m,
+	access,
+	attribs,
+	base_h;
+} gdt[GDT_MAX]=
+{
+	{0,0,0,0,0,0}, //null
+	{0,0,0,0x9a,0x41,0}, //kernel code
+	{0,0,0,0x92,0x4c,0}, //kernel data
+	{0,0,0,0,0,0}, //tank code
+	{0,0,0,0,0,0}, //tank data
+	{STACKSIZE,0,0,0x92,0x4c,0}, //spare stack
+	{0,0,0,0,0,0}, //kernel tss
+	{STACKSIZE,0,0,0x92,0x4c,0}, //kernel stack
+	{0,0,0,0,0,0}, //tank tss
+	{0,0,0,0,0,0}, //tank stack
+	{0,0,0,0,0,0}, //keyboard tss
+	{0,0,0,0,0,0}, //keyboard stack
+};
+const void * hack_to=&gdt[kernel_stack].base_l;
+const void * hack_too=&gdt[spare_stack].base_l;
+
+#define GDT_TASKS 6
+struct {
+	unsigned short size;
+	void * p;
+} gdt_desc={GDT_MAX*8-1, &gdt};
 
 
 /* Access byte's flags */
@@ -61,9 +86,6 @@ struct TSS {        /* TSS for 386+ */
 #define ACS_DATA        (ACS_PRESENT | ACS_DSEG | ACS_WRITE)
 #define ACS_STACK       (ACS_PRESENT | ACS_DSEG | ACS_WRITE)
 
-#define MAX_GDT 16
-typedef enum {null, kernel_code, kernel_data, tank_code, tank_data, kernel_tss, tank_tss} gd_label;
-extern struct segment_descriptor gdt[MAX_GDT];
 unsigned char in(unsigned short _port);
 void out(unsigned short _port, unsigned char _data);
 void keyboard_handler();
@@ -86,7 +108,6 @@ const char * barmsg;
 void interrupt_handler(struct registers r);
 void put_handler(unsigned int, void *, unsigned short int);//obsolete
 void load_tsr (unsigned int selector);
-extern char * spare_stack;
 #define GATE_DEFAULT 0x8E00
 
 const char faultmsg[32][20];
@@ -103,21 +124,38 @@ void main()
 	for(;;);
 }
 
+void setup_task(int which, int ring, int cs, int ds, int ip, int ss0, int sp0)
+{
+	struct TSS * task = &tasks[which].tss;
+	task->trace = 0;
+	task->io_map_addr = sizeof(struct TSS);
+	task->ldtr = 0;
+	task->cs = cs*8 + ring; task->eip = ip;
+	task->ds = task->es = task->fs = task->gs = ds*8 + ring;
+	task->ss = 8*((GDT_TASKS+1)+which*2) + ring; task->esp = STACKSIZE-4;
+	task->ss0 = ss0*8; task->esp0 = sp0;
+	task->eflags = 0x202L + (ring << 12);
+	gdt[GDT_TASKS+which*2].limit=104;
+	gdt[GDT_TASKS+which*2].base_l=&task;
+	gdt[GDT_TASKS+which*2].base_m=0;
+	gdt[GDT_TASKS+which*2].access=0x89;
+	gdt[GDT_TASKS+which*2].attribs=0;
+	gdt[GDT_TASKS+which*2].base_h=0;
+
+	gdt[GDT_TASKS+1+which*2].limit=STACKSIZE;
+	gdt[GDT_TASKS+1+which*2].base_l=&tasks[which].stack;
+	gdt[GDT_TASKS+1+which*2].base_m=0;
+	gdt[GDT_TASKS+1+which*2].access=0x92+(ring<<5);
+	gdt[GDT_TASKS+1+which*2].attribs=0x40;
+	gdt[GDT_TASKS+1+which*2].base_h=0;
+}
 
 void setup_tasks()
 {
-  tss_kernel.trace = tss_tank.trace = 0;
-  tss_kernel.io_map_addr = 
-         tss_tank.io_map_addr = sizeof(struct TSS);      /* I/O map just after the TSS */
-  tss_kernel.ldtr = tss_tank.ldtr = 0;                /* ldtr = 0 */
-  tss_tank.fs = tss_tank.gs = tss_tank.ds = tss_tank.es = tss_tank.ss = 0x20 + 3;      /* ds=es=ss = data segment */
-  tss_tank.esp = 2000; 
-  tss_tank.ss0 = 0x10; tss_tank.esp0 = spare_stack+1000;    /* sp points to task stack top */
-  tss_tank.cs = 0x18+3;
-  tss_tank.eip = (unsigned short)&tank_main;                     /* cs:eip point to task() */
-//  tss_tank.eflags = 0x0202L;                       /* interrupts are enabled */
-  tss_tank.eflags = 0x3202L;                       /* ring3 */
-  load_tsr(0x28);
+	//setup_task(0, 0, kernel_code, kernel_data, 0, 0, 0);
+	setup_task(1, 3, tank_code, tank_data, tank_main, spare_stack, STACKSIZE-4);
+	setup_task(2, 0, kernel_code, kernel_data, keyboard_handler,0,0);
+	
 }
 
 void dump_mem(char * buf, int len)
@@ -156,7 +194,7 @@ void interrupt_handler(struct registers r)
 		print("tock ");
     }
     else if (r.int_no==33)
-	    keyboard_handler();
+	    old_keyboard_handler();
 }
 
 const char faultmsg[32][20] = 
@@ -345,6 +383,14 @@ unsigned char kbdus[128] =
 };		
 
 /* Handles the keyboard interrupt */
+
+void old_keyboard_handler()
+{
+    unsigned char scancode;
+    scancode = in(0x60);
+	print("I'm soooo ooold");
+}
+
 void keyboard_handler()
 {
     unsigned char scancode;

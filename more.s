@@ -2,14 +2,16 @@
 [global start]
 [global put_handler]	; called by an extern function
 [global idt]
-[global gdt]
+[extern gdt]
+[extern gdt_desc]
 [global idt_ptr]
 [global crash]
 [global load_tsr]
 [global isr_nothing]
 [global start_interrupts]
 [global jump_tank]
-[global spare_stack]
+[extern kernel_stack_base]
+[extern spare_stack_block]
 [extern printfoo]
 [extern printbar]
 [extern printn]
@@ -22,6 +24,9 @@
 [extern TANK_START]
 [extern TANK_END]
 [extern TANK_SIZE]
+[extern hack_from]
+[extern hack_to]
+[extern hack_too]
 
 ; disk=0, track=0..79, head=0..1, sector=1..18
 
@@ -32,9 +37,17 @@ SECTION .text
 start:
 
 	cli                     ; Disable interrupts, we want to be alone
-        xor ax, ax
-        mov ds, ax              ; Set DS-register to 0 - used by lgdt
-
+		mov ax, 0
+		mov ds, ax
+;        mov ax, 0b800h
+;        mov ds, ax              ; Set DS-register to 0 - used by lgdt
+;	    mov ebx, 0h
+;	    mov ax, 0f41h
+;	    mov [ds:ebx], ax
+        mov ax, hack_from
+        mov [hack_to], ax
+        mov ax, spare_stack_block
+        mov [hack_too], ax
         lgdt [gdt_desc]         ; Load the GDT descriptor
 
         mov eax, cr0            ; Copy the contents of CR0 into EAX
@@ -46,14 +59,18 @@ start:
 [BITS 32]                       ; We now need 32-bit instructions
 clear_pipe:
         mov ax, 10h             ; Save data segment identifyer
-        mov ds, ax              ; Move a valid data segment into the data segment register
-        mov es, ax              ; Move a valid data segment into the data segment register
-        mov fs, ax              ; Move a valid data segment into the data segment register
-        mov gs, ax              ; Move a valid data segment into the data segment register
-        mov ss, ax              ; Move a valid data segment into the stack segment register
-        mov esp, 090000h        ; Move the stack pointer to 090000h
+        mov ds, ax              
+        mov es, ax              
+        mov fs, ax              
+        mov gs, ax              
+        mov ax, 38h
+        mov ss, ax              
+        mov esp, 1020   ; 
 
-
+;    mov edx, 0b8000h
+;    mov ax, 0f42h
+;    mov [ds:edx], ax
+    call printfoo;
 	call enable_A20
 	call remap_ints
 	lidt [idt_ptr];
@@ -212,13 +229,7 @@ isr_common:
     mov es, ax
     mov fs, ax
     mov gs, ax
- ;   mov eax, esp   ; Push the stack
- ;   add eax, 0xc000 ;this proves its because I push a pointer to something on the stack, but cs and ds are not the same
- ;   push eax
- ;   mov eax, interrupt_handler
- ;   call eax       ; A special call, preserves the 'eip' register
     call interrupt_handler
- ;   pop eax
     pop gs
     pop fs
     pop es
@@ -294,10 +305,22 @@ db "IDT starts here:"
 
 idt:
 %assign i 0
-%rep 256
+%rep 32
 idt_entry i
 %assign i i+1
 %endrep
+
+idt_entry i ;timer
+%assign i i+1
+
+idt_entry i ;keyboard
+%assign i i+1
+
+%rep 222
+idt_entry i
+%assign i i+1
+%endrep
+
 idt_end: 
 db ":IDT ended there:"
 
@@ -305,8 +328,10 @@ idt_ptr:
 	dw idt_end - idt - 1; IDT limit
 	dd idt	; start of IDT
 
+%if 0
+
 db "GDT starts here:"
-gdt:                    ; Address for the GDT
+gdt_:                    ; Address for the GDT
 
 gdt_null:               ; Null Segment
         dd 0
@@ -328,6 +353,7 @@ gdt_kernel_data:               ; Data segment, read/write, expand down
         db 01001100b    ; gran, 16/32, 0, avail, limit 19:16 just beyond the screen
         db 0            ; base 31:24
 
+
 gdt_tank_code:               ; Data segment, read/write, expand down
 	dw 0000h           ; limit 15:0
 	dw 0c000h            ; base 15:0
@@ -346,7 +372,7 @@ gdt_tank_data:               ; Data segment, read/write, expand down
 		    
 gdt_kernel_tss:
 	dw 104            ; limit 15:0 
-	dw tss_kernel     ; base 15:0
+	dw 0     ; base 15:0
 	db 0            ; base 23:16 from just after screen
 	db 10001001b    ; present, dpl*2, sys/code, type*4
 	db 00000000b    ; gran, 16/32, 0, avail, limit 19:16 
@@ -354,21 +380,25 @@ gdt_kernel_tss:
 
 gdt_tank_tss:
 	dw 104            ; limit 15:0 
-	dw tss_tank     ; base 15:0
+	dw 0     ; base 15:0
 	db 0            ; base 23:16 from just after screen
 	db 10001001b    ; present, dpl*2, sys/code, type*4
 	db 00000000b    ; gran, 16/32, 0, avail, limit 19:16 
 	db 0            ; base 31:24
 
-gdt_end:                ; Used to calculate the size of the GDT
+gdt_keyboard_tss:
+	dw 104            ; limit 15:0 
+	dw 0     ; base 15:0
+	db 0            ; base 23:16 from just after screen
+	db 10001001b    ; present, dpl*2, sys/code, type*4
+	db 00000000b    ; gran, 16/32, 0, avail, limit 19:16 
+	db 0            ; base 31:24
+
+gdt_end_:                ; Used to calculate the size of the GDT
 db ":GDT ended there"
 
-gdt_desc:                       ; The GDT descriptor
-        dw gdt_end - gdt - 1    ; Limit (size)
-        dd gdt                  ; Address of the GDT
-
-spare_stack:
-	%rep 1000
-	db 0
-	%endrep
+gdt_desc_:                       ; The GDT descriptor
+        dw gdt_end_ - gdt_ - 1    ; Limit (size)
+        dd gdt_                  ; Address of the GDT
+%endif
 	

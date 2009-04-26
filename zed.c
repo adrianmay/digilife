@@ -1,5 +1,4 @@
 #pragma pack (push, 1)
-#pragma align (push, 8)
 struct registers
 {
     unsigned int gs, fs, es, ds;      /* pushed the segs last */
@@ -53,18 +52,20 @@ struct segment_descriptor {
 } gdt[GDT_MAX]=
 {
 	{0,0,0,0,0,0}, //null
-	{0,0,0,0x9a,0x41,0}, //kernel code
-	{0,0,0,0x92,0x4c,0}, //kernel data
-	{0,0,0,0,0,0}, //tank code
-	{0,0,0,0,0,0}, //tank data
-	{STACKSIZE,0,0,0x92,0x4c,0}, //spare stack
-	{0,0,0,0,0,0}, //kernel tss
-	{STACKSIZE,0,0,0x92,0x4c,0}, //kernel stack
-	{0,0,0,0,0,0}, //tank tss
-	{0,0,0,0,0,0}, //tank stack
+	{0,0,0,0x9a,0x41,0}, //kernel code 8
+	{0,0,0,0x92,0x4c,0}, //kernel data 10
+	{0,0xc000,0,0xfa,0x41,0}, //tank code 18
+	{0,0xc000,0,0xf2,0x4c,0}, //tank data 20
+	{STACKSIZE,0,0,0x92,0x4c,0}, //spare stack 28
+	{0,0,0,0,0,0}, //kernel tss 30
+	{STACKSIZE,0,0,0x92,0x4c,0}, //kernel stack 38
+	{0,0,0,0,0,0}, //tank tss 40
+	{0,0,0,0,0,0}, //tank stack 48
 	{0,0,0,0,0,0}, //keyboard tss
 	{0,0,0,0,0,0}, //keyboard stack
 };
+
+
 const void * hack_to=&gdt[kernel_stack].base_l;
 const void * hack_too=&gdt[spare_stack].base_l;
 
@@ -92,6 +93,7 @@ void keyboard_handler();
 void setup_gdt();
 void jump_tank();
 void tank_main();
+void tank_idle();
 void print(const char *_message);
 void printc(char c);
 void printx(unsigned char c);
@@ -124,19 +126,19 @@ void main()
 	for(;;);
 }
 
-void setup_task(int which, int ring, int cs, int ds, int ip, int ss0, int sp0)
+void setup_task(int which, int ring, int cs, int ds, int ip, int ss0, int sp0, int interrupt)
 {
 	struct TSS * task = &tasks[which].tss;
 	task->trace = 0;
 	task->io_map_addr = sizeof(struct TSS);
 	task->ldtr = 0;
-	task->cs = cs*8 + ring; task->eip = ip;
+	task->cs = cs*8 + ring; task->eip = ip;//-gdt[cs].base_l;
 	task->ds = task->es = task->fs = task->gs = ds*8 + ring;
 	task->ss = 8*((GDT_TASKS+1)+which*2) + ring; task->esp = STACKSIZE-4;
 	task->ss0 = ss0*8; task->esp0 = sp0;
 	task->eflags = 0x202L + (ring << 12);
 	gdt[GDT_TASKS+which*2].limit=104;
-	gdt[GDT_TASKS+which*2].base_l=&task;
+	gdt[GDT_TASKS+which*2].base_l=task;
 	gdt[GDT_TASKS+which*2].base_m=0;
 	gdt[GDT_TASKS+which*2].access=0x89;
 	gdt[GDT_TASKS+which*2].attribs=0;
@@ -148,13 +150,16 @@ void setup_task(int which, int ring, int cs, int ds, int ip, int ss0, int sp0)
 	gdt[GDT_TASKS+1+which*2].access=0x92+(ring<<5);
 	gdt[GDT_TASKS+1+which*2].attribs=0x40;
 	gdt[GDT_TASKS+1+which*2].base_h=0;
+	
+//	if (interrupt>=0)
+//		idt[interrupt]
 }
 
 void setup_tasks()
 {
-	//setup_task(0, 0, kernel_code, kernel_data, 0, 0, 0);
-	setup_task(1, 3, tank_code, tank_data, tank_main, spare_stack, STACKSIZE-4);
-	setup_task(2, 0, kernel_code, kernel_data, keyboard_handler,0,0);
+	setup_task(0, 0, kernel_code, kernel_data, 0, 0, 0, -1);
+	setup_task(1, 3, tank_code, tank_data, tank_main, spare_stack, STACKSIZE-4, -1);
+	setup_task(2, 0, kernel_code, kernel_data, keyboard_handler,0,0, 33);
 	
 }
 
@@ -388,59 +393,25 @@ void old_keyboard_handler()
 {
     unsigned char scancode;
     scancode = in(0x60);
-	print("I'm soooo ooold");
+	print("I'm soooo ooold ");
 }
+
+unsigned char scancode;
 
 void keyboard_handler()
 {
-    unsigned char scancode;
-
-    /* Read from the keyboard's data buffer */
-    scancode = in(0x60);
-
-    /* If the top bit of the byte we read from the keyboard is
-    *  set, that means that a key has just been released */
-    if (scancode & 0x80)
-    {
-        /* You can use this one to see if the user released the
-        *  shift, alt, or control keys... */
-    }
-    else
-    {
-        /* Here, a key was just pressed. Please note that if you
-        *  hold a key down, you will get repeated key press
-        *  interrupts. */
-
-        /* Just to show you how this works, we simply translate
-        *  the keyboard scancode into an ASCII value, and then
-        *  display it to the screen. You can get creative and
-        *  use some flags to see if a shift is pressed and use a
-        *  different layout, or you can add another 128 entries
-        *  to the above layout to correspond to 'shift' being
-        *  held. If shift is held using the larger lookup table,
-        *  you would add 128 to the scancode when you look for it */
-        printc(kbdus[scancode]);
-    }
+	while (1)
+	{
+		/* Read from the keyboard's data buffer */
+		scancode = in(0x60);
+		if (scancode & 0x80)
+		{
+		}
+		else
+		{
+			printc(kbdus[scancode]);
+		}
+		__asm__("iret");
+	}
 }
 
-//This didn't really go anywhere:
-void put_gd (gd_label which, unsigned long base, unsigned long limit, unsigned char access, unsigned char attribs) 
-{
-	//return;
-	struct segment_descriptor * item = &(gdt[which]);
-	item->base_l = base & 0xFFFF;
-	item->base_m = (base >> 16) & 0xFF;
-	item->base_h = base >> 24;
-	item->limit = limit & 0xFFFF;
-	item->attribs = attribs | ((limit >> 16) & 0x0F);
-	item->access = access;
-}
-void setup_gdt()
-{
-	put_gd(tank_code, 0, 0xffff, ACS_CODE, 0);
-	return;
-	put_gd(tank_data, 0, 0xffff, ACS_DATA, 0);
-	dump_mem((unsigned char*)gdt, 3*8);
-loop:
-		goto loop;
-}

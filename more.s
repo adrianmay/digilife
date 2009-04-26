@@ -39,11 +39,6 @@ start:
 	cli                     ; Disable interrupts, we want to be alone
 		mov ax, 0
 		mov ds, ax
-;        mov ax, 0b800h
-;        mov ds, ax              ; Set DS-register to 0 - used by lgdt
-;	    mov ebx, 0h
-;	    mov ax, 0f41h
-;	    mov [ds:ebx], ax
         mov ax, hack_from
         mov [hack_to], ax
         mov ax, spare_stack_block
@@ -67,10 +62,6 @@ clear_pipe:
         mov ss, ax              
         mov esp, 1020   ; 
 
-;    mov edx, 0b8000h
-;    mov ax, 0f42h
-;    mov [ds:edx], ax
-    call printfoo;
 	call enable_A20
 	call remap_ints
 	lidt [idt_ptr];
@@ -79,7 +70,7 @@ clear_pipe:
 
 jump_tank:
 	pop ax
-	jmp 30h:0
+	jmp 40h:0
 
 load_tsr:
         ltr     word [ss:esp+4]
@@ -328,77 +319,3 @@ idt_ptr:
 	dw idt_end - idt - 1; IDT limit
 	dd idt	; start of IDT
 
-%if 0
-
-db "GDT starts here:"
-gdt_:                    ; Address for the GDT
-
-gdt_null:               ; Null Segment
-        dd 0
-        dd 0
-
-gdt_kernel_code:               ; Code segment, read/execute, nonconforming
-        dw 0 ;       ; limit 15:0
-        dw 0            ; base 15:0
-        db 0            ; base 23:16
-        db 10011010b    ; present, dpl*2, sys/code, type*4
-        db 01000001b    ; gran, 16/32, 0, avail, limit 19:16
-        db 0            ; base 31:24
-
-gdt_kernel_data:               ; Data segment, read/write, expand down
-        dw 0h        ; limit 15:0 16MB = 1000000h Bytes
-        dw 0            ; base 15:0
-        db 0            ; base 23:16
-        db 10010010b    ; present, dpl*2, sys/code, type*4
-        db 01001100b    ; gran, 16/32, 0, avail, limit 19:16 just beyond the screen
-        db 0            ; base 31:24
-
-
-gdt_tank_code:               ; Data segment, read/write, expand down
-	dw 0000h           ; limit 15:0
-	dw 0c000h            ; base 15:0
-	db 0h          ; base 23:16 from just after screen
-	db 11111010b    ; present, dpl*2, sys/code, type*4
-	db 01000001b    ; gran, 16/32, 0, avail, limit 19:16 just beyond the screen
-	db 0            ; base 31:24
-
-gdt_tank_data:               ; Data segment, read/write, expand down
-	dw 0000h           ; limit 15:0
-	dw 0c000h            ; base 15:0
-	db 0h            ; base 23:16 from just after screen
-	db 11110010b    ; present, dpl*2, sys/code, type*4
-	db 01001100b    ; gran, 16/32, 0, avail, limit 19:16 just beyond the screen
-	db 0            ; base 31:24
-		    
-gdt_kernel_tss:
-	dw 104            ; limit 15:0 
-	dw 0     ; base 15:0
-	db 0            ; base 23:16 from just after screen
-	db 10001001b    ; present, dpl*2, sys/code, type*4
-	db 00000000b    ; gran, 16/32, 0, avail, limit 19:16 
-	db 0            ; base 31:24
-
-gdt_tank_tss:
-	dw 104            ; limit 15:0 
-	dw 0     ; base 15:0
-	db 0            ; base 23:16 from just after screen
-	db 10001001b    ; present, dpl*2, sys/code, type*4
-	db 00000000b    ; gran, 16/32, 0, avail, limit 19:16 
-	db 0            ; base 31:24
-
-gdt_keyboard_tss:
-	dw 104            ; limit 15:0 
-	dw 0     ; base 15:0
-	db 0            ; base 23:16 from just after screen
-	db 10001001b    ; present, dpl*2, sys/code, type*4
-	db 00000000b    ; gran, 16/32, 0, avail, limit 19:16 
-	db 0            ; base 31:24
-
-gdt_end_:                ; Used to calculate the size of the GDT
-db ":GDT ended there"
-
-gdt_desc_:                       ; The GDT descriptor
-        dw gdt_end_ - gdt_ - 1    ; Limit (size)
-        dd gdt_                  ; Address of the GDT
-%endif
-	

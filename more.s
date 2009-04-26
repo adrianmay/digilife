@@ -10,12 +10,14 @@
 [global isr_nothing]
 [global start_interrupts]
 [global jump_tank]
+[global keyboard_task_loop]
 [extern kernel_stack_base]
 [extern spare_stack_block]
 [extern printfoo]
 [extern printbar]
 [extern printn]
 [extern interrupt_handler]
+[extern keyboard_handler]
 [extern setup_gdt]
 [extern main]
 [extern tss_kernel]
@@ -70,7 +72,7 @@ clear_pipe:
 
 jump_tank:
 	pop ax
-	jmp 40h:0
+	jmp 60h:0
 
 load_tsr:
         ltr     word [ss:esp+4]
@@ -148,35 +150,6 @@ a20wait2:
         jz      a20wait2
         ret
 
-; obsolete...
-put_handler:
-	push ebx	; save
-	push edx	; registers
-	push eax	; that will 
-	push ebp	; be changed
-
-	mov ebp, esp
-	mov ebx, [ss:ebp + 20]	; interrupt number
-	mov eax, [ss:ebp + 24]	; interrupt handler
-	mov edx, idt	; idt location
-
-	; change address of handler
-	shl ebx, 3	; need to multiply by 8
-	mov [edx + ebx], ax	; low offset
-	shr eax, 16
-	mov [edx + ebx + 6], ax	; high offset
-
-	; change flags
-	mov ax, [ss:ebp + 28]	; gate flags
-	mov [edx + ebx + 4], ax
-	
-	pop ebp	; restore 
-	pop eax	; registers 
-	pop edx	; that were 
-	pop ebx	; changed	
-	
-	ret	; return to caller
-
 crash:
 ;        mov eax, [0xffffffff]
 ;	int 3
@@ -207,7 +180,9 @@ isr_head_%1:
 %endmacro
 
 isr_nothing:
+    call printbar
     iret
+    jmp isr_nothing
     
 isr_common:
     pusha
@@ -242,6 +217,37 @@ no_more_acks:
     popa
     add esp, 8     ; Cleans up the pushed error code and pushed ISR number
     iret           ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP!
+
+keyboard_task_loop:
+	cli
+	call printbar
+	push  0
+	push  33
+    pusha
+    push ds
+    push es
+    push fs
+    push gs
+    mov ax, 0x10   ; Load the Kernel Data Segment descriptor!
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    call keyboard_handler
+    pop gs
+    pop fs
+    pop es
+    pop ds
+
+    mov al, 20h
+    out 20h, al
+
+    popa
+    add esp, 8     ; Cleans up the pushed error code and pushed ISR number
+    sti
+    iret           ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP!
+    jmp keyboard_task_loop
+
 
 
 ; These functions are what the IDT entries point at...
@@ -288,7 +294,8 @@ SECTION .data
 %macro idt_entry 1
 	dw isr_head_%1
 	dw 08h
-	dw 0xee00
+	db 0
+	db 0eeh
 	dw 0
 %endmacro
 
@@ -298,13 +305,18 @@ idt:
 %assign i 0
 %rep 32
 idt_entry i
-%assign i i+1
+%assign i i+1 
 %endrep
 
 idt_entry i ;timer
 %assign i i+1
 
-idt_entry i ;keyboard
+;idt_entry i ;keyboard
+dw 0 
+dw 50h
+db 0
+db 085h
+dw 0
 %assign i i+1
 
 %rep 222

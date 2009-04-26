@@ -38,7 +38,8 @@ typedef enum {null,
 	spare_stack, 
 	kernel_tss, kernel_stack, 
 	tank_tss, tank_stack, 
-	keyboard_tss, keyboard_stack, GDT_MAX} gd_label;
+	keyboard_tss, keyboard_stack, 
+	task_gate, GDT_MAX} gd_label;
 
 struct segment_descriptor {
   unsigned short 
@@ -61,8 +62,9 @@ struct segment_descriptor {
 	{STACKSIZE,0,0,0x92,0x4c,0}, //kernel stack 38
 	{0,0,0,0,0,0}, //tank tss 40
 	{0,0,0,0,0,0}, //tank stack 48
-	{0,0,0,0,0,0}, //keyboard tss
-	{0,0,0,0,0,0}, //keyboard stack
+	{0,0,0,0,0,0}, //keyboard tss 50
+	{0,0,0,0,0,0}, //keyboard stack 58
+	{0,0x40,0,0x85,0,0}, //task gate 60
 };
 
 
@@ -94,6 +96,7 @@ void setup_gdt();
 void jump_tank();
 void tank_main();
 void tank_idle();
+void keyboard_task_loop();
 void print(const char *_message);
 void printc(char c);
 void printx(unsigned char c);
@@ -117,16 +120,25 @@ const char faultmsg[32][20];
 void main()
 {
 	int a;
+	clrscr();
 	setup_tasks();
 	//put_handler(32, isr_nothing, GATE_DEFAULT);
-	clrscr();
 	printfoo();
 	jump_tank();
+main_loop:
+	printbar();
+	__asm("iret");
+	goto main_loop;
 	
-	for(;;);
 }
 
-void setup_task(int which, int ring, int cs, int ds, int ip, int ss0, int sp0, int interrupt)
+extern struct {
+  unsigned short offset_low, selector;
+  unsigned char nothing, flags;
+  unsigned short offset_high;
+} idt[256];
+
+void setup_task(int which, int ring, int cs, int ds, int ip, int ss0, int sp0, int rupt)
 {
 	struct TSS * task = &tasks[which].tss;
 	task->trace = 0;
@@ -150,16 +162,21 @@ void setup_task(int which, int ring, int cs, int ds, int ip, int ss0, int sp0, i
 	gdt[GDT_TASKS+1+which*2].access=0x92+(ring<<5);
 	gdt[GDT_TASKS+1+which*2].attribs=0x40;
 	gdt[GDT_TASKS+1+which*2].base_h=0;
-	
-//	if (interrupt>=0)
-//		idt[interrupt]
+	/*
+	if (rupt>=0)
+	{
+		idt[rupt].selector=8*(GDT_TASKS+which*2);
+		idt[rupt].flags=0xe5;
+		idt[rupt].offset_high = idt[rupt].offset_low = idt[rupt].nothing = 0;
+	}
+	* */
 }
 
 void setup_tasks()
 {
 	setup_task(0, 0, kernel_code, kernel_data, 0, 0, 0, -1);
 	setup_task(1, 3, tank_code, tank_data, tank_main, spare_stack, STACKSIZE-4, -1);
-	setup_task(2, 0, kernel_code, kernel_data, keyboard_handler,0,0, 33);
+	setup_task(2, 0, kernel_code, kernel_data, isr_nothing/*keyboard_task_loop*/, spare_stack, STACKSIZE-4,33);
 	
 }
 
@@ -400,18 +417,14 @@ unsigned char scancode;
 
 void keyboard_handler()
 {
-	while (1)
+	/* Read from the keyboard's data buffer */
+	scancode = in(0x60);
+	if (scancode & 0x80)
 	{
-		/* Read from the keyboard's data buffer */
-		scancode = in(0x60);
-		if (scancode & 0x80)
-		{
-		}
-		else
-		{
-			printc(kbdus[scancode]);
-		}
-		__asm__("iret");
+	}
+	else
+	{
+		printc(kbdus[scancode]);
 	}
 }
 

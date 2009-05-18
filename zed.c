@@ -162,21 +162,21 @@ void setup_task(int which, int ring, int cs, int ds, int ip, int ss0, int sp0, i
 	gdt[GDT_TASKS+1+which*2].access=0x92+(ring<<5);
 	gdt[GDT_TASKS+1+which*2].attribs=0x40;
 	gdt[GDT_TASKS+1+which*2].base_h=0;
-	/*
+	
 	if (rupt>=0)
 	{
 		idt[rupt].selector=8*(GDT_TASKS+which*2);
 		idt[rupt].flags=0xe5;
 		idt[rupt].offset_high = idt[rupt].offset_low = idt[rupt].nothing = 0;
 	}
-	* */
+	
 }
 
 void setup_tasks()
 {
 	setup_task(0, 0, kernel_code, kernel_data, 0, 0, 0, -1);
 	setup_task(1, 3, tank_code, tank_data, tank_main, spare_stack, STACKSIZE-4, -1);
-	setup_task(2, 0, kernel_code, kernel_data, isr_nothing/*keyboard_task_loop*/, spare_stack, STACKSIZE-4,33);
+	setup_task(2, 0, kernel_code, kernel_data, keyboard_task_loop, spare_stack, STACKSIZE-4,33);
 	
 }
 
@@ -421,9 +421,11 @@ void keyboard_handler()
 	scancode = in(0x60);
 	if (scancode & 0x80)
 	{
+  		print("I'm soooo new ");
 	}
 	else
 	{
+  		print("I'm soooo new 2 ");
 		printc(kbdus[scancode]);
 	}
 }

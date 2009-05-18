@@ -48,7 +48,7 @@ int main(int argnr, char *args[])
     fclose(input);
   }
   printf("Total sectors=%d\n", total_sectors);
-  fseek(output, 509, SEEK_SET);
+  fseek(output, 508, SEEK_SET);
   fwrite((char*)&total_sectors, 1, 1, output);
   fclose(output);
   return 0;

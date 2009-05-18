@@ -1,0 +1,70 @@
+#!/usr/bin/vmplayer
+.encoding = "UTF-8"
+
+# Filename: zed.vmx
+# Generated 2009-05-18;15:58:18 by EasyVMX!
+# http://www.easyvmx.com
+
+# This is a Workstation 5 or 5.5 config file
+# It can be used with Player
+config.version = "8"
+virtualHW.version = "4"
+
+# Selected operating system for your virtual machine
+guestOS = "other"
+
+# displayName is your own name for the virtual machine
+displayName = "zed"
+
+# These fields are free text description fields
+annotation = "zed"
+guestinfo.vmware.product.long = "zed"
+guestinfo.vmware.product.class = "virtual machine"
+
+# Number of virtual CPUs. Your virtual machine will not
+# work if this number is higher than the number of your physical CPUs
+numvcpus = "1"
+
+# Memory size and other memory settings
+memsize = "512"
+MemAllowAutoScaleDown = "FALSE"
+MemTrimRate = "-1"
+
+# Unique ID for the virtual machine will be created
+uuid.action = "create"
+
+# Remind to install VMware Tools
+# This setting has no effect in VMware Player
+tools.remindInstall = "FALSE"
+
+# Startup hints interfers with automatic startup of a virtual machine
+# This setting has no effect in VMware Player
+hints.hideAll = "TRUE"
+
+# Enable time synchronization between computer
+# and virtual machine
+tools.syncTime = "TRUE"
+
+
+# Logging
+# This config activates logging, and keeps last log
+logging = "TRUE"
+log.fileName = "zed.vmware.log"
+log.append = "TRUE"
+log.keepOld = "3"
+
+# Settings for physical floppy drive
+floppy0.fileType = "file"
+floppy0.fileName = "/home/ad/Gitwork/digilife/zed.img"
+floppy0.clientDevice = "FALSE"
+
+# END OF EasyVMX! CONFIG
+
+extendedConfigFile = "zed.vmxf"
+
+virtualHW.productCompatibility = "hosted"
+tools.upgrade.policy = "manual"
+
+uuid.location = "56 4d ec 28 26 c8 86 59-da 79 7d 74 9a f4 02 9e"
+uuid.bios = "56 4d ec 28 26 c8 86 59-da 79 7d 74 9a f4 02 9e"
+vmotion.checkpointFBSize = "16777216"

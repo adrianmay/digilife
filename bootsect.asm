@@ -2,7 +2,10 @@
 
 [ORG 0x7C00]    ; The BIOS loads the boot sector into memory location 0x7C00
 
-
+	mov ax, cs
+	mov ss, ax
+	mov ds, ax
+    
 reset_drive:
         mov ah, 0               ; RESET-command
         int 13h                 ; Call interrupt 13h
@@ -22,14 +25,28 @@ reset_drive:
         or ah, ah               ; Check for error code
         jnz reset_drive         ; Try again if ah != 0
 	
-	
+	mov ax, 0xb800
+	mov es, ax
+	mov ax, 80
+	mov di, ax
+	mov al, [length]
+	add al, 0x20
+	mov [es:di], al
+
+stophere:
 	jmp 0x8000
+
+fowia:
+    pop bx
+    push bx
+    ret
+	
 	
 
 
 
-times 509-($-$$) db 0           ; Fill up the file with zeros
+times 508-($-$$) db 0           ; Fill up the file with zeros
 length:
-	db 0
+	dw 2
         dw 0AA55h                ; Boot sector identifyer
 

@@ -63,6 +63,7 @@ clear_pipe:
         mov ax, 38h
         mov ss, ax              
         mov esp, 1020   ; 
+        
 
 	call enable_A20
 	call remap_ints
@@ -152,7 +153,7 @@ a20wait2:
 
 crash:
 ;        mov eax, [0xffffffff]
-;	int 3
+	int 32
 	ret
 	mov ax, 8
 	mov  ds, ax

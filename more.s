@@ -30,7 +30,7 @@
 [extern hack_to]
 [extern hack_too]
 
-; disk=0, track=0..79, head=0..1, sector=1..18
+
 
 ALIGN 8
 
@@ -62,7 +62,7 @@ clear_pipe:
         mov gs, ax              
         mov ax, 38h
         mov ss, ax              
-        mov esp, 1020   ; 
+        mov esp, 1024   ; 
         
 
 	call enable_A20
@@ -300,6 +300,14 @@ SECTION .data
 	dw 0
 %endmacro
 
+%macro idt_entry_ring0 1
+	dw isr_head_%1
+	dw 08h
+	db 0
+	db 08eh
+	dw 0
+%endmacro
+
 db "IDT starts here:"
 
 idt:
@@ -309,7 +317,7 @@ idt_entry i
 %assign i i+1 
 %endrep
 
-idt_entry i ;timer
+idt_entry_ring0 i ;timer
 %assign i i+1
 
 ;idt_entry i ;keyboard
@@ -331,4 +339,5 @@ db ":IDT ended there:"
 idt_ptr:
 	dw idt_end - idt - 1; IDT limit
 	dd idt	; start of IDT
+
 

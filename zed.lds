@@ -18,6 +18,7 @@ SECTIONS
 	.tank 0 :
 	AT(0xC000)
 	{
+		tanks.o (.text)
 		tank.o (.text)
 		tank.o (.data)		
 	}

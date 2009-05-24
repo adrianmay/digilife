@@ -58,6 +58,10 @@ floppy0.fileType = "file"
 floppy0.fileName = "/home/ad/Gitwork/digilife/zed.img"
 floppy0.clientDevice = "FALSE"
 
+floppy1.fileType = "file"
+floppy1.fileName = "/home/ad/Gitwork/digilife/zed.img"
+floppy1.clientDevice = "FALSE"
+
 # END OF EasyVMX! CONFIG
 
 extendedConfigFile = "zed.vmxf"
@@ -68,3 +72,5 @@ tools.upgrade.policy = "manual"
 uuid.location = "56 4d ec 28 26 c8 86 59-da 79 7d 74 9a f4 02 9e"
 uuid.bios = "56 4d ec 28 26 c8 86 59-da 79 7d 74 9a f4 02 9e"
 vmotion.checkpointFBSize = "16777216"
+
+checkpoint.vmState = "zed.vmss"

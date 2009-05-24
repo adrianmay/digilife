@@ -55,8 +55,8 @@ struct segment_descriptor {
 	{0,0,0,0,0,0}, //null
 	{0,0,0,0x9a,0x41,0}, //kernel code 8
 	{0,0,0,0x92,0x4c,0}, //kernel data 10
-	{0,0xc000,0,0xfa,0x41,0}, //tank code 18
-	{0,0xc000,0,0xf2,0x4c,0}, //tank data 20
+	{0,0xc000,0,0xfa,0x4f,0}, //tank code 18
+	{0,0xc000,0,0xf2,0x4f,0}, //tank data 20
 	{STACKSIZE,0,0,0x92,0x4c,0}, //spare stack 28
 	{0,0,0,0,0,0}, //kernel tss 30
 	{STACKSIZE,0,0,0x92,0x4c,0}, //kernel stack 38
@@ -429,4 +429,3 @@ void keyboard_handler()
 		printc(kbdus[scancode]);
 	}
 }
-

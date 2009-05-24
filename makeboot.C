@@ -5,7 +5,7 @@ int main(int argnr, char *args[])
 {
   int total_sectors = -1;
   FILE *output, *input;
-  int i, bytes_read, sectors_read, bytes_from_file;
+  int i, bytes_read, sectors, bytes_from_file;
   char buffer[512];
 
   if (argnr < 4) {
@@ -28,7 +28,7 @@ int main(int argnr, char *args[])
 
     bytes_read = 512;
     bytes_from_file = 0;
-    sectors_read = 0;
+    sectors = 0;
     while(bytes_read == 512 && !feof(input)) {
       bytes_read = fread(buffer, 1, 512, input);
 
@@ -38,16 +38,25 @@ int main(int argnr, char *args[])
       if (bytes_read != 512)
         memset(buffer+bytes_read, 0, 512-bytes_read);
 
-      sectors_read++;
+      sectors++;
       fwrite(buffer, 1, 512, output);
       bytes_from_file += bytes_read;
     }
 
-    printf("%d sectors, %d bytes read from file %s...\n", sectors_read, bytes_from_file, args[i]);
-    total_sectors+=sectors_read;
+    printf("%d sectors, %d bytes read from file %s...\n", sectors, bytes_from_file, args[i]);
+    total_sectors+=sectors;
     fclose(input);
   }
-  printf("Total sectors=%d\n", total_sectors);
+  memset(buffer, 0, 512);
+  for (sectors=total_sectors+1;sectors<2880;sectors++)
+  {
+  	int leng;
+  	fseek(output, sectors*512, SEEK_SET);
+  	sprintf(buffer, "  Sector = %d    %n", sectors, &leng);
+  	for (i=leng;i>=0;i--)
+  		*((short*)(buffer+i*2))=buffer[i]+0x0f00;
+  	fwrite(buffer, 1, 512, output);
+  }
   fseek(output, 508, SEEK_SET);
   fwrite((char*)&total_sectors, 1, 1, output);
   fclose(output);

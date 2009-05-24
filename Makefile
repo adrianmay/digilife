@@ -11,12 +11,12 @@ COMPILE = $(CC) $(CFLAGS) -c
 LINK = $(CCL) $(LINKFLAGS) 
 ASSEMBLE = $(ASM) $(ASMFLAGS)
 
-all: $(TARGET).img
+all: $(TARGET).img restore
 
 makeboot.exe: makeboot.C Makefile
 	gcc -o makeboot.exe -x c makeboot.C -x none
 
-OBJFILES := more.o zed.o tank.o
+OBJFILES := more.o zed.o tank.o tanks.o
 
 $(TARGET).img: makeboot.exe bootsect.bin kernel.bin
 	./makeboot.exe $(TARGET).img bootsect.bin kernel.bin
@@ -37,10 +37,12 @@ kernel.bin: kernel.o
 bootsect.bin: bootsect.asm
 	$(ASSEMBLE) -o $@ $<
 
-clean:
+restore: 
+	rm nvram *.log *.vmsd *.vmem *.vmss *.vmxf 2> /dev/null;  true
+clean: restore
 	rm *.exe *.o *.img *.bin *.map *~ 2> /dev/null;  true
  
 run: 
-	/usr/bin/vmware zed.vmx
+	/usr/bin/vmplayer zed.vmx
 	
 	

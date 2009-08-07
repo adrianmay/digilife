@@ -219,31 +219,31 @@ void interrupt_handler(struct registers r)
 {
     /* Is this a fault whose number is from 0 to 31? */
     if (0) ;
-    else if (r.int_no==32)
+    else if (r.int_no==32) //timer
     {
 	    ticks = (ticks+1)%100;
 	    if (!ticks)
 	    {
 		print("tock ");
-		r.eip=(rand()%80) * 1000;
+		r.eip=(rand()%80) * 0x100;
 	    }
     }
-    else if (r.int_no==13)
+/*    else if (r.int_no==13) //GP
     {
 	print(" GP ");
 	ticks = (ticks+1)%100;
 	r.eip=tank_main;
-    }
-    else if (r.int_no==33)
-	    old_keyboard_handler();
+    }*/
+    else if (r.int_no==33) //Keyboard
+	    old_keyboard_handler(); //IDT doesn't point here anymore, there's a task gate instead
     else if (r.int_no < 32)
     {
         /* Display the description for the Exception that occurred.
         *  In this tutorial, we will simply halt the system using an
         *  infinite loop */
         print(faultmsg[r.int_no]);
-        print(" Exception. System Halted!\n");
-        for (;;);
+        print(" Exception. Jumping in!\n");
+        r.eip=tank_main;
     }
 }
 

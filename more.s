@@ -257,29 +257,29 @@ db "Frontline interrupt handlers are here:"
 %assign i 0
 
 %rep 8
-isr_frontline_nopushdummy i
-%assign i i+1
-%endrep
-
-isr_frontline_pushdummy i 
-%assign i i+1
-isr_frontline_nopushdummy i
-%assign i i+1
-
-%rep 5
 isr_frontline_pushdummy i
 %assign i i+1
 %endrep
 
 isr_frontline_nopushdummy i 
 %assign i i+1
-isr_frontline_nopushdummy i 
+isr_frontline_pushdummy i
+%assign i i+1
+
+%rep 5
+isr_frontline_nopushdummy i
+%assign i i+1
+%endrep
+
+isr_frontline_pushdummy i 
 %assign i i+1
 isr_frontline_pushdummy i 
 %assign i i+1
-isr_frontline_nopushdummy i
+isr_frontline_nopushdummy i 
 %assign i i+1
-isr_frontline_nopushdummy i
+isr_frontline_pushdummy i
+%assign i i+1
+isr_frontline_pushdummy i
 %assign i i+1
 
 ; hardware interrputs to end

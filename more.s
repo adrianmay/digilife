@@ -39,8 +39,8 @@ SECTION .text
 start:
 
 	cli                     ; Disable interrupts, we want to be alone
-		mov ax, 0
-		mov ds, ax
+	mov ax, 0
+	mov ds, ax
         mov ax, hack_from
         mov [hack_to], ax
         mov ax, spare_stack_block
@@ -221,7 +221,7 @@ no_more_acks:
 
 keyboard_task_loop:
 	cli
-	call printbar
+	;call printbar
 	push  0
 	push  33
     pusha

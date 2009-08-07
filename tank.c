@@ -2,7 +2,7 @@ extern void crash();
 char tank_stack[1000];
 char tank_stack0[1000];
 unsigned char * p = 0xB8000-0xc000; 
- 
+
 void tank_idle()
 {
 	*p='T';
@@ -15,7 +15,6 @@ void flash()
 	static int count=10;
 	if (!--count);
 	//crash();
-	
 }
 
 void tank_main()

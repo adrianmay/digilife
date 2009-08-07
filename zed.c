@@ -32,6 +32,35 @@ struct Task
 } tasks[3];
 const void * hack_from=&tasks[0].stack;
 
+/* Access byte's flags */
+#define ACS_PRESENT     0x80            /* present segment */
+#define ACS_PRIV_0		0
+#define ACS_PRIV_1		0x20
+#define ACS_PRIV_2		0x40
+#define ACS_PRIV_3		0x60
+#define ACS_CSEG        0x18            /* code segment */
+#define ACS_DSEG        0x10            /* data segment */
+#define ACS_CONFORM     0x04            /* conforming segment */
+#define ACS_READ        0x02            /* readable segment */
+#define ACS_WRITE       0x02            /* writable segment */
+#define ACS_GRAN		0x8000
+#define ACS_32BIT		0x4000
+#define ACS_CODE        (ACS_PRESENT | ACS_CSEG | ACS_READ | ACS_32BIT) //409a
+#define ACS_DATA        (ACS_PRESENT | ACS_DSEG | ACS_WRITE | ACS_32BIT) //4092
+#define ACS_STACK       (ACS_PRESENT | ACS_DSEG | ACS_WRITE | ACS_32BIT) //4092
+#define ACS_LIMH_1	0x100
+#define ACS_LIMH_2	0x200
+#define ACS_LIMH_4	0x400
+#define ACS_LIMH_8	0x800
+#define ACS_LIMH_C	(ACS_LIMH_8+ACS_LIMH_4)
+#define ACS_LIMH_F	(ACS_LIMH_C+ACS_LIMH_2+ACS_LIMH_1)
+#define ACS_LDT (ACS_PRESENT+2)
+#define ACS_TASK_STATE (ACS_PRESENT+9)
+#define ACS_TASK_GATE (ACS_PRESENT+5)
+#define ACS_CALL_GATE (ACS_PRESENT+0x0c)
+#define ACS_RUPT_GATE (ACS_PRESENT+0x0e)
+#define ACS_TRAP_GATE (ACS_PRESENT+0x0f)
+
 typedef enum {null, 
 	kernel_code, kernel_data, 
 	tank_code, tank_data, 
@@ -42,29 +71,26 @@ typedef enum {null,
 	task_gate, GDT_MAX} gd_label;
 
 struct segment_descriptor {
-  unsigned short 
-	limit,
-	base_l;
-  unsigned char 
-	base_m,
-	access,
-	attribs,
-	base_h;
+	unsigned short 	limit; 
+	unsigned short 	base_l;
+	unsigned char 	base_m;	
+	unsigned short 	flags;
+	unsigned char 	base_h;
 } gdt[GDT_MAX]=
 {
-	{0,0,0,0,0,0}, //null
-	{0,0,0,0x9a,0x41,0}, //kernel code 8
-	{0,0,0,0x92,0x4c,0}, //kernel data 10
-	{0,0xc000,0,0xfa,0x4f,0}, //tank code 18
-	{0,0xc000,0,0xf2,0x4f,0}, //tank data 20
-	{STACKSIZE,0,0,0x92,0x4c,0}, //spare stack 28
-	{0,0,0,0,0,0}, //kernel tss 30
-	{STACKSIZE,0,0,0x92,0x4c,0}, //kernel stack 38
-	{0,0,0,0,0,0}, //tank tss 40
-	{0,0,0,0,0,0}, //tank stack 48
-	{0,0,0,0,0,0}, //keyboard tss 50
-	{0,0,0,0,0,0}, //keyboard stack 58
-	{0,0x40,0,0x85,0,0}, //task gate 60
+	{0,0,0,0,0}, //null
+	{0,0,0,ACS_CODE+ACS_LIMH_1,0}, //kernel code 8
+	{0,0,0,ACS_DATA+ACS_LIMH_C,0}, //kernel data 10
+	{0,0xc000,0,ACS_CODE+ACS_PRIV_3+ACS_LIMH_F,0}, //tank code 18
+	{0,0xc000,0,ACS_DATA+ACS_PRIV_3+ACS_LIMH_F,0}, //tank data 20
+	{STACKSIZE,0,0,ACS_STACK+ACS_LIMH_C,0}, //spare stack 28
+	{0,0,0,0,0}, //kernel tss 30
+	{STACKSIZE,0,0,ACS_STACK+ACS_LIMH_C,0}, //kernel stack 38
+	{0,0,0,0,0}, //tank tss 40
+	{0,0,0,0,0}, //tank stack 48
+	{0,0,0,0,0}, //keyboard tss 50
+	{0,0,0,0,0}, //keyboard stack 58
+	{0,0x40,0,0x85,0}, //task gate ke60
 };
 
 
@@ -78,16 +104,6 @@ struct {
 } gdt_desc={GDT_MAX*8-1, &gdt};
 
 
-/* Access byte's flags */
-#define ACS_PRESENT     0x80            /* present segment */
-#define ACS_CSEG        0x18            /* code segment */
-#define ACS_DSEG        0x10            /* data segment */
-#define ACS_CONFORM     0x04            /* conforming segment */
-#define ACS_READ        0x02            /* readable segment */
-#define ACS_WRITE       0x02            /* writable segment */
-#define ACS_CODE        (ACS_PRESENT | ACS_CSEG | ACS_READ)
-#define ACS_DATA        (ACS_PRESENT | ACS_DSEG | ACS_WRITE)
-#define ACS_STACK       (ACS_PRESENT | ACS_DSEG | ACS_WRITE)
 
 unsigned char in(unsigned short _port);
 void out(unsigned short _port, unsigned char _data);
@@ -152,15 +168,13 @@ void setup_task(int which, int ring, int cs, int ds, int ip, int ss0, int sp0, i
 	gdt[GDT_TASKS+which*2].limit=104;
 	gdt[GDT_TASKS+which*2].base_l=task;
 	gdt[GDT_TASKS+which*2].base_m=0;
-	gdt[GDT_TASKS+which*2].access=0x89;
-	gdt[GDT_TASKS+which*2].attribs=0;
+	gdt[GDT_TASKS+which*2].flags=ACS_TASK_STATE;
 	gdt[GDT_TASKS+which*2].base_h=0;
 
 	gdt[GDT_TASKS+1+which*2].limit=STACKSIZE;
 	gdt[GDT_TASKS+1+which*2].base_l=&tasks[which].stack;
 	gdt[GDT_TASKS+1+which*2].base_m=0;
-	gdt[GDT_TASKS+1+which*2].access=0x92+(ring<<5);
-	gdt[GDT_TASKS+1+which*2].attribs=0x40;
+	gdt[GDT_TASKS+1+which*2].flags=ACS_DATA+(ring<<5);
 	gdt[GDT_TASKS+1+which*2].base_h=0;
 	
 	if (rupt>=0)
@@ -175,8 +189,8 @@ void setup_task(int which, int ring, int cs, int ds, int ip, int ss0, int sp0, i
 void setup_tasks()
 {
 	setup_task(0, 0, kernel_code, kernel_data, 0, 0, 0, -1);
-	setup_task(1, 3, tank_code, tank_data, tank_main, spare_stack, STACKSIZE-4, -1);
-	setup_task(2, 0, kernel_code, kernel_data, keyboard_task_loop, spare_stack, STACKSIZE-4,33);
+	setup_task(1, 3, tank_code, tank_data, tank_main, spare_stack, STACKSIZE, -1);
+	setup_task(2, 0, kernel_code, kernel_data, keyboard_task_loop, spare_stack, STACKSIZE,33);
 	
 }
 
@@ -421,11 +435,11 @@ void keyboard_handler()
 	scancode = in(0x60);
 	if (scancode & 0x80)
 	{
-  		print("I'm soooo new ");
+  		print("^");
 	}
 	else
 	{
-  		print("I'm soooo new 2 ");
+  		print("_");
 		printc(kbdus[scancode]);
 	}
 }

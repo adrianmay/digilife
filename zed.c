@@ -1,4 +1,7 @@
 #pragma pack (push, 1)
+unsigned long rand(void);
+void randinit();
+void madtank();
 struct registers
 {
     unsigned int gs, fs, es, ds;      /* pushed the segs last */
@@ -81,8 +84,8 @@ struct segment_descriptor {
 	{0,0,0,0,0}, //null
 	{0,0,0,ACS_CODE+ACS_LIMH_1,0}, //kernel code 8
 	{0,0,0,ACS_DATA+ACS_LIMH_C,0}, //kernel data 10
-	{0,0xc000,0,ACS_CODE+ACS_PRIV_3+ACS_LIMH_F,0}, //tank code 18
-	{0,0xc000,0,ACS_DATA+ACS_PRIV_3+ACS_LIMH_F,0}, //tank data 20
+	{0,0xd000,0,ACS_CODE+ACS_PRIV_3+ACS_LIMH_F,0}, //tank code 18
+	{0,0xd000,0,ACS_DATA+ACS_PRIV_3+ACS_LIMH_F,0}, //tank data 20
 	{STACKSIZE,0,0,ACS_STACK+ACS_LIMH_C,0}, //spare stack 28
 	{0,0,0,0,0}, //kernel tss 30
 	{STACKSIZE,0,0,ACS_STACK+ACS_LIMH_C,0}, //kernel stack 38
@@ -137,6 +140,7 @@ void main()
 {
 	int a;
 	clrscr();
+	randinit();
 	setup_tasks();
 	//put_handler(32, isr_nothing, GATE_DEFAULT);
 	printfoo();
@@ -189,7 +193,7 @@ void setup_task(int which, int ring, int cs, int ds, int ip, int ss0, int sp0, i
 void setup_tasks()
 {
 	setup_task(0, 0, kernel_code, kernel_data, 0, 0, 0, -1);
-	setup_task(1, 3, tank_code, tank_data, tank_main, spare_stack, STACKSIZE, -1);
+	setup_task(1, 3, tank_code, tank_data, madtank, spare_stack, STACKSIZE, -1);
 	setup_task(2, 0, kernel_code, kernel_data, keyboard_task_loop, spare_stack, STACKSIZE,33);
 	
 }
@@ -210,11 +214,29 @@ const char *tutorial3 = "MuOS Tutorial 3";
 *  serviced as a 'locking' mechanism to prevent an IRQ from
 *  happening and messing up kernel data structures */
 
-int ticks=0;
+int ticks;
 void interrupt_handler(struct registers r)
 {
     /* Is this a fault whose number is from 0 to 31? */
-    if (r.int_no < 32)
+    if (0) ;
+    else if (r.int_no==32)
+    {
+	    ticks = (ticks+1)%100;
+	    if (!ticks)
+	    {
+		print("tock ");
+		r.eip=(rand()%80) * 1000;
+	    }
+    }
+    else if (r.int_no==13)
+    {
+	print(" GP ");
+	ticks = (ticks+1)%100;
+	r.eip=tank_main;
+    }
+    else if (r.int_no==33)
+	    old_keyboard_handler();
+    else if (r.int_no < 32)
     {
         /* Display the description for the Exception that occurred.
         *  In this tutorial, we will simply halt the system using an
@@ -223,14 +245,6 @@ void interrupt_handler(struct registers r)
         print(" Exception. System Halted!\n");
         for (;;);
     }
-    else if (r.int_no==32)
-    {
-	    ticks = (ticks+1)%100;
-	    if (!ticks)
-		print("tock ");
-    }
-    else if (r.int_no==33)
-	    old_keyboard_handler();
 }
 
 const char faultmsg[32][20] = 

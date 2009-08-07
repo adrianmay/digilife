@@ -30,7 +30,7 @@ reset_drive:
         or ah, ah               ; Check for error code
         jnz reset_drive         ; Try again if ah != 0
 
-        mov ch, 3               ; Track/Cylinder, gonna count down and copy from read buffer to correct place
+        mov ch, 7               ; Track/Cylinder, gonna count down and copy from read buffer to correct place
 ; for some strange reason, I can't persuade int13 
 ; to load into higher places than approx 8000h
 track_loop:        

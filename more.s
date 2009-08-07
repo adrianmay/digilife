@@ -313,7 +313,7 @@ db "IDT starts here:"
 idt:
 %assign i 0
 %rep 32
-idt_entry i
+idt_entry_ring0 i
 %assign i i+1 
 %endrep
 

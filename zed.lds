@@ -5,18 +5,26 @@ SECTIONS
 	{
 		more.o (.text)
 		zed.o (.text)
-}
+		rand.o (.text)
+	}
 	KERNEL_CODE_END = .;
 	.data :
 	{
 		more.o (.data)
 		zed.o (.data)
+		rand.o (.data)
 	}
-	.bss :  { *(.bss)  *(COMMON) }
+	.bss :  
+	{ 
+		more.o (.bss)  
+		zed.o (.bss)  
+		rand.o (.bss)
+
+	}
 	KERNEL_END = .;
 	TANK_START = .;
 	.tank 0 :
-	AT(0xC000)
+	AT(0xd000)
 	{
 		tanks.o (.text)
 		tank.o (.text)

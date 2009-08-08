@@ -1,4 +1,7 @@
 #pragma pack (push, 1)
+#define TANKAT 0xd000
+#define TANKPAGES 1
+#define STACKSIZE 1024
 unsigned long rand(void);
 void randinit();
 void madtank();
@@ -10,7 +13,6 @@ struct registers
     unsigned int eip, cs, eflags, useresp, ss;   /* pushed by the processor automatically */ 
 };
 
-#define STACKSIZE 1024
 unsigned char spare_stack_block[STACKSIZE];
 
 struct TSS {        /* TSS for 386+ */
@@ -51,12 +53,7 @@ const void * hack_from=&tasks[0].stack;
 #define ACS_CODE        (ACS_PRESENT | ACS_CSEG | ACS_READ | ACS_32BIT) //409a
 #define ACS_DATA        (ACS_PRESENT | ACS_DSEG | ACS_WRITE | ACS_32BIT) //4092
 #define ACS_STACK       (ACS_PRESENT | ACS_DSEG | ACS_WRITE | ACS_32BIT) //4092
-#define ACS_LIMH_1	0x100
-#define ACS_LIMH_2	0x200
-#define ACS_LIMH_4	0x400
-#define ACS_LIMH_8	0x800
-#define ACS_LIMH_C	(ACS_LIMH_8+ACS_LIMH_4)
-#define ACS_LIMH_F	(ACS_LIMH_C+ACS_LIMH_2+ACS_LIMH_1)
+#define ACS_LIMH	0x100
 #define ACS_LDT (ACS_PRESENT+2)
 #define ACS_TASK_STATE (ACS_PRESENT+9)
 #define ACS_TASK_GATE (ACS_PRESENT+5)
@@ -82,13 +79,13 @@ struct segment_descriptor {
 } gdt[GDT_MAX]=
 {
 	{0,0,0,0,0}, //null
-	{0,0,0,ACS_CODE+ACS_LIMH_1,0}, //kernel code 8
-	{0,0,0,ACS_DATA+ACS_LIMH_C,0}, //kernel data 10
-	{0,0xd000,0,ACS_CODE+ACS_PRIV_3+ACS_LIMH_1,0}, //tank code 18
-	{0,0xd000,0,ACS_DATA+ACS_PRIV_3+ACS_LIMH_1,0}, //tank data 20
-	{STACKSIZE,0,0,ACS_STACK+ACS_LIMH_C,0}, //spare stack 28
+	{0,0,0,ACS_CODE+ACS_LIMH,0}, //kernel code 8
+	{0,0,0,ACS_DATA+ACS_LIMH*0x0c,0}, //kernel data 10
+	{0,TANKAT,0,ACS_CODE+ACS_PRIV_3+ACS_LIMH*TANKPAGES,0}, //tank code 18
+	{0,TANKAT,0,ACS_DATA+ACS_PRIV_3+ACS_LIMH*TANKPAGES,0}, //tank data 20
+	{STACKSIZE,0,0,ACS_STACK+ACS_LIMH*0x0c,0}, //spare stack 28
 	{0,0,0,0,0}, //kernel tss 30
-	{STACKSIZE,0,0,ACS_STACK+ACS_LIMH_C,0}, //kernel stack 38
+	{STACKSIZE,0,0,ACS_STACK+ACS_LIMH*0x0c,0}, //kernel stack 38
 	{0,0,0,0,0}, //tank tss 40
 	{0,0,0,0,0}, //tank stack 48
 	{0,0,0,0,0}, //keyboard tss 50
@@ -120,6 +117,7 @@ void keyboard_task_loop();
 void print(const char *_message);
 void printc(char c);
 void printx(unsigned char c);
+void set_cursor(unsigned short offset);
 void printfoo();
 void printbar();
 void isr_nothing();
@@ -137,11 +135,19 @@ void load_tsr (unsigned int selector);
 
 const char faultmsg[32][20];
 
+void nuketank()
+{
+	int i;
+	for (i=0;i<0x10000*TANKPAGES/4;i++)
+		((unsigned int*)(TANKAT))[i]=rand();
+}
+
 void main()
 {
 	int a;
 	clrscr();
 	randinit();
+	//nuketank();
 	setup_tasks();
 	//put_handler(32, isr_nothing, GATE_DEFAULT);
 	printfoo();
@@ -212,6 +218,21 @@ void scrcpy(char * dest, const char * src, int len)
 	while(len--) {*dest++ = *src++;dest++;}
 }
 
+extern int histogram[256];
+void do_histogram()
+{
+	int i;
+	for (i=0;i<256;i++) histogram[i]=0;
+	for (i=0;i<0x10000*TANKPAGES;i++)
+		histogram[*(unsigned char*)(TANKAT+i)]++;
+	clrscr();
+	for (i=0;i<256;i++)
+	{
+		set_cursor(5*i);
+		printn(histogram[i]);
+	}
+}
+
 const char *tutorial3 = "MuOS Tutorial 3";
 /* All of our Exception handling Interrupt Service Routines will
 *  point to this function. This will tell us what exception has
@@ -221,8 +242,6 @@ const char *tutorial3 = "MuOS Tutorial 3";
 
 int ticks;
 unsigned int ip;
-void put_screen_1();
-void put_screen_2();
 void interrupt_handler(struct registers r)
 {
     /* Is this a fault whose number is from 0 to 31? */
@@ -237,7 +256,8 @@ void interrupt_handler(struct registers r)
 		print("tock ");
 		//should do some frying here too
 		r.eip=r.esi=(rand()%80) * 0x100;
-		//ip is normally hard for code to read to help out with si.
+//		r.eip=0;
+   		//ip is normally hard for code to read to help out with si.
 	    }
 	    
     }
@@ -246,19 +266,22 @@ void interrupt_handler(struct registers r)
         /* Display the description for the Exception that occurred.
         *  In this tutorial, we will simply halt the system using an
         *  infinite loop */
-        print(faultmsg[r.int_no]);
+	//set_cursor(0);
+        scrcpy(0xb8000,&faultmsg[r.int_no], 20);
 	ip = r.eip ;
-	scrcpy(0xb8000+10*2*80, 0xd000+190, 80);
+	//scrcpy(0xb8000+10*2*80, 0xd000+190, 80);
 	//Fry the offending instruction
+	    /*
 	__asm__ (	"mov $0x20, %ax\n\t"
 			"mov %ax, %fs\n\t"
 			"mov ip, %edi\n\t"
 			"call rand\n\t"
 			"mov %eax, %fs:(%edi)" );
-
-        print(" exception. Jumping in!\n");
-	scrcpy(0xb8000+12*2*80, 0xd000+190, 80);
+*/
+        //print(" exception. Jumping in!\n");
+	//scrcpy(0xb8000+12*2*80, 0xd000+190, 80);
         r.eip=r.esi=(rand()%80) * 0x100;//r.eip=tank_main;
+//	r.eip=r.esi=0;
     }
 }
 
@@ -358,6 +381,14 @@ void printx(unsigned char n)
 	else
 		printc('0'+hi);
 	printc(' ');
+}
+
+void set_cursor(unsigned short offset)
+{
+  out(0x3D4, 15);
+  out(0x3D5, (unsigned char)(offset));
+  out(0x3D4, 14);
+  out(0x3D5, (unsigned char)(offset >> 8));
 }
 
 void print(const char *_message)
@@ -460,6 +491,7 @@ unsigned char scancode;
 
 void keyboard_handler()
 {
+//	do_histogram();
 	/* Read from the keyboard's data buffer */
 	scancode = in(0x60);
 	if (scancode & 0x80)

@@ -1,5 +1,6 @@
 [BITS 32]
 [global madtank]
+[global histogram]
 ALIGN 8
 SECTION .text
 %macro madtank_bit 1
@@ -27,7 +28,7 @@ madtanklabel%1:
 %endmacro
 
 %macro madtank_div0 1
-    %rep 100h-25+12-26
+    %rep 100h-25+12
     nop
     %endrep
     mov bl,0
@@ -53,13 +54,17 @@ madtanklabel%1:
 %endmacro
 
 madtank:
-madtank_div0 0
-madtank_int1 1
-madtank_gp 2
-%assign i 3
-%rep 4dh
+%assign i 0
+%rep 50h
+madtank_div0 i
+%assign i i+1 
+madtank_gp i
+%assign i i+1 
 madtank_bit i
+%assign i i+1 
+madtank_div0 i
 %assign i i+1 
 %endrep
 madtankend:
 
+histogram:

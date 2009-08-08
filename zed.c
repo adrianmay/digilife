@@ -220,7 +220,6 @@ const char *tutorial3 = "MuOS Tutorial 3";
 *  happening and messing up kernel data structures */
 
 int ticks;
-int rr;
 unsigned int ip;
 void put_screen_1();
 void put_screen_2();
@@ -228,42 +227,37 @@ void interrupt_handler(struct registers r)
 {
     /* Is this a fault whose number is from 0 to 31? */
     if (0) ;
+    else if (r.int_no==33) //Keyboard
+	    old_keyboard_handler(); //IDT doesn't point here anymore, there's a task gate instead
     else if (r.int_no==32) //timer
     {
 	    ticks = (ticks+1)%100;
 	    if (!ticks)
 	    {
 		print("tock ");
+		//should do some frying here too
 		r.eip=r.esi=(rand()%80) * 0x100;
+		//ip is normally hard for code to read to help out with si.
 	    }
+	    
     }
-/*    else if (r.int_no==13) //GP
-    {
-	print(" GP ");
-	ticks = (ticks+1)%100;
-	r.eip=tank_main;
-    }*/
-    else if (r.int_no==33) //Keyboard
-	    old_keyboard_handler(); //IDT doesn't point here anymore, there's a task gate instead
     else if (r.int_no < 32)
     {
         /* Display the description for the Exception that occurred.
         *  In this tutorial, we will simply halt the system using an
         *  infinite loop */
         print(faultmsg[r.int_no]);
-	rr = rand();
-	rr = rand();
 	ip = r.eip ;
-	put_screen_1();
+	scrcpy(0xb8000+10*2*80, 0xd000+190, 80);
 	//Fry the offending instruction
 	__asm__ (	"mov $0x20, %ax\n\t"
 			"mov %ax, %fs\n\t"
 			"mov ip, %edi\n\t"
-			"mov rr, %eax\n\t"
+			"call rand\n\t"
 			"mov %eax, %fs:(%edi)" );
 
         print(" exception. Jumping in!\n");
-	put_screen_2();
+	scrcpy(0xb8000+12*2*80, 0xd000+190, 80);
         r.eip=r.esi=(rand()%80) * 0x100;//r.eip=tank_main;
     }
 }

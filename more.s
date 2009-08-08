@@ -1,8 +1,6 @@
 [BITS 16]	; protected mode
 [global start]
 [global put_handler]	
-[global put_screen_1]	
-[global put_screen_2]	
 [global idt]
 [extern gdt]
 [extern gdt_desc]
@@ -162,52 +160,6 @@ crash:
 	mov  ds, ax
 	mov byte [ds:20], 9
         ret
-
-put_screen_1: ;rep movsb ds:si es:di
-	push es
-	push ds
-	push esi
-	push edi
-	push ecx
-	push eax
-	mov ax, 0x68
-	mov es, ax
-	mov ax, 0x20
-	mov ds, ax
-	mov esi, 190
-	mov edi, 80*2*10
-	mov ecx, 160
-	rep movsb
-	pop eax
-	pop ecx
-	pop edi
-	pop esi
-	pop ds
-	pop es
-	ret
-
-put_screen_2: ;rep movsb ds:si es:di
-	push es
-	push ds
-	push esi
-	push edi
-	push ecx
-	push eax
-	mov ax, 0x68
-	mov es, ax
-	mov ax, 0x20
-	mov ds, ax
-	mov esi, 190
-	mov edi, 80*2*11
-	mov ecx, 160
-	rep movsb
-	pop eax
-	pop ecx
-	pop edi
-	pop esi
-	pop ds
-	pop es
-	ret
 
 	
 ; Need a guzzilion of these just because Intel don't tell us the interrupt number...

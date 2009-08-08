@@ -4,7 +4,7 @@ void randinit();
 void madtank();
 struct registers
 {
-    unsigned int gs, fs, es, ds;      /* pushed the segs last */
+//    unsigned int gs, fs, es, ds;      /* pushed the segs last */
     unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;  /* pushed by 'pusha' */
     unsigned int int_no, err_code;    /* our 'push byte #' and ecodes do this */
     unsigned int eip, cs, eflags, useresp, ss;   /* pushed by the processor automatically */ 
@@ -71,7 +71,7 @@ typedef enum {null,
 	kernel_tss, kernel_stack, 
 	tank_tss, tank_stack, 
 	keyboard_tss, keyboard_stack, 
-	task_gate, GDT_MAX} gd_label;
+	task_gate, screen, GDT_MAX} gd_label;
 
 struct segment_descriptor {
 	unsigned short 	limit; 
@@ -84,8 +84,8 @@ struct segment_descriptor {
 	{0,0,0,0,0}, //null
 	{0,0,0,ACS_CODE+ACS_LIMH_1,0}, //kernel code 8
 	{0,0,0,ACS_DATA+ACS_LIMH_C,0}, //kernel data 10
-	{0,0xd000,0,ACS_CODE+ACS_PRIV_3+ACS_LIMH_F,0}, //tank code 18
-	{0,0xd000,0,ACS_DATA+ACS_PRIV_3+ACS_LIMH_F,0}, //tank data 20
+	{0,0xd000,0,ACS_CODE+ACS_PRIV_3+ACS_LIMH_1,0}, //tank code 18
+	{0,0xd000,0,ACS_DATA+ACS_PRIV_3+ACS_LIMH_1,0}, //tank data 20
 	{STACKSIZE,0,0,ACS_STACK+ACS_LIMH_C,0}, //spare stack 28
 	{0,0,0,0,0}, //kernel tss 30
 	{STACKSIZE,0,0,ACS_STACK+ACS_LIMH_C,0}, //kernel stack 38
@@ -93,7 +93,8 @@ struct segment_descriptor {
 	{0,0,0,0,0}, //tank stack 48
 	{0,0,0,0,0}, //keyboard tss 50
 	{0,0,0,0,0}, //keyboard stack 58
-	{0,0x40,0,0x85,0}, //task gate ke60
+	{0,0x40,0,0x85,0}, //task gate 60
+	{80*25*2,0x8000,0xb, ACS_DATA+ACS_PRIV_3,0}, //screen 68
 };
 
 
@@ -206,6 +207,10 @@ void dump_mem(char * buf, int len)
 	printc('\n');
 }
 
+void scrcpy(char * dest, const char * src, int len)
+{
+	while(len--) {*dest++ = *src++;dest++;}
+}
 
 const char *tutorial3 = "MuOS Tutorial 3";
 /* All of our Exception handling Interrupt Service Routines will
@@ -215,6 +220,10 @@ const char *tutorial3 = "MuOS Tutorial 3";
 *  happening and messing up kernel data structures */
 
 int ticks;
+int rr;
+unsigned int ip;
+void put_screen_1();
+void put_screen_2();
 void interrupt_handler(struct registers r)
 {
     /* Is this a fault whose number is from 0 to 31? */
@@ -225,7 +234,7 @@ void interrupt_handler(struct registers r)
 	    if (!ticks)
 	    {
 		print("tock ");
-		r.eip=(rand()%80) * 0x100;
+		r.eip=r.esi=(rand()%80) * 0x100;
 	    }
     }
 /*    else if (r.int_no==13) //GP
@@ -242,8 +251,20 @@ void interrupt_handler(struct registers r)
         *  In this tutorial, we will simply halt the system using an
         *  infinite loop */
         print(faultmsg[r.int_no]);
-        print(" Exception. Jumping in!\n");
-        r.eip=tank_main;
+	rr = rand();
+	rr = rand();
+	ip = r.eip ;
+	put_screen_1();
+	//Fry the offending instruction
+	__asm__ (	"mov $0x20, %ax\n\t"
+			"mov %ax, %fs\n\t"
+			"mov ip, %edi\n\t"
+			"mov rr, %eax\n\t"
+			"mov %eax, %fs:(%edi)" );
+
+        print(" exception. Jumping in!\n");
+	put_screen_2();
+        r.eip=r.esi=(rand()%80) * 0x100;//r.eip=tank_main;
     }
 }
 

@@ -1,6 +1,8 @@
 [BITS 16]	; protected mode
 [global start]
-[global put_handler]	; called by an extern function
+[global put_handler]	
+[global put_screen_1]	
+[global put_screen_2]	
 [global idt]
 [extern gdt]
 [extern gdt_desc]
@@ -59,6 +61,7 @@ clear_pipe:
         mov ds, ax              
         mov es, ax              
         mov fs, ax              
+        mov ax, 68h             ; screen
         mov gs, ax              
         mov ax, 38h
         mov ss, ax              
@@ -160,9 +163,53 @@ crash:
 	mov byte [ds:20], 9
         ret
 
-put_screen:
-	
+put_screen_1: ;rep movsb ds:si es:di
+	push es
+	push ds
+	push esi
+	push edi
+	push ecx
+	push eax
+	mov ax, 0x68
+	mov es, ax
+	mov ax, 0x20
+	mov ds, ax
+	mov esi, 190
+	mov edi, 80*2*10
+	mov ecx, 160
+	rep movsb
+	pop eax
+	pop ecx
+	pop edi
+	pop esi
+	pop ds
+	pop es
+	ret
 
+put_screen_2: ;rep movsb ds:si es:di
+	push es
+	push ds
+	push esi
+	push edi
+	push ecx
+	push eax
+	mov ax, 0x68
+	mov es, ax
+	mov ax, 0x20
+	mov ds, ax
+	mov esi, 190
+	mov edi, 80*2*11
+	mov ecx, 160
+	rep movsb
+	pop eax
+	pop ecx
+	pop edi
+	pop esi
+	pop ds
+	pop es
+	ret
+
+	
 ; Need a guzzilion of these just because Intel don't tell us the interrupt number...
 
 %macro isr_frontline_pushdummy 1 
@@ -187,20 +234,20 @@ isr_nothing:
     
 isr_common:
     pusha
-    push ds
-    push es
-    push fs
-    push gs
     mov ax, 0x10   ; Load the Kernel Data Segment descriptor!
     mov ds, ax
     mov es, ax
+    mov ax, 0x20   ; Load the Kernel Data Segment descriptor!
     mov fs, ax
+    mov ax, 0x68   ; Screen
     mov gs, ax
     call interrupt_handler
-    pop gs
-    pop fs
-    pop es
-    pop ds
+    mov ax, 0x20   ; Load the Kernel Data Segment descriptor!
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov ax, 0x68   ; Screen
+    mov gs, ax
     mov eax, [ss:esp+32] ; int number
     ; acknowledge whichever PICs: 32-39 inclusive, just master (0x20,0x20), 40-47 also slave A0, 20
     cmp eax, 32
@@ -217,7 +264,7 @@ ack_master:
 no_more_acks:    
     popa
     add esp, 8     ; Cleans up the pushed error code and pushed ISR number
-    iret           ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP!
+    iret           ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP
 
 keyboard_task_loop:
 	cli

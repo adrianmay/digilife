@@ -76,11 +76,11 @@ typedef enum {null,
 
 unsigned char in(unsigned short _port);
 void out(unsigned short _port, unsigned char _data);
-void keyboard_handler();
+//void keyboard_handler();
 void setup_gdt();
 void jump_tank();
-void tank_main();
-void tank_idle();
+//void tank_main(); 
+//void tank_idle();
 void keyboard_task_loop();
 void print(const char *_message);
 void printn(int n);
@@ -89,21 +89,20 @@ void printx(unsigned char c);
 void set_cursor(unsigned short offset);
 void printfoo();
 void printbar();
-void isr_nothing();
-void enable_A20();
+//void isr_nothing();
+//void enable_A20();
 void clrscr();
 void setup_tasks();
-void start_interrupts();
+//void start_interrupts();
 const char *tutorial3;
 const char * foomsg;
 const char * barmsg;
 void interrupt_handler(struct registers r);
-void put_handler(unsigned int, void *, unsigned short int);//obsolete
+//void put_handler(unsigned int, void *, unsigned short int);//obsolete
 void load_tsr (unsigned int selector);
 unsigned long rand(void);
 void randinit();
 void madtank();
-void old_keyboard_handler();
 void crash();
 
 extern int histogram[256];

@@ -1,8 +1,9 @@
-extern void crash();
-char tank_stack[1000];
-char tank_stack0[1000];
-unsigned char * p = 0xB8000-0xd000; 
 
+//char tank_stack[1000];
+//char tank_stack0[1000];
+//unsigned char * p = (unsigned char *) 0xB8000-0xd000; 
+
+/*
 void tank_idle()
 {
 	*p='T';
@@ -24,4 +25,6 @@ void tank_main()
 		for (i=0;i<150000000;i++); //blimey that's fast
 	}
 }
+
+*/
 

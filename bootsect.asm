@@ -24,37 +24,37 @@
 
 reset_drive:
 
-        mov dl,0 
-        mov ah, 0               ; RESET-command
-        int 13h                 ; Call interrupt 13h
-        or ah, ah               ; Check for error code
-        jnz reset_drive         ; Try again if ah != 0
+	mov dl,0 
+	mov ah, 0               ; RESET-command
+	int 13h                 ; Call interrupt 13h
+	or ah, ah               ; Check for error code
+	jnz reset_drive         ; Try again if ah != 0
 
-        mov ch, 7               ; Track/Cylinder, gonna count down and copy from read buffer to correct place
+	mov ch, 7               ; Track/Cylinder, gonna count down and copy from read buffer to correct place
 ; for some strange reason, I can't persuade int13 
 ; to load into higher places than approx 8000h
 track_loop:        
-        mov ax, 07E0h      ; right after this boot sector is read buffer. Track 1 onwards gets moved to 8000 onwards
-        mov es, ax         ; Destination address
-        mov bx, 0          ; Destination address
-        mov dl,0           ; drive A
-        mov cl, 1               ; Sector 
-        mov dh, 0               ; Head 
-        mov ah, 2             ; READ SECTOR-command
-        mov al, 36               ; Number of sectors to read - all heads*all sectors in a track 
-        int 13h                 ; Call interrupt 13h
+	mov ax, 07E0h      ; right after this boot sector is read buffer. Track 1 onwards gets moved to 8000 onwards
+	mov es, ax         ; Destination address
+	mov bx, 0          ; Destination address
+	mov dl,0           ; drive A
+	mov cl, 1               ; Sector 
+	mov dh, 0               ; Head 
+	mov ah, 2             ; READ SECTOR-command
+	mov al, 36               ; Number of sectors to read - all heads*all sectors in a track 
+	int 13h                 ; Call interrupt 13h
 ;	mov al, [bum]		;debugging
 ;	inc al
 ;	mov [bum], al
 	mov bh, ch; save from rep copy
-        cmp ch, 0	
-        jz track_done
-        mov dh, 0 		;
-        mov dl, ch
-        mov ax, 0480h	;length of one track (/16 becasue segments)
-        mul dx
-        mov dx, 07E0h	;base of program
-        add ax, dx
+	cmp ch, 0	
+	jz track_done
+	mov dh, 0 		;
+	mov dl, ch
+	mov ax, 0480h	;length of one track (/16 becasue segments)
+	mul dx
+	mov dx, 07E0h	;base of program
+	add ax, dx
 	mov es, ax	;destination
 	mov di, 0	; for copy
 	mov ax, ds 	;save ds
@@ -71,19 +71,11 @@ track_loop:
 	jmp track_loop
 track_done:
 	jmp 0x8000
-		
-
-fowia:
-    pop bx
-    push bx
-    ret
-	
-;bum:	
-;db '@'
+			
 
 
 times 508-($-$$) db 0           ; Fill up the file with zeros
 length:
 	dw 2
-        dw 0AA55h                ; Boot sector identifyer
+    dw 0AA55h                ; Boot sector identifyer
 

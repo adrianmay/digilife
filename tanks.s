@@ -44,7 +44,7 @@ madtanklabel%1:
     %rep 100h-27+12
     nop
     %endrep
-    int 1
+    int 2
     mov ax, 0x10 
     mov ds, ax ;crash
     shl edx, 1
@@ -53,10 +53,18 @@ madtanklabel%1:
     jmp madtanklabel%1
 %endmacro
 
+%macro madtank_xxx 1
+    %rep 100h
+    db 1
+    %endrep
+madtanklabel%1:
+    jmp madtanklabel%1
+%endmacro
+
 madtank:
 %assign i 0
 %rep 50h
-madtank_div0 i
+madtank_xxx i
 %assign i i+1 
 madtank_gp i
 %assign i i+1 
@@ -67,4 +75,5 @@ madtank_div0 i
 %endrep
 madtankend:
 
-histogram:
+SECTION .data
+; histogram:

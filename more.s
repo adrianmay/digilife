@@ -1,16 +1,7 @@
 [BITS 16]	; protected mode
-[global start]
-[global put_handler]	
-[global idt]
+
 [extern gdt]
 [extern gdt_desc]
-[global idt_ptr]
-[global crash]
-[global load_tsr]
-[global isr_nothing]
-[global start_interrupts]
-[global jump_tank]
-[global keyboard_task_loop]
 [extern kernel_stack_base]
 [extern spare_stack_block]
 [extern printfoo]
@@ -18,17 +9,18 @@
 [extern printn]
 [extern interrupt_handler]
 [extern keyboard_handler]
-[extern setup_gdt]
 [extern main]
-[extern tss_kernel]
-[extern tss_tank]
-[extern KERNEL_CODE_END]
-[extern TANK_START]
-[extern TANK_END]
-[extern TANK_SIZE]
 [extern hack_from]
 [extern hack_to]
 [extern hack_too]
+
+[global start]
+[global idt]
+[global idt_ptr]
+[global crash]
+[global load_tsr]
+[global jump_tank]
+[global keyboard_task_loop]
 
 
 
@@ -55,13 +47,13 @@ start:
 				
 [BITS 32]                       ; We now need 32-bit instructions
 clear_pipe:
-        mov ax, 10h             ; Save data segment identifyer
+        mov ax, 10h             
         mov ds, ax              
         mov es, ax              
         mov fs, ax              
         mov ax, 68h             ; screen
         mov gs, ax              
-        mov ax, 38h
+        mov ax, 38h		; stack
         mov ss, ax              
         mov esp, 1024   ; 
         
@@ -178,11 +170,6 @@ isr_head_%1:
 	push  %1
 	jmp isr_common
 %endmacro
-
-isr_nothing:
-    call printbar
-    iret
-    jmp isr_nothing
     
 isr_common:
     pusha

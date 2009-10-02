@@ -27,8 +27,7 @@ SECTIONS
 	AT(0xd000)
 	{
 		tanks.o (.text)
-		tank.o (.text)
-		tank.o (.data)		
+		tanks.o (.data)
 	}
 	TANK_END = .;
 	TANK_SIZE = SIZEOF(.tank);

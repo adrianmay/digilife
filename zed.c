@@ -1,40 +1,9 @@
 #pragma pack (push, 1)
-#define TANKAT 0xd000
-#define TANKPAGES 1
-#define STACKSIZE 1024
-unsigned long rand(void);
-void randinit();
-void madtank();
-struct registers
-{
-//    unsigned int gs, fs, es, ds;      /* pushed the segs last */
-    unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;  /* pushed by 'pusha' */
-    unsigned int int_no, err_code;    /* our 'push byte #' and ecodes do this */
-    unsigned int eip, cs, eflags, useresp, ss;   /* pushed by the processor automatically */ 
-};
+#include "header.h"
 
 unsigned char spare_stack_block[STACKSIZE];
 
-struct TSS {        /* TSS for 386+ */
-	unsigned long 
-		link,
-		esp0,ss0,esp1,ss1,esp2,ss2,
-		cr3,
-		eip,
-		eflags,
-		eax,ecx,edx,ebx,
-		esp,ebp,esi,edi,
-		es,cs,ss,ds,fs,gs,
-		ldtr;
-	unsigned short  
-		trace,
-		io_map_addr;
-};
-struct Task
-{
-	struct TSS tss;
-	unsigned char stack[STACKSIZE];
-} tasks[3];
+struct Task tasks[3];
 const void * hack_from=&tasks[0].stack;
 
 /* Access byte's flags */
@@ -61,22 +30,9 @@ const void * hack_from=&tasks[0].stack;
 #define ACS_RUPT_GATE (ACS_PRESENT+0x0e)
 #define ACS_TRAP_GATE (ACS_PRESENT+0x0f)
 
-typedef enum {null, 
-	kernel_code, kernel_data, 
-	tank_code, tank_data, 
-	spare_stack, 
-	kernel_tss, kernel_stack, 
-	tank_tss, tank_stack, 
-	keyboard_tss, keyboard_stack, 
-	task_gate, screen, GDT_MAX} gd_label;
 
-struct segment_descriptor {
-	unsigned short 	limit; 
-	unsigned short 	base_l;
-	unsigned char 	base_m;	
-	unsigned short 	flags;
-	unsigned char 	base_h;
-} gdt[GDT_MAX]=
+
+struct segment_descriptor gdt[GDT_MAX]=
 {
 	{0,0,0,0,0}, //null
 	{0,0,0,ACS_CODE+ACS_LIMH,0}, //kernel code 8
@@ -98,40 +54,9 @@ struct segment_descriptor {
 const void * hack_to=&gdt[kernel_stack].base_l;
 const void * hack_too=&gdt[spare_stack].base_l;
 
-#define GDT_TASKS 6
-struct {
-	unsigned short size;
-	void * p;
-} gdt_desc={GDT_MAX*8-1, &gdt};
 
+struct gdt_descriptor gdt_desc={GDT_MAX*8-1, &gdt};
 
-
-unsigned char in(unsigned short _port);
-void out(unsigned short _port, unsigned char _data);
-void keyboard_handler();
-void setup_gdt();
-void jump_tank();
-void tank_main();
-void tank_idle();
-void keyboard_task_loop();
-void print(const char *_message);
-void printc(char c);
-void printx(unsigned char c);
-void set_cursor(unsigned short offset);
-void printfoo();
-void printbar();
-void isr_nothing();
-void enable_A20();
-void clrscr();
-void setup_tasks();
-void start_interrupts();
-const char *tutorial3;
-const char * foomsg;
-const char * barmsg;
-void interrupt_handler(struct registers r);
-void put_handler(unsigned int, void *, unsigned short int);//obsolete
-void load_tsr (unsigned int selector);
-#define GATE_DEFAULT 0x8E00
 
 const char faultmsg[32][20];
 
@@ -159,31 +84,25 @@ main_loop:
 	
 }
 
-extern struct {
-  unsigned short offset_low, selector;
-  unsigned char nothing, flags;
-  unsigned short offset_high;
-} idt[256];
-
-void setup_task(int which, int ring, int cs, int ds, int ip, int ss0, int sp0, int rupt)
+void setup_task(int which, int ring, int cs, int ds, void * ip, int ss0, int sp0, int rupt)
 {
 	struct TSS * task = &tasks[which].tss;
 	task->trace = 0;
 	task->io_map_addr = sizeof(struct TSS);
 	task->ldtr = 0;
-	task->cs = cs*8 + ring; task->eip = ip;//-gdt[cs].base_l;
+	task->cs = cs*8 + ring; task->eip = (unsigned int)ip;//-gdt[cs].base_l;
 	task->ds = task->es = task->fs = task->gs = ds*8 + ring;
 	task->ss = 8*((GDT_TASKS+1)+which*2) + ring; task->esp = STACKSIZE-4;
 	task->ss0 = ss0*8; task->esp0 = sp0;
 	task->eflags = 0x202L + (ring << 12);
 	gdt[GDT_TASKS+which*2].limit=104;
-	gdt[GDT_TASKS+which*2].base_l=task;
+	gdt[GDT_TASKS+which*2].base_l=(unsigned int)task;
 	gdt[GDT_TASKS+which*2].base_m=0;
 	gdt[GDT_TASKS+which*2].flags=ACS_TASK_STATE;
 	gdt[GDT_TASKS+which*2].base_h=0;
 
 	gdt[GDT_TASKS+1+which*2].limit=STACKSIZE;
-	gdt[GDT_TASKS+1+which*2].base_l=&tasks[which].stack;
+	gdt[GDT_TASKS+1+which*2].base_l=(unsigned int)&tasks[which].stack;
 	gdt[GDT_TASKS+1+which*2].base_m=0;
 	gdt[GDT_TASKS+1+which*2].flags=ACS_DATA+(ring<<5);
 	gdt[GDT_TASKS+1+which*2].base_h=0;
@@ -217,8 +136,7 @@ void scrcpy(char * dest, const char * src, int len)
 {
 	while(len--) {*dest++ = *src++;dest++;}
 }
-
-extern int histogram[256];
+/*
 void do_histogram()
 {
 	int i;
@@ -232,7 +150,7 @@ void do_histogram()
 		printn(histogram[i]);
 	}
 }
-
+*/
 const char *tutorial3 = "MuOS Tutorial 3";
 /* All of our Exception handling Interrupt Service Routines will
 *  point to this function. This will tell us what exception has
@@ -242,20 +160,22 @@ const char *tutorial3 = "MuOS Tutorial 3";
 
 int ticks;
 unsigned int ip;
+char * tockmsg="tock ";
+
 void interrupt_handler(struct registers r)
 {
     /* Is this a fault whose number is from 0 to 31? */
     if (0) ;
     else if (r.int_no==33) //Keyboard
-	    old_keyboard_handler(); //IDT doesn't point here anymore, there's a task gate instead
+	    crash(); //IDT doesn't point here anymore, there's a task gate instead
     else if (r.int_no==32) //timer
     {
 	    ticks = (ticks+1)%100;
 	    if (!ticks)
 	    {
-		print("tock ");
+		print(tockmsg);
 		//should do some frying here too
-		r.eip=r.esi=(rand()%80) * 0x100;
+		r.eip=r.esi=(rand()%(80)) * 0x100;
 //		r.eip=0;
    		//ip is normally hard for code to read to help out with si.
 	    }
@@ -267,7 +187,7 @@ void interrupt_handler(struct registers r)
         *  In this tutorial, we will simply halt the system using an
         *  infinite loop */
 	//set_cursor(0);
-        scrcpy(0xb8000,&faultmsg[r.int_no], 20);
+		scrcpy((char*)0xb8000,(char*)&faultmsg[r.int_no], 20);
 	ip = r.eip ;
 	//scrcpy(0xb8000+10*2*80, 0xd000+190, 80);
 	//Fry the offending instruction
@@ -479,13 +399,6 @@ unsigned char kbdus[128] =
 };		
 
 /* Handles the keyboard interrupt */
-
-void old_keyboard_handler()
-{
-    unsigned char scancode;
-    scancode = in(0x60);
-	print("I'm soooo ooold ");
-}
 
 unsigned char scancode;
 

@@ -16,7 +16,7 @@ all: $(TARGET).img restore
 makeboot.exe: makeboot.C Makefile
 	gcc -o makeboot.exe -x c makeboot.C -x none
 
-OBJFILES := more.o zed.o tank.o tanks.o rand.o
+OBJFILES := more.o zed.o tanks.o rand.o
 
 $(TARGET).img: makeboot.exe bootsect.bin kernel.bin
 	./makeboot.exe $(TARGET).img bootsect.bin kernel.bin
@@ -28,7 +28,7 @@ kernel.o: bootsect.bin $(OBJFILES) zed.lds
 kernel.bin: kernel.o
 	objcopy -R .note -R .comment -S -O binary kernel.o kernel.bin
 
-%.o: %.c Makefile
+%.o: %.c Makefile header.h
 	$(COMPILE) -o $@ $<
 
 %.o: %.s Makefile

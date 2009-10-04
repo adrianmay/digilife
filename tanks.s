@@ -40,22 +40,43 @@ madtanklabel%1:
     jmp madtanklabel%1
 %endmacro
 
-%macro madtank_int1 1
-    %rep 100h-27+12
+%macro madtank_ok 1
+    %rep 0feh
     nop
     %endrep
-    int 2
-    mov ax, 0x10 
-    mov ds, ax ;crash
-    shl edx, 1
-    mov [gs:edx], al
 madtanklabel%1:
     jmp madtanklabel%1
 %endmacro
 
-%macro madtank_xxx 1
-    %rep 100h
-    db 1
+%macro madtank_overflow 1
+    %rep 100h-27+17
+    nop
+    %endrep
+	mov al,-128
+	dec al
+    into
+	nop
+madtanklabel%1:
+    jmp madtanklabel%1
+%endmacro
+
+%macro madtank_bounds 1
+    %rep 100h-27+13
+    nop
+    %endrep
+	;mov ebx, [bounds]
+	mov eax,20
+	bound eax, [bounds]
+	nop
+madtanklabel%1:
+    jmp madtanklabel%1
+%endmacro
+
+%assign j 85
+%macro madtank_123 1
+    %rep 0FEh
+    db 6Dh
+	%assign j j+1
     %endrep
 madtanklabel%1:
     jmp madtanklabel%1
@@ -63,17 +84,21 @@ madtanklabel%1:
 
 madtank:
 %assign i 0
-%rep 50h
-madtank_xxx i
+%rep 40h
+madtank_ok i
 %assign i i+1 
-madtank_gp i
+madtank_ok i
 %assign i i+1 
-madtank_bit i
+madtank_ok i
 %assign i i+1 
-madtank_div0 i
+madtank_ok i
 %assign i i+1 
 %endrep
 madtankend:
 
 SECTION .data
+bounds:
+; dd 5
+; dd 10
+ 
 ; histogram:

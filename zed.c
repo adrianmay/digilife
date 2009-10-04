@@ -72,7 +72,7 @@ void main()
 	int a;
 	clrscr();
 	randinit();
-	//nuketank();
+	nuketank();
 	setup_tasks();
 	//put_handler(32, isr_nothing, GATE_DEFAULT);
 	printfoo();
@@ -162,9 +162,12 @@ int ticks;
 unsigned int ip;
 char * tockmsg="tock ";
 
+//  for (i=0;i<999;i++) {i=i*2;i=i/2;}
+
+int seen[32]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
 void interrupt_handler(struct registers r)
 {
-    /* Is this a fault whose number is from 0 to 31? */
     if (0) ;
     else if (r.int_no==33) //Keyboard
 	    crash(); //IDT doesn't point here anymore, there's a task gate instead
@@ -183,21 +186,25 @@ void interrupt_handler(struct registers r)
     }
     else if (r.int_no < 32)
     {
-        /* Display the description for the Exception that occurred.
-        *  In this tutorial, we will simply halt the system using an
-        *  infinite loop */
-	//set_cursor(0);
-		scrcpy((char*)0xb8000,(char*)&faultmsg[r.int_no], 20);
-	ip = r.eip ;
+		int i;
+		set_cursor(80*r.int_no);
+		print(faultmsg[r.int_no]);
+		if (!seen[r.int_no])
+		{
+			seen[r.int_no]=1;	
+			for (i=0;i<99999999;i++) {i=i*2;i=i/2;}
+		}
+//		scrcpy((char*)0xb8000,(char*)&faultmsg[r.int_no], 20);
+		ip = r.eip-rand()%6 ;
 	//scrcpy(0xb8000+10*2*80, 0xd000+190, 80);
 	//Fry the offending instruction
-	    /*
+	    
 	__asm__ (	"mov $0x20, %ax\n\t"
 			"mov %ax, %fs\n\t"
 			"mov ip, %edi\n\t"
 			"call rand\n\t"
 			"mov %eax, %fs:(%edi)" );
-*/
+
         //print(" exception. Jumping in!\n");
 	//scrcpy(0xb8000+12*2*80, 0xd000+190, 80);
         r.eip=r.esi=(rand()%80) * 0x100;//r.eip=tank_main;
@@ -207,20 +214,20 @@ void interrupt_handler(struct registers r)
 
 const char faultmsg[32][20] = 
 {
-	"Divide",
-	"Debug",
+	"Divide",	//ok
+	"Debug", //ok
 	"NMI",
-	"Breakpoint",
-	"Overflow",
-	"Bounds",
-	"Unknown opcode",
+	"Breakpoint", //ok
+	"Overflow", //ok
+	"Bounds", //ok
+	"Unknown opcode", //ok
 	"No math copro",
 	"Double",
 	"FP segment overrun",
 	"Invalid TSS",
 	"Segment not present",
-	"Stack",
-	"General protection",
+	"Stack", //ok
+	"General protection", //ok
 	"Page",
 	"Reserved",
 	"Math",
@@ -323,6 +330,12 @@ void print(const char *_message)
   out(0x3D4, 15);
   offset |= in(0x3D5);
 
+  if (offset>24*80)
+  {
+	  set_cursor(0);
+	  print(_message);
+	  return;
+  }
   // Start at writing at cursor position
   vidmem += offset*2;
 

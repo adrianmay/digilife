@@ -298,7 +298,11 @@ db "IDT starts here:"
 
 idt:
 %assign i 0
-%rep 32
+%rep 20
+idt_entry_ring0 i
+%assign i i+1 
+%endrep
+%rep 12
 idt_entry_ring0 i
 %assign i i+1 
 %endrep

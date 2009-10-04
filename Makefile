@@ -38,9 +38,9 @@ bootsect.bin: bootsect.asm
 	$(ASSEMBLE) -o $@ $<
 
 restore: 
-	rm nvram *.log *.vmsd *.vmem *.vmss *.vmxf 2> /dev/null;  true
+	rm -rf nvram *.log *.vmsd *.vmem *.vmss *.vmxf 2> /dev/null;  true
 clean: restore
-	rm *.exe *.o *.img *.bin *.map *~ 2> /dev/null;  true
+	rm -rf *.exe *.o *.img *.bin *.map *~ 2> /dev/null;  true
  
 run: 
 	/usr/bin/vmplayer zed.vmx

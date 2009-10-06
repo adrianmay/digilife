@@ -22,6 +22,14 @@
 	mov ss, ax
 	mov ds, ax
 
+	mov ax, 0b800h
+	mov es, ax
+	mov al, 65
+	mov di, 0
+	mov [es:di], al
+freeze:
+	jmp freeze
+	
 reset_drive:
 
 	mov dl,0 

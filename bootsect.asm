@@ -25,10 +25,16 @@
 	mov ax, 0b800h
 	mov es, ax
 	mov al, 65
-	mov di, 0
+	mov di, 2
 	mov [es:di], al
-freeze:
-	jmp freeze
+	mov al, 0x2E
+	mov di, 3
+	mov [es:di], al
+	mov al, 66
+	mov di, 4
+	mov [es:di], al
+;freeze:
+;	jmp freeze
 	
 reset_drive:
 
@@ -38,7 +44,7 @@ reset_drive:
 	or ah, ah               ; Check for error code
 	jnz reset_drive         ; Try again if ah != 0
 
-;%define floppy
+%define floppy
 
 %ifdef floppy	
 	

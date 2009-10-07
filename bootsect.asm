@@ -27,15 +27,14 @@
 	mov al, 65
 	mov di, 2
 	mov [es:di], al
-	mov al, 0x2E
-	mov di, 3
-	mov [es:di], al
-	mov al, 66
-	mov di, 4
-	mov [es:di], al
 ;freeze:
 ;	jmp freeze
 	
+
+; %define floppy
+
+%ifdef floppy	
+
 reset_drive:
 
 	mov dl,0 
@@ -44,10 +43,6 @@ reset_drive:
 	or ah, ah               ; Check for error code
 	jnz reset_drive         ; Try again if ah != 0
 
-%define floppy
-
-%ifdef floppy	
-	
 	mov ch, 7               ; Track/Cylinder, gonna count down and copy from read buffer to correct place
 ; for some strange reason, I can't persuade int13 
 ; to load into higher places than approx 8000h
@@ -90,14 +85,29 @@ track_loop:
 	
 %else
 
-	mov ax, 0800h      ; 
+reset_drive:
+
+	mov dl,80h 
+	mov ah, 0               ; RESET-command
+	int 13h                 ; Call interrupt 13h
+	or ah, ah               ; Check for error code
+	jnz reset_drive         ; Try again if ah != 0
+	
+	mov ax, 0b800h
+	mov es, ax
+	mov al, 66
+	mov di, 4
+	mov [es:di], al
+
+	mov ax, 07E0h      ; 
 	mov es, ax         ; Destination address
 	mov bx, 0          ; Destination address
-;;	mov dl, 81h           ; drive D
+	mov dl, 80h           ; drive D
 	mov cl, 1               ; Sector 
+	mov ch, 0
 	mov dh, 0               ; Head 
 	mov ah, 2             ; READ SECTOR-command
-	mov al, (16*62)               ; Number of sectors to read - all heads*all sectors in a track 
+	mov al, 180               ; Number of sectors to read - all heads*all sectors in a track 
 	int 13h                 ; Call interrupt 13h
     or ah, ah ; Check for error code
     jnz reset_drive ; Try again if ah != 0

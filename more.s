@@ -31,6 +31,12 @@ SECTION .text
 start:
 
 	cli                     ; Disable interrupts, we want to be alone
+	mov ax, 0b800h
+	mov es, ax
+	mov al, 68
+	mov di, 8
+	mov [es:di], al
+	
 	mov ax, 0
 	mov ds, ax
         mov ax, hack_from

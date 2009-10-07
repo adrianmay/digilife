@@ -72,7 +72,7 @@ void main()
 	int a;
 	clrscr();
 	randinit();
-	nuketank();
+	//nuketank();
 	setup_tasks();
 	//put_handler(32, isr_nothing, GATE_DEFAULT);
 	printfoo();

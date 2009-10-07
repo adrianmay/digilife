@@ -85,9 +85,9 @@ madtanklabel%1:
 madtank:
 %assign i 0
 %rep 40h
-madtank_div0 i
+madtank_ok i
 %assign i i+1 
-madtank_bounds i
+madtank_div0 i
 %assign i i+1 
 madtank_overflow i
 %assign i i+1 

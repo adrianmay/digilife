@@ -22,6 +22,7 @@ SECTIONS
 
 	}
 	KERNEL_END = .;
+	. = ALIGN(512);
 	TANK_START = .;
 	.tank 0 :
 	AT(0xd000)

@@ -31,7 +31,7 @@
 ;	jmp freeze
 	
 
-; %define floppy
+%define floppy
 
 %ifdef floppy	
 

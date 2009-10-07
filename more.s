@@ -159,6 +159,9 @@ crash:
 	mov byte [ds:20], 9
         ret
 
+dumptank:
+	; drop 128*TANKPAGES sectors from 5200h on disk = 51st sector
+
 	
 ; Need a guzzilion of these just because Intel don't tell us the interrupt number...
 

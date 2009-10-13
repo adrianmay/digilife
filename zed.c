@@ -31,7 +31,6 @@ const void * hack_from=&tasks[0].stack;
 #define ACS_TRAP_GATE (ACS_PRESENT+0x0f)
 
 
-
 struct segment_descriptor gdt[GDT_MAX]=
 {
 	{0,0,0,0,0}, //null
@@ -72,7 +71,7 @@ void main()
 	int a;
 	clrscr();
 	randinit();
-	//nuketank();
+	nuketank();
 	setup_tasks();
 	//put_handler(32, isr_nothing, GATE_DEFAULT);
 	printfoo();
@@ -110,7 +109,7 @@ void setup_task(int which, int ring, int cs, int ds, void * ip, int ss0, int sp0
 	if (rupt>=0)
 	{
 		idt[rupt].selector=8*(GDT_TASKS+which*2);
-		idt[rupt].flags=0xe5;
+		idt[rupt].flags=0x85;
 		idt[rupt].offset_high = idt[rupt].offset_low = idt[rupt].nothing = 0;
 	}
 	
@@ -166,6 +165,14 @@ char * tockmsg="tock ";
 
 int seen[32]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
+unsigned short int whatto=249;
+
+void delay()
+{
+	int i;
+	for (i=0;i<99999999;i++) {i=i*2;i=i/2;}
+}
+
 void interrupt_handler(struct registers r)
 {
     if (0) ;
@@ -174,25 +181,30 @@ void interrupt_handler(struct registers r)
     else if (r.int_no==32) //timer
     {
 	    ticks = (ticks+1)%100;
-	    if (!ticks)
+	    if (1)//(!ticks)
 	    {
-		print(tockmsg);
-		//should do some frying here too
-		r.eip=r.esi=(rand()%(80)) * 0x100;
-//		r.eip=0;
-   		//ip is normally hard for code to read to help out with si.
+			whatto=rand()%0x5000;
+			set_cursor(0);
+			print(tockmsg);
+			printn(whatto);
+			//writewhatto();
+			//should do some frying here too
+			//r.eip=r.esi=() ;
+			r.eip=r.esi=whatto;
+			//		r.eip=0;
+			//ip is normally hard for code to read to help out with si.
 	    }
 	    
     }
     else if (r.int_no < 32)
     {
-		int i;
+		
 		set_cursor(80*r.int_no);
 		print(faultmsg[r.int_no]);
 		if (!seen[r.int_no])
 		{
 			seen[r.int_no]=1;	
-			for (i=0;i<99999999;i++) {i=i*2;i=i/2;}
+			delay();
 		}
 //		scrcpy((char*)0xb8000,(char*)&faultmsg[r.int_no], 20);
 		ip = r.eip-rand()%6 ;
@@ -207,7 +219,7 @@ void interrupt_handler(struct registers r)
 
         //print(" exception. Jumping in!\n");
 	//scrcpy(0xb8000+12*2*80, 0xd000+190, 80);
-        r.eip=r.esi=(rand()%80) * 0x100;//r.eip=tank_main;
+        r.eip=r.esi=(rand()%0x5000) ;//r.eip=tank_main;
 //	r.eip=r.esi=0;
     }
 }

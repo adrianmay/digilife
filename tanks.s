@@ -16,13 +16,14 @@ madtanklabel%1:
 %endmacro
 
 %macro madtank_gp 1
-    %rep 100h-25+12
+    %rep 100h-25+11 
     nop
     %endrep
     mov ax, 0x10 
     mov ds, ax ;crash
-    shl edx, 1
-    mov [gs:edx], al
+    mov ax, 0x20 
+    mov ds, ax ;crash
+	
 madtanklabel%1:
     jmp madtanklabel%1
 %endmacro
@@ -34,8 +35,10 @@ madtanklabel%1:
     mov bl,0
     div bl ;crash
     mov ds, ax 
-    shl edx, 1
-    mov [gs:edx], al
+    nop
+	nop
+    nop
+	nop
 madtanklabel%1:
     jmp madtanklabel%1
 %endmacro
@@ -60,6 +63,17 @@ madtanklabel%1:
     jmp madtanklabel%1
 %endmacro
 
+%macro madtank_int33 1
+    %rep 100h-5
+    nop
+    %endrep
+	int 33
+	nop
+madtanklabel%1:
+    jmp madtanklabel%1
+%endmacro
+
+
 %macro madtank_bounds 1
     %rep 100h-27+13
     nop
@@ -72,10 +86,10 @@ madtanklabel%1:
     jmp madtanklabel%1
 %endmacro
 
-%assign j 85
+%assign j 249
 %macro madtank_123 1
-    %rep 0FEh
-    db 6Dh
+    %rep 079h
+    dw j
 	%assign j j+1
     %endrep
 madtanklabel%1:
@@ -85,13 +99,13 @@ madtanklabel%1:
 madtank:
 %assign i 0
 %rep 40h
+madtank_123 i
+%assign i i+1 
 madtank_ok i
 %assign i i+1 
-madtank_div0 i
+madtank_ok i
 %assign i i+1 
-madtank_overflow i
-%assign i i+1 
-madtank_123 i
+madtank_ok i
 %assign i i+1 
 %endrep
 madtankend:

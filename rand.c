@@ -37,6 +37,7 @@ void init_by_array(unsigned long init_key[], int key_length)
     i=1; j=0;
     k = (N>key_length ? N : key_length);
     for (; k; k--) {
+		printn(k); printc(' ');
         mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1664525UL))
           + init_key[j] + j; /* non linear */
         mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
@@ -45,12 +46,17 @@ void init_by_array(unsigned long init_key[], int key_length)
         if (j>=key_length) j=0;
     }
     for (k=N-1; k; k--) {
+		//printn(k); printc(' ');
+
         mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1566083941UL))
           - i; /* non linear */
         mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
         i++;
         if (i>=N) { mt[0] = mt[N-1]; i=1; }
     }
+	printfoo();
+loop:
+	goto loop;
 
     mt[0] = 0x80000000UL; /* MSB is 1; assuring non-zero initial array */ 
 }

@@ -66,20 +66,23 @@ void nuketank()
 		((unsigned int*)(TANKAT))[i]=rand();
 }
 
+
 void main()
 {
 	int a;
+	setup_tasks();
 	clrscr();
 	randinit();
 	nuketank();
-	setup_tasks();
+	do_histogram();
+loopmain:
+	goto loopmain;
 	//put_handler(32, isr_nothing, GATE_DEFAULT);
-	printfoo();
 	jump_tank();
-main_loop:
-	printbar();
-	__asm("iret");
-	goto main_loop;
+//main_loop:
+	//printbar();
+	//__asm("iret");
+	//goto main_loop;
 	
 }
 
@@ -135,7 +138,9 @@ void scrcpy(char * dest, const char * src, int len)
 {
 	while(len--) {*dest++ = *src++;dest++;}
 }
-/*
+
+unsigned int histogram[256];
+
 void do_histogram()
 {
 	int i;
@@ -146,10 +151,11 @@ void do_histogram()
 	for (i=0;i<256;i++)
 	{
 		set_cursor(5*i);
+		printc(' ');
 		printn(histogram[i]);
 	}
 }
-*/
+
 const char *tutorial3 = "MuOS Tutorial 3";
 /* All of our Exception handling Interrupt Service Routines will
 *  point to this function. This will tell us what exception has
@@ -165,16 +171,16 @@ char * tockmsg="tock ";
 
 int seen[32]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-unsigned short int whatto=249;
-
 void delay()
 {
+	//return;
 	int i;
-	for (i=0;i<99999999;i++) {i=i*2;i=i/2;}
+	for (i=0;i<999999;i++) {i=i*2;i=i/2;}
 }
 
 void interrupt_handler(struct registers r)
 {
+	return;
     if (0) ;
     else if (r.int_no==33) //Keyboard
 	    crash(); //IDT doesn't point here anymore, there's a task gate instead
@@ -183,17 +189,21 @@ void interrupt_handler(struct registers r)
 	    ticks = (ticks+1)%100;
 	    if (1)//(!ticks)
 	    {
-			whatto=rand()%0x5000;
-			set_cursor(0);
-			print(tockmsg);
-			printn(whatto);
-			//writewhatto();
-			//should do some frying here too
-			//r.eip=r.esi=() ;
-			r.eip=r.esi=whatto;
-			//		r.eip=0;
-			//ip is normally hard for code to read to help out with si.
+			//print(tockmsg);
+			//do_histogram();
+			//Fry the offending instruction
+			
+			ip = r.eip-rand()%6 ;
+			
+			__asm__ (	"mov $0x20, %ax\n\t"
+				"mov %ax, %fs\n\t"
+				"mov ip, %edi\n\t"
+				"call rand\n\t"
+				"mov %al, %fs:(%edi)" );
+			r.eip=r.esi=rand()%0xfff0;			
+			//		r.eip=0;			
 	    }
+	    if (!ticks) do_histogram();
 	    
     }
     else if (r.int_no < 32)
@@ -206,21 +216,16 @@ void interrupt_handler(struct registers r)
 			seen[r.int_no]=1;	
 			delay();
 		}
-//		scrcpy((char*)0xb8000,(char*)&faultmsg[r.int_no], 20);
+		//Fry the offending instruction
 		ip = r.eip-rand()%6 ;
-	//scrcpy(0xb8000+10*2*80, 0xd000+190, 80);
-	//Fry the offending instruction
 	    
-	__asm__ (	"mov $0x20, %ax\n\t"
+		__asm__ (	"mov $0x20, %ax\n\t"
 			"mov %ax, %fs\n\t"
 			"mov ip, %edi\n\t"
 			"call rand\n\t"
-			"mov %eax, %fs:(%edi)" );
+			"mov %al, %fs:(%edi)" );
 
-        //print(" exception. Jumping in!\n");
-	//scrcpy(0xb8000+12*2*80, 0xd000+190, 80);
-        r.eip=r.esi=(rand()%0x5000) ;//r.eip=tank_main;
-//	r.eip=r.esi=0;
+        r.eip=r.esi=(rand()%0xfff0) ;//r.eip=tank_main;
     }
 }
 
@@ -429,7 +434,8 @@ unsigned char scancode;
 
 void keyboard_handler()
 {
-//	do_histogram();
+	//do_histogram();
+	//return;
 	/* Read from the keyboard's data buffer */
 	scancode = in(0x60);
 	if (scancode & 0x80)

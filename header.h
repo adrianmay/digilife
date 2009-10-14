@@ -104,8 +104,10 @@ unsigned long rand(void);
 void randinit();
 void madtank();
 void crash();
+void delay();
+void do_histogram();
 
-extern int histogram[256];
+extern unsigned int histogram[256];
 extern struct gdt_descriptor gdt_desc;
 extern struct segment_descriptor gdt[GDT_MAX];
 extern struct Task tasks[3];

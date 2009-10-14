@@ -1,7 +1,6 @@
 [BITS 16]	; protected mode
 
 [extern gdt]
-[extern whatto]
 [extern gdt_desc]
 [extern kernel_stack_base]
 [extern spare_stack_block]
@@ -23,7 +22,7 @@
 [global load_tsr]
 [global jump_tank]
 [global keyboard_task_loop]
-[global writewhatto]
+
 
 
 
@@ -162,17 +161,7 @@ crash:
 	mov byte [ds:20], 9
         ret
 
-writewhatto:
-	push es
-	push eax
-	mov ax, 0x20 ;tank data
-	mov es, ax
-	mov ax, [whatto]
-	mov [es:0],ax
-	pop eax
-	pop es
-	ret
-	
+
 dumptank:
 	; drop 128*TANKPAGES sectors from 5200h on disk = 51st sector
 
@@ -227,6 +216,7 @@ no_more_acks:
     popa
     add esp, 8     ; Cleans up the pushed error code and pushed ISR number
 	call delay
+	;sti
     iret           ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP
 
 keyboard_task_loop:

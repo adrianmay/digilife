@@ -186,7 +186,7 @@ void interrupt_handler(struct registers r)
 	}
     else if (r.int_no==32) //timer
     {
-			//printbar(); //IDT doesn't point here anymore, there's a task gate instead
+			print("."); //IDT doesn't point here anymore, there's a task gate instead
 			return;
 		//loopint:
 		//	goto loopint;		

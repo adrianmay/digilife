@@ -438,12 +438,12 @@ idt_entry_ring0 i
 idt_entry_ring0 i ;timer
 %assign i i+1
 
-idt_entry_ring0 i ;keyboard
-;dw 0 
-;dw 50h
-;db 0
-;db 085h
-;dw 0
+;idt_entry_ring0 i ;keyboard
+dw 0 
+dw 50h
+db 0
+db 085h
+dw 0
 %assign i i+1
 
 %rep 222

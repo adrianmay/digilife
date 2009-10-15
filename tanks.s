@@ -73,7 +73,6 @@ madtanklabel%1:
     jmp madtanklabel%1
 %endmacro
 
-
 %macro madtank_bounds 1
     %rep 100h-27+13
     nop
@@ -115,4 +114,3 @@ bounds:
 ; dd 5
 ; dd 10
  
-; histogram:

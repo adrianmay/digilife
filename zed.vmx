@@ -35,7 +35,7 @@ uuid.action = "create"
 
 # Remind to install VMware Tools
 # This setting has no effect in VMware Player
-tools.remindInstall = "FALSE"
+tools.remindInstall = "TRUE"
 
 # Startup hints interfers with automatic startup of a virtual machine
 # This setting has no effect in VMware Player

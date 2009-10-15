@@ -34,13 +34,13 @@ const void * hack_from=&tasks[0].stack;
 struct segment_descriptor gdt[GDT_MAX]=
 {
 	{0,0,0,0,0}, //null
-	{0,0,0,ACS_CODE+ACS_LIMH,0}, //kernel code 8
-	{0,0,0,ACS_DATA+ACS_LIMH*0x0c,0}, //kernel data 10
-	{0,TANKAT,0,ACS_CODE+ACS_PRIV_3+ACS_LIMH*TANKPAGES,0}, //tank code 18
-	{0,TANKAT,0,ACS_DATA+ACS_PRIV_3+ACS_LIMH*TANKPAGES,0}, //tank data 20
-	{STACKSIZE,0,0,ACS_STACK+ACS_LIMH*0x0c,0}, //spare stack 28
+	{0,0,0,ACS_CODE+ACS_GRAN+ACS_LIMH*0xf,0}, //kernel code 8
+	{0,0,0,ACS_DATA+ACS_GRAN+ACS_LIMH*0xf,0}, //kernel data 10
+	{0,0,2,ACS_CODE+ACS_GRAN+ACS_PRIV_3+ACS_LIMH*TANKPAGES,0}, //tank code 18
+	{0,0,2,ACS_DATA+ACS_GRAN+ACS_PRIV_3+ACS_LIMH*TANKPAGES,0}, //tank data 20
+	{STACKSIZE,0,0,ACS_STACK,0}, //spare stack 28
 	{0,0,0,0,0}, //kernel tss 30
-	{STACKSIZE,0,0,ACS_STACK+ACS_LIMH*0x0c,0}, //kernel stack 38
+	{STACKSIZE,0,0,ACS_STACK,0}, //kernel stack 38
 	{0,0,0,0,0}, //tank tss 40
 	{0,0,0,0,0}, //tank stack 48
 	{0,0,0,0,0}, //keyboard tss 50
@@ -59,23 +59,21 @@ struct gdt_descriptor gdt_desc={GDT_MAX*8-1, &gdt};
 
 const char faultmsg[32][20];
 
-void nuketank()
-{
-	int i;
-	for (i=0;i<0x10000*TANKPAGES/4;i++)
-		((unsigned int*)(TANKAT))[i]=rand();
-}
-
-
+char dotmsg[]=".";
 void main()
 {
 	int a;
-	setup_tasks();
-	clrscr();
+	//setup_tasks();
+	//clearscreen();
 	randinit();
-	nuketank();
+	
+	//print("Goo");
+	//clearscreen();
+//	nuketank();
 	do_histogram();
 loopmain:
+//	pokescreen(4,'T');
+//	for (a=0;a<100000;a++);
 	goto loopmain;
 	//put_handler(32, isr_nothing, GATE_DEFAULT);
 	jump_tank();
@@ -84,6 +82,26 @@ loopmain:
 	//__asm("iret");
 	//goto main_loop;
 	
+}
+
+extern unsigned short int thehistogram[256];
+char tenspaces[]="          ";   
+
+void do_histogram()
+{
+	int i;
+	//rand();
+	for (i=0;i<256;i++) thehistogram[i]=0;
+	get_histogram(thehistogram);
+	cursor=0;
+	//for (i=0;i<8*25;i++) print(tenspaces);
+	//clearscreen();
+	for (i=0;i<256;i++)
+	{
+		cursor=5*i;
+		printc(' ');
+		printx(thehistogram[i]);
+	}
 }
 
 void setup_task(int which, int ring, int cs, int ds, void * ip, int ss0, int sp0, int rupt)
@@ -139,22 +157,6 @@ void scrcpy(char * dest, const char * src, int len)
 	while(len--) {*dest++ = *src++;dest++;}
 }
 
-unsigned int histogram[256];
-
-void do_histogram()
-{
-	int i;
-	for (i=0;i<256;i++) histogram[i]=0;
-	for (i=0;i<0x10000*TANKPAGES;i++)
-		histogram[*(unsigned char*)(TANKAT+i)]++;
-	clrscr();
-	for (i=0;i<256;i++)
-	{
-		set_cursor(5*i);
-		printc(' ');
-		printn(histogram[i]);
-	}
-}
 
 const char *tutorial3 = "MuOS Tutorial 3";
 /* All of our Exception handling Interrupt Service Routines will
@@ -180,12 +182,19 @@ void delay()
 
 void interrupt_handler(struct registers r)
 {
-	return;
+	//return;
     if (0) ;
     else if (r.int_no==33) //Keyboard
-	    crash(); //IDT doesn't point here anymore, there's a task gate instead
+	{
+		print("Foo");
+		return;
+	}
     else if (r.int_no==32) //timer
     {
+			//printbar(); //IDT doesn't point here anymore, there's a task gate instead
+			return;
+		//loopint:
+		//	goto loopint;		
 	    ticks = (ticks+1)%100;
 	    if (1)//(!ticks)
 	    {
@@ -208,7 +217,8 @@ void interrupt_handler(struct registers r)
     }
     else if (r.int_no < 32)
     {
-		
+		print("Interrupt:");printn(r.int_no);
+		return;
 		set_cursor(80*r.int_no);
 		print(faultmsg[r.int_no]);
 		if (!seen[r.int_no])
@@ -281,108 +291,44 @@ void out(unsigned short _port, unsigned char _data)
   __asm__ ("out %%al, %%dx" : :"a" (_data), "d" (_port));
 }
 
-void clrscr()
-{
-  unsigned char *vidmem = (unsigned char *)0xB8000;
-  const long size = 80*25;
-  long loop;
 
-  // Clear visible video memory
-  for (loop=0; loop<size; loop++) {
-    *vidmem++ = 0;
-    *vidmem++ = 0xF;
-  }
 
-  // Set cursor position to 0,0
-  out(0x3D4, 14);
-  out(0x3D5, 0);
-  out(0x3D4, 15);
-  out(0x3D5, 0);
-}
+int cursor=0;
 
-char printme[2]="-";
+void at(int row, int col) {cursor = row*80+col;}
+
 void printc(char c)
-{
-	printme[0]=c;
-	print (printme);
+{	
+	pokescreen(cursor++, c);
+	if (cursor>=80*25) cursor=0;	
 }
+
+void print(const char *msg)
+{
+	for (;*msg;msg++) printc(*msg);
+}
+
 void printn(int n)
 {
 	if (n>9) printn(n/10);
 	printc('0'+n%10);
 }
 
-void printx(unsigned char n)
+void printx(int n)
 {
-	unsigned char hi=n/16;
-	if (hi>9)
-		printc('A'+hi-10);
+	if (n>15) printn(n/16);
+	n=n%16;
+	if (n>9)
+		printc('A'+n-10);
 	else
-		printc('0'+hi);
-	hi=n%16;
-	if (hi>9)
-		printc('A'+hi-10);
-	else
-		printc('0'+hi);
-	printc(' ');
-}
-
-void set_cursor(unsigned short offset)
-{
-  out(0x3D4, 15);
-  out(0x3D5, (unsigned char)(offset));
-  out(0x3D4, 14);
-  out(0x3D5, (unsigned char)(offset >> 8));
-}
-
-void print(const char *_message)
-{
-  unsigned short offset;
-  unsigned long i;
-  unsigned char *vidmem = (unsigned char *)0xB8000;
-
-  // Read cursor position
-  out(0x3D4, 14);
-  offset = in(0x3D5) << 8;
-  out(0x3D4, 15);
-  offset |= in(0x3D5);
-
-  if (offset>24*80)
-  {
-	  set_cursor(0);
-	  print(_message);
-	  return;
-  }
-  // Start at writing at cursor position
-  vidmem += offset*2;
-
-  // Continue until we reach null character
-  i = 0;
-  while (_message[i] != 0) {
-    *vidmem = _message[i++];
-	vidmem += 2;
-  }
-
-  // Set new cursor position
-  offset += i;
-  out(0x3D5, (unsigned char)(offset));
-  out(0x3D4, 14);
-  out(0x3D5, (unsigned char)(offset >> 8));
+		printc('0'+n);
 }
 
 void printfoo()
 {
-  print(foomsg);
+	print("F");
+	delay();
 }
-const char * foomsg="Foo!";
-
-void printbar()
-{
-  print(barmsg);
-
-}
-const char * barmsg="Bar!";
-
 /* KBDUS means US Keyboard Layout. This is a scancode table
 *  used to layout a standard US keyboard. I have left some
 *  comments in to give you an idea of what key is what, even

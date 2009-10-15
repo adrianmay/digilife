@@ -4,28 +4,27 @@ SECTIONS
 	.text 0x8000 :
 	{
 		more.o (.text)
-		zed.o (.text)
 		rand.o (.text)
+		zed.o (.text)
 	}
 	KERNEL_CODE_END = .;
 	.data :
 	{
 		more.o (.data)
-		zed.o (.data)
 		rand.o (.data)
+		zed.o (.data)
 	}
 	.bss :  
 	{ 
 		more.o (.bss)  
-		zed.o (.bss)  
 		rand.o (.bss)
-
+		zed.o (.bss)  
 	}
 	KERNEL_END = .;
 	. = ALIGN(512);
 	TANK_START = .;
 	.tank 0 :
-	AT(0xd000)
+	AT(0x20000)
 	{
 		tanks.o (.text)
 		tanks.o (.data)

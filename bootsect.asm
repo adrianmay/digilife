@@ -1,4 +1,6 @@
 
+%define floppy
+
 ;INT 13h AH=02h: Read Sectors From Drive
 ;Parameters:
 ;AH 	02h
@@ -30,9 +32,6 @@
 ;freeze:
 ;	jmp freeze
 	
-
-%define floppy
-
 %ifdef floppy	
 
 reset_drive:

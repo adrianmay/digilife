@@ -3,9 +3,9 @@
 ///>
 
 #define GATE_DEFAULT 0x8E00
-#define TANKAT 0xd000
+#define TANKAT 0x20000
 #define TANKPAGES 1
-#define STACKSIZE 1024
+#define STACKSIZE 4096
 #define GDT_TASKS 6
 
 ///<
@@ -85,13 +85,9 @@ void keyboard_task_loop();
 void print(const char *_message);
 void printn(int n);
 void printc(char c);
-void printx(unsigned char c);
-void set_cursor(unsigned short offset);
-void printfoo();
-void printbar();
+void printx(int n);
 //void isr_nothing();
 //void enable_A20();
-void clrscr();
 void setup_tasks();
 //void start_interrupts();
 const char *tutorial3;
@@ -105,11 +101,13 @@ void randinit();
 void madtank();
 void crash();
 void delay();
+void get_histogram(unsigned short int * histogram);
 void do_histogram();
-
-extern unsigned int histogram[256];
+void pokescreen(int where, int what);
+void clearscreen();
+extern int cursor;
 extern struct gdt_descriptor gdt_desc;
 extern struct segment_descriptor gdt[GDT_MAX];
 extern struct Task tasks[3];
 extern struct idt_entry idt[256];
-
+extern void * TANK_START; 

@@ -14,6 +14,8 @@
 [extern hack_to]
 [extern hack_too]
 [extern delay]
+[extern rand]
+[global thehistogram]
 
 [global start]
 [global idt]
@@ -22,8 +24,10 @@
 [global load_tsr]
 [global jump_tank]
 [global keyboard_task_loop]
-
-
+[global pokescreen]
+[global clearscreen]
+[global get_histogram]
+[global nuketank]
 
 
 ALIGN 8
@@ -162,6 +166,122 @@ crash:
         ret
 
 
+pokescreen: ;(where, what)
+	push ebp
+	mov ebp,esp
+	push fs
+	push eax
+	push edi
+	mov ax, 0x68
+	mov fs, ax
+	mov edi, [ebp+8]
+	shl	edi,1
+	mov eax, [ebp+12]
+	mov [fs:di],al
+	pop edi
+	pop eax
+	pop fs
+	pop ebp
+	ret
+
+clearscreen:
+	pusha
+	mov dx, 0x3d4 ;hide cursor
+	mov al, 10
+	out dx, al
+	inc dx
+	mov al, 32
+	out dx, al
+	mov ax, 0x68
+	mov es, ax
+	mov cx, 80*25
+	mov ax, 0x0f00
+	mov di, 0
+	rep stosw
+	popa
+	ret
+
+nuketank:
+	push ebp
+	mov ebp, esp
+	pusha
+	mov eax, 0x20
+	mov gs, ax ;tank
+	mov esi, 0 ;TANKPAGES
+nukeloop:
+	;push esi
+	;push gs
+	mov eax, 0x01010101
+	;call rand
+	;pop gs
+	;pop esi
+	mov [gs:esi], eax	
+	inc esi
+	cmp esi, 0x4000
+	jz	nukedone
+	jmp nukeloop
+nukedone:
+	popa
+	pop ebp
+	ret
+
+thehistogram: times 256 dw 0  
+
+get_histogram_no:
+	push ebp
+	mov ebp,esp
+	pusha
+	mov ax, ds
+	mov es, ax
+	mov ax, 7
+	mov cx, 0xff	
+	mov di, thehistogram
+	rep stosw
+	popa
+	pop ebp
+	ret
+
+	
+get_histogram:
+	push ebp
+	mov ebp,esp
+	push eax
+	push ebx
+	push esi
+	push edi
+	push gs
+	push es
+
+	mov ax, ds
+	mov es, ax
+	
+	mov ebx, thehistogram
+	mov esi, 0
+	mov eax, 0x20
+	mov gs, ax ;tank
+	mov esi, 0 ;TANKPAGES
+histloop:
+	mov eax, 0
+	mov	al, [gs:esi]
+	;shl eax,1
+	mov edi, eax
+	mov ax, [ebx+edi]
+	inc ax
+	mov [ebx+edi], ax
+	inc	esi
+	cmp esi, 0x10000
+	jne	histloop
+histdone:
+	pop es
+	pop gs
+	pop edi
+	pop esi
+	pop ebx
+	pop eax
+
+	pop ebp
+	ret
+	
 dumptank:
 	; drop 128*TANKPAGES sectors from 5200h on disk = 51st sector
 
@@ -215,8 +335,8 @@ ack_master:
 no_more_acks:    
     popa
     add esp, 8     ; Cleans up the pushed error code and pushed ISR number
-	call delay
-	;sti
+	;call delay
+	sti
     iret           ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP
 
 keyboard_task_loop:
@@ -245,7 +365,6 @@ keyboard_task_loop:
 
     popa
     add esp, 8     ; Cleans up the pushed error code and pushed ISR number
-    sti
     iret           ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP!
     jmp keyboard_task_loop
 
@@ -324,12 +443,12 @@ idt_entry_ring0 i
 idt_entry_ring0 i ;timer
 %assign i i+1
 
-;idt_entry_ring0 i ;keyboard
-dw 0 
-dw 50h
-db 0
-db 085h
-dw 0
+idt_entry_ring0 i ;keyboard
+;dw 0 
+;dw 50h
+;db 0
+;db 085h
+;dw 0
 %assign i i+1
 
 %rep 222

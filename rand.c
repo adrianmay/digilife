@@ -7,8 +7,8 @@
 #define UPPER_MASK 0x80000000UL /* most significant w-r bits */
 #define LOWER_MASK 0x7fffffffUL /* least significant r bits */
 
-static unsigned long mt[N]; /* the array for the state vector  */
-static int mti=N+1; /* mti==N+1 means mt[N] is not initialized */
+unsigned long mt[N]; /* the array for the state vector  */
+int mti=N+1; /* mti==N+1 means mt[N] is not initialized */
 
 /* initializes mt[N] with a seed */
 void init_genrand(unsigned long s)
@@ -37,7 +37,7 @@ void init_by_array(unsigned long init_key[], int key_length)
     i=1; j=0;
     k = (N>key_length ? N : key_length);
     for (; k; k--) {
-		printn(k); printc(' ');
+		//printn(k); printc(' ');
         mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1664525UL))
           + init_key[j] + j; /* non linear */
         mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
@@ -54,9 +54,6 @@ void init_by_array(unsigned long init_key[], int key_length)
         i++;
         if (i>=N) { mt[0] = mt[N-1]; i=1; }
     }
-	printfoo();
-loop:
-	goto loop;
 
     mt[0] = 0x80000000UL; /* MSB is 1; assuring non-zero initial array */ 
 }
@@ -101,7 +98,8 @@ unsigned long genrand_int32(void)
 
 void randinit()
 {
-    unsigned long init[4]={0x123, 0x234, 0x345, 0x456}, length=4;
+    unsigned long init[4]={0x123, 0x234, 0x345, 0x456};
+	int length=4;
     init_by_array(init, length);
 }
 

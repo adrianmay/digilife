@@ -205,20 +205,25 @@ nuketank:
 	push ebp
 	mov ebp, esp
 	pusha
-	mov eax, 0x20
-	mov gs, ax ;tank
+	mov ebx, 0x20
+	mov gs, bx ;tank
 	mov esi, 0 ;TANKPAGES
 nukeloop:
-	;push esi
-	;push gs
-	mov eax, 0x01010101
-	;call rand
-	;pop gs
-	;pop esi
+	push esi
+	mov eax, 0x10203040
+	mov ebx, 0x10
+	mov gs, bx ;tank
+	call rand
+	pop esi
+	mov ebx, 0x20
+	mov gs, bx ;tank
 	mov [gs:esi], eax	
 	inc esi
-	cmp esi, 0x4000
-	jz	nukedone
+	inc esi
+	inc esi
+	inc esi
+	cmp esi, 0x10000
+	je	nukedone
 	jmp nukeloop
 nukedone:
 	popa
@@ -245,17 +250,12 @@ get_histogram_no:
 get_histogram:
 	push ebp
 	mov ebp,esp
-	push eax
-	push ebx
-	push esi
-	push edi
-	push gs
-	push es
-
+	pusha
+	
 	mov ax, ds
 	mov es, ax
 	
-	mov ebx, thehistogram
+	mov edi, thehistogram
 	mov esi, 0
 	mov eax, 0x20
 	mov gs, ax ;tank
@@ -263,22 +263,17 @@ get_histogram:
 histloop:
 	mov eax, 0
 	mov	al, [gs:esi]
-	;shl eax,1
-	mov edi, eax
-	mov ax, [ebx+edi]
-	inc ax
-	mov [ebx+edi], ax
+	shl eax,1
+	mov ebx, eax
+	inc word [ebx+edi]
+;	mov ax, [ebx+edi]
+;	inc ax
+;	mov [ebx+edi], ax
 	inc	esi
 	cmp esi, 0x10000
 	jne	histloop
 histdone:
-	pop es
-	pop gs
-	pop edi
-	pop esi
-	pop ebx
-	pop eax
-
+	popa
 	pop ebp
 	ret
 	

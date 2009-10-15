@@ -63,17 +63,12 @@ char dotmsg[]=".";
 void main()
 {
 	int a;
-	//setup_tasks();
-	//clearscreen();
-	randinit();
-	
-	//print("Goo");
-	//clearscreen();
-//	nuketank();
+	setup_tasks();
+	clearscreen();
+	randinit();	
+	nuketank();
 	do_histogram();
 loopmain:
-//	pokescreen(4,'T');
-//	for (a=0;a<100000;a++);
 	goto loopmain;
 	//put_handler(32, isr_nothing, GATE_DEFAULT);
 	jump_tank();
@@ -316,7 +311,7 @@ void printn(int n)
 
 void printx(int n)
 {
-	if (n>15) printn(n/16);
+	if (n>15) printx(n/16);
 	n=n%16;
 	if (n>9)
 		printc('A'+n-10);

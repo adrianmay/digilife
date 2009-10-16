@@ -2,17 +2,26 @@
 
 [extern gdt]
 [extern gdt_desc]
-[extern kernel_stack_base]
-[extern spare_stack_block]
+;[extern kernel_stack_base]
+[extern spare_stack_block_1]
+[extern spare_stack_block_2]
 [extern printfoo]
 [extern printbar]
 [extern printn]
 [extern interrupt_handler]
 [extern keyboard_handler]
 [extern main]
-[extern hack_from]
-[extern hack_to]
-[extern hack_too]
+[extern hack_kernelcodelimit]
+[extern hack_kerneldatastart]
+[extern hack_kerneldatalimit]
+[extern hack_kernelstackstart]
+[extern hack_sparestack1start]
+[extern hack_sparestack2start]
+[extern hack_kernelstack]
+[extern KERNEL_CODE_END]
+[extern KERNEL_DATA_BEGIN]
+[extern KERNEL_DATA_SIZE]
+
 [extern delay]
 [extern rand]
 [global thehistogram]
@@ -45,18 +54,28 @@ start:
 	
 	mov ax, 0
 	mov ds, ax
-        mov ax, hack_from
-        mov [hack_to], ax
-        mov ax, spare_stack_block
-        mov [hack_too], ax
-        lgdt [gdt_desc]         ; Load the GDT descriptor
+	mov ax, hack_kernelstack
+	mov [hack_kernelstackstart], ax
+	mov ax, spare_stack_block_1
+	mov [hack_sparestack1start], ax
+	mov ax, spare_stack_block_2
+	mov [hack_sparestack2start], ax
 
-        mov eax, cr0            ; Copy the contents of CR0 into EAX
-        or eax, 1               ; Set bit 0
-        mov cr0, eax            ; Copy the contents of EAX into CR0
+	mov ax, KERNEL_CODE_END
+	mov [hack_kernelcodelimit], ax
+	mov ax, KERNEL_DATA_SIZE
+	mov [hack_kerneldatalimit], ax
+	mov ax, KERNEL_DATA_BEGIN
+	mov [hack_kerneldatastart], ax
+	
+	lgdt [gdt_desc]         ; Load the GDT descriptor
 
-        jmp 08h:clear_pipe      ; Jump to code segment, offset clear_pipe
-				
+	mov eax, cr0            ; Copy the contents of CR0 into EAX
+	or eax, 1               ; Set bit 0
+	mov cr0, eax            ; Copy the contents of EAX into CR0
+
+	jmp 08h:clear_pipe      ; Jump to code segment, offset clear_pipe
+			
 [BITS 32]                       ; We now need 32-bit instructions
 clear_pipe:
         mov ax, 10h             
@@ -330,7 +349,8 @@ no_more_acks:
 
 keyboard_task_loop:
 	cli
-	;call printbar
+	jmp skip
+	call printfoo
 	push  0
 	push  33
     pusha
@@ -353,7 +373,9 @@ keyboard_task_loop:
     out 20h, al
 
     popa
-    add esp, 8     ; Cleans up the pushed error code and pushed ISR number
+    add esp, 4     ; Cleans up the pushed error code and pushed ISR number
+skip:
+	sti
     iret           ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP!
     jmp keyboard_task_loop
 
@@ -432,12 +454,12 @@ idt_entry_ring0 i
 idt_entry_ring0 i ;timer
 %assign i i+1
 
-idt_entry_ring0 i ;keyboard
-;dw 0 
-;dw 50h
-;db 0
-;db 085h
-;dw 0
+;idt_entry_ring0 i ;keyboard
+dw 0 
+dw 50h
+db 0
+db 085h
+dw 0
 %assign i i+1
 
 %rep 222

@@ -1,10 +1,11 @@
 #pragma pack (push, 1)
 #include "header.h"
 
-unsigned char spare_stack_block[STACKSIZE];
+unsigned char spare_stack_block_1[STACKSIZE];
+unsigned char spare_stack_block_2[STACKSIZE];
 
 struct Task tasks[3];
-const void * hack_from=&tasks[0].stack;
+const void * hack_kernelstack=&tasks[0].stack;
 
 /* Access byte's flags */
 #define ACS_PRESENT     0x80            /* present segment */
@@ -34,11 +35,11 @@ const void * hack_from=&tasks[0].stack;
 struct segment_descriptor gdt[GDT_MAX]=
 {
 	{0,0,0,0,0}, //null
-	{0,0,0,ACS_CODE+ACS_GRAN+ACS_LIMH*0xf,0}, //kernel code 8
-	{0,0,0,ACS_DATA+ACS_GRAN+ACS_LIMH*0xf,0}, //kernel data 10
-	{0,0,2,ACS_CODE+ACS_GRAN+ACS_PRIV_3+ACS_LIMH*TANKPAGES,0}, //tank code 18
-	{0,0,2,ACS_DATA+ACS_GRAN+ACS_PRIV_3+ACS_LIMH*TANKPAGES,0}, //tank data 20
-	{STACKSIZE,0,0,ACS_STACK,0}, //spare stack 28
+	{0,0,0,ACS_CODE+ACS_LIMH*1,0}, //kernel code 8
+	{0,0,0,ACS_DATA+ACS_LIMH*1,0}, //kernel data 10
+	{0,0,2,ACS_CODE+ACS_PRIV_3+ACS_LIMH*TANKPAGES,0}, //tank code 18
+	{0,0,2,ACS_DATA+ACS_PRIV_3+ACS_LIMH*TANKPAGES,0}, //tank data 20
+	{STACKSIZE,0,0,ACS_STACK,0}, //spare stack 1 28
 	{0,0,0,0,0}, //kernel tss 30
 	{STACKSIZE,0,0,ACS_STACK,0}, //kernel stack 38
 	{0,0,0,0,0}, //tank tss 40
@@ -47,11 +48,17 @@ struct segment_descriptor gdt[GDT_MAX]=
 	{0,0,0,0,0}, //keyboard stack 58
 	{0,0x40,0,0x85,0}, //task gate 60
 	{80*25*2,0x8000,0xb, ACS_DATA+ACS_PRIV_3,0}, //screen 68
+	{STACKSIZE,0,0,ACS_STACK,0}, //spare stack 2 70
 };
 
 
-const void * hack_to=&gdt[kernel_stack].base_l;
-const void * hack_too=&gdt[spare_stack].base_l;
+const void * hack_kernelcodelimit=&gdt[kernel_code].limit;
+const void * hack_kerneldatastart=&gdt[kernel_data].base_l;
+const void * hack_kerneldatalimit=&gdt[kernel_data].limit;
+const void * hack_kernelstackstart=&gdt[kernel_stack].base_l;
+const void * hack_sparestack1start=&gdt[spare_stack_1].base_l;
+const void * hack_sparestack2start=&gdt[spare_stack_2].base_l;
+
 
 
 struct gdt_descriptor gdt_desc={GDT_MAX*8-1, &gdt};
@@ -63,10 +70,10 @@ char dotmsg[]=".";
 void main()
 {
 	int a;
-	//setup_tasks();
+	setup_tasks();
 	clearscreen();
 	randinit();	
-	nuketank();
+	//nuketank();
 	do_histogram();
 loopmain:
 	goto loopmain;
@@ -108,9 +115,10 @@ void setup_task(int which, int ring, int cs, int ds, void * ip, int ss0, int sp0
 	task->ldtr = 0;
 	task->cs = cs*8 + ring; task->eip = (unsigned int)ip;//-gdt[cs].base_l;
 	task->ds = task->es = task->fs = task->gs = ds*8 + ring;
-	task->ss = 8*((GDT_TASKS+1)+which*2) + ring; task->esp = STACKSIZE-4;
+	task->ss = 8*((GDT_TASKS+1)+which*2) + ring; task->esp = STACKSIZE;
 	task->ss0 = ss0*8; task->esp0 = sp0;
 	task->eflags = 0x202L + (ring << 12);
+	
 	gdt[GDT_TASKS+which*2].limit=104;
 	gdt[GDT_TASKS+which*2].base_l=(unsigned int)task;
 	gdt[GDT_TASKS+which*2].base_m=0;
@@ -120,7 +128,7 @@ void setup_task(int which, int ring, int cs, int ds, void * ip, int ss0, int sp0
 	gdt[GDT_TASKS+1+which*2].limit=STACKSIZE;
 	gdt[GDT_TASKS+1+which*2].base_l=(unsigned int)&tasks[which].stack;
 	gdt[GDT_TASKS+1+which*2].base_m=0;
-	gdt[GDT_TASKS+1+which*2].flags=ACS_DATA+(ring<<5);
+	gdt[GDT_TASKS+1+which*2].flags=ACS_STACK+(ring<<5);
 	gdt[GDT_TASKS+1+which*2].base_h=0;
 	
 	if (rupt>=0)
@@ -135,8 +143,8 @@ void setup_task(int which, int ring, int cs, int ds, void * ip, int ss0, int sp0
 void setup_tasks()
 {
 	setup_task(0, 0, kernel_code, kernel_data, 0, 0, 0, -1);
-	setup_task(1, 3, tank_code, tank_data, madtank, spare_stack, STACKSIZE, -1);
-	//setup_task(2, 0, kernel_code, kernel_data, keyboard_task_loop, spare_stack, STACKSIZE,33);
+	setup_task(1, 3, tank_code, tank_data, madtank, spare_stack_1, STACKSIZE, -1);
+	setup_task(2, 0, kernel_code, kernel_data, keyboard_task_loop, spare_stack_2, STACKSIZE,33);
 	
 }
 
@@ -182,12 +190,11 @@ void interrupt_handler(struct registers r)
     if (0) ;
     else if (r.int_no==33) //Keyboard
 	{
-		print("Foo");
-		return;
+		printfoo();
 	}
     else if (r.int_no==32) //timer
     {
-			print("."); //IDT doesn't point here anymore, there's a task gate instead
+			//print("."); //IDT doesn't point here anymore, there's a task gate instead
 			return;
 		//loopint:
 		//	goto loopint;		
@@ -213,25 +220,33 @@ void interrupt_handler(struct registers r)
     }
     else if (r.int_no < 32)
     {
-		print("Interrupt:");printn(r.int_no);
-		return;
-		set_cursor(80*r.int_no);
-		print(faultmsg[r.int_no]);
+		at(r.int_no, 0);print(faultmsg[r.int_no]);
+		/*
 		if (!seen[r.int_no])
 		{
 			seen[r.int_no]=1;	
 			delay();
-		}
+		}*/
 		//Fry the offending instruction
 		ip = r.eip-rand()%6 ;
 	    
-		__asm__ (	"mov $0x20, %ax\n\t"
-			"mov %ax, %fs\n\t"
-			"mov ip, %edi\n\t"
+		__asm__ (	
+			"push %eax\n\t"
 			"call rand\n\t"
-			"mov %al, %fs:(%edi)" );
+			"push %es\n\t"
+			"push %ebx\n\t"
+			"push %edi\n\t"
+			"mov $0x20, %bx\n\t"
+			"mov %bx, %es\n\t"
+			"mov ip, %edi\n\t"
+			"mov %al, %es:(%edi)\n\t" 
+			"pop %edi\n\t"
+			"pop %ebx\n\t"
+			"pop %es\n\t"
+			"pop %eax\n\t"
+			);
 
-        r.eip=r.esi=(rand()%0xfff0) ;//r.eip=tank_main;
+        r.eip=r.esi=(rand()%0xfffc) ;//r.eip=tank_main;
     }
 }
 
@@ -322,7 +337,7 @@ void printx(int n)
 
 void printfoo()
 {
-	print("F");
+	print("Fooo");
 	delay();
 }
 /* KBDUS means US Keyboard Layout. This is a scancode table

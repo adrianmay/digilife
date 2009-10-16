@@ -5,7 +5,7 @@
 #define GATE_DEFAULT 0x8E00
 #define TANKAT 0x20000
 #define TANKPAGES 1
-#define STACKSIZE 4096
+#define STACKSIZE 2048
 #define GDT_TASKS 6
 
 ///<
@@ -21,11 +21,12 @@ struct registers
 typedef enum {null, 
 	kernel_code, kernel_data, 
 	tank_code, tank_data, 
-	spare_stack, 
+	spare_stack_1, 
 	kernel_tss, kernel_stack, 
 	tank_tss, tank_stack, 
 	keyboard_tss, keyboard_stack, 
-	task_gate, screen, GDT_MAX
+	task_gate, screen, 
+	spare_stack_2, GDT_MAX
 } gd_label;
 
 
@@ -105,9 +106,17 @@ void get_histogram(unsigned short int * histogram);
 void do_histogram();
 void pokescreen(int where, int what);
 void clearscreen();
+void at(int row, int col);
+const char faultmsg[32][20];
 extern int cursor;
 extern struct gdt_descriptor gdt_desc;
 extern struct segment_descriptor gdt[GDT_MAX];
 extern struct Task tasks[3];
 extern struct idt_entry idt[256];
-extern void * TANK_START; 
+extern const unsigned int TANK_START; 
+extern const unsigned int KERNEL_CODE_END; 
+extern const unsigned int KERNEL_DATA_BEGIN; 
+extern const unsigned int KERNEL_END; 
+
+
+

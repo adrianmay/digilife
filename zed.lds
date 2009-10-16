@@ -7,7 +7,9 @@ SECTIONS
 		rand.o (.text)
 		zed.o (.text)
 	}
+	. = ALIGN(16);
 	KERNEL_CODE_END = .;
+	KERNEL_DATA_BEGIN = .;
 	.data :
 	{
 		more.o (.data)
@@ -20,8 +22,8 @@ SECTIONS
 		rand.o (.bss)
 		zed.o (.bss)  
 	}
-	KERNEL_END = .;
 	. = ALIGN(512);
+	KERNEL_END = .;
 	TANK_START = .;
 	.tank 0 :
 	AT(0x20000)
@@ -31,5 +33,6 @@ SECTIONS
 	}
 	TANK_END = .;
 	TANK_SIZE = SIZEOF(.tank);
+	KERNEL_DATA_SIZE = KERNEL_END - KERNEL_DATA_BEGIN;
 	
 }

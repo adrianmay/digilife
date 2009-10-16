@@ -194,8 +194,8 @@ void interrupt_handler(struct registers r)
 	}
     else if (r.int_no==32) //timer
     {
-			//print("."); //IDT doesn't point here anymore, there's a task gate instead
-			return;
+			print("."); //IDT doesn't point here anymore, there's a task gate instead
+			//return;
 		//loopint:
 		//	goto loopint;		
 	    ticks = (ticks+1)%100;
@@ -207,11 +207,21 @@ void interrupt_handler(struct registers r)
 			
 			ip = r.eip-rand()%6 ;
 			
-			__asm__ (	"mov $0x20, %ax\n\t"
-				"mov %ax, %fs\n\t"
-				"mov ip, %edi\n\t"
+			__asm__ (	
+				"push %eax\n\t"
 				"call rand\n\t"
-				"mov %al, %fs:(%edi)" );
+				"push %es\n\t"
+				"push %ebx\n\t"
+				"push %edi\n\t"
+				"mov $0x20, %bx\n\t"
+				"mov %bx, %es\n\t"
+				"mov ip, %edi\n\t"
+				"mov %al, %es:(%edi)\n\t" 
+				"pop %edi\n\t"
+				"pop %ebx\n\t"
+				"pop %es\n\t"
+				"pop %eax\n\t"
+				);
 			r.eip=r.esi=rand()%0xfff0;			
 			//		r.eip=0;			
 	    }
@@ -228,6 +238,7 @@ void interrupt_handler(struct registers r)
 			delay();
 		}*/
 		//Fry the offending instruction
+		/*
 		ip = r.eip-rand()%6 ;
 	    
 		__asm__ (	
@@ -245,8 +256,9 @@ void interrupt_handler(struct registers r)
 			"pop %es\n\t"
 			"pop %eax\n\t"
 			);
-
+*/
         r.eip=r.esi=(rand()%0xfffc) ;//r.eip=tank_main;
+		do_histogram();
     }
 }
 

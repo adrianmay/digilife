@@ -205,74 +205,55 @@ nuketank:
 	push ebp
 	mov ebp, esp
 	pusha
+	push es
 	mov ebx, 0x20
-	mov gs, bx ;tank
-	mov esi, 0 ;TANKPAGES
+	mov es, bx ;tank
+	mov edi, 0 ;TANKPAGES
 nukeloop:
-	push esi
-	mov eax, 0x10203040
-	mov ebx, 0x10
-	mov gs, bx ;tank
+	;push edi
+	;mov ebx, 0x10
+	;mov es, bx ;tank
+	;mov eax, 0x10203040
 	call rand
-	pop esi
-	mov ebx, 0x20
-	mov gs, bx ;tank
-	mov [gs:esi], eax	
-	inc esi
-	inc esi
-	inc esi
-	inc esi
-	cmp esi, 0x10000
+	;mov ebx, 0x20
+	;mov es, bx ;tank
+	;pop edi
+	mov [es:edi], eax	
+	inc edi
+	inc edi
+	inc edi
+	inc edi
+	cmp edi, 0x10000
 	je	nukedone
 	jmp nukeloop
 nukedone:
+	pop es
 	popa
 	pop ebp
 	ret
 
 thehistogram: times 256 dw 0  
 
-get_histogram_no:
-	push ebp
-	mov ebp,esp
-	pusha
-	mov ax, ds
-	mov es, ax
-	mov ax, 7
-	mov cx, 0xff	
-	mov di, thehistogram
-	rep stosw
-	popa
-	pop ebp
-	ret
-
 	
 get_histogram:
 	push ebp
 	mov ebp,esp
 	pusha
-	
-	mov ax, ds
-	mov es, ax
-	
-	mov edi, thehistogram
-	mov esi, 0
+	push es
+	mov esi, thehistogram
 	mov eax, 0x20
-	mov gs, ax ;tank
-	mov esi, 0 ;TANKPAGES
+	mov es, ax ;tank
+	mov edi, 0 ;TANKPAGES
 histloop:
-	mov eax, 0
-	mov	al, [gs:esi]
-	shl eax,1
-	mov ebx, eax
-	inc word [ebx+edi]
-;	mov ax, [ebx+edi]
-;	inc ax
-;	mov [ebx+edi], ax
-	inc	esi
-	cmp esi, 0x10000
+	mov ebx, 0
+	mov	bl, [es:edi]
+	shl ebx,1
+	inc word [ds:esi+ebx]
+	inc	edi
+	cmp edi, 0x10000
 	jne	histloop
 histdone:
+	pop es
 	popa
 	pop ebp
 	ret
@@ -300,21 +281,17 @@ isr_head_%1:
     
 isr_common:
     pusha
+	push ds
+	push es
+	push fs
+	push gs
     mov ax, 0x10   ; Load the Kernel Data Segment descriptor!
     mov ds, ax
     mov es, ax
-    mov ax, 0x20   ; Load the Kernel Data Segment descriptor!
     mov fs, ax
-    mov ax, 0x68   ; Screen
     mov gs, ax
     call interrupt_handler
-    mov ax, 0x20   ; Load the Kernel Data Segment descriptor!
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov ax, 0x68   ; Screen
-    mov gs, ax
-    mov eax, [ss:esp+32] ; int number
+    mov eax, [ss:esp+48] ; int number
     ; acknowledge whichever PICs: 32-39 inclusive, just master (0x20,0x20), 40-47 also slave A0, 20
     cmp eax, 32
     jl no_more_acks
@@ -328,6 +305,10 @@ ack_master:
     mov al, 20h
     out 20h, al
 no_more_acks:    
+	pop gs
+	pop fs
+	pop es
+	pop ds
     popa
     add esp, 8     ; Cleans up the pushed error code and pushed ISR number
 	;call delay
@@ -438,12 +419,12 @@ idt_entry_ring0 i
 idt_entry_ring0 i ;timer
 %assign i i+1
 
-;idt_entry_ring0 i ;keyboard
-dw 0 
-dw 50h
-db 0
-db 085h
-dw 0
+idt_entry_ring0 i ;keyboard
+;dw 0 
+;dw 50h
+;db 0
+;db 085h
+;dw 0
 %assign i i+1
 
 %rep 222

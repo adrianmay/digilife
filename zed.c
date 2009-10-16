@@ -96,6 +96,7 @@ void do_histogram()
 		cursor=5*i;
 		printc(' ');
 		printx(thehistogram[i]);
+		//delay();
 	}
 }
 
@@ -135,7 +136,7 @@ void setup_tasks()
 {
 	setup_task(0, 0, kernel_code, kernel_data, 0, 0, 0, -1);
 	setup_task(1, 3, tank_code, tank_data, madtank, spare_stack, STACKSIZE, -1);
-	setup_task(2, 0, kernel_code, kernel_data, keyboard_task_loop, spare_stack, STACKSIZE,33);
+	//setup_task(2, 0, kernel_code, kernel_data, keyboard_task_loop, spare_stack, STACKSIZE,33);
 	
 }
 

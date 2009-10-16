@@ -63,7 +63,7 @@ char dotmsg[]=".";
 void main()
 {
 	int a;
-	setup_tasks();
+	//setup_tasks();
 	clearscreen();
 	randinit();	
 	nuketank();

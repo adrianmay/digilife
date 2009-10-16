@@ -169,23 +169,28 @@ crash:
 pokescreen: ;(where, what)
 	push ebp
 	mov ebp,esp
-	push fs
+	push es
 	push eax
 	push edi
 	mov ax, 0x68
-	mov fs, ax
+	mov es, ax
 	mov edi, [ebp+8]
 	shl	edi,1
 	mov eax, [ebp+12]
-	mov [fs:di],al
+	mov [es:di],al
 	pop edi
 	pop eax
-	pop fs
+	pop es
 	pop ebp
 	ret
 
 clearscreen:
-	pusha
+	push ebp
+	mov ebp,esp
+	push eax
+	push edx
+	push edi
+	push es
 	mov dx, 0x3d4 ;hide cursor
 	mov al, 10
 	out dx, al
@@ -194,11 +199,19 @@ clearscreen:
 	out dx, al
 	mov ax, 0x68
 	mov es, ax
-	mov cx, 80*25
-	mov ax, 0x0f00
-	mov di, 0
-	rep stosw
-	popa
+	mov eax, 0x0f00
+	mov edi, 0
+clsloop:
+	mov [es:di], ax
+	inc edi
+	inc edi
+	cmp edi, 80*25*2
+	jne clsloop;
+	pop es
+	pop edi
+	pop edx
+	pop eax
+	pop ebp
 	ret
 
 nuketank:
@@ -312,7 +325,7 @@ no_more_acks:
     popa
     add esp, 8     ; Cleans up the pushed error code and pushed ISR number
 	;call delay
-	sti
+	;sti
     iret           ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP
 
 keyboard_task_loop:

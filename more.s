@@ -349,7 +349,7 @@ no_more_acks:
 
 keyboard_task_loop:
 	cli
-	jmp skip
+	;jmp skip
 	call printfoo
 	push  0
 	push  33

@@ -75,8 +75,8 @@ void main()
 	randinit();	
 	//nuketank();
 	do_histogram();
-loopmain:
-	goto loopmain;
+//loopmain:
+	//goto loopmain;
 	//put_handler(32, isr_nothing, GATE_DEFAULT);
 	jump_tank();
 //main_loop:
@@ -115,7 +115,7 @@ void setup_task(int which, int ring, int cs, int ds, void * ip, int ss0, int sp0
 	task->ldtr = 0;
 	task->cs = cs*8 + ring; task->eip = (unsigned int)ip;//-gdt[cs].base_l;
 	task->ds = task->es = task->fs = task->gs = ds*8 + ring;
-	task->ss = 8*((GDT_TASKS+1)+which*2) + ring; task->esp = STACKSIZE;
+	task->ss = 8*((GDT_TASKS+1)+which*2) + ring; task->esp = STACKSIZE-4;
 	task->ss0 = ss0*8; task->esp0 = sp0;
 	task->eflags = 0x202L + (ring << 12);
 	
@@ -134,7 +134,7 @@ void setup_task(int which, int ring, int cs, int ds, void * ip, int ss0, int sp0
 	if (rupt>=0)
 	{
 		idt[rupt].selector=8*(GDT_TASKS+which*2);
-		idt[rupt].flags=0x85;
+		idt[rupt].flags=0xe5;
 		idt[rupt].offset_high = idt[rupt].offset_low = idt[rupt].nothing = 0;
 	}
 	

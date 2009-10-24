@@ -37,8 +37,8 @@ struct segment_descriptor gdt[GDT_MAX]=
 	{0,0,0,0,0}, //null
 	{0,0,0,ACS_CODE+ACS_LIMH*1,0}, //kernel code 8
 	{0,0,0,ACS_DATA+ACS_LIMH*1,0}, //kernel data 10
-	{0,0,2,ACS_CODE+ACS_PRIV_3+ACS_LIMH*TANKPAGES,0}, //tank code 18
-	{0,0,2,ACS_DATA+ACS_PRIV_3+ACS_LIMH*TANKPAGES,0}, //tank data 20
+	{0,TANKAT,0,ACS_CODE+ACS_PRIV_3+ACS_LIMH*TANKPAGES,0}, //tank code 18
+	{0,TANKAT,0,ACS_DATA+ACS_PRIV_3+ACS_LIMH*TANKPAGES,0}, //tank data 20
 	{STACKSIZE,0,0,ACS_STACK,0}, //spare stack 1 28
 	{0,0,0,0,0}, //kernel tss 30
 	{STACKSIZE,0,0,ACS_STACK,0}, //kernel stack 38
@@ -47,7 +47,7 @@ struct segment_descriptor gdt[GDT_MAX]=
 	{0,0,0,0,0}, //keyboard tss 50
 	{0,0,0,0,0}, //keyboard stack 58
 	{0,0x40,0,0x85,0}, //task gate 60
-	{80*25*2,0x8000,0xb, ACS_DATA+ACS_PRIV_3,0}, //screen 68
+	{80*25*2,0x8000,0xb, ACS_DATA,0}, //screen 68
 	{STACKSIZE,0,0,ACS_STACK,0}, //spare stack 2 70
 };
 
@@ -70,13 +70,13 @@ char dotmsg[]=".";
 void main()
 {
 	int a;
+loopmain:
+	goto loopmain;
 	setup_tasks();
 	clearscreen();
 	randinit();	
 	//nuketank();
 	do_histogram();
-//loopmain:
-	//goto loopmain;
 	//put_handler(32, isr_nothing, GATE_DEFAULT);
 	jump_tank();
 //main_loop:
@@ -144,7 +144,7 @@ void setup_tasks()
 {
 	setup_task(0, 0, kernel_code, kernel_data, 0, 0, 0, -1);
 	setup_task(1, 3, tank_code, tank_data, madtank, spare_stack_1, STACKSIZE, -1);
-	setup_task(2, 0, kernel_code, kernel_data, keyboard_task_loop, spare_stack_2, STACKSIZE,33);
+	//setup_task(2, 0, kernel_code, kernel_data, keyboard_task_loop, spare_stack_2, STACKSIZE,33);
 	
 }
 
@@ -169,7 +169,7 @@ const char *tutorial3 = "MuOS Tutorial 3";
 *  serviced as a 'locking' mechanism to prevent an IRQ from
 *  happening and messing up kernel data structures */
 
-int ticks;
+int ticks=0, tocks=0;
 unsigned int ip;
 char * tockmsg="tock ";
 
@@ -190,11 +190,11 @@ void interrupt_handler(struct registers r)
     if (0) ;
     else if (r.int_no==33) //Keyboard
 	{
-		printfoo();
+		at(24,40);printfoo();
 	}
     else if (r.int_no==32) //timer
     {
-			print("."); //IDT doesn't point here anymore, there's a task gate instead
+			print(".. "); //IDT doesn't point here anymore, there's a task gate instead
 			//return;
 		//loopint:
 		//	goto loopint;		
@@ -204,7 +204,7 @@ void interrupt_handler(struct registers r)
 			//print(tockmsg);
 			//do_histogram();
 			//Fry the offending instruction
-			
+			/*
 			ip = r.eip-rand()%6 ;
 			
 			__asm__ (	
@@ -222,15 +222,17 @@ void interrupt_handler(struct registers r)
 				"pop %es\n\t"
 				"pop %eax\n\t"
 				);
-			r.eip=r.esi=rand()%0xfff0;			
-			//		r.eip=0;			
+				*/
+			r.eip=r.esi=(rand()*4)%0xfff0;			
+			
 	    }
 	    if (!ticks) do_histogram();
 	    
     }
     else if (r.int_no < 32)
     {
-		at(r.int_no, 0);print(faultmsg[r.int_no]);
+		tocks = (tocks+1)%1000;
+		at(r.int_no/2+17, (r.int_no%2)*40);print(faultmsg[r.int_no]);
 		/*
 		if (!seen[r.int_no])
 		{
@@ -238,9 +240,9 @@ void interrupt_handler(struct registers r)
 			delay();
 		}*/
 		//Fry the offending instruction
-		/*
+		
 		ip = r.eip-rand()%6 ;
-	    
+	    /*
 		__asm__ (	
 			"push %eax\n\t"
 			"call rand\n\t"
@@ -257,8 +259,8 @@ void interrupt_handler(struct registers r)
 			"pop %eax\n\t"
 			);
 */
-        r.eip=r.esi=(rand()%0xfffc) ;//r.eip=tank_main;
-		do_histogram();
+        r.eip=r.esi=((rand()*4)%0xfffc) ;//r.eip=tank_main;
+		if (!tocks) do_histogram();
     }
 }
 
@@ -350,6 +352,12 @@ void printx(int n)
 void printfoo()
 {
 	print("Fooo");
+	delay();
+}
+
+void printbar()
+{
+	print("Baaa");
 	delay();
 }
 /* KBDUS means US Keyboard Layout. This is a scancode table

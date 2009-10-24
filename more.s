@@ -5,7 +5,7 @@
 ;[extern kernel_stack_base]
 [extern spare_stack_block_1]
 [extern spare_stack_block_2]
-[extern printfoo]
+;[extern printfoo]
 [extern printbar]
 [extern printn]
 [extern interrupt_handler]
@@ -51,7 +51,7 @@ start:
 	mov al, 68
 	mov di, 8
 	mov [es:di], al
-	
+
 	mov ax, 0
 	mov ds, ax
 	mov ax, hack_kernelstack
@@ -93,6 +93,7 @@ clear_pipe:
 	call remap_ints
 	lidt [idt_ptr];
 	sti;
+	;CRASHES AFTER INTS ENABLED
 	jmp main;
 
 jump_tank:
@@ -344,13 +345,13 @@ no_more_acks:
     popa
     add esp, 8     ; Cleans up the pushed error code and pushed ISR number
 	;call delay
-	;sti
+	sti
     iret           ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP
 
 keyboard_task_loop:
 	cli
 	;jmp skip
-	call printfoo
+	call printbar
 	push  0
 	push  33
     pusha
@@ -454,12 +455,12 @@ idt_entry_ring0 i
 idt_entry_ring0 i ;timer
 %assign i i+1
 
-;idt_entry_ring0 i ;keyboard
-dw 0 
-dw 50h
-db 0
-db 085h
-dw 0
+idt_entry_ring0 i ;keyboard
+;dw 0 
+;dw 50h
+;db 0
+;db 085h
+;dw 0
 %assign i i+1
 
 %rep 222

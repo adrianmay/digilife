@@ -69,8 +69,8 @@ extendedConfigFile = "zed.vmxf"
 virtualHW.productCompatibility = "hosted"
 tools.upgrade.policy = "manual"
 
-uuid.location = "56 4d 7e a1 f0 cc 02 56-16 85 16 37 09 e0 b2 80"
-uuid.bios = "56 4d 7e a1 f0 cc 02 56-16 85 16 37 09 e0 b2 80"
+uuid.location = "56 4d ec 28 26 c8 86 59-da 79 7d 74 9a f4 02 9e"
+uuid.bios = "56 4d ec 28 26 c8 86 59-da 79 7d 74 9a f4 02 9e"
 vmotion.checkpointFBSize = "16777216"
 
 checkpoint.vmState = ""

@@ -1,0 +1,185 @@
+<html>
+<head>
+<style type="text/css">
+body {margin-left: 210px; font-family:Arial}
+h1 {text-align:center}
+h1,h2,h3,h4 {text-decoration:underline}
+h1,h2,h3 {text-transform:uppercase}
+.box {text-align:center;background-color:#DDFFFF;margin-left:25%;margin-right:25%;}
+</style>
+</head>
+<body>
+
+<div title="Digital Life" >
+
+	<div title="Introduction">
+	</div>
+
+	<div title="Philosophy">
+	</div>
+
+	<div title="Psychology">
+	<div class=box>This is a box</div>
+	</div>
+
+	<div title="Code">
+
+		<div title="Zed">
+		</div>
+
+		<div title="Animals">
+
+			<div title="Overview">
+			The VM consists of a bunch of processes ("reflexes") with any number of input and output streams each. A parent process can create a child and wire its queues 
+			</div>
+
+			<div title="Accounts">
+			<p>An account can own some money and have temporary (perhaps also permanent) rights to systems resources. 
+			<p>Blah
+				<div title="A Very Long Title for a Very Short Chapter">
+					<div title="Poor">
+					</div>
+				</div>
+			</div>
+
+			<div title="Reflexes">
+			This is about reflexes
+			<p>Blah
+			</div>
+
+		</div>
+
+	</div>
+
+	<div title="">
+	</div>
+
+</div>
+
+<script>
+if (!document.layers)
+document.write('<div id="divStayTopLeft" style="position:absolute">')
+</script>
+
+<layer id="divStayTopLeft">
+
+<!--EDIT BELOW CODE TO YOUR OWN MENU-->
+<table border="0" width="200" cellspacing="0" cellpadding="0" bgcolor="#FFFFCC">
+
+
+<script>
+function sayfoo() {alert("foo");}
+function shownumbers(numbers)
+{
+	var ret="";
+	for (var i=0;i<numbers.length;i++) 
+	{
+		if (ret.length) ret = ret + "." 
+		ret = ret + numbers[i];
+	}
+	return ret;
+}
+
+function joinstrings(l)
+{
+	var ret="";
+	for (var i=0;i<l.length;i++) ret+=l[i];
+	//alert(ret);
+	return ret;
+}
+
+function contents(el, numbers)
+{
+	if (el.nodeType != 1) return;
+	if (el.title == "") return;
+	el.id=joinstrings(el.title.split(' '));
+	document.write("<tr><td>"+shownumbers(numbers)+"  <a href=#" + el.id + ">" + el.title + "</a></td></tr>");
+	var j=0;
+	for (var i=0;i<el.childNodes.length;i++)
+	{
+		//document.write(child.title);
+		var morenumbers = numbers.slice();
+		morenumbers.push(j+1);
+		contents(el.childNodes[i], morenumbers);
+		if (el.childNodes[i].nodeType==1 && el.childNodes[i].title!="") j++;
+	}
+	//el.textContent = "Foo" + el.textContent;
+	
+	tit=document.createElement("h"+(numbers.length+1));
+	titex=document.createTextNode(el.title);
+	tit.appendChild(titex);
+	el.insertBefore(tit, el.childNodes[0]);
+	
+}
+//document.write(document.body.getElementsByTagName("div")[0].title)
+//sayfoo();
+contents(document.body.getElementsByTagName("div")[0],[]);
+</script>
+
+</table>
+<!--END OF EDIT-->
+
+</layer>
+
+
+<script type="text/javascript">
+
+/*
+Floating Menu script- Roy Whittle (http://www.javascript-fx.com/)
+Script featured on/available at http://www.dynamicdrive.com/
+This notice must stay intact for use
+*/
+
+var verticalpos="fromtop"
+
+if (!document.layers)
+document.write('</div>')
+
+function JSFX_FloatTopDiv()
+{
+	var startX = 3,
+	startY = 10;
+	var ns = (navigator.appName.indexOf("Netscape") != -1);
+	var d = document;
+	function ml(id)
+	{
+		var el=d.getElementById?d.getElementById(id):d.all?d.all[id]:d.layers[id];
+		if(d.layers)el.style=el;
+		el.sP=function(x,y){this.style.left=x;this.style.top=y;};
+		el.x = startX;
+		if (verticalpos=="fromtop")
+			el.y = startY;
+		else
+		{
+			el.y = ns ? pageYOffset + innerHeight : document.body.scrollTop + document.body.clientHeight;
+			el.y -= startY;
+		}
+		return el;
+	}
+	window.stayTopLeft=function()
+	{
+		if (verticalpos=="fromtop")
+		{
+				var pY = ns ? pageYOffset : document.body.scrollTop;
+				ftlObj.y += (pY + startY - ftlObj.y)/8;
+		}
+		else
+		{
+			var pY = ns ? pageYOffset + innerHeight : document.body.scrollTop + document.body.clientHeight;
+			ftlObj.y += (pY - startY - ftlObj.y)/8;
+		}
+		ftlObj.sP(ftlObj.x, ftlObj.y);
+		setTimeout("stayTopLeft()", 10);
+	}
+	
+	ftlObj = ml("divStayTopLeft");
+	stayTopLeft();
+
+}
+
+JSFX_FloatTopDiv();
+
+</script>
+
+</body>
+</html>

@@ -95,6 +95,7 @@ clear_pipe:
 
 	call enable_A20
 	call remap_ints
+	sidt [idt_old];
 	lidt [idt_ptr];
 	sti;
 	jmp main;
@@ -478,4 +479,7 @@ idt_ptr:
 	dw idt_end - idt - 1; IDT limit
 	dd idt	; start of IDT
 
+idt_old:
+	dw 0
+	dd 0
 

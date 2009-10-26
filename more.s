@@ -104,10 +104,32 @@ jump_tank:
 	pop ax
 	jmp 60h:0
 
+	
+go_real:
+	pushad
+	push ds
+	push es
+	push fs
+	push gs	
+	push ss
+	cli
+	mov ax,ds
+	mov es,ax
+	mov fs,ax
+	mov gx,ax
+	mov ss,ax
+back_real:	
+	pop ss
+	pop gs
+	pop fs
+	pop es
+	pop ds
+	popad
+	ret
+	
 load_tsr:
         ltr     word [ss:esp+4]
-        ret
-	
+        ret	
 	
 remap_ints:
 	mov al, 11h
@@ -241,7 +263,7 @@ clsloop:
 nuketank:
 	push ebp
 	mov ebp, esp
-	pusha
+	pushad
 	push es
 	mov ebx, 0x20
 	mov es, bx ;tank
@@ -265,7 +287,7 @@ nukeloop:
 	jmp nukeloop
 nukedone:
 	pop es
-	popa
+	popad
 	pop ebp
 	ret
 
@@ -275,7 +297,7 @@ thehistogram: times 256 dw 0
 get_histogram:
 	push ebp
 	mov ebp,esp
-	pusha
+	pushad
 	push es
 	mov esi, thehistogram
 	mov eax, 0x20
@@ -291,7 +313,7 @@ histloop:
 	jne	histloop
 histdone:
 	pop es
-	popa
+	popad
 	pop ebp
 	ret
 	
@@ -317,7 +339,7 @@ isr_head_%1:
 %endmacro
     
 isr_common:
-    pusha
+    pushad
 	push ds
 	push es
 	push fs
@@ -346,7 +368,7 @@ no_more_acks:
 	pop fs
 	pop es
 	pop ds
-    popa
+    popad
     add esp, 8     ; Cleans up the pushed error code and pushed ISR number
 	;call delay
 	sti
@@ -358,7 +380,7 @@ keyboard_task_loop:
 	call printbar
 	push  0
 	push  33
-    pusha
+    pushad
     push ds
     push es
     push fs
@@ -377,7 +399,7 @@ keyboard_task_loop:
     mov al, 20h
     out 20h, al
 
-    popa
+    popad
     add esp, 4     ; Cleans up the pushed error code and pushed ISR number
 skip:
 	sti

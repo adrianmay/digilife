@@ -11,17 +11,14 @@ babystack:
 	dd 0
 	dd 0
 	dd 0
-returnto: 
-	dw 0
 
 real_mode:
 	mov ax, 0
 	mov ds, ax
 	mov es, ax
 	mov fs, ax
-	mov gs, ax
-	
-	mov [returnto], bx
+	mov gs, ax	
+	sti
 	cmp ax, 1
 	jne real_1
 	call save_tank
@@ -31,6 +28,7 @@ real_1:
 	jne real_done
 	call load_tank
 real_done:
+	cli
 	ret
 	
 	

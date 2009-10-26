@@ -107,7 +107,7 @@ madtanklabel%1:
 madtank:
 %assign i 0
 %rep 40h
-madtank_int33 i
+madtank_123 i
 %assign i i+1 
 madtank_ok i
 %assign i i+1 

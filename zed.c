@@ -71,7 +71,7 @@ void main()
 {
 	int a;
 loopmain:
-	goto loopmain;
+//	goto loopmain;
 	setup_tasks();
 	clearscreen();
 	randinit();	
@@ -170,7 +170,7 @@ const char *tutorial3 = "MuOS Tutorial 3";
 *  happening and messing up kernel data structures */
 
 int ticks=0, tocks=0;
-unsigned int ip;
+
 char * tockmsg="tock ";
 
 //  for (i=0;i<999;i++) {i=i*2;i=i/2;}
@@ -184,9 +184,31 @@ void delay()
 	for (i=0;i<999999;i++) {i=i*2;i=i/2;}
 }
 
+unsigned int dumbassip;
+
+void fry(unsigned int ip)
+{
+	dumbassip = ip-rand()%6 ;
+	
+	__asm__ (	
+		"push %eax\n\t"
+		"call rand\n\t"
+		"push %es\n\t"
+		"push %ebx\n\t"
+		"push %edi\n\t"
+		"mov $0x20, %bx\n\t"
+		"mov %bx, %es\n\t"
+		"mov dumbassip, %edi\n\t"
+		"mov %al, %es:(%edi)\n\t" 
+		"pop %edi\n\t"
+		"pop %ebx\n\t"
+		"pop %es\n\t"
+		"pop %eax\n\t"
+		);
+}
+
 void interrupt_handler(struct registers r)
 {
-	//return;
     if (0) ;
     else if (r.int_no==33) //Keyboard
 	{
@@ -194,40 +216,19 @@ void interrupt_handler(struct registers r)
 	}
     else if (r.int_no==32) //timer
     {
-			print(".. "); //IDT doesn't point here anymore, there's a task gate instead
+			at(24,40);printc(ticks%256); //IDT doesn't point here anymore, there's a task gate instead
 			//return;
 		//loopint:
 		//	goto loopint;		
-	    ticks = (ticks+1)%100;
+	    ticks = ticks+1;
 	    if (1)//(!ticks)
 	    {
 			//print(tockmsg);
 			//do_histogram();
-			//Fry the offending instruction
-			/*
-			ip = r.eip-rand()%6 ;
-			
-			__asm__ (	
-				"push %eax\n\t"
-				"call rand\n\t"
-				"push %es\n\t"
-				"push %ebx\n\t"
-				"push %edi\n\t"
-				"mov $0x20, %bx\n\t"
-				"mov %bx, %es\n\t"
-				"mov ip, %edi\n\t"
-				"mov %al, %es:(%edi)\n\t" 
-				"pop %edi\n\t"
-				"pop %ebx\n\t"
-				"pop %es\n\t"
-				"pop %eax\n\t"
-				);
-				*/
-			r.eip=r.esi=(rand()*4)%0xfff0;			
-			
+			fry(r.eip);
+			if (r.cs==8*tank_code) r.eip=r.esi=(rand()*4)%0xfffc;						
 	    }
-	    if (!ticks) do_histogram();
-	    
+	    if (!(ticks%100)) do_histogram();	    
     }
     else if (r.int_no < 32)
     {
@@ -240,26 +241,16 @@ void interrupt_handler(struct registers r)
 			delay();
 		}*/
 		//Fry the offending instruction
-		
-		ip = r.eip-rand()%6 ;
-	    /*
-		__asm__ (	
-			"push %eax\n\t"
-			"call rand\n\t"
-			"push %es\n\t"
-			"push %ebx\n\t"
-			"push %edi\n\t"
-			"mov $0x20, %bx\n\t"
-			"mov %bx, %es\n\t"
-			"mov ip, %edi\n\t"
-			"mov %al, %es:(%edi)\n\t" 
-			"pop %edi\n\t"
-			"pop %ebx\n\t"
-			"pop %es\n\t"
-			"pop %eax\n\t"
-			);
-*/
-        r.eip=r.esi=((rand()*4)%0xfffc) ;//r.eip=tank_main;
+		//fry(r.eip);
+        if (r.cs/8==tank_code) r.eip=r.esi=((rand()*4)%0xfffc) ;//r.eip=tank_main;
+		else 
+		{
+			print("Ouch:");
+			printn(r.cs/8);
+		ouch:
+			goto ouch;
+		}
+				
 		if (!tocks) do_histogram();
     }
 }

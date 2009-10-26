@@ -35,10 +35,10 @@ const void * hack_kernelstack=&tasks[0].stack;
 struct segment_descriptor gdt[GDT_MAX]=
 {
 	{0,0,0,0,0}, //null
-	{0,0,0,ACS_CODE+ACS_LIMH*1,0}, //kernel code 8
-	{0,0,0,ACS_DATA+ACS_LIMH*1,0}, //kernel data 10
-	{0,TANKAT%0x10000,TANKAT/0x10000,ACS_CODE+ACS_PRIV_3+ACS_LIMH*TANKPAGES,0}, //tank code 18
-	{0,TANKAT%0x10000,TANKAT/0x10000,ACS_DATA+ACS_PRIV_3+ACS_LIMH*TANKPAGES,0}, //tank data 20
+	{0xffff,0,0,ACS_CODE,0}, //kernel code 8
+	{0xffff,0,0,ACS_DATA,0}, //kernel data 10
+	{0xffff,TANKAT%0x10000,TANKAT/0x10000,ACS_CODE+ACS_PRIV_3+ACS_LIMH*(TANKPAGES-1),0}, //tank code 18
+	{0xffff,TANKAT%0x10000,TANKAT/0x10000,ACS_DATA+ACS_PRIV_3+ACS_LIMH*(TANKPAGES-1),0}, //tank data 20
 	{STACKSIZE,0,0,ACS_STACK,0}, //spare stack 1 28
 	{0,0,0,0,0}, //kernel tss 30
 	{STACKSIZE,0,0,ACS_STACK,0}, //kernel stack 38
@@ -52,6 +52,7 @@ struct segment_descriptor gdt[GDT_MAX]=
 };
 
 
+const void * hack_kernelcodestart=&gdt[kernel_code].base_l;
 const void * hack_kernelcodelimit=&gdt[kernel_code].limit;
 const void * hack_kerneldatastart=&gdt[kernel_data].base_l;
 const void * hack_kerneldatalimit=&gdt[kernel_data].limit;

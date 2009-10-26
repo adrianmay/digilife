@@ -11,6 +11,7 @@
 [extern interrupt_handler]
 [extern keyboard_handler]
 [extern main]
+[extern hack_kernelcodestart]
 [extern hack_kernelcodelimit]
 [extern hack_kerneldatastart]
 [extern hack_kerneldatalimit]
@@ -61,12 +62,15 @@ start:
 	mov ax, spare_stack_block_2
 	mov [hack_sparestack2start], ax
 
-	mov ax, KERNEL_CODE_END
-	mov [hack_kernelcodelimit], ax
-	mov ax, KERNEL_DATA_SIZE
-	mov [hack_kerneldatalimit], ax
-	mov ax, KERNEL_DATA_BEGIN
-	mov [hack_kerneldatastart], ax
+	;mov ax, 0x8000
+	;mov [hack_kernelcodestart], ax
+	;mov ax, KERNEL_CODE_END
+	;mov [hack_kernelcodelimit], ax
+	;mov ax, KERNEL_DATA_BEGIN
+	;add ax, 0x8000
+	;mov [hack_kerneldatastart], ax
+	;mov ax, KERNEL_DATA_SIZE
+	;mov [hack_kerneldatalimit], ax
 	
 	lgdt [gdt_desc]         ; Load the GDT descriptor
 
@@ -93,7 +97,6 @@ clear_pipe:
 	call remap_ints
 	lidt [idt_ptr];
 	sti;
-	;CRASHES AFTER INTS ENABLED
 	jmp main;
 
 jump_tank:

@@ -37,8 +37,8 @@ struct segment_descriptor gdt[GDT_MAX]=
 	{0,0,0,0,0}, //null
 	{0,0,0,ACS_CODE+ACS_LIMH*1,0}, //kernel code 8
 	{0,0,0,ACS_DATA+ACS_LIMH*1,0}, //kernel data 10
-	{0,TANKAT,0,ACS_CODE+ACS_PRIV_3+ACS_LIMH*TANKPAGES,0}, //tank code 18
-	{0,TANKAT,0,ACS_DATA+ACS_PRIV_3+ACS_LIMH*TANKPAGES,0}, //tank data 20
+	{0,TANKAT%0x10000,TANKAT/0x10000,ACS_CODE+ACS_PRIV_3+ACS_LIMH*TANKPAGES,0}, //tank code 18
+	{0,TANKAT%0x10000,TANKAT/0x10000,ACS_DATA+ACS_PRIV_3+ACS_LIMH*TANKPAGES,0}, //tank data 20
 	{STACKSIZE,0,0,ACS_STACK,0}, //spare stack 1 28
 	{0,0,0,0,0}, //kernel tss 30
 	{STACKSIZE,0,0,ACS_STACK,0}, //kernel stack 38
@@ -184,11 +184,11 @@ void delay()
 	for (i=0;i<999999;i++) {i=i*2;i=i/2;}
 }
 
-unsigned int dumbassip;
+unsigned short int dumbassip;
 
 void fry(unsigned int ip)
 {
-	dumbassip = ip-rand()%6 ;
+	dumbassip = (ip-rand()%6)%0x10000 ;
 	
 	__asm__ (	
 		"push %eax\n\t"
@@ -212,23 +212,20 @@ void interrupt_handler(struct registers r)
     if (0) ;
     else if (r.int_no==33) //Keyboard
 	{
-		at(24,40);printfoo();
+		at(24,40);print("INT:");printn(r.int_no);
 	}
     else if (r.int_no==32) //timer
     {
-			at(24,40);printc(ticks%256); //IDT doesn't point here anymore, there's a task gate instead
-			//return;
-		//loopint:
-		//	goto loopint;		
-	    ticks = ticks+1;
-	    if (1)//(!ticks)
+		at(24,60);printn(ticks); at(0,0);
+	    if (!(ticks%100))
 	    {
-			//print(tockmsg);
-			//do_histogram();
-			fry(r.eip);
-			if (r.cs==8*tank_code) r.eip=r.esi=(rand()*4)%0xfffc;						
+			//nuketank();
+			do_histogram();
+			//fry(r.eip);
 	    }
-	    if (!(ticks%100)) do_histogram();	    
+		at(24,70);printn(ticks);at(0,0);
+	    ticks = ticks+1;
+		if (r.cs==8*tank_code) r.eip=r.esi=(rand()*4)%0xfffc;
     }
     else if (r.int_no < 32)
     {
@@ -253,6 +250,10 @@ void interrupt_handler(struct registers r)
 				
 		if (!tocks) do_histogram();
     }
+	else 
+	{
+		at(24,40);print("INT:");printn(r.int_no);
+	}
 }
 
 const char faultmsg[32][20] = 

@@ -106,7 +106,7 @@ reset_drive:
 	mov ch, 0
 	mov dh, 0               ; Head 
 	mov ah, 2             ; READ SECTOR-command
-	mov al, 180               ; Number of sectors to read - all heads*all sectors in a track 
+	mov al, 193               ; Number of sectors to read - all heads*all sectors in a track 
 	int 13h                 ; Call interrupt 13h
     or ah, ah ; Check for error code
     jnz reset_drive ; Try again if ah != 0

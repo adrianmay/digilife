@@ -213,6 +213,7 @@ void interrupt_handler(struct registers r)
     if (0) ;
     else if (r.int_no==33) //Keyboard
 	{
+		go_real();
 		at(24,40);print("INT:");printn(r.int_no);
 	}
     else if (r.int_no==32) //timer

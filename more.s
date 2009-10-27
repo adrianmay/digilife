@@ -22,6 +22,7 @@
 [extern KERNEL_CODE_END]
 [extern KERNEL_DATA_BEGIN]
 [extern KERNEL_DATA_SIZE]
+[extern real_mode]
 
 [extern delay]
 [extern rand]
@@ -38,7 +39,8 @@
 [global clearscreen]
 [global get_histogram]
 [global nuketank]
-
+[global go_real]
+[global back_real]
 
 ALIGN 8
 
@@ -104,27 +106,39 @@ jump_tank:
 	pop ax
 	jmp 60h:0
 
+savesp:
+	dd 0
 	
 go_real:
+	cli
 	pushad
 	push ds
 	push es
 	push fs
 	push gs	
-	push ss
-	cli
+	mov [savesp], esp
 	mov ax,ds
 	mov es,ax
 	mov fs,ax
-	mov gx,ax
+	mov gs,ax
 	mov ss,ax
+	lidt [idt_old]
+	mov eax, cr0            
+	and eax, 0xfffffffe     
+	mov cr0, eax            
+	jmp 00h:real_mode       
+	
 back_real:	
-	pop ss
+	lidt [idt_ptr]
+	mov ax, 0x38
+	mov ss, ax
+	mov esp, [savesp]
 	pop gs
 	pop fs
 	pop es
 	pop ds
 	popad
+	sti
 	ret
 	
 load_tsr:

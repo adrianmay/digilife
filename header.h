@@ -107,6 +107,7 @@ void do_histogram();
 void pokescreen(int where, int what);
 void clearscreen();
 void at(int row, int col);
+void go_real();
 const char faultmsg[32][20];
 extern int cursor;
 extern struct gdt_descriptor gdt_desc;

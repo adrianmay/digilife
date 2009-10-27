@@ -5,12 +5,15 @@
 %include "defs.s"
 
 [BITS 16]
+[extern go_real]
+[extern back_real]
+[global real_mode]
 
 babystack:
+%rep 16
 	dd 0
-	dd 0
-	dd 0
-	dd 0
+%endrep
+babystackend:
 
 real_mode:
 	mov ax, 0
@@ -18,7 +21,19 @@ real_mode:
 	mov es, ax
 	mov fs, ax
 	mov gs, ax	
+	mov es, ax
+die:
+	jmp die
+	mov ax, babystackend
+	mov sp, ax	
+	mov ax, 0b800h
+	mov es, ax
+	mov di, 2*(80*24+38)
+	mov al, 'R'
+	mov [es:di],al
 	sti
+	call real_test
+	jmp real_done
 	cmp ax, 1
 	jne real_1
 	call save_tank
@@ -29,9 +44,18 @@ real_1:
 	call load_tank
 real_done:
 	cli
-	ret
+	mov eax, cr0           
+	or eax, 1              
+	mov cr0, eax           
+	jmp 08h:back_real      
 	
-	
+real_test:	
+	mov ax, 0xb800
+	mov es, ax
+	mov di, 2*(80*24+38)
+	mov al, 'R'
+	mov [es:di],al
+	ret	
 	
 ;enter with track number in ch and bx pointing to tank bit 
 save_quarter:

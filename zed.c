@@ -145,7 +145,7 @@ void setup_tasks()
 {
 	setup_task(0, 0, kernel_code, kernel_data, 0, 0, 0, -1);
 	setup_task(1, 3, tank_code, tank_data, madtank, spare_stack_1, STACKSIZE, -1);
-	//setup_task(2, 0, kernel_code, kernel_data, keyboard_task_loop, spare_stack_2, STACKSIZE,33);
+	setup_task(2, 0, kernel_code, kernel_data, keyboard_task_loop, spare_stack_2, STACKSIZE,33);
 	
 }
 
@@ -405,6 +405,7 @@ unsigned char scancode;
 
 void keyboard_handler()
 {
+	go_real();
 	//do_histogram();
 	//return;
 	/* Read from the keyboard's data buffer */

@@ -22,7 +22,6 @@
 [extern KERNEL_CODE_END]
 [extern KERNEL_DATA_BEGIN]
 [extern KERNEL_DATA_SIZE]
-[extern real_mode]
 
 [extern delay]
 [extern rand]
@@ -40,7 +39,6 @@
 [global get_histogram]
 [global nuketank]
 [global go_real]
-[global back_real]
 
 ALIGN 8
 
@@ -97,7 +95,7 @@ clear_pipe:
 
 	call enable_A20
 	call remap_ints
-	sidt [idt_old];
+	;sidt [idt_old];
 	lidt [idt_ptr];
 	sti;
 	jmp main;
@@ -108,6 +106,10 @@ jump_tank:
 
 savesp:
 	dd 0
+
+;bum out to real mode for disk operations
+;need to save and restore tanks
+;use tracks 8,9,10,11 with 4000h each whether floppy or stick
 	
 go_real:
 	cli
@@ -117,7 +119,8 @@ go_real:
 	push fs
 	push gs	
 	mov [savesp], esp
-	mov ax,ds
+	mov ax,0x10
+	mov ds,ax
 	mov es,ax
 	mov fs,ax
 	mov gs,ax
@@ -126,9 +129,55 @@ go_real:
 	mov eax, cr0            
 	and eax, 0xfffffffe     
 	mov cr0, eax            
-	jmp 00h:real_mode       
+	jmp 0h:real_mode       
+
+babystack:
+%rep 16
+	dd 0
+%endrep
+babystackend:
+
+real_mode:
+	mov ax, 0
+	mov ds, ax
+	mov es, ax
+	mov fs, ax
+	mov gs, ax	
+	mov es, ax
+	mov ss, ax
+	mov ax, babystackend
+	mov sp, ax	
+	mov ax, 0b800h
+	mov es, ax
+	mov di, 2*(80*24+38)
+	mov al, 'R'
+	mov [es:di],al
+	call unmap_ints
+	;sti
+die:
+	jmp die
+	;cmp ax, 1
+	;jne real_1
+	;call save_tank
+	jmp real_done
+real_1:
+	cmp ax, 2
+	jne real_done
+	call load_tank
+real_done:
+	cli
+	mov eax, cr0           
+	or eax, 1              
+	mov cr0, eax           
+	jmp 08h:back_real      
+	
 	
 back_real:	
+	mov ax, 0b800h
+	mov es, ax
+	mov di, 2*(80*24+38)
+	mov al, 'S'
+	mov [es:di],al
 	lidt [idt_ptr]
 	mov ax, 0x38
 	mov ss, ax
@@ -140,6 +189,82 @@ back_real:
 	popad
 	sti
 	ret
+
+real_test:	
+	mov ax, 0xb800
+	mov es, ax
+	mov di, 2*(80*24+38)
+	mov al, 'R'
+	mov [es:di],al
+	ret	
+
+
+;enter with track number in ch and bx pointing to tank bit 
+save_quarter:
+	
+	mov ax, 0x1000 ;TANKAT
+	mov es, ax 
+	mov al, 20h ;sectors
+	mov cl,1
+	mov dh,0
+	%ifdef floppy
+	mov dl,0
+	%else
+	mov dl,0x80
+	%endif
+	mov bx, 0 ;
+	mov ah,3
+	int 13h
+	ret
+
+save_tank:
+	mov ch, 8
+	mov bx, 0
+	call save_quarter
+	mov ch,9
+	mov bx, 0x4000
+	call save_quarter
+	mov ch,10
+	mov bx, 0x8000
+	call save_quarter
+	mov ch,11
+	mov bx, 0xc000
+	call save_quarter
+	ret
+
+;enter with track number in ch and bx pointing to tank bit 
+load_quarter:
+	
+	mov ax, 0x1000 ;TANKAT
+	mov es, ax 
+	mov al, 20h ;sectors
+	mov cl,1
+	mov dh,0
+	%ifdef floppy
+	mov dl,0
+	%else
+	mov dl,0x80
+	%endif
+	mov bx, 0 ;
+	mov ah,2
+	int 13h
+	ret
+
+load_tank:
+	mov ch, 8
+	mov bx, 0
+	call load_quarter
+	mov ch,9
+	mov bx, 0x4000
+	call load_quarter
+	mov ch,10
+	mov bx, 0x8000
+	call load_quarter
+	mov ch,11
+	mov bx, 0xc000
+	call load_quarter
+	ret
+	
 	
 load_tsr:
         ltr     word [ss:esp+4]
@@ -147,7 +272,7 @@ load_tsr:
 	
 remap_ints:
 	mov al, 11h
-	out 020h, al
+	out 020h, al ;reset
 	out 0A0h, al
 	mov al, 20h
 	out 021h, al
@@ -173,7 +298,26 @@ remap_ints:
 	out 0x40, al
 	ret
 
-
+unmap_ints:
+	mov al, 11h
+	out 020h, al ;reset
+	out 0A0h, al
+	mov al, 0h
+	out 021h, al
+	mov al, 8h
+	out 0A1h, al
+	mov al, 4
+	out 021h, al
+	mov al, 2
+	out 0A1h, al
+	mov al, 1
+	out 021h, al
+	out 0A1h, al
+	mov al, 0
+	out 021h, al
+	out 0A1h, al	
+	ret
+	
 enable_A20:
         call    a20wait
         mov     al,0xAD
@@ -390,8 +534,6 @@ no_more_acks:
 
 keyboard_task_loop:
 	cli
-	;jmp skip
-	call printbar
 	push  0
 	push  33
     pushad
@@ -399,11 +541,6 @@ keyboard_task_loop:
     push es
     push fs
     push gs
-    mov ax, 0x10   ; Load the Kernel Data Segment descriptor!
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
     call keyboard_handler
     pop gs
     pop fs
@@ -415,7 +552,6 @@ keyboard_task_loop:
 
     popad
     add esp, 4     ; Cleans up the pushed error code and pushed ISR number
-skip:
 	sti
     iret           ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP!
     jmp keyboard_task_loop
@@ -516,6 +652,6 @@ idt_ptr:
 	dd idt	; start of IDT
 
 idt_old:
-	dw 0
+	dw 1024
 	dd 0
 

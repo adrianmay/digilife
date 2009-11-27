@@ -6,7 +6,6 @@ SECTIONS
 		more.o (.text)
 		rand.o (.text)
 		zed.o (.text)
-		disk.o (.text)
 	}
 	. = ALIGN(16);
 	KERNEL_CODE_END = .;
@@ -16,14 +15,12 @@ SECTIONS
 		more.o (.data)
 		rand.o (.data)
 		zed.o (.data)
-		disk.o (.data)
 	}
 	.bss :  
 	{ 
 		more.o (.bss)  
 		rand.o (.bss)
 		zed.o (.bss)
-		disk.o (.bss)
 	}
 	. = ALIGN(512);
 	KERNEL_END = .;

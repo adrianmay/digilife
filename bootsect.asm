@@ -1,5 +1,5 @@
 
-%include "defs.s"
+;%define floppy
 
 ;INT 13h AH=02h: Read Sectors From Drive AH=3 = write
 ;Parameters:

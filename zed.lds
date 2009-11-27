@@ -26,7 +26,7 @@ SECTIONS
 	KERNEL_END = .;
 	TANK_START = .;
 	.tank 0 :
-	AT(0x10000)
+	AT(0xd000)
 	{
 		tanks.o (.text)
 		tanks.o (.data)

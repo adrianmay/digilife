@@ -185,11 +185,11 @@ void delay()
 	for (i=0;i<999999;i++) {i=i*2;i=i/2;}
 }
 
-unsigned short int dumbassip;
+unsigned int dumbassip;
 
 void fry(unsigned int ip)
 {
-	dumbassip = (ip-rand()%6)%0x10000 ;
+	dumbassip = ip-rand()%6 ;
 	
 	__asm__ (	
 		"push %eax\n\t"
@@ -213,21 +213,23 @@ void interrupt_handler(struct registers r)
     if (0) ;
     else if (r.int_no==33) //Keyboard
 	{
-		go_real();
 		at(24,40);print("INT:");printn(r.int_no);
 	}
     else if (r.int_no==32) //timer
     {
-		at(24,60);printn(ticks); at(0,0);
-	    if (!(ticks%100))
-	    {
-			//nuketank();
-			do_histogram();
-			//fry(r.eip);
-	    }
-		at(24,70);printn(ticks);at(0,0);
+			at(24,40);printc(ticks%256); //IDT doesn't point here anymore, there's a task gate instead
+			//return;
+		//loopint:
+		//	goto loopint;		
 	    ticks = ticks+1;
-		if (r.cs==8*tank_code) r.eip=r.esi=(rand()*4)%0xfffc;
+	    if (1)//(!ticks)
+	    {
+			//print(tockmsg);
+			//do_histogram();
+			fry(r.eip);
+			if (r.cs==8*tank_code) r.eip=r.esi=(rand()*4)%0xfffc;						
+	    }
+	    if (!(ticks%100)) do_histogram();	    
     }
     else if (r.int_no < 32)
     {
@@ -252,10 +254,6 @@ void interrupt_handler(struct registers r)
 				
 		if (!tocks) do_histogram();
     }
-	else 
-	{
-		at(24,40);print("INT:");printn(r.int_no);
-	}
 }
 
 const char faultmsg[32][20] = 

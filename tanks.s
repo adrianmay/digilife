@@ -72,11 +72,11 @@ madtanklabel%1:
     jmp madtanklabel%1
 %endmacro
 
-%macro madtank_int39 1
+%macro madtank_int33 1
     %rep 100h-5
     nop
     %endrep
-	int 36
+	int 33
 	nop
 madtanklabel%1:
     jmp madtanklabel%1
@@ -107,7 +107,7 @@ madtanklabel%1:
 madtank:
 %assign i 0
 %rep 40h
-madtank_ok i
+madtank_123 i
 %assign i i+1 
 madtank_ok i
 %assign i i+1 

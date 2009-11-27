@@ -430,8 +430,8 @@ nukeloop:
 	;push edi
 	;mov ebx, 0x10
 	;mov es, bx ;tank
-	mov eax, 0x01020304
-	;call rand
+	;mov eax, 0x10203040
+	call rand
 	;mov ebx, 0x20
 	;mov es, bx ;tank
 	;pop edi

@@ -3,7 +3,7 @@
 ///>
 
 #define GATE_DEFAULT 0x8E00
-#define TANKAT 0x10000
+#define TANKAT 0xD000
 #define TANKPAGES 1
 #define STACKSIZE 1024
 #define GDT_TASKS 6

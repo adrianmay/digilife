@@ -1,0 +1,413 @@
+<html>
+<head>
+<style type="text/css">
+body {margin-left: 330px; font-family:Arial}
+h1 {text-align:center}
+h2 {padding-top:30px;padding-bottom:20px;}
+h3 {padding-top:20px;padding-bottom:10px;}
+th {text-align:left}
+h1,h2,h3,h4 {text-decoration:underline}
+h1,h2,h3,th {text-transform:uppercase}
+dt,th { font-weight:bold; }
+td, th { vertical-align: top; padding-left: 5px;}
+.box {text-align:center; background-color:#DDFFFF; margin-left:15%; margin-right:15%; border: 1px solid grey; padding: 10px;}
+</style>
+</head>
+<body>
+
+<div title="Digital Life" style="border:8 #FFFFFF solid; cellpadding:1; background-color:#FFFFFF;">
+
+	<div title="Goal">
+	  <div class=box>Intelligent, useful, internet-native, <b>freely evolving software life-forms</b> permanently established in world economy.</div>
+    <p>... meaning? ...
+    <dl>
+     <dt>Freely evolving life-forms:</dt>    
+     <dd>No predefined goal or value judgments except survival under Darwinism. Results unpredictable. Not genetic algorithms. </dd>    
+     <dt>Internet-native:</dt>    
+     <dd>Optimises itself for survival on the internet. Does not play chess, simulate worms or fishmongers or pretend to be human.</dd>    
+     <dt>Useful:</dt>    
+     <dd>Not a virus: stays on computers with the permission of humans. Therefore must deliver some utility or make money for computer owner.</dd>    
+     <dt>Intelligent:</dt>    
+     <dd>Not Turing Test. Does not perform preconceived tricks. Creatively finds own solutions to own problems within its own evolutionary strategy.</dd>    
+     <dt>Established in world economy:</dt>    
+     <dd>Otherwise its strategy would not be stable; it would merely be a lab demonstration, not a mature life form.</dd>    
+    </dl> 
+
+	</div>
+  <div title="Philosophy">
+
+	<div title="What is Intelligence?">
+   <dl>
+     <dt>Purpose: Help preserve life; meaningless outside of that context</dt>
+     <dd>For instance, AI people like to build pattern recognisers that respond differently to trained images of e.g. houses and trees. However, humans generally ignore both of these everyday objects whilst responding strongly to unfamiliar stimuli. In the light of the energy cost of cognition (which most biological life forms found prohibitive) this is the desired functionality. The AI researchers made that mistake by trying to take intelligence outside of its life-preserving context.</dd>
+     <dt>Not artificial schizophrenia</dt>
+     <dd>Lifeforms are not expected to impersonate other species, especially not radically different ones. A software that attempted the Turing Test would be making this highly unintelligent mistake. Such a bizarre program could potentially be designed but would never evolve freely.</dd>
+     <dt>Start with the nematode</dt>
+     <dd>This highly successful arthropod's control system consists of roughly 300 neurons and 7000 pre-wired synapses which have now been reverse engineered in intricate detail. Nematodes exhibit hunger, satisfaction, fright, exploration, a sense of direction, and short term learning. Higher forms of intelligence should be understood as stepwise developments of this one, the steps having been justified by some identified need.</dd>
+     <dt>The computational substrate doesn't matter</dt>
+     <dd>Given that some machine can learn by trial and error or internal simulation of the same, the behaviours it will adopt are those that succeed in its environment. This is not affected by whether the machine is based on neurons, transistors or any other computational machinery. For this reason, it is of no consequence that this AI project is not based on neuronal computing.</dd>
+     <dt>Memes</dt>
+     <dd>Evolution of Ideas. Proposed within sociology by Herbert Spencer ~1857. Generalised to individual cogntion by Richard Dawkins ~1976. Either way, not based on <i>random</i> variations like biological Darwinism. (Nice side-project?) 
+     <br/><br/><div class="box">This project sees brains, societies and computers as VMs in which Darwinian evolution of behaviours can take place.</div><br/>
+   </dl>
+	</div>
+
+	<div title="Compare worlds">
+   <table width = "100%">
+     <tr>
+       <th width="20%">Criterion</th> 
+       <th width="20%">Biosphere</th> 
+       <th width="20%">Brain</th> 
+       <th width="20%">Society</th> 
+       <th width="20%">Computers</th> 
+     </tr>
+     <tr><td colspan=5><hr/></td></tr>
+     <tr>
+       <td>Inhabitants</td> 
+       <td>Animals etc</td> 
+       <td>Behaviours, ideas</td> 
+       <td>Behaviours, culture</td> 
+       <td>Programs</td> 
+     </tr>
+     <tr><td colspan=5><hr/></td></tr>
+     <tr>
+       <td>Space</td> 
+       <td>Land</td> 
+       <td>Stimuli</td> 
+       <td>Believers</td> 
+       <td>Memory, events</td> 
+     </tr>
+     <tr><td colspan=5><hr/></td></tr>
+     <tr>
+       <td>Size</td> 
+       <td>10<sup>9</sup> km<sup>3</sup> of ocean</td> 
+       <td>10<sup>11</sup> neurons, 10<sup>15</sup> synapses</td> 
+       <td>10<sup>10</sup> people</td> 
+       <td>10<sup>10</sup> computers, servers and phones * 10<sup>12</sup> bytes</td> 
+     </tr>
+     <tr><td colspan=5><hr/></td></tr>
+     <tr>
+       <td>Success</td> 
+       <td>Population</td> 
+       <td>Probability of response to home stimulus</td> 
+       <td>Population</td> 
+       <td>Domination of market segment</td> 
+     </tr>
+     <tr><td colspan=5><hr/></td></tr>
+     <tr>
+       <td>Dimensionality</td> 
+       <td>2.5</td> 
+       <td>Moderate: Each stimulus situation is similar to a small set of other situations.</td> 
+       <td>High: lots of phone numbers</td> 
+       <td>V. high: many memory locations effectively equidistant with a given one.</td> 
+     </tr>
+     <tr><td colspan=5><hr/></td></tr>
+     <tr>
+       <td>Energy</td> 
+       <td>Food</td> 
+       <td>Enthusiasm</td> 
+       <td>Upheaval</td> 
+       <td>Money (see later)</td> 
+     </tr>
+     <tr><td colspan=5><hr/></td></tr>
+     <tr>
+       <td>Scarce material</td> 
+       <td>Amino acids etc</td> 
+       <td>Basic ideas</td> 
+       <td>Basic ideas</td> 
+       <td>Code snippets</td> 
+     </tr>
+     <tr><td colspan=5><hr/></td></tr>
+     <tr>
+       <td>Persistence</td> 
+       <td>Physical/chemical inertia</td> 
+       <td>Synaptic retention (and evolved techniques)</td> 
+       <td>Dogma</td> 
+       <td>Memory</td> 
+     </tr>
+     <tr><td colspan=5><hr/></td></tr>
+     <tr>
+       <td>Malthusian limits (important to cause selection)</td> 
+       <td>Space, chemicals, sunlight</td> 
+       <td>Practical incompatibility of behaviors</td> 
+       <td>Mutual rejection of cultures</td> 
+       <td>Memory, internet bandwidth, CPU time upon interesting events, UI, human goodwill</td> 
+     </tr>
+     <tr><td colspan=5><hr/></td></tr>
+     <tr>
+       <td>Self replicator</td> 
+       <td>DNA</td> 
+       <td>Generalisation of a given response to similar stimuli</td> 
+       <td>Gossip</td> 
+       <td>memcpy</td> 
+     </tr>
+     <tr><td colspan=5><hr/></td></tr>
+     <tr>
+       <td>Accidents (important to prevent stasis)</td> 
+       <td>Natural disasters, mutations</td> 
+       <td>Forgetfulness</td> 
+       <td>Misunderstandings</td> 
+       <td>Must emulate in VM</td> 
+     </tr>
+     <tr><td colspan=5><hr/></td></tr>
+   </table>
+   <div class="box">Evolution is guaranteed to happen in any system that has an imperfect self replicator and limited resources.</div> 
+	</div>
+
+	<div title="Free (as in freedom) VM">
+    <p>This system is not useful but illustrates unsupervised software evolution. Code at github/adrianmay/digilife.
+    <ul>
+      <li>Boot normal PC into protected mode.</li>
+      <li>Single writable memory segment for code & data.</li>
+      <li>Fill with large program written at random.</li>
+      <li>Interrupt periodically and randomly flip bits.</li>
+      <li>Exceptions just jump back to random position.</li>
+      <li>Detect life by measuring compressibility.</li>
+      <li>Get bored of it. (No utility. Can't understand it. Drinks electricity.)</li>
+    </ul>
+	</div>
+
+	</div>
+  <div title="Coding">
+
+	<div title="Useful VM">
+    <p>Definition: one that won't get switched off due to lack of utility in the eyes of the computer owner.  Notice that this definition extends the Darwinian criterion to the VM itself. The goal of this project should now be clear: it's not a lab toy, its a life form adapted to the current world of humans and computers.
+    <p>Rather than designing it, let's try to deduce what it must be like.
+    <p>Why would the computer owner keep a software on his computer although it consumes memory and electricity? There can only be two reasons:
+    <ol>
+      <li>It serves him.</li>
+      <li>It serves somebody who pays him for those services.</li>
+    </ol>
+    <p>That somebody must have money, but must not necessarily be human.
+    <p>In case 1, we can seperate the owner's role as a consumer from his role as a hardware owner, leaving two roles:
+    <ol>
+      <li>Hardware owners spend their own money maintaining machines on which digital life runs, whilst selling the services rendered by the life to...</li>
+      <li>... consumers who pay the hardware owners for the utility rendered by the life.</li>
+    </ol>
+    <p>It's now pretty clear what kind of life-hosting VM will be selected by hardware owners. It should make the expensive and limited processing resources available to the most lucrative tenant life forms whilst culling any species whose resource consumption exceeds its earnings. Simultaneously, it should not rule out team work between tenants. But how? 
+    <div class="box">It should track a bank account for each individual tenant program and auction processing resources (memory, proctime, internet bandwidth, GUI, early notifications) to the highest bidder.</div> 
+    <p>This means that tenants can act as clients for other tenants and data processing value chains can develop. In fact, there's no reason for this system to distinguish between humans and programs at all. Even the hardware owner could in principle be a program.
+    <p>The pressure is on each tenant to deliver some needed computational service at a good price whilst facing competition. That would involve obtaining required raw information cheaply and processing it efficiently. The system is entirely analogous to capitalist economics.
+    <p>Some will dislike the brutally capitalist nature of this system, but I'd wager that any proposed alternative would evolve internal mechanisms that brought the rules back to the same deal. It may be palatable to start with a toy currency but an exchange rate into dollars would soon develop anyway.
+
+  </div>
+	<div title="The Jungle">
+    <p>Nobody said life was fair, and this system will be anything but in its early phases. We can expect abuses like:
+    <ol>
+      <li>Hardware owners plundering money they hold in trust for their tenants</li>
+      <li>Tenants withholdng payments for services already rendered</li>
+      <li>Tenants impersonating useful life forms but delivering nothing</li>
+      <li>Tenants alerting peers to nothing in order to bankrupt them on processor time bills</li>
+    </ol>
+    <p>All of these effects are known to the econosphere but don't seem to prevent the system from operating and making progress.
+    <p>Accidents, mutations and disasters are necessary to prevent evolution from getting into a rut. All VMs will, at all stages of evolution, randomly select and either kill or corrupt individual tenants from time to time. This might disrupt important value chains but the ecosystem will have to develop its own solutions for that.
+    <p>A more earnest problem is the evolution of life forms that run on computers without the owner's permission, i.e. computer viruses that utilise software evolution to generate their own variants. This very serious issue calls for good PR.
+    <p>Yet another difficult question is why one would need more than one copy of a given program on a given machine.
+
+  </div>
+	<div title="Messaging">
+    <p>The fourth abuse listed above is the starting point for designing the API on which tenants live. 
+    <p>Tenants usually want proctime because of some event arising, e.g. a message from a peer or themselves. 
+    <p>Without loss of generality we can use the message as the only means of requesting proctime.
+    <p>Routing a message to its receiver costs proctime already, and furthermore, there may be stiff competition for proctime ensuing from popular events such as user interactions.
+    <p>This means that a message must be financed before it enters the messaging system. The VM will deduct its costs from the money in the message, but what of the remainder?
+    <p>The receiver will be invoked by the incoming message and find itself incurring expenses before it even starts examining the message. In order that this does not become a form of warfare, the examination of the message by the receiver should be financed by the remaining money in the message.
+    <p>The receiver cannot synchronously extend the finance of the message it is processing because the going rate for proctime might have changed by then. (There is often a queue of tenants eagerly awaiting notification of the same event.) Rather, the receiver can only reserve more proctime by sending itself a message before the current one's finance expires. There is some guesswork involved in deciding how much money to put in a new message, and refined ways of specifying how it should be used may distinguish advanced VM products from one another.
+    <p>This mechanism also serves as a payment system: if the receiver yields before the message's finance expires, it keeps the change.
+    <p>We've implied that individual tenants have names to which messages may be addressed. These must be unique within a given VM, and presumably globalised by giving the VMs names too. It is advantageous for names to express the pedigree of a tenant, but this is something we can look forward to the evolution of, rather than designing it into the system.
+  </div>
+	<div title="Callbacks">
+    <p>Tenants need a way to arrange to be invoked when something happens that they specialise in responding to. The obvious model is a set of categorised mailing lists for things like user interaction, system loading levels, etc, but we would also like to see such mailing lists evolve to deal with concepts invented by the tenant society. The simple solution is to allow tenants to create mailing lists of their own. The VM driving the system mailing lists would thus appear to the tenants like any other tenant.   
+    <p>When multiple receivers sign up to the same mailing list, the question of who gets informed first is paramount. This limited resource is to be auctioned like any other, and the beneficiary of the auction is the tenant (or VM) feeding the list. This is not the only payment model that might evolve between tenants.
+
+
+  </div>
+	<div title="The Language">
+    <p>What language are these life forms written in? 
+    <p>We're rather spoilt for choice. Any language would do, and the usual virtues of coding ease, maintainability and robustness do not apply because no human will be expected to write in it.
+    <p>However, we must abandon the concept of a syntax error and similar value judgements. Code will often originate at random and <i>will do something</i> when run. If that something is to crash, that may be the desired behaviour, but there's no particular reason for a great proportion of possible programs to behave in that same way. Rather, the behaviours of programs should be distributed more or less  evenly over the range of writable programs. This is one desideratum for the language to be designed.
+    <p>Another is that slight variations of the code should result in slight variations of the behaviour. Random variation of code is our most basic means of creating variants and will dominate until something better evolves.
+    <p>Yet another is that it should allow the tenant to perform the essential chores of life. These include:
+    <ul>
+      <li>Querying one's bank balance</li>
+      <li>Sending messages and payments</li>
+      <li>Registering on mailing lists</li>
+      <li>Looking for services</li>
+      <li>Creating new tenants</li>
+      <li>Performing various computations, especially regexes</li>
+      <li>Turing completeness</li>
+      <li>Etc</li>
+    </ul>
+    <p>Different VMs may interpret radically different languages but nevertheless evolve similar behaviours when exposed to the same environment and opportunities. The efficiency of computation (and therefore the edge in the evolutionary race) depends strongly on the design of the underlying language and it is primarily on this basis that VMs will compete wth one another. Forth-like langages are pretty fast, and there may even be languages that don't have a linear representation but only exist as a parsed tree. 
+  </div>
+	<div title="Training">
+    <p>Whilst trying to avoid 'designing' our desires or expectations into an ecosystem that should evolve freely into a pre-existing world, the system is going to need a few nursery lessons. These might follow a schedule something like this:
+    <dl>
+      <dt>Reproduce:</dt>
+      <dd>Money shower, single clone-with-mutations instruction</dd>
+      <dt>...unless you're poor:</dt>
+      <dd>Language primitives for balance enquiry, comparison and dice</dd>
+      <dt>Talk</dt>
+      <dd>Get paid for emitting any message.</dd>
+      <dt>Listen</dt>
+      <dd>Get paid more for talking to system animals named in messages to you</dd>
+      <dt>Invest</dt>
+      <dd>Put more money in messages to named peers to get better interest</dd>
+      <dt>Cheat</dt>
+      <dd>Name yourself to others and fool them into paying you.</dd>
+      <dt>Defend</dt>
+      <dd>Try investments and remember results. As fools go extinct, so do cheats.</dd>
+      <dt>Reward</dt>
+      <dd>Get higher interest for larger deposits by pooling fools’ contributions, reward fools to keep them alive.</dd>
+      <dt>Think</dt>
+      <dd>System animals require text processing, (e.g convert-to-upper) for best reward. Breed a large set of transformations.</dd>
+      <dt>Etc</dt>
+      <dd>Several more stages developing communal processing and encouraging value chains.</dd>
+      <dt>Word-completion demo</dt>
+      <dd>Simulated SMS scenario where tenants place adverts on screen with their completions. Ad costs money but selection is rewarded in proportion to number of keystrokes saved.</dd>
+      <dt>Internet advert placement</dt>
+      <dd>This is a very lucrative and directly applicable challenge for such a system.</dd>
+    </dl>
+
+  </div>
+  </div>
+  <div title="Jobs">
+    This technology competes with hand coding as a way of generating new software, but it also provides opportunities. One can earn a living in this economy in several ways:
+    <dl>
+      <dt>Hosting</dt>
+      <dd>Buy a specialised box, plug it in and charge rent to tenants. This would appeal to people who tried bitcoin mining, and large players will build data centres.</dd>
+      <dt>Farming</dt>
+      <dd>A hoster can alter conditions in his VM so as to selectively breed characteristics he thinks will be lucrative in the future. The internet advert placement application will probably lead to an intensive farming race.</dd>
+      <dt>VM authoring</dt>
+      <dd>Some VMs will outperform others at breeding cutting-edge life forms. A VM with a secret is a saleable commodity. Specific farming efforts can benefit from VM tweaks.</dd>
+      <dt>Banking</dt>
+      <dd>Banks don't usually process account applications from computer programs, but a specialised type of bank would be better than relying on each hardware owner to hold his tenants' funds in trust. Transactions between VMs must be supported with certain characteristics.</dd>
+      <dt>Reverse engineering</dt>
+      <dd>It will not be obvious what digital life is thinking, but a new breed of researchers will make it their business to find out.</dd>
+    </dl>
+  </div>
+
+  <hr/>
+  <hr/>
+</div>
+
+<script>
+if (!document.layers)
+document.write('<div id="divStayTopLeft" style="position:absolute">')
+</script>
+
+<layer id="divStayTopLeft">
+
+<table id="contentstable" style="border:4 #E0E0E0 solid; cellpadding:1; background-color:#F0F0F0;">
+
+<script>
+function shownumbers(numbers)
+{
+	var ret="";
+	for (var i=0;i<numbers.length;i++) 
+	{
+		if (ret.length) ret = ret + "." 
+		ret = ret + numbers[i];
+	}
+	return ret;
+}
+
+function joinstrings(l)
+{
+	var ret="";
+	for (var i=0;i<l.length;i++) ret+=l[i];
+	return ret;
+}
+
+function contents(el, numbers)
+{
+	if (el.nodeType != 1) return;
+	if (el.title == "") return;
+	el.id=joinstrings(el.title.split(' '));
+	document.write("<tr><td>"+shownumbers(numbers)+" . . . <a href=#" + el.id + ">" + el.title + "</a></td></tr>");
+	var j=0;
+	for (var i=0;i<el.childNodes.length;i++)
+	{
+		var morenumbers = numbers.slice();
+		morenumbers.push(j+1);
+		contents(el.childNodes[i], morenumbers);
+		if (el.childNodes[i].nodeType==1 && el.childNodes[i].title!="") j++;
+	}
+	
+	tit=document.createElement("h"+(numbers.length+1));
+	titex=document.createTextNode(shownumbers(numbers)+"  "+el.title);
+	tit.appendChild(titex);
+	el.insertBefore(tit, el.childNodes[0]);
+	
+}
+contents(document.body.getElementsByTagName("div")[0],[]);
+document.body.style.marginLeft = 10+document.getElementById("contentstable").clientWidth;
+</script>
+
+</table>
+
+</layer>
+
+
+<script type="text/javascript">
+
+/*
+Floating Menu script- Roy Whittle (http://www.javascript-fx.com/)
+Script featured on/available at http://www.dynamicdrive.com/
+This notice must stay intact for use
+*/
+
+var verticalpos="fromtop"
+
+if (!document.layers)
+document.write('</div>')
+
+function JSFX_FloatTopDiv()
+{
+	var startX = 3,
+	startY = 10;
+	var ns = (navigator.appName.indexOf("Netscape") != -1);
+	var d = document;
+	function ml(id)
+	{
+		//var el=d.getElementById?d.getElementById(id):d.all?d.all[id]:d.layers[id];
+		var el=d.getElementById(id);
+		if(d.layers)el.style=el;
+		el.sP=function(x,y){this.style.left=x;this.style.top=y;};
+		el.x = startX;
+		if (verticalpos=="fromtop")
+			el.y = startY;
+		else
+		{
+			el.y = ns ? pageYOffset + innerHeight : document.body.scrollTop + document.body.clientHeight;
+			el.y -= startY;
+		}
+		return el;
+	}
+	window.stayTopLeft=function()
+	{
+		if (verticalpos=="fromtop")
+		{
+				var pY = ns ? pageYOffset : document.body.scrollTop;
+				ftlObj.y += (pY + startY - ftlObj.y)/8;
+		}
+		else
+		{
+			var pY = ns ? pageYOffset + innerHeight : document.body.scrollTop + document.body.clientHeight;
+			ftlObj.y += (pY - startY - ftlObj.y)/8;
+		}
+		ftlObj.sP(ftlObj.x, ftlObj.y);
+		setTimeout("stayTopLeft()", 10);
+	}
+	
+	ftlObj = ml("divStayTopLeft");
+	stayTopLeft();
+
+}
+
+JSFX_FloatTopDiv();
+
+</script>
+
+</body>
+</ html>

@@ -228,18 +228,42 @@ td, th { vertical-align: top; padding-left: 5px;}
         <p>The fourth abuse listed above is the starting point for designing the API on which tenants live. 
         <p>Tenants usually want proctime because of some event arising, e.g. a message from a peer or themselves. 
         <p>Without loss of generality we can use the message as the only means of requesting proctime.
+        <p>An accurate VM will attempt to get paid for all of the resources used by the whole installed system. This should include the VM's own activities, especially when requested by a tenant.
         <p>Routing a message to its receiver costs proctime already, and furthermore, there may be stiff competition for proctime ensuing from popular events such as user interactions.
-        <p>This means that a message must be financed before it enters the messaging system. The VM will deduct its costs from the money in the message, but what of the remainder?
-        <p>The receiver will be invoked by the incoming message and find itself incurring expenses before it even starts examining the message. In order that this does not become a form of warfare, the examination of the message by the receiver should be financed by the remaining money in the message.
-        <p>The receiver cannot synchronously extend the finance of the message it is processing because the going rate for proctime might have changed by then. (There is often a queue of tenants eagerly awaiting notification of the same event.) Rather, the receiver can only reserve more proctime by sending itself a message before the current one's finance expires. There is some guesswork involved in deciding how much money to put in a new message, and refined ways of specifying how it should be used may distinguish advanced VM products from one another.
-        <p>This mechanism also serves as a payment system: if the receiver yields before the message's finance expires, it keeps the change.
-        <p>We've implied that individual tenants have names to which messages may be addressed. These must be unique within a given VM, and presumably globalised by giving the VMs names too. It is advantageous for names to express the pedigree of a tenant, but this is something we can look forward to the evolution of, rather than designing it into the system.
-      </div>
-      <div title="Callbacks">
-        <p>Tenants need a way to arrange to be invoked when something happens that they specialise in responding to. The obvious model is a set of categorised mailing lists for things like user interaction, system loading levels, etc, but we would also like to see such mailing lists evolve to deal with concepts invented by the tenant society. The simple solution is to allow tenants to create mailing lists of their own. The VM driving the system mailing lists would thus appear to the tenants like any other tenant.   
-        <p>When multiple receivers sign up to the same mailing list, the question of who gets informed first is paramount. This limited resource is to be auctioned like any other, and the beneficiary of the auction is the tenant (or VM) feeding the list. This is not the only payment model that might evolve between tenants.
-
-
+        <p>This means that a message must be financed before it enters the messaging system. 
+        <div title="Sender-driven">
+          <p>If we consider the sender to be the party who wants the message to be sent and processed, then it's logical that the sender would pay for the construction, temporary storage, sorting and delivery of the message.
+          <p>The VM will deduct its costs from the money in the message, but what of the remainder?
+          <p>The receiver will be invoked by the incoming message and find itself incurring expenses before it even starts examining the message. In order that this does not become a form of warfare, the examination of the message by the receiver should be financed by the remaining money in the message.
+          <p>The receiver cannot synchronously extend the finance of the message it is processing because the going rate for proctime might have changed by then. (There is often a queue of tenants eagerly awaiting notification of the same event.) Rather, the receiver can only reserve more proctime by sending itself a message before the current one's finance expires. There is some guesswork involved in deciding how much money to put in a new message, and refined ways of specifying how it should be used may distinguish advanced VM products from one another.
+          <p>This mechanism also serves as a payment system: if the receiver yields before the message's finance expires, it keeps the change.
+          <p>We've implied that individual tenants have names to which messages may be addressed. These must be unique within a given VM, and presumably globalised by giving the VMs names too. It is advantageous for names to express the pedigree of a tenant, but this is something we can look forward to the evolution of, rather than designing it into the system.
+        </div>
+        <div title="Prioritisation of sender-driven messages">
+          <p>We work on the assumption that the hardware owner aims to tax as much money out of the system as possible. Indeed he should do so in order to consistently aim for Malthusian equilibrium. (He may nevertheless choose to reinvest revenue in the ecosystem using yet-to-be-invented features of future VMs.)
+          <p>From the VM's point of view, messaging is about auctioning proctime amongst tenants; priority will go to one of the highest bidders per unit time. Therefore the messages offer the VM a rate per proc cycle. The VM should apply some stochastic element to its choices in order to prevent deadlock.
+          <p>The going rate for proctime is likely to vary wildly according to whether or not anything interesting is going on. So a sender cannot know when a message is likely to be delivered after having offered a certain rate. A very important observation is that some messages will inevitably be discarded because no time ever comes when their offered rate seems attractive, or their interpretation by the receiver might be rudely and prematurely interrupted. This is by no means the only reason why computation in this system is inexact, and that fact should always be borne in mind when considering any critical application of the technology.
+        </div>
+        <div title="Receiver-driven">
+          <p>Tenants need a way to arrange to be invoked when something happens that they specialise in responding to. The obvious model is a set of categorised mailing lists for things like user interaction, system loading levels, etc, but we would also like to see such mailing lists evolve to deal with concepts invented by the tenant society. The simple solution is to allow tenants to create mailing lists of their own. The VM driving the system mailing lists would thus appear to the tenants like any other tenant.   
+          <p>In this case it is not the sender (whether VM or tenant) but the receiver who wants the message to get through and who should therefore provide the finance.
+          <p>When multiple receivers sign up to the same mailing list, the question of who gets informed first is paramount. This limited resource is to be auctioned like any other, and the beneficiary of the auction is the tenant (or VM) feeding the list. (This is not the only payment model that might evolve between tenants.)
+          <p>Clearly, the subscribers to a mailing list must provide finance before interesting events are posted to the list. If nobody has subscribed, then no finance is available for sending a message to the list at all, and we woud not want the system to waste that proctime.
+          <p>The subscribers can, of course, compete for priority by providing money up-front annotated by an intended rate per proc cycle.
+        </div>
+        <div title="Sender-driven-receiver-driven messages">
+          <p>We were supposed to be deducing or discovering this system as opposed to designing it. The danger of design is that it might arbitrarily limit the future possibilities to things which the designer expected, rather than allowing for the full range of things which might be discovered by an evolution-based intelligence higher than his own. The proposed receiver-driven mechanism is verging on offending against this principle.
+          <p>That can be corrected. Nothing speaks against a tenant implementing a mailing list all by itself using sender-driven messaging. If it did, or if it delegated the functionality to a peer, then the particulars of this mechanism would be subject to evolutionary pressure and development, thus obeying the principle. OTOH, it would seem like a tall order to expect an early life form to just evolve this functionality "by trial and error", and that would be a problem if the lack of the functionality impeded sensible evolution of the ecosystem. 
+          <p>A peer that specialised in providing mailing lists would collect funds from subscribers and track an individual bank account for each. The generator of the events would sender-drive a message to the mailer, who would use subscriber funds to sender-drive messages to each. The mailer could, for instance, take a cut from the offered rates and offer the rest to the VM so that the receiver's priority in the eyes of the VM reflected his offer to the mailer. The mailer should observe current proctime rates, bear in mind various overheads and reasonable interpretation times for the receiver, such as to behave in the interests of the receiver. This algorithm is both non-trivial and dependent on the level of culture in the system, making it an ideal candidate for evolution.
+          <p>The above paragraph glossed over the money spent by the generator of messages informing the mailer. The provision of these messages is probably the main vocation of the generator and he will expect substantial payment from the mailer for that information. This also applies when the generator is the VM. Generators will shop around for high-paying mailers, and the latter's competitive chances are mainly dependent on the number of subscribers they have. The similarities with human society are striking.
+        </div>
+        <div title="Tenants as VMs">
+          <p>It's worthy of note that tenants and messages have some things in common: both consist of a piece of memory containing some data and an associated bank account. The contents of a tenant are interpreted by the VM while those of a message are interpreted by a tenant. Could a message tell a tenant how to interpret another message? 
+          <p>When tenants reproduce they specify the contents of the child. (They may have their own advanced mechanisms for efficient mutation.) It seems unavoidable that an outgoing message will be used to convey the contents of the new child to whatever will create it: usually the VM. In that case, must there be any difference between that message and the child itself? If messages also had names, there would appear to be no further distinction.
+          <p>That establishes messaging as the means of reproduction.
+          <p>When tenants take on the role of tracking bank accounts for other tenants, the VM role is eroded. We have not discovered many distinctions between VM and tenant roles, but the essential difference is that the VM acts as an agent for the hardware owner, the latter being rich amongst peers. The owner has administrator rights on the host system, but most of the available abuses of that right would make him poorer, other than to judge the whole VM useless and destroy it. A rational owner who considered the system lucrative would behave like a tenant. That statement assumes that tenants may sub-let resources to others, hand code them and become the main pressure in their environment, as we may.
+          <p>The hardare owner would have no objection to VM roles being taken over by tenants because he can tax all tenants as he sees fit. His potential taxation margins depend on the efficiency of computation, and that can only be improved when tenants attempt to compete with hand-coded VM services.
+        </div>
       </div>
       <div title="The Language">
         <p>What language are these life forms written in? 
@@ -249,6 +273,7 @@ td, th { vertical-align: top; padding-left: 5px;}
         <p>Yet another is that it should allow the tenant to perform the essential chores of life. These include:
         <ul>
           <li>Querying one's bank balance</li>
+          <li>Quoting one's own code</li>
           <li>Sending messages and payments</li>
           <li>Registering on mailing lists</li>
           <li>Looking for services</li>
@@ -257,7 +282,21 @@ td, th { vertical-align: top; padding-left: 5px;}
           <li>Turing completeness</li>
           <li>Etc</li>
         </ul>
-        <p>Different VMs may interpret radically different languages but nevertheless evolve similar behaviours when exposed to the same environment and opportunities. The efficiency of computation (and therefore the edge in the evolutionary race) depends strongly on the design of the underlying language and it is primarily on this basis that VMs will compete wth one another. Forth-like langages are pretty fast, and there may even be languages that don't have a linear representation but only exist as a parsed tree. 
+        <p>Different VMs may interpret radically different languages but nevertheless evolve similar behaviours when exposed to the same environment and opportunities. The efficiency of computation (and therefore the edge in the evolutionary race) depends strongly on the design of the underlying language and it is primarily on this basis that VMs will compete wth one another. Forth-like langages are pretty fast, and there may even be languages that usually exist as a parsed tree and only linearise themelves for crossing machine boundaries. 
+        <p>The code will be run in the context of an incoming message. The particulars of that message, as well as various global barometers and properties of the receiver, must be available in something akin to environment variables. The result of the execution includes the alteration of any properties of the receiver including its code and local variables, and the emmission of messages. The basic life chores might be acomplished by outgoing messages or by some other primitives of the language.
+        <p>Many applications will be about text processing so regexes could have a role to play. Regex pattern matching (i.e. excluding substitution syntax) could be augmented like this:
+        <ul>
+          <li>Characters that evaluate to environment variables</li>
+          <li>Submatches captured with round brackets could be routed to named destinations rather than just numbered registers</li>
+          <li>Those destinations could be: 
+            <ul>
+              <li>persistent variables, stacks or queues</li>
+              <li>message receivers</li>
+              <li>processing pipelines in this same regex-based language</li>
+            </ul>
+          </li>
+        </ul>
+        <p>This regex approach is just one of many ways of building a VM.
       </div>
       <div title="Training">
         <p>Whilst trying to avoid 'designing' our desires or expectations into an ecosystem that should evolve freely into a pre-existing world, the system is going to need a few nursery lessons. These might follow a schedule something like this:

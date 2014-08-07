@@ -1,4 +1,4 @@
-<h1>See digilifebook.html</h1>
+** See digilifebook.html** 
 
 Thanks to: 
  Gregor Brunmar's MuOS for the startup, GDT and screen output stuff.

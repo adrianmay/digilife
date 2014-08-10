@@ -195,7 +195,7 @@ td, th { vertical-align: top; padding-left: 5px;}
 
       <div title="Useful VM">
         <p>Definition: one that won't get switched off due to lack of utility in the eyes of the computer owner.  Notice that this definition extends the Darwinian criterion to the VM itself. The goal of this project should now be clear: it's not a lab toy, its a life form adapted to the current world of humans and computers.
-        <p>Rather than designing it, let's try to deduce what it must be like.
+        <p>Rather than designing it, let's try to deduce what it must be like. The danger of design is that it might arbitrarily limit the future possibilities to things which the designer expected, rather than allowing for the full range of things which might be discovered by an evolution-based intelligence higher than his own. We should prefer VMs with more general capabilities unless something speaks strongly in favour of a restriction.
         <p>Why would the computer owner keep a software on his computer although it consumes memory and electricity? There can only be two reasons:
         <ol>
           <li>It serves him.</li>
@@ -209,10 +209,83 @@ td, th { vertical-align: top; padding-left: 5px;}
         </ol>
         <p>It's now pretty clear what kind of life-hosting VM will be selected by hardware owners. It should make the expensive and limited processing resources available to the most lucrative tenant life forms whilst culling any species whose resource consumption exceeds its earnings. Simultaneously, it should not rule out team work between tenants. But how? 
         <div class="box">It should track a bank account for each individual tenant program and auction processing resources (memory, proctime, internet bandwidth, GUI, early notifications) to the highest bidder.</div> 
-        <p>This means that tenants can act as clients for other tenants and data processing value chains can develop. In fact, there's no reason for this system to distinguish between humans and programs at all. Even the hardware owner could in principle be a program.
-        <p>The pressure is on each tenant to deliver some needed computational service at a good price whilst facing competition. That would involve obtaining required raw information cheaply and processing it efficiently. The system is entirely analogous to capitalist economics.
-        <p>Some will dislike the brutally capitalist nature of this system, but I'd wager that any proposed alternative would evolve internal mechanisms that brought the rules back to the same deal. It may be palatable to start with a toy currency but an exchange rate into dollars would soon develop anyway.
+        <p>An accurate VM will attempt to get paid for all of the resources used by the whole installed system. This should include the VM's own activities, especially when requested by a tenant.
+        <p>It's healthy for the hardware owner and his agent, the VM, to try to extract the highest possible revenue from the whole set of hardware used. This is because such a policy makes the ecosystem approach Malthusian equilibrium at all times. If resources were made available for free or at an artificially reduced rate, they'd suffer over-demand and some other basis for allocation would take over, such as first-come-first-served. This other basis would be less effective at guiding evolution.
+        <p>If the hardware owner cannot extract enough money from the ecosystem to pay the costs he incurrs for electricity, labour, space, depreciation, etc then he'll either temporarily put it to sleep or decommission it permanently.  
+      </div>
+      <div title="Value Chains">
+        <p>We must now decide between these options:
+        <ol>
+          <li>Each tenant must earn money directly from a human.</li>
+          <li>Tenants may exchange money between themselves</li>
+        </ol>
+        <p>It would be ridiculous to rule out tenants earning from humans, therefore case 1 above is strictly a subset of case 2. No reason to restrict the VM to case 1 springs to mind, rather, the implications of generalising to case 2 are interesting and attractive.
+        <p>In case 1 each individual tenant would have to be intelligent enough to perform some saleable service all by itself. This would lead to a society of very large and delicate programs. Most mutations would break something rather than enhancing it.
+        <p>In case 2 though, it is possible for value chains of many tenants to develop which would perform complex computations in a distributed fashion. This brings challenges of its own, but if the society could evolve self-organising and self-repairing techniques, then high complexity would no longer be an impediment to further evolution.
+        <p>We therefore choose case 2 and notice that humans and tenants have similar rights to own and use money with this respect to this VM. Even the hardware owner could in principle be a program.
+        <p>The pressure is on each tenant to deliver some needed computational service at a good price whilst facing competition. That would involve obtaining required raw information cheaply and processing it efficiently. The system is entirely analogous to capitalist economics. Some will dislike the brutally capitalist nature of this system, but I'd wager that any proposed alternative would evolve internal mechanisms that brought the rules back to the same deal. It may be palatable to start with a toy currency but an exchange rate into dollars would soon develop anyway.
+        <p>A society that successfully supports value chains can be expected to have other characteristics:
+        <ul>
+          <li>Members should be able to defend their money and saleable assets. There may be some members with the power to confiscate assets from others, but in that case the powerful ones must refrain from plundering all of the vulnerable ones. For any trade to occur, there must be some pairs of members who cannot plunder one another. </li>
+          <li> Information is a fundamental saleable asset in this system, so some tenants must be able to hide information from some other tenants.</li>
+          <li>Members must be able to communicate. Whichever means of communication is used for transfering saleable information must be unobservable by non-paying listeners. </li>
+          <li>Communication may occur because either the sender or the listener wants it to. </li>
+        </ul>
 
+      </div>
+      <div title="Invocation">
+        <p>Let's suppose the processor is currently doing some work. We can ask:
+        <ol>
+          <li>Which code caused this to happen?</li>
+          <li>Which code is being executed?</li>
+          <li>Which data is available to the process?</li>
+          <li>What side effects is the process able to cause?</li>
+          <li>Which bank account is being debited for the proctime?</li>
+          <li>What rate per cycle is being changed?</li>
+          <li>How long may the process continue at this rate?</li>
+          <li>How long may the process continue at any rate?</li>
+        </ol>
+        <p>We may decide to assert some constraints between the answers to these questions in order to encourage efficient trade in our system. <p>First some definitions:
+        <ul>
+          <li>The code that caused this invocation is called the "sender's code".</li>
+          <li>The code being executed is called the "receiver's code".</li>
+        </ul>
+        <p>These two may or may not be the same. If not, the sender will need a way to name the receiver, so tenants must have unique names. Senders and receivers may be external event sources or sinks presented by the VM in such a way as to allow tenants to interact with them in a similar way to how they interact with their peers.
+        <p>Each of them, being tenant programs, has an associated bank account in accordance with the boxed assertion above. (Cardinality between programs and accounts is discussed elsewhere in this document.)
+        <p>There's a strong suggestion that the sender should pay for this invocation because it was his decision that led to the expenses being incurred at all. It may be the case that the receiver is the main beneficiary of the work being done, but we will later see how such cases can be supported by a conversation consisting of sender-financed messages. On the other hand, it's hard to do the reverse: supporting sensible billing of sender-motivated messages in a receiver-financed messaging system.
+        <p>Costs are incurred by an invocation request even before the receiver starts to run. The particulars of the request must be stored until the time comes to run it, and this occupies memory: a rentable commodity. The examination of the request by the VM costs processor time and there may even be a disk or remote-machine access to find the receiver.
+        <p>At the moment when the receiver's code starts running, the receiver cannot know whether or not it has any personal reason to be running at all. Some processor expenses will have to be incurred in order for the receiver to determine that. Pointlessly invoking peers could become a form of warfare if receivers are expected to finance the early examination of their invocation contexts. 
+        <p>Having decided that the sender will pay for the invocation, the later questions above become very important to the sender: it should not be the case that the sender provides the receiver with a blank cheque to hog the processor ad-infinitum at the sender's expense and for the receiver's benefit. The sender must be able to limit what he invests in the invocation. The simplest form this could take is a fixed sum transfered by the sender from his own account to (a) the receiver's or (b) to one associated with the invocation itself. The latter is preferred because the sender's contribution might not even cover the VM's expenses in storing the particulars of the invocation until it is actually invoked (that period being unpredictable.) With option (a) the receiver would end up paying the rest before it was even invoked. 
+        <p>We should briefly consider this topic from the VM's point of view, whose job is to auction proctime and other system resources amongst tenants. We can expect demand and therefore attainable rates for proctime to vary in response to incoming events. It follows that rental deals on the processor will be for short durations only: at times of low demand, the VM will not want the cheap rate to extend into an imminently likely time of high demand, whereas at times of high demand the tenants will be unwilling to agree to a high rate for a long period when the reason is only temporary.
+        <p>An invocation request might approach an example bidding system with a per-proc-cycle bid and a sum of money, from which a desired duration can be inferred. The money must be demonstrably there because other bids are about to be declined. The bidding system would choose an attractive offer and schedule the process acccordingly. The VM should apply some stochastic element to its choices in order to prevent deadlock. Some invocation requests will never be honoured because they'll deplete their bank balances on storage costs whilst awaiting a time when proctime rates sink to level comparable with their bid, or because they ask for a bigger block of time than the VM likes to schedule in one go.
+        <p>We don't know how far in advance these deals will be made, but the current receiver certainly cannot assume that it has an inalienable right to extend its current window of proctime: a much higher bidder may have been aroused by some external event that only occured while the current receiver was running. If the current receiver wants more time, it may as well enter the usual bidding system, and we may as well assume that that bidding system has been designed to support such cases to a better or worse degree. 
+        <p>In the case that the sender has booked more time than the receiver needs, VMs may or may not offer refunds but they're unlikely to offer full refunds without penalties because costs would have been incurred by the disruption to the bidding process of the unexpected yield. Whether or not the receiver could sub-let the excess time will be discussed below.
+        <p>We also need to support payments between tenants. We can consider voluntary donation and forced charging modes. The former is fundamental while the latter would require the charged party to be able to control who may charge him how much. That is most easily done by simply donating something to the charging party in the context of some known protocol. So we only need to support voluntary transfers.
+        <p>We already gave the invocation request a bank balance and imagined that all the money in it would be spent on processor time, but we may now generalise to an invocation request that asks for a defined time period at a defined rate supplying <i>at least</i> enough money in the invocation's account, the rest being intended as a donation to the receiver. The receiver may be enjoying a donation of excess processor time as well.
+        <p>We have now established that invocations will be financed by those programs who cause them to occur, that the duration, billing rate and total cost of the invocation is determined in advance without the possibility of synchronous extension, and that receiver-motivated invocations will be arranged by some higher-level yet-to-be-invented protocol. 
+        <p>The data comprising the context of an invocation now deserves attention. It may be assumed that some global barometers are always available to all processes. Each tenant clearly represents a scope, and the aid to value chain development of affording tenants private data has already been pointed out. Data in the receiver's scope can be assumed to be available to the invocation because the receiver's code is running: if not now then when? As for data in the sender's scope, the most general scheme would allow for some to be obligatorily provided to the invocation while the private portion could be provided or withheld at the sender's discretion.
+        <p>The environment of the invocation thus comprises global data, all receiver-scoped data, some public properties of the sender and a "message body" comprising whatever the sender chooses to share with the invocation. We also have a rapidly depleting time-to-live associated with the invocation and no particular reason to hide its value from the invocation. Finally we have the invocation's bank account which will be transfered entirely to the receiver's. This is most conveniently performed just prior to the running of the receiver's code so that it's available in the place where the reciever usually finds its money. The sum should be easily evaluated by the receiver's code.
+        <p>The terms "invocation request" and "message" will henceforth be used interchangeably. 
+        <div class="box">Processing is driven by messages carrying money, proctime and information to a receiving program. Time is auctioned amongst messages.</div>
+      </div>
+      <div title="Tenants as VMs">
+        <p>It was promised above to explain how the billing of invocations where the receiver benefits from the processing could be implemented using sender-driven messsages.
+        <p>This occurs when tenants want to be invoked in response to events they specialise in dealing with. These might be system notifications of UI, network or VM-global events, or they might provide alerts to complex situations detected by tenants who evolved for that purpose. Either way, if no receiver seems interested, then there's no need for proctime to be wasted on the message, but conversely there may be several tenants all clamouring to be informed before the others and therefore attempting to outbid one another. From these two facts we can conclude two more: that the transfer of money will be from receiver to sender, and that this must be arranged before the event of interest arises.
+        <p>For system notifications, the VM will implement a subscription mechanism very similar to the usual proctime bidding system, in fact, the procedure differs only in the fact that it overrides the default process in the immediate aftermath of the event. The bids were placed much earlier than when the invocations will occur (which increases the temporary storage costs) but scope was left for VMs to book processor time in advance anyway.    
+        <p>If the event-generating tenants perform a similar process, then we'd have discovered a second example of why proctime bidding might not be a VM-monopoly, the first having been the sub-letting scenario briefly mentioned above. These two examples are in fact one and the same, but we have yet to establish the practicality of sub-letting.
+        <p>If a tenant had a large block of time at its disposal, and we postulated that it would run an analogous process to the main time bidding process, then what capabilities would we be ascribing to tenants? It is chiefly the ability to synchronously invoke a peer to run for a portion of one's own time such that the peer doesn't notice much difference from a normal invocation. Armed with that ability and guaranteed control of the block of time, the tenant could apply whatever policy it liked to the sub-letting of its time, including the very same policy applied by the VM. The bidding process could be initiated during the block of time, or the pecking order among sub-letters may have been settled in an earlier bidding round.
+        <p>This seeming to be in the interests of evolution, we decide that the process by which the VM constructs an invocation environment and runs receiver code for a limited time is also available to tenants. This is the second half of the invocation process, the first being the selection of who will be invoked.
+        <p>Another way of looking at this process is that an event-generating tenant could wait for its event to occur, quietly buy a cheap block of processor time and then let the cat out of the bag and run a sub-letting auction amongst its subscribers.
+        <p>Generators of events could implement their own subscription system or it could become the speciality of a glade within the family tree of evolved software. The originator of events would then concentrate on finding out what it knows best and simply tell the mailer who would sell it on to multiple subscribers. We could encourage the evolution of these proctime-bidding/mailing schemes by making the built-in scheme unnecessarily wasteful.
+        <p>What else distinguishes the VM from any other tenant? ..... TODO
+      </div>
+      <div title="TODO">
+        <p>Reproduction, active mutation, spawning of children wildly different from thier parents, slaves, captives in own VM
+        <p>Tree world
+        <p>Invocations with roles reversed, multiple messages, privacy
+        <p>Multiple blocks per account and vice versa
+        <p>Parental relationship
+        <p>Tenant-local storage as mini-VM
       </div>
       <div title="The Jungle">
         <p>Nobody said life was fair, and this system will be anything but in its early phases. We can expect abuses like:
@@ -228,11 +301,11 @@ td, th { vertical-align: top; padding-left: 5px;}
         <p>Yet another difficult question is why one would need more than one copy of a given program on a given machine.
 
       </div>
+      <!--
       <div title="Messaging">
         <p>The fourth abuse listed above is the starting point for designing the API on which tenants live. 
         <p>Tenants usually want proctime because of some event arising, e.g. a message from a peer or themselves. 
         <p>Without loss of generality we can use the message as the only means of requesting proctime.
-        <p>An accurate VM will attempt to get paid for all of the resources used by the whole installed system. This should include the VM's own activities, especially when requested by a tenant.
         <p>Routing a message to its receiver costs proctime already, and furthermore, there may be stiff competition for proctime ensuing from popular events such as user interactions.
         <p>This means that a message must be financed before it enters the messaging system. 
         <div title="Sender-driven">
@@ -245,7 +318,7 @@ td, th { vertical-align: top; padding-left: 5px;}
         </div>
         <div title="Prioritisation of sender-driven messages">
           <p>We work on the assumption that the hardware owner aims to tax as much money out of the system as possible. Indeed he should do so in order to consistently aim for Malthusian equilibrium. (He may nevertheless choose to reinvest revenue in the ecosystem using yet-to-be-invented features of future VMs.)
-          <p>From the VM's point of view, messaging is about auctioning proctime amongst tenants; priority will go to one of the highest bidders per unit time. Therefore the messages offer the VM a rate per proc cycle. The VM should apply some stochastic element to its choices in order to prevent deadlock.
+          <p>From the VM's point of view, messaging is about auctioning proctime amongst tenants; priority will go to one of the highest bidders per unit time. Therefore the messages offer the VM a rate per proc cycle. 
           <p>The going rate for proctime is likely to vary wildly according to whether or not anything interesting is going on. So a sender cannot know when a message is likely to be delivered after having offered a certain rate. A very important observation is that some messages will inevitably be discarded because no time ever comes when their offered rate seems attractive, or their interpretation by the receiver might be rudely and prematurely interrupted. This is by no means the only reason why computation in this system is inexact.
         </div>
         <div title="Receiver-driven">
@@ -256,8 +329,7 @@ td, th { vertical-align: top; padding-left: 5px;}
           <p>The subscribers can, of course, compete for priority by providing money up-front annotated by an intended rate per proc cycle.
         </div>
         <div title="Sender-driven-receiver-driven messages">
-          <p>We were supposed to be deducing or discovering this system as opposed to designing it. The danger of design is that it might arbitrarily limit the future possibilities to things which the designer expected, rather than allowing for the full range of things which might be discovered by an evolution-based intelligence higher than his own. The proposed receiver-driven mechanism is verging on offending against this principle.
-          <p>That can be corrected. Nothing speaks against a tenant implementing a mailing list all by itself using sender-driven messaging. If it did, or if it delegated the functionality to a peer, then the particulars of this mechanism would be subject to evolutionary pressure and development, thus obeying the principle. OTOH, it would seem like a tall order to expect an early life form to just evolve this functionality "by trial and error", and that would be a problem if the lack of the functionality impeded sensible evolution of the ecosystem. 
+          <p>The proposed receiver-driven mechanism is verging on offending against the principle of deducing rather than desgning the VM. That can be corrected. Nothing speaks against a tenant implementing a mailing list all by itself using sender-driven messaging. If it did, or if it delegated the functionality to a peer, then the particulars of this mechanism would be subject to evolutionary pressure and development, thus obeying the principle. OTOH, it would seem like a tall order to expect an early life form to just evolve this functionality "by trial and error", and that would be a problem if the lack of the functionality impeded sensible evolution of the ecosystem. 
           <p>A peer that specialised in providing mailing lists would collect funds from subscribers and track an individual bank account for each. The generator of the events would sender-drive a message to the mailer, who would use subscriber funds to sender-drive messages to each. The mailer could, for instance, take a cut from the offered rates and offer the rest to the VM so that the receiver's priority in the eyes of the VM reflected his offer to the mailer. The mailer should observe current proctime rates, bear in mind various overheads and reasonable interpretation times for the receiver, such as to behave in the interests of the receiver. This algorithm is both non-trivial and dependent on the level of culture in the system, making it an ideal candidate for evolution.
           <p>The above paragraph glossed over the money spent by the generator of messages informing the mailer. The provision of these messages is probably the main vocation of the generator and he will expect substantial payment from the mailer for that information. This also applies when the generator is the VM. Generators will shop around for high-paying mailers, and the latter's competitive chances are mainly dependent on the number of subscribers they have. The similarities with human society are striking.
         </div>
@@ -271,13 +343,8 @@ td, th { vertical-align: top; padding-left: 5px;}
           <p>We have not discovered many distinctions between VM and tenant roles, but the essential difference is that the VM acts as an agent for the hardware owner, the latter being rich amongst peers. The owner has administrator rights on the host system, but most of the available abuses of that right would make him poorer, other than to judge the whole VM useless and destroy it. A rational owner who considered the system lucrative would behave like a tenant. That statement assumes that tenants may sub-let resources to others, hand code them and become the main pressure in their environment, as we may.
           <p>The hardare owner would have no objection to VM roles being taken over by tenants because he can tax all tenants as he sees fit. His potential taxation margins depend on the efficiency of computation, and that can only be improved when tenants attempt to compete with hand-coded VM services.
         </div>
-        <div title="TODO">
-          <p>Invocations with roles reversed, multiple messages, privacy
-          <p>Multiple blocks per account and vice versa
-          <p>Parental relationship
-          <p>Tenant-local storage as mini-VM
-        </div>
       </div>
+      -->
       <div title="The Language">
         <p>What language are these life forms written in? 
         <p>We're rather spoilt for choice. Any language would do, and the usual virtues of coding ease, maintainability and robustness do not apply because no human will be expected to write in it.
@@ -330,7 +397,7 @@ td, th { vertical-align: top; padding-left: 5px;}
           <dt>Defend</dt>
           <dd>Try investments and remember results. As fools go extinct, so do cheats.</dd>
           <dt>Reward</dt>
-          <dd>Get higher interest for larger deposits by pooling fools’ contributions, reward fools to keep them alive.</dd>
+          <dd>Get higher interest for larger deposits by pooling fools' contributions, reward fools to keep them alive.</dd>
           <dt>Think</dt>
           <dd>System animals require text processing, (e.g convert-to-upper) for best reward. Breed a large set of transformations.</dd>
           <dt>Etc</dt>

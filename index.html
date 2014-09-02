@@ -213,6 +213,7 @@ td, th { vertical-align: top; padding-left: 5px;}
         <p>It's healthy for the hardware owner and his agent, the VM, to try to extract the highest possible revenue from the whole set of hardware used. This is because such a policy makes the ecosystem approach Malthusian equilibrium at all times. If resources were made available for free or at an artificially reduced rate, they'd suffer over-demand and some other basis for allocation would take over, such as first-come-first-served. This other basis would be less effective at guiding evolution in the direction of value to humans.
         <p>If the hardware owner cannot extract enough money from the ecosystem to pay the costs he incurrs for electricity, labour, space, depreciation, etc then he'll either temporarily put it to sleep or decommission it permanently.  
       </div>
+
       <div title="Value Chains">
         <p>We must now decide between these options:
         <ol>
@@ -227,32 +228,119 @@ td, th { vertical-align: top; padding-left: 5px;}
         <p>A society that successfully supports value chains can be expected to have other characteristics:
         <ul>
           <li>Members should be able to defend their money and saleable assets. There may be some members with the power to confiscate assets from others, but in that case the powerful ones must refrain from plundering all of the vulnerable ones. For any trade to occur, there must be some pairs of members who cannot plunder one another. </li>
-          <li> Information is the main saleable asset in this system, so some tenants must be able to hide information from some other tenants.</li>
+          <li>Information is the main saleable asset in this system, so some tenants must be able to hide information from some other tenants.</li>
           <li>Members must be able to communicate. Whichever means of communication is used for transfering saleable information must be unobservable by non-paying listeners. </li>
-          <li>Communication may occur because either the sender or the listener wants it to. </li>
+          <li>Communication may occur because either the sender or the receiver wants it to. </li>
         </ul>
+      </div>
+    </div>
 
+    <div title="Coding">
+      <p>Whilst hypothesising about possible life forms and their strategies in this section, it will become apparent that to stay alive at all, a program must be fairly complex, master a large range of skills and adhere to some cultural norms that have not yet evolved. In the light of the complexity of bacteria etc, it should not seem surprising that the minimum self-sufficient software is a rather complicated machine. 
+      <p>This could seem like a chicken and egg problem, but the solution to this lies in a nursery school stage to be described later. Hand coding is another possible solution which the author, but perhaps not everybody else, will refrain from.
+      <p>Fundamentally, what's been proposed above is a trading system for money, processing resources and secrets. 
+      <p>As the hardware owner's agent, the VM wields omnipotent power over the other members of the society but does not use that power in a way that adversely affects the efficiency of the system. Until we discover an exception, we'll assume that the VM behaves in a similar way to other members and is merely rich amongst peers. For instance, the VM owns processing time when it first appears on the foreseeable horizon, but having sold the right to use that time to some tenant, it will respect that right. An important reason for keeping protocols harmonised whether or not the VM is involved, is that we invite tenants to evolve improvements over the inefficiencies of the hand-coded VM.
+      <p>Our first coding question is how trade is to be supported, and if we answer it well then most other questions will be easy.
+
+      <div title='Bookings'>
+        <p>First we prove that processor time must be booked in advance. This is because at the beginning of a time window, some code must be executed, and that code will have been specified by whoever payed for the window. So the window must have been sold in advance in order that the code for the window can be specified by the time it is due to be run. Even if we suppose that the VM will delay finding out what code to run until the time window starts, it will still have to know who to talk to and would run some preconceived protocol with that tenant, which would be tantamount to running the tenant's code but in a different way. If the auctioning of the time does not start until the window is underway, then the VM will have less time to collect bids and therefore sell more cheaply. No VM will opt for that because a VM's very purpose in life is to maximise earnings from the auctioning of resources.
+
+        <p>Similar arguments can be applied to internet and memory time.
+        <p>Not all times are equal though. After an interesting event, like the arrival of an invitation to place some advert on a web page for instance, demand and prices for resources will be much higher than usual. The VM is not limited to treating all such arrivals as surprises. It can, at quiescent times, sell time windows for the immediate aftermath of the next such event. This is clearly more efficient than spending the prime time on an auction when enough was known about the event even before it arrived to attract the interested buyers. 
+        <p>The types of such events are many and varied and we should allow for the possibility that yet-to-evolve species will specialise in detecting interesting events and trading time during their aftermath (or otherwise profiting from their expertise in detecting the events or scenarios.)
+        <p>There is no question of whether or not some code reached completion during the CPU time block. Control simply remains with the owner of the time window until the transition to the next booking occurs. Window owners may make efficient or wasteful use of their time and it is their problem to cope with the loss of control at the end of the window. 
       </div>
 
-    </div>
-    <div title="Coding">
+      <div title='Authentication'>
+        <p>In order to stay alive, a tenant has to make sure that the leases on the memory blocks where it lives are renewed before they expire. Usually, the tenant will do that for itself with its own money, but anybody's money is as good as anyone else's. Either way, a tenant with an interest in maintaining the existence of a block must have access to a bank account that usually contains sufficient money to cover the memory rental, and access to that bank account must be denied the majority of other tenants who care less about the one in question. Besides this exclusive access to the bank account supporting the block, we also require that write access to the block is similarly limited to a priviledged few. 
+        <p>How are these rights granted and tracked? The choice is between (1) a system where the VM tracks access rights to resources by individual tenants, and (2) a system that grants rights to those who know a secret. The latter is more flexible, for instance, it allows the same right over the same resource to be granted to a plurality of tenants. The secret-based system reduces to the identity-based system in the case that the secret is disclosed to exactly one tenant at the moment when the right springs into existence, and where that tenant does not divulge it to any other. We've already established that tenants must be capable of keeping secrets from at least some peers in order for any value chain to develop, and that requirement is slightly extended here to the ability to prove knowledge of a secret without divulging it to any party who could use it against the owner. Assuming that can be done, we gain generality and lose none by choosing option 2. 
+        <p>Public key encryption is the most general solution to this but costs a lot of processor time. There are cases where simpler techniques suffice. For instance, when the VM sells a resource time window to a tenant, it can provide a name and password for the resource over a secure channel arranged by the VM. A similarly secure channel can be used when the tenant wants to do something with its resource. A simple (but imperfect) way for tenants to trade such resources would be for the seller to disclose the password to the buyer over the secure VM channel and for the buyer to subsequently use a VM API to change it. 
+        <p>However, when authentication is required directly between tenants with no VM involvement, a public key system is probably necessary. An example of this could be to support 'brands' with reputations for honest behaviour. A tenant could prove itself to be related to the well behaved family by passing a PK authentication challenge without enabling the challenger to pass the same test in the future. The private key would be handed down through generations of a single family.
+      </div>
 
-      <div title="Invocation">
+      <div title='Permissions'>
+        <p>For memory blocks, we can see at least four types of permissions, each to be protected by passwords. They are: read, write, execute and change passwords. The execute permission means that a peer with control over a CPU window can nominate this block's code to be executed by the VM during that window. It can usually be granted to everybody by a well developed life form; its code is already secure against malicious invocations and free CPU time is a valuable gift, but most peers do not have the right to read the code as that would involve all its secrets being disclosed. Whatever executes the code obviously needs to read it. By default that is the VM, but if we want to allow languages to evolve then this cannot be a VM monopoly, so there may be cases where tenants grant other tenants read access to their code. That would not be execute access because the icode being executed is the interpreter of the evolved language, not the code in that language. 
+        <p>Some blocks are not private code and secrets but information which the tenant wishes to pass to a specific peer or advertise to the world in general. If these blocks should persist for any length of time, then it's important to deny most of the readers write access. 
+        <p>The password changing or 'admin' permission allows any of the four rights to be withdrawn from its current audience and retained only by the changer of the password. That this must be seperate from the write permission is not clinchingly clear, and lies at the discretion of the VM programmer. 
+        <p>TBC: which permissions imply one another.
+        <p>Next we consider an internet time block from a sender's perspective. The data to be sent during the time window should have been specified before the window starts and must reside in some memory block which already has the above permissions associated with it. What the intention to transmit over the internet adds is the permission to specify which block will be sent when the time comes. This is essentially a write permission over the internet time block. The admin right applies to the degree that internet blocks can be traded directly among tenants, but the read and execute permissions are irrelevant. Internet from a receiver's perspective will be dealt with later.
+        <p>Processor time blocks similarly have a write permission for specifying what code to execute during the window and an admin permission for trade. The execute permission does not apply because a mere time window does not contain executable code.
+        <p>For internet or CPU windows, the read permission would have meant that other tenants could see which memory block is scheduled into the window. It's hard to think of a reason why this would be useful, especially if the reader did not have read permission over the scheduled memory block.
+        <p>Finally we can consider permissions over bank accounts. We distinguish permission to make payments out of an account, deposits into it, and to inspect its balance. By analogy with the likelihood of these permissions over memory blocks being granted to a wider audience, we can (somewhat arbitrarily) associate these with the write, execute and read permissions respectively.
+      </div>
+
+
+      <div title="Splitting and joining">
+        <p>There are reasons why some resource time windows need to be split. A tenant might get its work done quicker than expected and have nothing to do with the second half of its CPU window except sell it. Some species might specialise in buying in bulk from the VM and distributing it using specific knowledge of who might want how much and when.
+        <p>Note that memory blocks can be split by space as well as time. Other resources, including money, can be split by one dimension.
+        <p>Joining...
+        <p>Splitting and joining bank accounts could form the basis of a payment system, but we've yet to enable any communication between tenants. 
+      </div>
+
+      <div title="Communication">
+        <p>In human society, communication is about making a piece of data available to another person's code. The data may contain code and be executed as such, and the provider of the data has no control over what the receiver does with it and how long he remembers it for. Data can go out of date or be forced out of date by e.g. changing a password, but the cat cannot be talked back into the bag.
+        <p>Suppose, for some reason, one tenant wants to present a piece of data to another with the expectation that the latter does something about it. We'll assume that the motivation for this to take place lies with the sender. The sender may book some CPU time and nominate the receiver as the code to be run during that window (subject to the sender's execute permission over the receiver) but the data also needs to be transmitted somehow. The sender already knows how to put some data into a new block and clear its read password, set it to one the receiver would know to try or encrypt it with a public key of the receiver. But still we need to draw the receiver's attention to the block. It's also arguable (but not conclusive) that some information about the sender should be made available to the receiver obligatorily.
+        <p>From this argument we know that the owner of a CPU window may specify not only the code to be run but also some environment of supplementary data to be made available to that code. The VM might supplement the environment with various other data either about or independent of the CPU window owner, e.g. global economic barometers like resource prices, queue lengths, time to live of various windows, etc.
+        <p>Now that tenants can both split and join bank accounts and invoke one another within an environment of invoker-provided data, they can exchange money just by splitting some of their money off into a new account and posting the passwords to the receiver. They'll know the money was received when the password no longer works, the receiver having changed it or joined the transit account into their regular one. 
+        <p>Receiver-driven messages...
+        <div title="Internet">
+          <p>Don't know going rates on receiving machine
+          <p>VM could smooth out that volatility to tell tenants remote rate for them, but only if it has a lot of dealings with that remote machine.
+        </div>
+
+      </div>
+      <div title="Secure trading">
+        <p>It's not obligatory for the VM to provide a safe trading API; we could also set up a primitive and brutal world and let evolution develop systems for making it more efficient. However, the VM is likely to protect its own interests, and we are trying not to give it special priviledges.
+        <p>For instance, when the VM books a time block to a tenant it is likely to insist on payment up front. We can extend that expectation to any other seller of resource time. If we consider a trade of money for time to be a symmetrical one in principle, then the VM's insistence on checking the buyer's intention and ability to pay by requiring immediate payment can be generalised to anybody's desire to check that the valuables being offered for exchange actually exist and will be delivered. If we avoided any of those generalisations, then we'd either be giving the VM a monopoly over certain abilities or we'd be introducing an asymmetry between money and other resources, both of which are unattractive at this stage.
+        <p>The simplest system that protects both parties is as follows: (1) one trader drops his goods in a box provided by the VM together with a description of acceptable exchange goods, (2) the VM inspects and advertises to the world what the deposited goods are, (3) another trader drops some exchange goods in the box, (4) the VM inspects these goods and if they fit the first partner's description hands the exchangeable goods over to each receiver.
+        <p>How would that work in the case of digital life? Goods are easy for the VM to inspect and verify. It tracks all the resource blocks, accounts and passwords. In PK protocols it can attempt a challenge using the private key being sold. It is also easy to unambiguously describe what goods are acceptable for exchange. It could be a simple quantity of money or a resource window within certain constraints. This would be a VM-provided service but evolving software could compete with it and hope to be trusted. 
+      </div>
+
+
+      <!--
+
+        <p>Valuable assets include money, rights to use processing resources (especially at important moments) and secrets (including code).
+        <p>There must be some way to trade them. It might be pure trust or there might be some system API to prevent cheating.
+        <p>It would be nice to design a trading system that worked similarly whether or not one trading partner is the VM.
+        <p>Consider the example of the VM selling a block of memory time in advance. In return for money, the VM endows the buyer with the ability to do with the block whatever blocks are good for. 
+
+        <div title="Bidding">
+        <div title="General">
+        <p>Justify: ...
+        <p>Most fundamental thing. Owner should be selfish.
+        <p>Single scheme for all resources
+        <p>Don't assume seller is VM
+        <p>Buyer approaches seller
+        <p>Book time on a resource in advance, pay up front
+        <p>Get passname in return for payment - passname is param to resource-type-specific and general APIs
+        <p>Support further trade with change-passname API 
+        <p>Need subdivide (and join?) booking API
+        <p>API/lanuage supports storing passname, e.g. var pn = rentBlock(size, rate, ...) or changePassname(old_passname) 
+        </div>
+        <div title="Trade API">
+        <p>One partner drops goods in box with description of payment expected. VM checks passwords, publishes checked description. Other partner drops payment. VM applies and changes passwords and tells both partners new passwords.
+        </div>
+        </div>
+        <div title="Messaging">
+        </div>
+
+
+        <div title="Invocation">
         <p>Let's suppose the processor is currently doing some work. We can ask:
         <ol>
-          <li>Which code caused this to happen?</li>
-          <li>Which code is being executed?</li>
-          <li>Which data is available to the process?</li>
-          <li>What side effects is the process able to cause?</li>
-          <li>Which bank account is being debited for the proctime?</li>
-          <li>What rate per cycle is being changed?</li>
-          <li>How long may the process continue at this rate?</li>
-          <li>How long may the process continue at any rate?</li>
+        <li>Which code caused this to happen?</li>
+        <li>Which code is being executed?</li>
+        <li>Which data is available to the process?</li>
+        <li>What side effects is the process able to cause?</li>
+        <li>Which bank account is being debited for the proctime?</li>
+        <li>What rate per cycle is being changed?</li>
+        <li>How long may the process continue at this rate?</li>
+        <li>How long may the process continue at any rate?</li>
         </ol>
         <p>We may decide to assert some constraints between the answers to these questions in order to encourage efficient trade in our system. <p>First some definitions:
         <ul>
-          <li>The code that caused this invocation is called the "sender's code".</li>
-          <li>The code being executed is called the "receiver's code".</li>
+        <li>The code that caused this invocation is called the "sender's code".</li>
+        <li>The code being executed is called the "receiver's code".</li>
         </ul>
         <p>These two may or may not be the same. If not, the sender will need a way to name the receiver, so tenants must have unique names. Senders and receivers may be external event sources or sinks presented by the VM in such a way as to allow tenants to interact with them in a similar way to how they interact with their peers.
         <p>Each of them, being tenant programs, has an associated bank account in accordance with the boxed assertion above. (Cardinality between programs and accounts is discussed elsewhere in this document, but let's assume 1:1 for now.)
@@ -271,8 +359,8 @@ td, th { vertical-align: top; padding-left: 5px;}
         <p>The environment of the invocation thus comprises global barometers, all receiver-scoped data, some public properties of the sender (most likely its name) and a "message body" comprising whatever the sender chooses to share with the invocation. We also have a rapidly depleting time-to-live associated with the invocation and no particular reason to hide its value from the invocation. Finally we have the invocation's bank account whose balance upon entering the receiver's code will be transfered to the receiver's account. This is performed just prior to the running of the receiver's code so that it's available in the place where the receiver usually finds its money. The sum should be easily evaluated by the receiver's code.
         <p>The terms "invocation request" and "message" will henceforth be used interchangeably. 
         <div class="box">Processing is driven by messages carrying money, proctime and information to a receiving program. Time is auctioned amongst messages.</div>
-      </div>
-      <div title="Memory and Reproduction">
+        </div>
+        <div title="Memory and Reproduction">
         <p>Reproduction is when one tenant creates another tenant who resembles himself. It is usually also necessary to boot the child, introduce it to peers, hook it into notification lists and the like. 
         <p>Reproduction is a special case of creating a peer who may or may not resemble the parent, in fact, who may simply be a block of temporary storage. 
         <p>Most of what we deduced about booking CPU time also applies to memory time. Memory rates will fluctuate in correlation with CPU rates depending on whether anything interesting is going on, but with less volatility because there is much more memory than CPU to go round. For that reason, we can expect most memory bookings to be for much longer duration than CPU bookings. Nevertheless, pretty much the same scheme must apply. Blocks will be freed when their bookings expire and whichever tenant knows and cares about the existence of the block must preempt that moment by booking a new block of memory time at the new going rate.
@@ -280,8 +368,8 @@ td, th { vertical-align: top; padding-left: 5px;}
         <p>We need some way to control who can read blocks. We have the option of making all names very long and random such that the existence of a block cannot be detected by anyone who has not been explicitly told its name. This is insufficient though because tenants divulge their names when they initiate dialogs with one another, but do not thereby imply that their code can be read by the partner. That means that other blocks whose names have been divulged are not necessarily readable by everyone. 
         <p>Suppose we make all blocks private. A block can then be made readable by everyone by programming it to quote its own contents in response to some culturally established message. To limit the audience the block could expect the message to contain some password or come from a specific peer. The latter is not robust against the death and replacement of the authorised peer, so the former is more likely. The length of the password would reflect the value of the secret stored in the block. 
         <p>All of this is at the parent's discretion - if we have a means of reproduction then we have a means of private storage. By allowing any privacy at all, we see that tenants gain the capability to distribute what they privately remember over several blocks. Just as traditional programmers use pointer-linked data structures instead of linear ones when they expect a lot of change, our VM design should reflect the likelihood of this multi-block storage being a popular technique for evolved software.
-      </div>
-      <div title="Tenants as VMs">
+        </div>
+        <div title="Tenants as VMs">
         <p>It was promised above to explain how the billing of invocations where the receiver benefits from the processing could be implemented using sender-driven messsages.
         <p>This occurs when tenants want to be invoked in response to events they specialise in dealing with. These might be system notifications of UI, network or VM-global events, or they might provide alerts to complex situations detected by tenants who evolved for that purpose. Either way, if no receiver seems interested, then there's no need for proctime to be wasted on the message, but conversely there may be several tenants all clamouring to be informed before the others and therefore attempting to outbid one another. From these two facts we can conclude two more: that the transfer of money will be from receiver to sender, and that this must be arranged before the event of interest arises.
         <p>For system notifications, the VM will implement a subscription mechanism very similar to the usual proctime bidding system, in fact, the procedure differs only in the fact that it overrides the default process in the immediate aftermath of the event. The likely delay between the placing of a bid and the resulting invocation is higher than in the usual system, but this is only a qualitiative difference as all bookings occur in advance to some degree. 
@@ -293,31 +381,62 @@ td, th { vertical-align: top; padding-left: 5px;}
         <p>On the other hand, the limitation reintroduces an interesting form of dimensionality to this otherwise hyperdimensional world. It's hard to see why you need two of the same thing in a world where no two things can be very far apart. Biological evolution houses millions of specimens of the same species because with effectively two dimensions in the world, the nearest one might still be a long way away. Our senior-junior world consists of a strictly single-parented tree structure, where communication can happen faster between some members than others. The only other cause of this effect is physical machine boundaries and internet wires.
         <p>It's not hard to have the VM support synchronous invocation of arbitrary peers and the wisdom of doing so is a question for future research. Another model to explore is one in which tenants can trade bookings, e.g., by disclosing passwords with which the VM authenticates the holders of bookings.  
         <p>Generators of events could implement their own subscription system or it could become the speciality of a family of evolved software. The originator of events would then concentrate on finding out what it knows best and simply tell the mailer who would sell it on to multiple subscribers. We could encourage the evolution of these proctime-bidding/mailing schemes by making the built-in mailing scheme unnecessarily wasteful.
-      </div>
-      <div title="Tenants vs. Messages">
+        </div>
+        <div title="Tenants vs. Messages">
         <p>These two things have a lot in common: they occupy memory blocks filled with some information, they have bank accounts and they live precariously. 
         <p>Anything that can receive a message needs a name and must contain code. A message may contain code and the receiver may choose to execute it, but in the proposed invocation system, the code to be run in the first instance is provided by a particular block, and that block is identified by a name. No reason for a message to have a name has been discovered so far.
         <p>Something that can send a message probably needs a name as well. If sender names were not disclosed to receivers, then payers would not <i>a priori</i> be identified to payees. Some cultural norm for this might develop, but this would introduce a chicken and egg problem because evolution will be rather hard until payments can be tracked. Besides, the VM needs to track payments as well.
         <p>A block that neither sends nor receives messages could only be a data storage block controlled by some other tenant. That tenant may have several such blocks and needs to identify them individually. It has also been suggested that such storage blocks are already emergent in the system in the form of code blocks that demand a password before reciting some secret, in which case they are taking part in messaging and have names. 
-          <p>It only remains to find out whether or not messages have names.
-          <p>It is workable that messages live in a completely different memory organisation system where no concept of names exists. Messages could be anonymous structures in an array with an index running over it for prioritisation. This does not rule out that the message structure could contain the names of multiple blocks in the main memory space to serve roles best understood by the receiver. The code for charging the bank account and potentially deleting the block would have to be implemented seperately. 
+        <p>It only remains to find out whether or not messages have names.
+        <p>It is workable that messages live in a completely different memory organisation system where no concept of names exists. Messages could be anonymous structures in an array with an index running over it for prioritisation. This does not rule out that the message structure could contain the names of multiple blocks in the main memory space to serve roles best understood by the receiver. The code for charging the bank account and potentially deleting the block would have to be implemented seperately. 
         <p>Alternatively, the VM programmer might aim to reuse as much code as possible between tenants and messages. Both types of block would live in the same space, identify their bank accounts in the same way and be treated identically by the memory billing system. The naming system implemented for the sake of messaging would be generalised to blocks in general. A sender would create a block containing the message data and pass its name and that of the receiver to the invocation API, which would add some obligatory details like the name of the sender. 
         <p>A VM designer might want to reuse the same code for reproduction and messaging by requiring tenants to create messages as named blocks and pass the name to the messaging API. That would mean that whatever information was obligatorily provided to the receiver by the sender (see above) would 
-      </div>
-      <div title="Cardinalities">
+        </div>
+        <div title="Cardinalities">
         <p>This section, discussing how many Xs per Y there are, X and Y being tenants, messages, names, bank accounts or memory blocks, may be skipped.
         <p>The relevance of accounts is that when their balance sinks below a certain level, something gets deleted. That something should be the thing that embodies the reason why the account fell so low, and its deletion should make the system more lucrative. Things that can be deleted include memory blocks and entries in tables about bookings, subscriptions etc. So all of those deletable things can be traced to a single pile of money whose total value can be inspected for sufficiency. 
         <p>Is that pile a single bank account? One reason why not is that there may be multiple currencies in circulation. Bookings are also a valuable commodity which tenants own and might be able to transfer, but they cannot be directly compared in value unless they are simultaneous bookings on a parallel array of CPUs. In other words, if CPU slots were a currency, then slots at one o'clock would be a different currency from those at two o'clock. For now, we can't be sure that the pile of money whose value determines the survival of memory blocks etc is a single account, but we do know that each deletable thing is associated with exactly one pile.
         <p>It's normally been understood that a tenant is the thing that fights for its own survival, so let's assert a one-to-one relationship between a tenant and its pile. Messages also have accounts (which may be generalised to piles) ...
         <p>Multiple memory blocks per tenant seem likely if not absolutely necessary. If tenants wanted to share blocks ...
         <p>Names are for receiving messages and they map onto blocks of code. Nothing speaks strongly for or against multiple names mapping onto the same block, but a name must map onto eactly one block. There might be multiple code blocks per tenant, and as long as tenants are one-to-one with piles and blocks are financed by exactly one pile, then each name is part of exactly one tenant. 
-      </div>
-      <div title="TODO">
-        <p>Reproduction, active mutation, spawning of children wildly different from thier parents, slaves, captives in own VM
-        <p>Tree world
-        <p>Invocations with roles reversed, multiple messages, privacy
-        <p>Multiple blocks per account and vice versa
-      </div>
+        </div>
+        <div title="The Language">
+        <p>What language are these life forms written in? 
+        <p>We're rather spoilt for choice. Any language would do, and the usual virtues of coding ease, maintainability and robustness do not apply because no human will be expected to write in it.
+        <p>However, we must abandon the concept of a syntax error and similar value judgements. Code will often originate at random and <i>will do something</i> when run. If that something is to crash, that may be the desired behaviour, but there's no particular reason for a great proportion of possible programs to behave in that same way. Rather, the behaviours of programs should be distributed more or less  evenly over the range of writable programs. This is one desideratum for the language to be designed.
+        <p>Another is that slight variations of the code should result in slight variations of the behaviour. Random variation of code is our most basic means of creating variants and will dominate until something better evolves.
+        <p>Yet another is that it should allow the tenant to perform the essential chores of life. These include:
+        <ul>
+        <li>Querying one's bank balance</li>
+        <li>Quoting one's own code</li>
+        <li>Sending messages and payments</li>
+        <li>Registering on mailing lists</li>
+        <li>Looking for services</li>
+        <li>Creating new tenants</li>
+        <li>Performing various computations, especially regexes</li>
+        <li>Efficient mutation</li>
+        <li>Turing completeness</li>
+        <li>Etc</li>
+        </ul>
+        <p>Different VMs may interpret radically different languages but nevertheless evolve similar behaviours when exposed to the same environment and opportunities. The efficiency of computation (and therefore the edge in the evolutionary race) depends strongly on the design of the underlying language and it is primarily on this basis that VMs will compete wth one another. Forth-like langages are pretty fast, and there may even be languages that usually exist as a parsed tree and only linearise themelves for crossing machine boundaries. 
+        <p>The code will be run in the context of an incoming message. The particulars of that message, as well as various global barometers and properties of the receiver, must be available in something akin to environment variables. The result of the execution includes the alteration of any properties of the receiver including its code and local variables, and the emmission of messages. The basic life chores might be acomplished by outgoing messages or by some other primitives of the language.
+        <p>Many applications will be about text processing so regexes could have a role to play. Regex pattern matching (i.e. excluding substitution syntax) could be augmented like this:
+        <ul>
+        <li>Characters that evaluate to environment variables</li>
+        <li>Submatches captured with round brackets could be routed to named destinations rather than just numbered registers</li>
+        <li>Those destinations could be: 
+        <ul>
+        <li>persistent variables, stacks or queues</li>
+        <li>message receivers</li>
+        <li>processing pipelines in this same regex-based language</li>
+        </ul>
+        </li>
+        </ul>
+        <p>This regex approach is just one of many ways of building a VM.
+        </div>
+      -->
+    </div>
+    <div title="Expectations">
       <div title="The Jungle">
         <p>Nobody said life was fair, and this system will be anything but in its early phases. We can expect abuses like:
         <ol>
@@ -332,84 +451,7 @@ td, th { vertical-align: top; padding-left: 5px;}
         <p>Yet another difficult question is why one would need more than one copy of a given program on a given machine.
 
       </div>
-      <!--
-      <div title="Messaging">
-        <p>The fourth abuse listed above is the starting point for designing the API on which tenants live. 
-        <p>Tenants usually want proctime because of some event arising, e.g. a message from a peer or themselves. 
-        <p>Without loss of generality we can use the message as the only means of requesting proctime.
-        <p>Routing a message to its receiver costs proctime already, and furthermore, there may be stiff competition for proctime ensuing from popular events such as user interactions.
-        <p>This means that a message must be financed before it enters the messaging system. 
-        <div title="Sender-driven">
-          <p>If we consider the sender to be the party who wants the message to be sent and processed, then it's logical that the sender would pay for the construction, temporary storage, sorting and delivery of the message. 
-          <p>Upon delivery, some expense must be incurred while the receiver examines it. Even if the message is uninteresting to the receiver, that fact cannot be ascertained without some expense. Therefore the sender who believes the message to be interesting to the receiver should finance this initial examination as well. On the other hand, the sender does not want to give the receiver a blank cheque to continue purportedly examining the message ad-infinitum. Furthermore, the VM does not want to schedule a potentially infinite proctime window.
-          <p>The sender should provide a definite sum of money for the processing of the message. That sum is associated with the message itself and may be referred to as its bank account. The sender will transfer the sum from its own account to the message's account as part of the message generation procedure. The VM will deduct its delivery costs from the message's account and the remainder will finance the receiver's interpretation activities.
-          <p>The receiver cannot synchronously extend the finance of the message it is processing because the going rate for proctime might have changed by then. (There is often a queue of tenants eagerly awaiting notification of the same event.) Rather, the receiver can only reserve more proctime by sending itself a message before the current one's finance expires. There is some guesswork involved in deciding how much money to put in a new message, and refined ways of specifying how it should be used may distinguish advanced VM products from one another.
-          <p>This mechanism also serves as a payment system: if the receiver yields before the message's finance expires, it keeps the change.
-          <p>We've implied that individual tenants have names to which messages may be addressed. These must be unique within a given VM, and presumably globalised by giving the VMs names too. It is advantageous for names to express the pedigree of a tenant, but this is something we can look forward to the evolution of, rather than designing it into the system.
-        </div>
-        <div title="Prioritisation of sender-driven messages">
-          <p>We work on the assumption that the hardware owner aims to tax as much money out of the system as possible. Indeed he should do so in order to consistently aim for Malthusian equilibrium. (He may nevertheless choose to reinvest revenue in the ecosystem using yet-to-be-invented features of future VMs.)
-          <p>From the VM's point of view, messaging is about auctioning proctime amongst tenants; priority will go to one of the highest bidders per unit time. Therefore the messages offer the VM a rate per proc cycle. 
-          <p>The going rate for proctime is likely to vary wildly according to whether or not anything interesting is going on. So a sender cannot know when a message is likely to be delivered after having offered a certain rate. A very important observation is that some messages will inevitably be discarded because no time ever comes when their offered rate seems attractive, or their interpretation by the receiver might be rudely and prematurely interrupted. This is by no means the only reason why computation in this system is inexact.
-        </div>
-        <div title="Receiver-driven">
-          <p>Tenants need a way to arrange to be invoked when something happens that they specialise in responding to. The obvious model is a set of categorised mailing lists for things like user interaction, system loading levels, etc, but we would also like to see such mailing lists evolve to deal with concepts invented by the tenant society. The simple solution is to allow tenants to create mailing lists of their own. The VM driving the system mailing lists would thus appear to the tenants like any other tenant.   
-          <p>In this case it is not the sender (whether VM or tenant) but the receiver who wants the message to get through and who should therefore provide the finance.
-          <p>When multiple receivers sign up to the same mailing list, the question of who gets informed first is paramount. This limited resource is to be auctioned like any other, and the beneficiary of the auction is the tenant (or VM) feeding the list. (This is not the only payment model that might evolve between tenants.)
-          <p>Clearly, the subscribers to a mailing list must provide finance before interesting events are posted to the list. If nobody has subscribed, then no finance is available for sending a message to the list at all, and we woud not want the system to waste that proctime.
-          <p>The subscribers can, of course, compete for priority by providing money up-front annotated by an intended rate per proc cycle.
-        </div>
-        <div title="Sender-driven-receiver-driven messages">
-          <p>The proposed receiver-driven mechanism is verging on offending against the principle of deducing rather than desgning the VM. That can be corrected. Nothing speaks against a tenant implementing a mailing list all by itself using sender-driven messaging. If it did, or if it delegated the functionality to a peer, then the particulars of this mechanism would be subject to evolutionary pressure and development, thus obeying the principle. OTOH, it would seem like a tall order to expect an early life form to just evolve this functionality "by trial and error", and that would be a problem if the lack of the functionality impeded sensible evolution of the ecosystem. 
-          <p>A peer that specialised in providing mailing lists would collect funds from subscribers and track an individual bank account for each. The generator of the events would sender-drive a message to the mailer, who would use subscriber funds to sender-drive messages to each. The mailer could, for instance, take a cut from the offered rates and offer the rest to the VM so that the receiver's priority in the eyes of the VM reflected his offer to the mailer. The mailer should observe current proctime rates, bear in mind various overheads and reasonable interpretation times for the receiver, such as to behave in the interests of the receiver. This algorithm is both non-trivial and dependent on the level of culture in the system, making it an ideal candidate for evolution.
-          <p>The above paragraph glossed over the money spent by the generator of messages informing the mailer. The provision of these messages is probably the main vocation of the generator and he will expect substantial payment from the mailer for that information. This also applies when the generator is the VM. Generators will shop around for high-paying mailers, and the latter's competitive chances are mainly dependent on the number of subscribers they have. The similarities with human society are striking.
-        </div>
-        <div title="Messages as Tenants">
-          <p>It's worthy of note that tenants and messages have some things in common: both consist of a piece of memory containing some data and an associated bank account. The contents of a tenant are interpreted by the VM while those of a message are interpreted by a tenant. Could a message tell a tenant how to interpret another message? 
-          <p>When tenants reproduce they specify the contents of the child. (They may have their own advanced mechanisms for efficient mutation.) It seems unavoidable that an outgoing message will be used to convey the contents of the new child to whatever will create it: usually the VM. In that case, must there be any difference between that message and the child itself? If messages also had names, there would appear to be no further distinction.
-          <p>That establishes messaging as the means of reproduction.
-        </div>
-        <div title="Tenants as VMs">
-          <p>When tenants take on the role of tracking bank accounts for other tenants as the hypothetical mailer would, the VM role is eroded. It was not suggested that the VM banking system should know about the banking activities of the mailer, rather, the subscribers would transfer money to the mailer's account up front, and the mailer would casually keep notes on who paid him how much. This is the same as the banking relationship between the VM/owner and ordinary tenants. The owner will hold tenant funds in trust because real banks don't open accounts for computer programs.  
-          <p>We have not discovered many distinctions between VM and tenant roles, but the essential difference is that the VM acts as an agent for the hardware owner, the latter being rich amongst peers. The owner has administrator rights on the host system, but most of the available abuses of that right would make him poorer, other than to judge the whole VM useless and destroy it. A rational owner who considered the system lucrative would behave like a tenant. That statement assumes that tenants may sub-let resources to others, hand code them and become the main pressure in their environment, as we may.
-          <p>The hardare owner would have no objection to VM roles being taken over by tenants because he can tax all tenants as he sees fit. His potential taxation margins depend on the efficiency of computation, and that can only be improved when tenants attempt to compete with hand-coded VM services.
-        </div>
-      </div>
-      -->
-      <div title="The Language">
-        <p>What language are these life forms written in? 
-        <p>We're rather spoilt for choice. Any language would do, and the usual virtues of coding ease, maintainability and robustness do not apply because no human will be expected to write in it.
-        <p>However, we must abandon the concept of a syntax error and similar value judgements. Code will often originate at random and <i>will do something</i> when run. If that something is to crash, that may be the desired behaviour, but there's no particular reason for a great proportion of possible programs to behave in that same way. Rather, the behaviours of programs should be distributed more or less  evenly over the range of writable programs. This is one desideratum for the language to be designed.
-        <p>Another is that slight variations of the code should result in slight variations of the behaviour. Random variation of code is our most basic means of creating variants and will dominate until something better evolves.
-        <p>Yet another is that it should allow the tenant to perform the essential chores of life. These include:
-        <ul>
-          <li>Querying one's bank balance</li>
-          <li>Quoting one's own code</li>
-          <li>Sending messages and payments</li>
-          <li>Registering on mailing lists</li>
-          <li>Looking for services</li>
-          <li>Creating new tenants</li>
-          <li>Performing various computations, especially regexes</li>
-          <li>Efficient mutation</li>
-          <li>Turing completeness</li>
-          <li>Etc</li>
-        </ul>
-        <p>Different VMs may interpret radically different languages but nevertheless evolve similar behaviours when exposed to the same environment and opportunities. The efficiency of computation (and therefore the edge in the evolutionary race) depends strongly on the design of the underlying language and it is primarily on this basis that VMs will compete wth one another. Forth-like langages are pretty fast, and there may even be languages that usually exist as a parsed tree and only linearise themelves for crossing machine boundaries. 
-        <p>The code will be run in the context of an incoming message. The particulars of that message, as well as various global barometers and properties of the receiver, must be available in something akin to environment variables. The result of the execution includes the alteration of any properties of the receiver including its code and local variables, and the emmission of messages. The basic life chores might be acomplished by outgoing messages or by some other primitives of the language.
-        <p>Many applications will be about text processing so regexes could have a role to play. Regex pattern matching (i.e. excluding substitution syntax) could be augmented like this:
-        <ul>
-          <li>Characters that evaluate to environment variables</li>
-          <li>Submatches captured with round brackets could be routed to named destinations rather than just numbered registers</li>
-          <li>Those destinations could be: 
-            <ul>
-              <li>persistent variables, stacks or queues</li>
-              <li>message receivers</li>
-              <li>processing pipelines in this same regex-based language</li>
-            </ul>
-          </li>
-        </ul>
-        <p>This regex approach is just one of many ways of building a VM.
-      </div>
+
       <div title="Training">
         <p>Whilst trying to avoid 'designing' our desires or expectations into an ecosystem that should evolve freely into a pre-existing world, the system is going to need a few nursery lessons. These might follow a schedule something like this:
         <dl>
@@ -440,26 +482,76 @@ td, th { vertical-align: top; padding-left: 5px;}
         </dl>
 
       </div>
-    </div>
-    <div title="Jobs">
-      This technology competes with hand coding as a way of generating new software, but it also provides opportunities. One can earn a living in this economy in several ways:
-      <dl>
-        <dt>Hosting</dt>
-        <dd>Buy a specialised box, plug it in and charge rent to tenants. This would appeal to people who tried bitcoin mining, and large players will build data centres.</dd>
-        <dt>Farming</dt>
-        <dd>A hoster can alter conditions in his VM so as to selectively breed characteristics he thinks will be lucrative in the future. The internet advert placement application will probably lead to an intensive farming race.</dd>
-        <dt>VM authoring</dt>
-        <dd>Some VMs will outperform others at breeding cutting-edge life forms. A VM with a secret is a saleable commodity. Specific farming efforts can benefit from VM tweaks.</dd>
-        <dt>Banking</dt>
-        <dd>Banks don't usually process account applications from computer programs, but a specialised type of bank would be better than relying on each hardware owner to hold his tenants' funds in trust. Transactions between VMs must be supported with certain characteristics.</dd>
-        <dt>Reverse engineering</dt>
-        <dd>It will not be obvious what digital life is thinking, but a new breed of researchers will make it their business to find out.</dd>
-      </dl>
+      <div title="Jobs">
+        This technology competes with hand coding as a way of generating new software, but it also provides opportunities. One can earn a living in this economy in several ways:
+        <dl>
+          <dt>Hosting</dt>
+          <dd>Buy a specialised box, plug it in and charge rent to tenants. This would appeal to people who tried bitcoin mining, and large players will build data centres.</dd>
+          <dt>Farming</dt>
+          <dd>A hoster can alter conditions in his VM so as to selectively breed characteristics he thinks will be lucrative in the future. The internet advert placement application will probably lead to an intensive farming race.</dd>
+          <dt>VM authoring</dt>
+          <dd>Some VMs will outperform others at breeding cutting-edge life forms. A VM with a secret is a saleable commodity. Specific farming efforts can benefit from VM tweaks.</dd>
+          <dt>Banking</dt>
+          <dd>Banks don't usually process account applications from computer programs, but a specialised type of bank would be better than relying on each hardware owner to hold his tenants' funds in trust. Transactions between VMs must be supported with certain characteristics.</dd>
+          <dt>Reverse engineering</dt>
+          <dd>It will not be obvious what digital life is thinking, but a new breed of researchers will make it their business to find out.</dd>
+        </dl>
+      </div>
+    </div> <div title="TODO">
+      <p>Reproduction, active mutation, spawning of children wildly different from thier parents, slaves, captives in own VM
+      <p>Tree world
+      <p>Invocations with roles reversed, multiple messages, privacy
+      <p>Multiple blocks per account and vice versa
     </div>
 
     <hr/>
     <hr/>
   </div>
+
+  <!--
+    <div title="Messaging">
+    <p>The fourth abuse listed above is the starting point for designing the API on which tenants live. 
+    <p>Tenants usually want proctime because of some event arising, e.g. a message from a peer or themselves. 
+    <p>Without loss of generality we can use the message as the only means of requesting proctime.
+    <p>Routing a message to its receiver costs proctime already, and furthermore, there may be stiff competition for proctime ensuing from popular events such as user interactions.
+    <p>This means that a message must be financed before it enters the messaging system. 
+    <div title="Sender-driven">
+    <p>If we consider the sender to be the party who wants the message to be sent and processed, then it's logical that the sender would pay for the construction, temporary storage, sorting and delivery of the message. 
+    <p>Upon delivery, some expense must be incurred while the receiver examines it. Even if the message is uninteresting to the receiver, that fact cannot be ascertained without some expense. Therefore the sender who believes the message to be interesting to the receiver should finance this initial examination as well. On the other hand, the sender does not want to give the receiver a blank cheque to continue purportedly examining the message ad-infinitum. Furthermore, the VM does not want to schedule a potentially infinite proctime window.
+    <p>The sender should provide a definite sum of money for the processing of the message. That sum is associated with the message itself and may be referred to as its bank account. The sender will transfer the sum from its own account to the message's account as part of the message generation procedure. The VM will deduct its delivery costs from the message's account and the remainder will finance the receiver's interpretation activities.
+    <p>The receiver cannot synchronously extend the finance of the message it is processing because the going rate for proctime might have changed by then. (There is often a queue of tenants eagerly awaiting notification of the same event.) Rather, the receiver can only reserve more proctime by sending itself a message before the current one's finance expires. There is some guesswork involved in deciding how much money to put in a new message, and refined ways of specifying how it should be used may distinguish advanced VM products from one another.
+    <p>This mechanism also serves as a payment system: if the receiver yields before the message's finance expires, it keeps the change.
+    <p>We've implied that individual tenants have names to which messages may be addressed. These must be unique within a given VM, and presumably globalised by giving the VMs names too. It is advantageous for names to express the pedigree of a tenant, but this is something we can look forward to the evolution of, rather than designing it into the system.
+    </div>
+    <div title="Prioritisation of sender-driven messages">
+    <p>We work on the assumption that the hardware owner aims to tax as much money out of the system as possible. Indeed he should do so in order to consistently aim for Malthusian equilibrium. (He may nevertheless choose to reinvest revenue in the ecosystem using yet-to-be-invented features of future VMs.)
+    <p>From the VM's point of view, messaging is about auctioning proctime amongst tenants; priority will go to one of the highest bidders per unit time. Therefore the messages offer the VM a rate per proc cycle. 
+    <p>The going rate for proctime is likely to vary wildly according to whether or not anything interesting is going on. So a sender cannot know when a message is likely to be delivered after having offered a certain rate. A very important observation is that some messages will inevitably be discarded because no time ever comes when their offered rate seems attractive, or their interpretation by the receiver might be rudely and prematurely interrupted. This is by no means the only reason why computation in this system is inexact.
+    </div>
+    <div title="Receiver-driven">
+    <p>Tenants need a way to arrange to be invoked when something happens that they specialise in responding to. The obvious model is a set of categorised mailing lists for things like user interaction, system loading levels, etc, but we would also like to see such mailing lists evolve to deal with concepts invented by the tenant society. The simple solution is to allow tenants to create mailing lists of their own. The VM driving the system mailing lists would thus appear to the tenants like any other tenant.   
+    <p>In this case it is not the sender (whether VM or tenant) but the receiver who wants the message to get through and who should therefore provide the finance.
+    <p>When multiple receivers sign up to the same mailing list, the question of who gets informed first is paramount. This limited resource is to be auctioned like any other, and the beneficiary of the auction is the tenant (or VM) feeding the list. (This is not the only payment model that might evolve between tenants.)
+    <p>Clearly, the subscribers to a mailing list must provide finance before interesting events are posted to the list. If nobody has subscribed, then no finance is available for sending a message to the list at all, and we woud not want the system to waste that proctime.
+    <p>The subscribers can, of course, compete for priority by providing money up-front annotated by an intended rate per proc cycle.
+    </div>
+    <div title="Sender-driven-receiver-driven messages">
+    <p>The proposed receiver-driven mechanism is verging on offending against the principle of deducing rather than desgning the VM. That can be corrected. Nothing speaks against a tenant implementing a mailing list all by itself using sender-driven messaging. If it did, or if it delegated the functionality to a peer, then the particulars of this mechanism would be subject to evolutionary pressure and development, thus obeying the principle. OTOH, it would seem like a tall order to expect an early life form to just evolve this functionality "by trial and error", and that would be a problem if the lack of the functionality impeded sensible evolution of the ecosystem. 
+    <p>A peer that specialised in providing mailing lists would collect funds from subscribers and track an individual bank account for each. The generator of the events would sender-drive a message to the mailer, who would use subscriber funds to sender-drive messages to each. The mailer could, for instance, take a cut from the offered rates and offer the rest to the VM so that the receiver's priority in the eyes of the VM reflected his offer to the mailer. The mailer should observe current proctime rates, bear in mind various overheads and reasonable interpretation times for the receiver, such as to behave in the interests of the receiver. This algorithm is both non-trivial and dependent on the level of culture in the system, making it an ideal candidate for evolution.
+    <p>The above paragraph glossed over the money spent by the generator of messages informing the mailer. The provision of these messages is probably the main vocation of the generator and he will expect substantial payment from the mailer for that information. This also applies when the generator is the VM. Generators will shop around for high-paying mailers, and the latter's competitive chances are mainly dependent on the number of subscribers they have. The similarities with human society are striking.
+    </div>
+    <div title="Messages as Tenants">
+    <p>It's worthy of note that tenants and messages have some things in common: both consist of a piece of memory containing some data and an associated bank account. The contents of a tenant are interpreted by the VM while those of a message are interpreted by a tenant. Could a message tell a tenant how to interpret another message? 
+    <p>When tenants reproduce they specify the contents of the child. (They may have their own advanced mechanisms for efficient mutation.) It seems unavoidable that an outgoing message will be used to convey the contents of the new child to whatever will create it: usually the VM. In that case, must there be any difference between that message and the child itself? If messages also had names, there would appear to be no further distinction.
+    <p>That establishes messaging as the means of reproduction.
+    </div>
+    <div title="Tenants as VMs">
+    <p>When tenants take on the role of tracking bank accounts for other tenants as the hypothetical mailer would, the VM role is eroded. It was not suggested that the VM banking system should know about the banking activities of the mailer, rather, the subscribers would transfer money to the mailer's account up front, and the mailer would casually keep notes on who paid him how much. This is the same as the banking relationship between the VM/owner and ordinary tenants. The owner will hold tenant funds in trust because real banks don't open accounts for computer programs.  
+    <p>We have not discovered many distinctions between VM and tenant roles, but the essential difference is that the VM acts as an agent for the hardware owner, the latter being rich amongst peers. The owner has administrator rights on the host system, but most of the available abuses of that right would make him poorer, other than to judge the whole VM useless and destroy it. A rational owner who considered the system lucrative would behave like a tenant. That statement assumes that tenants may sub-let resources to others, hand code them and become the main pressure in their environment, as we may.
+    <p>The hardare owner would have no objection to VM roles being taken over by tenants because he can tax all tenants as he sees fit. His potential taxation margins depend on the efficiency of computation, and that can only be improved when tenants attempt to compete with hand-coded VM services.
+    </div>
+    </div>
+  -->
 
   <script>
 if (!document.layers)

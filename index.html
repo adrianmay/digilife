@@ -255,8 +255,8 @@ td, th { vertical-align: top; padding-left: 5px;}
       <div title='Bookings'>
         <p>First we prove that processor time must be booked in advance. This is because at the beginning of a time window, some code must be executed, and that code will have been specified by whoever payed for the window. So the window must have been sold in advance in order that the code for the window can be specified by the time it is due to be run. Even if we suppose that the VM will delay finding out what code to run until the time window starts, it will still have to know who to talk to and would run some preconceived protocol with that tenant, which would be tantamount to running the tenant's code but in a different way. 
         <p>If the auctioning of the time does not start until the window is underway, then the VM will have less time to collect bids and therefore sell more cheaply. No VM will opt for that because a VM's very purpose in life is to maximise earnings from the auctioning of resources. 
-
         <p>There is no question of whether or not some code reached completion during the CPU time block. Control simply remains with the owner of the time window until the transition to the next booking occurs. Window owners may make efficient or wasteful use of their time and it is their problem to cope with the loss of control at the end of the window. 
+        <p>The VM wants to minimise the resource consumption incurred by the bidding process. The most efficient procedure is for tenants to place bids in which their constraints on an acceptable deal are unambiguously stated. These constraints include the range of acceptable times for a window (e.g. before the tenant dies) and prices. An efficient automatic bidding system would be in place if the tenant could specify his maximum bid but the VM only charged him slightly more than the next best maximum bid. If the VM publishes price averages for the tenats to consult, a greater proportion of attempted deals would result in completed deals, thereby importving efficiency. Another useful feature would be for a bidder to place a set of alternative bids, exactly one of which he wants fulfilled. 
         <p>Similar comments apply to internet and memory time. Language features for reading and writing to blocks of all kinds will be discussed later.
         <p>The hardware owner is interested in the uses that all of his computer time is being put to. Often the VM itself is occupying time, and some of this is due to a request from a particular tenant. The VM should attempt to track these costs in detail, but inordinate amounts of computing power cannot be spent on accounting, so some inaccuracy is inevitable. The main thing is that soe account should exist for VM costs that cannot be blamed on any particular tenant.
         <p>There should be some stochastic factor affecting which tenants win processng resources. If the highest bidder always wins, he will surely remain the highest bidder no matter how worthy the others might have become given the chance. How influential the stochastic factor is is a matter of VM tuning to be experimented with.
@@ -372,7 +372,7 @@ td, th { vertical-align: top; padding-left: 5px;}
           <li>Bidding for resources</li>
           <li>Remembering names and passwords</li>
           <li>Reading and writing blocks</li>
-          <li>Querying one's bank balance</li>
+          <lusi>Querying one's bank balance</li>
           <li>Quoting one's own code</li>
           <li>Sending messages (i.e. invoking peers in an environment) and payments</li>
           <li>Registering on mailing lists</li>
@@ -405,6 +405,31 @@ td, th { vertical-align: top; padding-left: 5px;}
         <p>VM could smooth out that volatility to tell tenants remote rate for them, but only if it has a lot of dealings with that remote machine.
       </div>
 
+      <div title="The Console">
+        <p>For the human hardware owner to review performance, earnings, costs, etc and to change policies, quotas, etc.
+      </div>
+
+      <div title="Summary" class='box'><div style='text-align:left;'>
+          <p>In a nutshell, the VM must:
+        <ul>
+          <li>provide a banking system fed by external cash donations annotated with tenant names and depleted by hardware costs</li>
+          <li>book CPU, memory and internet time in advance to paying tenants with a stochastic bias towards high bidders</li>
+          <li>interpret a programming language in which tenants may specify their behaviour</li>
+          <li>manage names of resource blocks, accounts, etc
+          <li>support a password system for protecting and transfering control of money and resources</li>
+          <li>allow the booker of a CPU window to specify the code to run during that time and some data to be made available to it
+          <li>keep the contents of memory blocks private to the holder of its password</li> 
+          <li>occasionally kill things for no particular reason</li> 
+          <li>provide a diagnostic and control interface for the human owner, probably over http</li> 
+        </ul>
+        <p>and may provide:
+        <ul>
+          <li>a timeout API to help tenants partially sub-let their bookings</li> 
+          <li>a public key encryption API for verifying the pedigree of tenants</li> 
+          <li>a secure trading platform</li> 
+          <li>a directed mutation API</li> 
+        </ul>
+      </div></div>
 
       <!--
 

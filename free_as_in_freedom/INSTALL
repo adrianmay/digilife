@@ -1,7 +1,10 @@
 This depends strongly on the hardware you want to run it on. You'd have to *really* want to get it going.
 
-This needs gcc, nasm and VirtualBox.
-Make with 'make'.
-Create a VirtualBox VM called 'Zed' with zed.img as a floppy disk. The VM should have VT-x/AMD-V checked (if your hardware is new enough) otherwise VirtualBox might not check segment limits. 
-Type 'make run' to run the VM.
+This needs gcc, nasm and bochs.
+
+Build bochs from source with --enable-cpu-level=3 and --enable-debugger. Create a hard disk image called 30M.sample using bximage (I don't want that but it complains if there's no disk.)
+
+Make zed.img with 'make'.
+
+Type 'make run' to run bochs with zed as the OS. Enter c when it stops in the debugger.
 

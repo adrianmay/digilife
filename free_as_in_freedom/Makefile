@@ -3,9 +3,9 @@ CC = gcc
 CCL = ld
 ASM = nasm
 
-CFLAGS = -ffreestanding 
+CFLAGS = -ffreestanding -m32
 # LINKFLAGS = -nostartfiles -Ttext 0x8000 -Map $(TARGET).map
-LINKFLAGS = -nostartfiles -T zed.lds -Map $(TARGET).map
+LINKFLAGS = -melf_i386 -nostartfiles -T zed.lds -Map $(TARGET).map
 ASMFLAGS = -f bin
 COMPILE = $(CC) $(CFLAGS) -c
 LINK = $(CCL) $(LINKFLAGS) 
@@ -22,7 +22,7 @@ $(TARGET).img: makeboot.exe bootsect.bin kernel.bin
 	./makeboot.exe $(TARGET).img bootsect.bin kernel.bin
 
 kernel.o: bootsect.bin $(OBJFILES) zed.lds
-	$(LINK) -o kernel.o #$(OBJFILES) 
+	$(LINK) -o kernel.o $(OBJFILES) 
 	
 
 kernel.bin: kernel.o
@@ -43,6 +43,7 @@ clean: restore
 	rm -rf *.exe *.o *.img *.bin *.map *~ 2> /dev/null;  true
  
 run: 
-	/usr/bin/vmplayer zed.vmx
+	bochs -qf bochsrc
+
 	
 	

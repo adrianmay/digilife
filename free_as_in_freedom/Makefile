@@ -11,6 +11,9 @@ COMPILE = $(CC) $(CFLAGS) -c
 LINK = $(CCL) $(LINKFLAGS) 
 ASSEMBLE = $(ASM) $(ASMFLAGS)
 
+run: zed.img bochsrc
+	bochs -qf bochsrc
+
 all: $(TARGET).img restore
 
 makeboot.exe: makeboot.C Makefile
@@ -42,8 +45,5 @@ restore:
 clean: restore
 	rm -rf *.exe *.o *.img *.bin *.map *~ 2> /dev/null;  true
  
-run: 
-	bochs -qf bochsrc
-
 	
 	

@@ -91,6 +91,7 @@
 #display_library: win32
 #display_library: wx
 #display_library: x
+display_library:     x, options="gui_debug"
 
 #=======================================================================
 # CPU:

@@ -33,7 +33,7 @@ void init_genrand(unsigned long s)
 void init_by_array(unsigned long init_key[], int key_length)
 {
     int i, j, k;
-    init_genrand(19650218UL);
+    init_genrand(19550218UL);
     i=1; j=0;
     k = (N>key_length ? N : key_length);
     for (; k; k--) {

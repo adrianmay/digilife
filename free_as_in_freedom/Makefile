@@ -2,6 +2,8 @@ TARGET = zed
 CC = gcc
 CCL = ld
 ASM = nasm
+# BOCHS=/home/ad/junk/build/b/bochs
+BOCHS=bochs
 
 CFLAGS = -ffreestanding -m32
 # LINKFLAGS = -nostartfiles -Ttext 0x8000 -Map $(TARGET).map
@@ -12,7 +14,7 @@ LINK = $(CCL) $(LINKFLAGS)
 ASSEMBLE = $(ASM) $(ASMFLAGS)
 
 run: zed.img bochsrc
-	bochs -qf bochsrc
+	$(BOCHS) -qf bochsrc
 
 all: $(TARGET).img restore
 

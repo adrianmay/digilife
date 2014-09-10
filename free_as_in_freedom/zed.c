@@ -147,7 +147,7 @@ void setup_tasks()
 {
   setup_task(0, 0, kernel_code, kernel_data, 0, 0, 0, -1);
   setup_task(1, 3, tank_code, tank_data, madtank, spare_stack_1, STACKSIZE, -1);
-  setup_task(2, 0, kernel_code, kernel_data, keyboard_task_loop, spare_stack_2, STACKSIZE,33);
+  //setup_task(2, 0, kernel_code, kernel_data, keyboard_task_loop, spare_stack_2, STACKSIZE,33);
 
 }
 
@@ -189,7 +189,7 @@ void delay()
 
 unsigned int dumbassip;
 
-void fry(unsigned int ip)
+void fry()
 {
   //dumbassip = ip;//-rand()%6 ;
   dumbassip = rand()%65536;
@@ -211,16 +211,37 @@ void fry(unsigned int ip)
       );
 }
 
+void fryat(ip)
+{
+  dumbassip = (ip-rand()%6)%65536 ;
+
+  __asm__ (	
+      "push %eax\n\t"
+      "call rand\n\t"
+      "push %es\n\t"
+      "push %ebx\n\t"
+      "push %edi\n\t"
+      "mov $0x20, %bx\n\t"
+      "mov %bx, %es\n\t"
+      "mov dumbassip, %edi\n\t"
+      "mov %al, %es:(%edi)\n\t" 
+      "pop %edi\n\t"
+      "pop %ebx\n\t"
+      "pop %es\n\t"
+      "pop %eax\n\t"
+      );
+}
+
 void interrupt_handler(struct registers r)
 {
-  if (0) ;
-  else if (r.int_no==33) //Keyboard
+  at(24,0);printx(r.int_no);printc(' '); 
+  if (r.int_no==33) //Keyboard
   {
     at(24,40);print("INT:");printn(r.int_no);
   }
   else if (r.int_no==32) //timer
   {
-    at(24,40);printc(ticks%256); //IDT doesn't point here anymore, there's a task gate instead
+    at(24,40);printc(ticks%256); 
     //return;
     //loopint:
     //	goto loopint;		
@@ -229,7 +250,7 @@ void interrupt_handler(struct registers r)
     {
       //print(tockmsg);
       //do_histogram();
-      fry(r.eip);
+      fry();
       if (r.cs==8*tank_code) 
         r.eip=r.esi=(rand()*4)%0xfffc;						
     }
@@ -246,8 +267,9 @@ void interrupt_handler(struct registers r)
        delay();
        }*/
     //Fry the offending instruction
-    //fry(r.eip);
-    if (r.cs/8==tank_code) r.eip=r.esi=((rand()*4)%0xfffc) ;//r.eip=tank_main;
+    fryat(r.eip);
+    if (r.cs/8==tank_code) 
+      r.eip=r.esi=((rand()*4)%0xfffc) ;//r.eip=tank_main;
     else 
     {
       print("Ouch:");

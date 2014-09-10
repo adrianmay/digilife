@@ -1,5 +1,5 @@
 
-%define floppy
+; %define floppy
 
 ;INT 13h AH=02h: Read Sectors From Drive AH=3 = write
 ;Parameters:
@@ -101,7 +101,7 @@ reset_drive:
 	mov ax, 07E0h      ; 
 	mov es, ax         ; Destination address
 	mov bx, 0          ; Destination address
-	mov dl, 80h           ; drive D
+	mov dl, 80h           ; drive C=80, D=81, A=0
 	mov cl, 1               ; Sector 
 	mov ch, 0
 	mov dh, 0               ; Head 

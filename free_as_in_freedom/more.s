@@ -49,7 +49,7 @@ start:
   cli                     ; Disable interrupts, we want to be alone
   mov ax, 0b800h
   mov es, ax
-  mov al, 68
+  mov al, 69
   mov di, 8
   mov [es:di], al
 
@@ -95,7 +95,6 @@ clear_pipe:
 
   call enable_A20
   call remap_ints
-;  call set_iopl
   ;sidt [idt_old];
   lidt [idt_ptr];
   ;	sti;
@@ -106,15 +105,6 @@ jump_tank:
   sti
   jmp 60h:0
 
-set_iopl:
-  push ax
-  pushf
-  pop ax
-  and ax, 0cfffh
-  push ax
-  popf
-  pop ax
-  ret
 
 
 savesp:

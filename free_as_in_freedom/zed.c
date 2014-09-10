@@ -120,7 +120,7 @@ void setup_task(int which, int ring, int cs, int ds, void * ip, int ss0, int sp0
   task->ds = task->es = task->fs = task->gs = ds*8 + ring;
   task->ss = 8*((GDT_TASKS+1)+which*2) + ring; task->esp = STACKSIZE-4;
   task->ss0 = ss0*8; task->esp0 = sp0;
-  task->eflags = 0x202L + (ring << 12);
+  task->eflags = 0x202L ;//+ (ring << 12);
 
   gdt[GDT_TASKS+which*2].limit=104;
   gdt[GDT_TASKS+which*2].base_l=(unsigned int)task;
@@ -234,27 +234,31 @@ void fryat(ip)
 
 void interrupt_handler(struct registers r)
 {
-  at(24,0);printx(r.int_no);printc(' '); 
-  if (r.int_no==33) //Keyboard
-  {
-    at(24,40);print("INT:");printn(r.int_no);
+  if (r.int_no!=32) { //timer
+    at(24,0);printx(r.int_no);printc(' '); 
   }
-  else if (r.int_no==32) //timer
+  if (r.int_no==32) //timer
   {
-    at(24,40);printc(ticks%256); 
-    //return;
-    //loopint:
-    //	goto loopint;		
     ticks = ticks+1;
     if (1)//(!ticks)
     {
       //print(tockmsg);
       //do_histogram();
-      fry();
-      if (r.cs==8*tank_code) 
+      if (r.cs/8==tank_code) 
+      {
+        fry();
         r.eip=r.esi=(rand()*4)%0xfffc;						
+      }
+      at(24,40);printx(ticks); printc(' ');
     }
-    if (!(ticks%100)) do_histogram();	    
+    if (!(ticks%100)) 
+    {
+      do_histogram();	    
+    }
+  }
+  else if (r.int_no==33) //Keyboard
+  {
+    at(24,60);print("INT:");printn(r.int_no);
   }
   else if (r.int_no < 32)
   {
@@ -267,9 +271,10 @@ void interrupt_handler(struct registers r)
        delay();
        }*/
     //Fry the offending instruction
-    fryat(r.eip);
-    if (r.cs/8==tank_code) 
+    if (r.cs/8==tank_code) {
+      fryat(r.eip);
       r.eip=r.esi=((rand()*4)%0xfffc) ;//r.eip=tank_main;
+    }
     else 
     {
       print("Ouch:");

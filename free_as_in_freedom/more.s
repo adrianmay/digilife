@@ -46,137 +46,147 @@ SECTION .text
 
 start:
 
-cli                     ; Disable interrupts, we want to be alone
-mov ax, 0b800h
-mov es, ax
-mov al, 68
-mov di, 8
-mov [es:di], al
+  cli                     ; Disable interrupts, we want to be alone
+  mov ax, 0b800h
+  mov es, ax
+  mov al, 68
+  mov di, 8
+  mov [es:di], al
 
-mov ax, 0
-mov ds, ax
-mov ax, hack_kernelstack
-mov [hack_kernelstackstart], ax
-mov ax, spare_stack_block_1
-mov [hack_sparestack1start], ax
-mov ax, spare_stack_block_2
-mov [hack_sparestack2start], ax
+  mov ax, 0
+  mov ds, ax
+  mov ax, hack_kernelstack
+  mov [hack_kernelstackstart], ax
+  mov ax, spare_stack_block_1
+  mov [hack_sparestack1start], ax
+  mov ax, spare_stack_block_2
+  mov [hack_sparestack2start], ax
 
-mov ax, 0x8000
-mov [hack_kernelcodestart], ax
-mov ax, KERNEL_CODE_END
-mov [hack_kernelcodelimit], ax
-mov ax, KERNEL_DATA_BEGIN
-add ax, 0x8000
-mov [hack_kerneldatastart], ax
-mov ax, KERNEL_DATA_SIZE
-mov [hack_kerneldatalimit], ax
+  mov ax, 0x8000
+  mov [hack_kernelcodestart], ax
+  mov ax, KERNEL_CODE_END
+  mov [hack_kernelcodelimit], ax
+  mov ax, KERNEL_DATA_BEGIN
+  add ax, 0x8000
+  mov [hack_kerneldatastart], ax
+  mov ax, KERNEL_DATA_SIZE
+  mov [hack_kerneldatalimit], ax
 
-lgdt [gdt_desc]         ; Load the GDT descriptor
+  lgdt [gdt_desc]         ; Load the GDT descriptor
 
-mov eax, cr0            ; Copy the contents of CR0 into EAX
-or eax, 1               ; Set bit 0
-mov cr0, eax            ; Copy the contents of EAX into CR0
+  mov eax, cr0            ; Copy the contents of CR0 into EAX
+  or eax, 1               ; Set bit 0
+  mov cr0, eax            ; Copy the contents of EAX into CR0
 
-jmp 08h:clear_pipe      ; Jump to code segment, offset clear_pipe
+  jmp 08h:clear_pipe      ; Jump to code segment, offset clear_pipe
 
 [BITS 32]                       ; We now need 32-bit instructions
 clear_pipe:
-mov ax, 10h             
-mov ds, ax              
-mov es, ax              
-mov fs, ax              
-mov ax, 68h             ; screen
-mov gs, ax              
-mov ax, 38h		; stack
-mov ss, ax              
-mov esp, 1024   ; 
+  mov ax, 10h             
+  mov ds, ax              
+  mov es, ax              
+  mov fs, ax              
+  mov ax, 68h             ; screen
+  mov gs, ax              
+  mov ax, 38h		; stack
+  mov ss, ax              
+  mov esp, 1024   ; 
 
 
-call enable_A20
-call remap_ints
-;sidt [idt_old];
-lidt [idt_ptr];
-;	sti;
-jmp main;
+  call enable_A20
+  call remap_ints
+;  call set_iopl
+  ;sidt [idt_old];
+  lidt [idt_ptr];
+  ;	sti;
+  jmp main;
 
 jump_tank:
-pop ax
-sti
-jmp 60h:0
+  pop ax
+  sti
+  jmp 60h:0
+
+set_iopl:
+  push ax
+  pushf
+  pop ax
+  and ax, 0cfffh
+  push ax
+  popf
+  pop ax
+  ret
+
 
 savesp:
-dd 0
+  dd 0
 
 ;bum out to real mode for disk operations
 ;need to save and restore tanks
 ;use tracks 8,9,10,11 with 4000h each whether floppy or stick
 
 go_real:
-cli
-pushad
-push ds
-push es
-push fs
-push gs	
-mov [savesp], esp
-mov ax,0x10
-mov ds,ax
-mov es,ax
-mov fs,ax
-mov gs,ax
-mov ss,ax
-lidt [idt_old]
-mov eax, cr0            
-and eax, 0xfffffffe     
-mov cr0, eax            
-jmp 0h:real_mode       
+  cli
+  pushad
+  push ds
+  push es
+  push fs
+  push gs	
+  mov [savesp], esp
+  mov ax,0x10
+  mov ds,ax
+  mov es,ax
+  mov fs,ax
+  mov gs,ax
+  mov ss,ax
+  lidt [idt_old]
+  mov eax, cr0            
+  and eax, 0xfffffffe     
+  mov cr0, eax            
+  jmp 0h:real_mode       
 
 babystack:
-%rep 16
-dd 0
-%endrep
+  %rep 16
+  dd 0
+  %endrep
 babystackend:
 
 real_mode:
-mov ax, 0
-mov ds, ax
-mov es, ax
-mov fs, ax
-mov gs, ax	
-mov es, ax
-mov ss, ax
-mov ax, babystackend
-mov sp, ax	
-mov ax, 0b800h
+  mov ax, 0
+  mov ds, ax
   mov es, ax
-mov di, 2*(80*24+38)
+  mov fs, ax
+  mov gs, ax	
+  mov es, ax
+  mov ss, ax
+  mov ax, babystackend
+  mov sp, ax	
+  mov ax, 0b800h
+  mov es, ax
+  mov di, 2*(80*24+38)
   mov al, 'R'
   mov [es:di],al
   call unmap_ints
   ;sti
-  die:
+die:
   jmp die
   ;cmp ax, 1
   ;jne real_1
   ;call save_tank
   jmp real_done
-  real_1:
+real_1:
   cmp ax, 2
   jne real_done
   call load_tank
-  real_done:
+real_done:
   cli
   mov eax, cr0           
   or eax, 1              
   mov cr0, eax           
   jmp 08h:back_real      
-
-
-  back_real:	
+back_real:	
   mov ax, 0b800h
   mov es, ax
-mov di, 2*(80*24+38)
+  mov di, 2*(80*24+38)
   mov al, 'S'
   mov [es:di],al
   lidt [idt_ptr]
@@ -191,17 +201,17 @@ mov di, 2*(80*24+38)
   sti
   ret
 
-  real_test:	
+real_test:	
   mov ax, 0xb800
   mov es, ax
-mov di, 2*(80*24+38)
+  mov di, 2*(80*24+38)
   mov al, 'R'
   mov [es:di],al
   ret	
 
 
   ;enter with track number in ch and bx pointing to tank bit 
-  save_quarter:
+save_quarter:
 
   mov ax, 0x1000 ;TANKAT
   mov es, ax 
@@ -218,7 +228,7 @@ mov di, 2*(80*24+38)
   int 13h
   ret
 
-  save_tank:
+save_tank:
   mov ch, 8
   mov bx, 0
   call save_quarter
@@ -234,7 +244,7 @@ mov di, 2*(80*24+38)
   ret
 
   ;enter with track number in ch and bx pointing to tank bit 
-  load_quarter:
+load_quarter:
 
   mov ax, 0x1000 ;TANKAT
   mov es, ax 
@@ -251,7 +261,7 @@ mov di, 2*(80*24+38)
   int 13h
   ret
 
-  load_tank:
+load_tank:
   mov ch, 8
   mov bx, 0
   call load_quarter
@@ -267,11 +277,11 @@ mov di, 2*(80*24+38)
   ret
 
 
-  load_tsr:
+load_tsr:
   ltr     word [ss:esp+4]
   ret	
 
-  remap_ints:
+remap_ints:
   mov al, 11h
   out 020h, al ;reset
   out 0A0h, al
@@ -299,7 +309,7 @@ mov di, 2*(80*24+38)
   out 0x40, al
   ret
 
-  unmap_ints:
+unmap_ints:
   mov al, 11h
   out 020h, al ;reset
   out 0A0h, al
@@ -319,7 +329,7 @@ mov di, 2*(80*24+38)
   out 0A1h, al	
   ret
 
-  enable_A20:
+enable_A20:
   call    a20wait
   mov     al,0xAD
   out     0x64,al
@@ -348,20 +358,20 @@ mov di, 2*(80*24+38)
   call    a20wait
   ret
 
-  a20wait:
+a20wait:
   in      al,0x64
   test    al,2
   jnz     a20wait
   ret
 
 
-  a20wait2:
+a20wait2:
   in      al,0x64
   test    al,1
   jz      a20wait2
   ret
 
-  crash:
+crash:
   ;        mov eax, [0xffffffff]
   int 32
   ret
@@ -371,7 +381,7 @@ mov di, 2*(80*24+38)
   ret
 
 
-  pokescreen: ;(where, what)
+pokescreen: ;(where, what)
   push ebp
   mov ebp,esp
   push es
@@ -389,7 +399,7 @@ mov di, 2*(80*24+38)
   pop ebp
   ret
 
-  clearscreen:
+clearscreen:
   push ebp
   mov ebp,esp
   push eax
@@ -406,7 +416,7 @@ mov di, 2*(80*24+38)
   mov es, ax
   mov eax, 0x0f00
   mov edi, 0
-  clsloop:
+clsloop:
   mov [es:di], ax
   inc edi
   inc edi
@@ -419,7 +429,7 @@ mov di, 2*(80*24+38)
   pop ebp
   ret
 
-  nuketank:
+nuketank:
   push ebp
   mov ebp, esp
   pushad
@@ -427,7 +437,7 @@ mov di, 2*(80*24+38)
   mov ebx, 0x20
   mov es, bx ;tank
   mov edi, 0 ;TANKPAGES
-  nukeloop:
+nukeloop:
   ;push edi
   ;mov ebx, 0x10
   ;mov es, bx ;tank
@@ -444,16 +454,16 @@ mov di, 2*(80*24+38)
   cmp edi, 0x10000
   je	nukedone
   jmp nukeloop
-  nukedone:
+nukedone:
   pop es
   popad
   pop ebp
   ret
 
-  thehistogram: times 256 dw 0  
+thehistogram: times 256 dw 0  
 
 
-  get_histogram:
+get_histogram:
   push ebp
   mov ebp,esp
   pushad
@@ -462,7 +472,7 @@ mov di, 2*(80*24+38)
   mov eax, 0x20
   mov es, ax ;tank
   mov edi, 0 ;TANKPAGES
-  histloop:
+histloop:
   mov ebx, 0
   mov	bl, [es:edi]
   shl ebx,1
@@ -470,34 +480,34 @@ mov di, 2*(80*24+38)
   inc	edi
   cmp edi, 0x10000
   jne	histloop
-  histdone:
+histdone:
   pop es
   popad
   pop ebp
   ret
 
-  dumptank:
+dumptank:
   ; drop 128*TANKPAGES sectors from 5200h on disk = 51st sector
 
 
   ; Need a guzzilion of these just because Intel don't tell us the interrupt number...
 
-  %macro isr_frontline_pushdummy 1 
-  isr_head_%1:
+%macro isr_frontline_pushdummy 1 
+isr_head_%1:
   cli
   push  0
   push  %1
   jmp isr_common
-  %endmacro
+%endmacro
 
-  %macro isr_frontline_nopushdummy 1 
-  isr_head_%1:
+%macro isr_frontline_nopushdummy 1 
+isr_head_%1:
   cli
   push  %1
   jmp isr_common
-  %endmacro
+%endmacro
 
-  isr_common:
+isr_common:
   pushad
   push ds
   push es
@@ -518,10 +528,10 @@ mov di, 2*(80*24+38)
   jl ack_master
   mov al, 020h
   out 0a0h, al
-  ack_master:
+ack_master:
   mov al, 20h
   out 20h, al
-  no_more_acks:    
+no_more_acks:    
   call interrupt_handler
   pop gs
   pop fs
@@ -533,7 +543,7 @@ mov di, 2*(80*24+38)
   sti
   iret           ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP
 
-  keyboard_task_loop:
+keyboard_task_loop:
   cli
   push  0
   push  33
@@ -560,7 +570,7 @@ mov di, 2*(80*24+38)
 
 
   ; These functions are what the IDT entries point at...
-  db "Frontline interrupt handlers are here:"
+db "Frontline interrupt handlers are here:"
 
   %assign i 0
 
@@ -600,21 +610,21 @@ mov di, 2*(80*24+38)
 
   ; The IDT...
 
-  %macro idt_entry 1
+%macro idt_entry 1
   dw isr_head_%1
   dw 08h
   db 0
   db 0eeh
   dw 0
-  %endmacro
+%endmacro
 
-  %macro idt_entry_ring0 1
+%macro idt_entry_ring0 1
   dw isr_head_%1
   dw 08h
   db 0
   db 08eh
   dw 0
-  %endmacro
+%endmacro
 
   db "IDT starts here:"
 

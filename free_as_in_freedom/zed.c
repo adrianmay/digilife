@@ -73,6 +73,7 @@ void main()
   int a;
 loopmain:
   //	goto loopmain;
+  //printbar();
   setup_tasks();
   clearscreen();
   randinit();	
@@ -81,7 +82,6 @@ loopmain:
   //put_handler(32, isr_nothing, GATE_DEFAULT);
   jump_tank();
   //main_loop:
-  //printbar();
   //__asm("iret");
   //goto main_loop;
 

@@ -1,22 +1,91 @@
 <html>
 <head>
   <title>Digital Life</title>
-  <style type="text/css">
-body {margin-left: 330px; font-family:Arial}
-h1 {text-align:center}
-h2 {padding-top:30px;padding-bottom:20px;}
-h3 {padding-top:20px;padding-bottom:10px;}
-th {text-align:left}
-h1,h2,h3,h4 {text-decoration:underline}
-h1,h2,h3,th {text-transform:uppercase}
-dt,th { font-weight:bold; }
-td, th { vertical-align: top; padding-left: 5px;}
-.box {text-align:center; background-color:#DDFFFF; margin-left:15%; margin-right:15%; border: 1px solid grey; padding: 10px;}
-  </style>
-</head>
-<body>
 
-  <div title="Digital Life" style="border:8 #FFFFFF solid; cellpadding:1; background-color:#FFFFFF;">
+  <style type="text/css">
+    body {margin: 0; font-family:Arial}
+    h1 {text-align:center}
+    h2 {padding-top:30px;padding-bottom:20px;}
+    h3 {padding-top:20px;padding-bottom:10px;}
+    th {text-align:left}
+    h1,h2,h3,h4 {text-decoration:underline}
+    h1,h2,h3,th {text-transform:uppercase}
+    dt,th { font-weight:bold; }
+    td, th { vertical-align: top; padding-left: 5px;}
+    .box {text-align:center; background-color:#DDFFFF; margin-left:15%; margin-right:15%; border: 1px solid grey; padding: 10px;}
+
+    .row, .col { overflow: hidden; position: absolute; }
+    .row { left: 0; right: 0; }
+    .col { top: 0; bottom: 0; }
+    .scroll-x { overflow-x: auto; }
+    .scroll-y { overflow-y: auto; }
+    .left.col { width: 20%; line-height:90%;}
+    .right.col { left: 20%; right: 0; }
+
+  </style>
+  <script>
+
+    function showdots(n) {
+      var ret = " ";
+      while (n--)
+        ret += "... ";
+      return ret;
+    }
+
+    function makeLink(secn, depth, disp) {
+      return "<tr><td>" + 
+        secn +
+        "</td><td>" + 
+        showdots(depth) +
+        "<a href='#" + secn + "'>" + 
+        disp + 
+        "</a></td></tr>"
+    }
+
+    function contents(el, numbers) {
+      if (el.nodeType != 1) return;
+      if (el.title == "") return;
+
+      var secnum = numbers.join(".");
+      var links = makeLink(secnum, numbers.length, el.title);
+
+      el.id = secnum;
+
+      var tit=document.createElement("h"+(numbers.length+1));
+      var titex=document.createTextNode(secnum+"  "+el.title);
+      tit.appendChild(titex);
+      el.insertBefore(tit, el.childNodes[0]);
+
+      var j=0;
+      for (var i=0;i<el.childNodes.length;i++)
+      {
+        if (el.childNodes[i].nodeType!=1 || el.childNodes[i].title=="") 
+          continue;
+        j++;
+        var morenumbers = numbers.slice();
+        morenumbers.push(j);
+        links += contents(el.childNodes[i], morenumbers);
+      }
+      return links;
+
+    }
+
+    function go() { 
+      document.getElementById("contents").innerHTML = 
+        contents(document.getElementById("root"), []); 
+    }
+
+
+  </script>
+</head>
+<body onLoad="go();">
+
+  <div class="left col scroll-y scroll-x">
+    <table id="contents" style='font-size:75%;'>
+    </table>
+  </div>
+
+  <div id='root' class="right col scroll-y" title="Digital Life" style="border:8 #FFFFFF solid; cellpadding:1; background-color:#FFFFFF;">
 
     <div title="Goal">
       <div class=box>Intelligent, useful, internet-native, <b>freely evolving software life-forms</b> permanently established in world economy.</div>
@@ -536,7 +605,92 @@ td, th { vertical-align: top; padding-left: 5px;}
         </ul>
       </div></div>
 
-      <!--
+    </div>
+    <div title="VM coding">
+      <p>So after all that discussion of requirements, how do we write the VM?
+    </div>
+    <div title="Expectations">
+      <div title="The Jungle">
+        <p>Nobody said life was fair, and this system will be anything but in its early phases. We can expect abuses like:
+        <ol>
+          <li>Hardware owners plundering money they hold in trust for their tenants</li>
+          <li>Tenants withholdng payments for services already rendered</li>
+          <li>Tenants impersonating useful life forms but delivering nothing</li>
+          <li>Tenants alerting peers to nothing in order to bankrupt them on processor time bills</li>
+        </ol>
+        <p>All of these effects are known to the econosphere but don't seem to prevent the system from operating and making progress.
+        <p>Accidents, mutations and disasters are necessary to prevent evolution from getting into a rut. All VMs will, at all stages of evolution, randomly select and either kill or corrupt individual tenants from time to time. This might disrupt important value chains but the ecosystem will have to develop its own solutions for that.
+        <p>A more earnest problem is the evolution of life forms that run on computers without the owner's permission, i.e. computer viruses that utilise software evolution to generate their own variants. This very serious issue calls for good PR.
+        <p>Yet another difficult question is why one would need more than one copy of a given program on a given machine.
+
+      </div>
+
+      <div title="Jobs">
+        This technology competes with hand coding as a way of generating new software, but it also provides opportunities. One can earn a living in this economy in several ways:
+        <dl>
+          <dt>Hosting</dt>
+          <dd>Buy a specialised box, plug it in and charge rent to tenants. This would appeal to people who tried bitcoin mining, and large players will build data centres.</dd>
+          <dt>Farming</dt>
+          <dd>A hoster can alter conditions in his VM so as to selectively breed characteristics he thinks will be lucrative in the future. The internet advert placement application will probably lead to an intensive farming race.</dd>
+          <dt>VM authoring</dt>
+          <dd>Some VMs will outperform others at breeding cutting-edge life forms. A VM with a secret is a saleable commodity. Specific farming efforts can benefit from VM tweaks.</dd>
+          <dt>Banking</dt>
+          <dd>Banks don't usually process account applications from computer programs, but a specialised type of bank would be better than relying on each hardware owner to hold his tenants' funds in trust. Transactions between VMs must be supported with certain characteristics.</dd>
+          <dt>Reverse engineering</dt>
+          <dd>It will not be obvious what digital life is thinking, but a new breed of researchers will make it their business to find out.</dd>
+        </dl>
+      </div>
+    </div> 
+
+    <hr/>
+    <hr/>
+  </div>
+
+  <!--
+    <div title="Messaging">
+    <p>The fourth abuse listed above is the starting point for designing the API on which tenants live. 
+    <p>Tenants usually want proctime because of some event arising, e.g. a message from a peer or themselves. 
+    <p>Without loss of generality we can use the message as the only means of requesting proctime.
+    <p>Routing a message to its receiver costs proctime already, and furthermore, there may be stiff competition for proctime ensuing from popular events such as user interactions.
+    <p>This means that a message must be financed before it enters the messaging system. 
+    <div title="Sender-driven">
+    <p>If we consider the sender to be the party who wants the message to be sent and processed, then it's logical that the sender would pay for the construction, temporary storage, sorting and delivery of the message. 
+    <p>Upon delivery, some expense must be incurred while the receiver examines it. Even if the message is uninteresting to the receiver, that fact cannot be ascertained without some expense. Therefore the sender who believes the message to be interesting to the receiver should finance this initial examination as well. On the other hand, the sender does not want to give the receiver a blank cheque to continue purportedly examining the message ad-infinitum. Furthermore, the VM does not want to schedule a potentially infinite proctime window.
+    <p>The sender should provide a definite sum of money for the processing of the message. That sum is associated with the message itself and may be referred to as its bank account. The sender will transfer the sum from its own account to the message's account as part of the message generation procedure. The VM will deduct its delivery costs from the message's account and the remainder will finance the receiver's interpretation activities.
+    <p>The receiver cannot synchronously extend the finance of the message it is processing because the going rate for proctime might have changed by then. (There is often a queue of tenants eagerly awaiting notification of the same event.) Rather, the receiver can only reserve more proctime by sending itself a message before the current one's finance expires. There is some guesswork involved in deciding how much money to put in a new message, and refined ways of specifying how it should be used may distinguish advanced VM products from one another.
+    <p>This mechanism also serves as a payment system: if the receiver yields before the message's finance expires, it keeps the change.
+    <p>We've implied that individual tenants have names to which messages may be addressed. These must be unique within a given VM, and presumably globalised by giving the VMs names too. It is advantageous for names to express the pedigree of a tenant, but this is something we can look forward to the evolution of, rather than designing it into the system.
+    </div>
+    <div title="Prioritisation of sender-driven messages">
+    <p>We work on the assumption that the hardware owner aims to tax as much money out of the system as possible. Indeed he should do so in order to consistently aim for Malthusian equilibrium. (He may nevertheless choose to reinvest revenue in the ecosystem using yet-to-be-invented features of future VMs.)
+    <p>From the VM's point of view, messaging is about auctioning proctime amongst tenants; priority will go to one of the highest bidders per unit time. Therefore the messages offer the VM a rate per proc cycle. 
+    <p>The going rate for proctime is likely to vary wildly according to whether or not anything interesting is going on. So a sender cannot know when a message is likely to be delivered after having offered a certain rate. A very important observation is that some messages will inevitably be discarded because no time ever comes when their offered rate seems attractive, or their interpretation by the receiver might be rudely and prematurely interrupted. This is by no means the only reason why computation in this system is inexact.
+    </div>
+    <div title="Receiver-driven">
+    <p>Tenants need a way to arrange to be invoked when something happens that they specialise in responding to. The obvious model is a set of categorised mailing lists for things like user interaction, system loading levels, etc, but we would also like to see such mailing lists evolve to deal with concepts invented by the tenant society. The simple solution is to allow tenants to create mailing lists of their own. The VM driving the system mailing lists would thus appear to the tenants like any other tenant.   
+    <p>In this case it is not the sender (whether VM or tenant) but the receiver who wants the message to get through and who should therefore provide the finance.
+    <p>When multiple receivers sign up to the same mailing list, the question of who gets informed first is paramount. This limited resource is to be auctioned like any other, and the beneficiary of the auction is the tenant (or VM) feeding the list. (This is not the only payment model that might evolve between tenants.)
+    <p>Clearly, the subscribers to a mailing list must provide finance before interesting events are posted to the list. If nobody has subscribed, then no finance is available for sending a message to the list at all, and we woud not want the system to waste that proctime.
+    <p>The subscribers can, of course, compete for priority by providing money up-front annotated by an intended rate per proc cycle.
+    </div>
+    <div title="Sender-driven-receiver-driven messages">
+    <p>The proposed receiver-driven mechanism is verging on offending against the principle of deducing rather than desgning the VM. That can be corrected. Nothing speaks against a tenant implementing a mailing list all by itself using sender-driven messaging. If it did, or if it delegated the functionality to a peer, then the particulars of this mechanism would be subject to evolutionary pressure and development, thus obeying the principle. OTOH, it would seem like a tall order to expect an early life form to just evolve this functionality "by trial and error", and that would be a problem if the lack of the functionality impeded sensible evolution of the ecosystem. 
+    <p>A peer that specialised in providing mailing lists would collect funds from subscribers and track an individual bank account for each. The generator of the events would sender-drive a message to the mailer, who would use subscriber funds to sender-drive messages to each. The mailer could, for instance, take a cut from the offered rates and offer the rest to the VM so that the receiver's priority in the eyes of the VM reflected his offer to the mailer. The mailer should observe current proctime rates, bear in mind various overheads and reasonable interpretation times for the receiver, such as to behave in the interests of the receiver. This algorithm is both non-trivial and dependent on the level of culture in the system, making it an ideal candidate for evolution.
+    <p>The above paragraph glossed over the money spent by the generator of messages informing the mailer. The provision of these messages is probably the main vocation of the generator and he will expect substantial payment from the mailer for that information. This also applies when the generator is the VM. Generators will shop around for high-paying mailers, and the latter's competitive chances are mainly dependent on the number of subscribers they have. The similarities with human society are striking.
+    </div>
+    <div title="Messages as Tenants">
+    <p>It's worthy of note that tenants and messages have some things in common: both consist of a piece of memory containing some data and an associated bank account. The contents of a tenant are interpreted by the VM while those of a message are interpreted by a tenant. Could a message tell a tenant how to interpret another message? 
+    <p>When tenants reproduce they specify the contents of the child. (They may have their own advanced mechanisms for efficient mutation.) It seems unavoidable that an outgoing message will be used to convey the contents of the new child to whatever will create it: usually the VM. In that case, must there be any difference between that message and the child itself? If messages also had names, there would appear to be no further distinction.
+    <p>That establishes messaging as the means of reproduction.
+    </div>
+    <div title="Tenants as VMs">
+    <p>When tenants take on the role of tracking bank accounts for other tenants as the hypothetical mailer would, the VM role is eroded. It was not suggested that the VM banking system should know about the banking activities of the mailer, rather, the subscribers would transfer money to the mailer's account up front, and the mailer would casually keep notes on who paid him how much. This is the same as the banking relationship between the VM/owner and ordinary tenants. The owner will hold tenant funds in trust because real banks don't open accounts for computer programs.  
+    <p>We have not discovered many distinctions between VM and tenant roles, but the essential difference is that the VM acts as an agent for the hardware owner, the latter being rich amongst peers. The owner has administrator rights on the host system, but most of the available abuses of that right would make him poorer, other than to judge the whole VM useless and destroy it. A rational owner who considered the system lucrative would behave like a tenant. That statement assumes that tenants may sub-let resources to others, hand code them and become the main pressure in their environment, as we may.
+    <p>The hardare owner would have no objection to VM roles being taken over by tenants because he can tax all tenants as he sees fit. His potential taxation margins depend on the efficiency of computation, and that can only be improved when tenants attempt to compete with hand-coded VM services.
+    </div>
+    </div>
+
+
 
         <div title="Invocation">
         <p>Let's suppose the processor is currently doing some work. We can ask:
@@ -647,206 +801,9 @@ td, th { vertical-align: top; padding-left: 5px;}
         </ul>
         <p>This regex approach is just one of many ways of building a VM.
         </div>
-      -->
-    </div>
-    <div title="VM coding">
-      <p>So after all that discussion of requirements, how do we write the VM?
-    </div>
-    <div title="Expectations">
-      <div title="The Jungle">
-        <p>Nobody said life was fair, and this system will be anything but in its early phases. We can expect abuses like:
-        <ol>
-          <li>Hardware owners plundering money they hold in trust for their tenants</li>
-          <li>Tenants withholdng payments for services already rendered</li>
-          <li>Tenants impersonating useful life forms but delivering nothing</li>
-          <li>Tenants alerting peers to nothing in order to bankrupt them on processor time bills</li>
-        </ol>
-        <p>All of these effects are known to the econosphere but don't seem to prevent the system from operating and making progress.
-        <p>Accidents, mutations and disasters are necessary to prevent evolution from getting into a rut. All VMs will, at all stages of evolution, randomly select and either kill or corrupt individual tenants from time to time. This might disrupt important value chains but the ecosystem will have to develop its own solutions for that.
-        <p>A more earnest problem is the evolution of life forms that run on computers without the owner's permission, i.e. computer viruses that utilise software evolution to generate their own variants. This very serious issue calls for good PR.
-        <p>Yet another difficult question is why one would need more than one copy of a given program on a given machine.
 
-      </div>
-
-      <div title="Jobs">
-        This technology competes with hand coding as a way of generating new software, but it also provides opportunities. One can earn a living in this economy in several ways:
-        <dl>
-          <dt>Hosting</dt>
-          <dd>Buy a specialised box, plug it in and charge rent to tenants. This would appeal to people who tried bitcoin mining, and large players will build data centres.</dd>
-          <dt>Farming</dt>
-          <dd>A hoster can alter conditions in his VM so as to selectively breed characteristics he thinks will be lucrative in the future. The internet advert placement application will probably lead to an intensive farming race.</dd>
-          <dt>VM authoring</dt>
-          <dd>Some VMs will outperform others at breeding cutting-edge life forms. A VM with a secret is a saleable commodity. Specific farming efforts can benefit from VM tweaks.</dd>
-          <dt>Banking</dt>
-          <dd>Banks don't usually process account applications from computer programs, but a specialised type of bank would be better than relying on each hardware owner to hold his tenants' funds in trust. Transactions between VMs must be supported with certain characteristics.</dd>
-          <dt>Reverse engineering</dt>
-          <dd>It will not be obvious what digital life is thinking, but a new breed of researchers will make it their business to find out.</dd>
-        </dl>
-      </div>
-    </div> 
-
-    <hr/>
-    <hr/>
-  </div>
-
-  <!--
-    <div title="Messaging">
-    <p>The fourth abuse listed above is the starting point for designing the API on which tenants live. 
-    <p>Tenants usually want proctime because of some event arising, e.g. a message from a peer or themselves. 
-    <p>Without loss of generality we can use the message as the only means of requesting proctime.
-    <p>Routing a message to its receiver costs proctime already, and furthermore, there may be stiff competition for proctime ensuing from popular events such as user interactions.
-    <p>This means that a message must be financed before it enters the messaging system. 
-    <div title="Sender-driven">
-    <p>If we consider the sender to be the party who wants the message to be sent and processed, then it's logical that the sender would pay for the construction, temporary storage, sorting and delivery of the message. 
-    <p>Upon delivery, some expense must be incurred while the receiver examines it. Even if the message is uninteresting to the receiver, that fact cannot be ascertained without some expense. Therefore the sender who believes the message to be interesting to the receiver should finance this initial examination as well. On the other hand, the sender does not want to give the receiver a blank cheque to continue purportedly examining the message ad-infinitum. Furthermore, the VM does not want to schedule a potentially infinite proctime window.
-    <p>The sender should provide a definite sum of money for the processing of the message. That sum is associated with the message itself and may be referred to as its bank account. The sender will transfer the sum from its own account to the message's account as part of the message generation procedure. The VM will deduct its delivery costs from the message's account and the remainder will finance the receiver's interpretation activities.
-    <p>The receiver cannot synchronously extend the finance of the message it is processing because the going rate for proctime might have changed by then. (There is often a queue of tenants eagerly awaiting notification of the same event.) Rather, the receiver can only reserve more proctime by sending itself a message before the current one's finance expires. There is some guesswork involved in deciding how much money to put in a new message, and refined ways of specifying how it should be used may distinguish advanced VM products from one another.
-    <p>This mechanism also serves as a payment system: if the receiver yields before the message's finance expires, it keeps the change.
-    <p>We've implied that individual tenants have names to which messages may be addressed. These must be unique within a given VM, and presumably globalised by giving the VMs names too. It is advantageous for names to express the pedigree of a tenant, but this is something we can look forward to the evolution of, rather than designing it into the system.
-    </div>
-    <div title="Prioritisation of sender-driven messages">
-    <p>We work on the assumption that the hardware owner aims to tax as much money out of the system as possible. Indeed he should do so in order to consistently aim for Malthusian equilibrium. (He may nevertheless choose to reinvest revenue in the ecosystem using yet-to-be-invented features of future VMs.)
-    <p>From the VM's point of view, messaging is about auctioning proctime amongst tenants; priority will go to one of the highest bidders per unit time. Therefore the messages offer the VM a rate per proc cycle. 
-    <p>The going rate for proctime is likely to vary wildly according to whether or not anything interesting is going on. So a sender cannot know when a message is likely to be delivered after having offered a certain rate. A very important observation is that some messages will inevitably be discarded because no time ever comes when their offered rate seems attractive, or their interpretation by the receiver might be rudely and prematurely interrupted. This is by no means the only reason why computation in this system is inexact.
-    </div>
-    <div title="Receiver-driven">
-    <p>Tenants need a way to arrange to be invoked when something happens that they specialise in responding to. The obvious model is a set of categorised mailing lists for things like user interaction, system loading levels, etc, but we would also like to see such mailing lists evolve to deal with concepts invented by the tenant society. The simple solution is to allow tenants to create mailing lists of their own. The VM driving the system mailing lists would thus appear to the tenants like any other tenant.   
-    <p>In this case it is not the sender (whether VM or tenant) but the receiver who wants the message to get through and who should therefore provide the finance.
-    <p>When multiple receivers sign up to the same mailing list, the question of who gets informed first is paramount. This limited resource is to be auctioned like any other, and the beneficiary of the auction is the tenant (or VM) feeding the list. (This is not the only payment model that might evolve between tenants.)
-    <p>Clearly, the subscribers to a mailing list must provide finance before interesting events are posted to the list. If nobody has subscribed, then no finance is available for sending a message to the list at all, and we woud not want the system to waste that proctime.
-    <p>The subscribers can, of course, compete for priority by providing money up-front annotated by an intended rate per proc cycle.
-    </div>
-    <div title="Sender-driven-receiver-driven messages">
-    <p>The proposed receiver-driven mechanism is verging on offending against the principle of deducing rather than desgning the VM. That can be corrected. Nothing speaks against a tenant implementing a mailing list all by itself using sender-driven messaging. If it did, or if it delegated the functionality to a peer, then the particulars of this mechanism would be subject to evolutionary pressure and development, thus obeying the principle. OTOH, it would seem like a tall order to expect an early life form to just evolve this functionality "by trial and error", and that would be a problem if the lack of the functionality impeded sensible evolution of the ecosystem. 
-    <p>A peer that specialised in providing mailing lists would collect funds from subscribers and track an individual bank account for each. The generator of the events would sender-drive a message to the mailer, who would use subscriber funds to sender-drive messages to each. The mailer could, for instance, take a cut from the offered rates and offer the rest to the VM so that the receiver's priority in the eyes of the VM reflected his offer to the mailer. The mailer should observe current proctime rates, bear in mind various overheads and reasonable interpretation times for the receiver, such as to behave in the interests of the receiver. This algorithm is both non-trivial and dependent on the level of culture in the system, making it an ideal candidate for evolution.
-    <p>The above paragraph glossed over the money spent by the generator of messages informing the mailer. The provision of these messages is probably the main vocation of the generator and he will expect substantial payment from the mailer for that information. This also applies when the generator is the VM. Generators will shop around for high-paying mailers, and the latter's competitive chances are mainly dependent on the number of subscribers they have. The similarities with human society are striking.
-    </div>
-    <div title="Messages as Tenants">
-    <p>It's worthy of note that tenants and messages have some things in common: both consist of a piece of memory containing some data and an associated bank account. The contents of a tenant are interpreted by the VM while those of a message are interpreted by a tenant. Could a message tell a tenant how to interpret another message? 
-    <p>When tenants reproduce they specify the contents of the child. (They may have their own advanced mechanisms for efficient mutation.) It seems unavoidable that an outgoing message will be used to convey the contents of the new child to whatever will create it: usually the VM. In that case, must there be any difference between that message and the child itself? If messages also had names, there would appear to be no further distinction.
-    <p>That establishes messaging as the means of reproduction.
-    </div>
-    <div title="Tenants as VMs">
-    <p>When tenants take on the role of tracking bank accounts for other tenants as the hypothetical mailer would, the VM role is eroded. It was not suggested that the VM banking system should know about the banking activities of the mailer, rather, the subscribers would transfer money to the mailer's account up front, and the mailer would casually keep notes on who paid him how much. This is the same as the banking relationship between the VM/owner and ordinary tenants. The owner will hold tenant funds in trust because real banks don't open accounts for computer programs.  
-    <p>We have not discovered many distinctions between VM and tenant roles, but the essential difference is that the VM acts as an agent for the hardware owner, the latter being rich amongst peers. The owner has administrator rights on the host system, but most of the available abuses of that right would make him poorer, other than to judge the whole VM useless and destroy it. A rational owner who considered the system lucrative would behave like a tenant. That statement assumes that tenants may sub-let resources to others, hand code them and become the main pressure in their environment, as we may.
-    <p>The hardare owner would have no objection to VM roles being taken over by tenants because he can tax all tenants as he sees fit. His potential taxation margins depend on the efficiency of computation, and that can only be improved when tenants attempt to compete with hand-coded VM services.
-    </div>
-    </div>
   -->
 
-  <script>
-if (!document.layers)
-  document.write('<div id="divStayTopLeft" style="position:absolute">')
-  </script>
-
-  <layer id="divStayTopLeft">
-
-  <table id="contentstable" style="border:4 #E0E0E0 solid; cellpadding:1; background-color:#F0F0F0;line-height:90%;font-size:small;">
-
-    <script>
-function shownumbers(numbers)
-{
-  var ret="";
-  for (var i=0;i<numbers.length;i++) 
-  {
-    if (ret.length) ret = ret + "." 
-      ret = ret + numbers[i];
-  }
-  return ret;
-}
-
-function joinstrings(l)
-{
-  var ret="";
-  for (var i=0;i<l.length;i++) ret+=l[i];
-  return ret;
-}
-
-function showdots(n) {
-  var ret = " ";
-  while (n--)
-    ret += "... ";
-  return ret;
-}
-function contents(el, numbers)
-{
-  if (el.nodeType != 1) return;
-  if (el.title == "") return;
-  el.id=joinstrings(el.title.split(' '));
-  document.write("<tr><td>"+shownumbers(numbers)+"</td><td> "+showdots(numbers.length)+" <a href=#" + el.id + ">" + el.title + "</a></td></tr>");
-  var j=0;
-  for (var i=0;i<el.childNodes.length;i++)
-  {
-    var morenumbers = numbers.slice();
-    morenumbers.push(j+1);
-    contents(el.childNodes[i], morenumbers);
-    if (el.childNodes[i].nodeType==1 && el.childNodes[i].title!="") j++;
-  }
-
-  tit=document.createElement("h"+(numbers.length+1));
-  titex=document.createTextNode(shownumbers(numbers)+"  "+el.title);
-  tit.appendChild(titex);
-  el.insertBefore(tit, el.childNodes[0]);
-
-}
-contents(document.body.getElementsByTagName("div")[0],[]);
-document.body.style.marginLeft = 10+document.getElementById("contentstable").clientWidth;
-    </script>
-
-  </table>
-
-  </layer>
-
-
-  <script type="text/javascript">
-
-/*
-Floating Menu script- Roy Whittle (http://www.javascript-fx.com/)
-Script featured on/available at http://www.dynamicdrive.com/
-This notice must stay intact for use
- */
-
-if (!document.layers)
-  document.write('</div>')
-
-var ftlObj;
-
-function JSFX_FloatTopDiv() {
-  var startX = 3,
-  startY = 10;
-  var ns = (navigator.appName.indexOf("Netscape") != -1);
-  var d = document;
-  function ml(id) {
-    //var el=d.getElementById?d.getElementById(id):d.all?d.all[id]:d.layers[id];
-    var el=d.getElementById(id);
-    if(d.layers)el.style=el;
-    el.sP=function(x,y){this.style.left=x;this.style.top=y;};
-    el.x = startX;
-    el.y = startY;
-    return el;
-  }
-  window.stayTopLeft=function() {
-    var coh = ftlObj.offsetHeight;
-    var ph = document.height;
-    var clh = document.body.clientHeight;
-    var diff = coh-clh;
-    if (diff<0) diff = 0;
-    var pY = ns ? pageYOffset : document.body.scrollTop;
-    var prop = pY/(ph - clh);
-    var tweak = diff*prop;
-    ftlObj.y += ((pY-2*tweak) + startY - ftlObj.y)/8;
-    ftlObj.sP(ftlObj.x, ftlObj.y);
-    setTimeout("stayTopLeft()", 10);
-  }
-
-  ftlObj = ml("divStayTopLeft");
-  stayTopLeft();
-
-}
-
-JSFX_FloatTopDiv();
-
-  </script>
 
 </body>
-</ html>
+</html>

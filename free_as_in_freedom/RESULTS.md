@@ -7,9 +7,9 @@ First result.
 
 After about 10 hours in bochs on a 2GHz machine, this version discovers the program:
 
- lodsd eax, dword ptr ds:[esi] ; ad
- xchg dword ptr ds:[esi], eax ; 8706
- inc ebp                   ; 45
+- lodsd eax, dword ptr ds:[esi] ; ad
+- xchg dword ptr ds:[esi], eax ; 8706
+- inc ebp                   ; 45
 
 aligned on 4-byte boundaries. This populates the whole memory, continuously repairs VM-damage and appears to rule out further evolution.
 

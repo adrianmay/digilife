@@ -1,12 +1,10 @@
 This preamble demonstrates *completely* free evolution. Being free of human influence, it's not likely to do anything that coincides with our interests, but it demonstrates the starting point of purely Darwinian evolution from which we'll depart.
 
-It boots a PC into protected mode with one userland physical segment that's aliased as both code and data, initialised with random contents and executed. All 256 exceptions/interrupts are vectored to just jump back into the chaos, after scrambling some byte near where the exception occured. There's also a timer set at 100Hz which scrambles some randomly chosen byte. 
+It boots a PC into protected mode with one physical segment that's aliased as both code and data in ring 3, initialised with random contents and executed. All 256 exceptions/interrupts are vectored to just jump back into the chaos, after scrambling some byte near where the exception occured. There's also a timer set at 100Hz which scrambles some randomly chosen byte. 
 
-During the demo, the screen shows a histogram of the byte values in the chaos. On several occasions, the histogram is seen to be dominated by a handful of values, before gradually returning to apparent randomness. One assumes that those values would make sense if disassembled. Tweaks to the tank size and aggresion of scrambling may be required. 
+During the demo, the screen shows a histogram of the byte values in the chaos. On several occasions, the histogram is seen to be dominated by a handful of values, before gradually returning to apparent randomness. Eventually, four bytes dominate which disassemble to the program described in RESULTS.md
 
-A more successful run would be characterised by successive periods of domination followed by intrusion of a specific set of alternative values. If the domination is intruded upon by random values then it's simply dying.
-
-There seem to be bugs in the OS such that runs just freeze after roughly an hour.
+Next steps involve more useful mutation (on the VM's part) in the hope that multiple eras of population will be observed. That would prove that evolution from random origins can occur in an intel machine modified to run continuously (i.e. not reset in response to "illegal" code) and make mistakes.
 
 Thanks to: 
 

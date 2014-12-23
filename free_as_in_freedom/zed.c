@@ -114,7 +114,7 @@ void setup_task(int which, int ring, int cs, int ds, void * ip, int ss0, int sp0
 {
   struct TSS * task = &tasks[which].tss;
   task->trace = 0;
-  task->io_map_addr = sizeof(struct TSS);
+  task->io_map_addr = 104;//sizeof(struct TSS);
   task->ldtr = 0;
   task->cs = cs*8 + ring; task->eip = (unsigned int)ip;//-gdt[cs].base_l;
   task->ds = task->es = task->fs = task->gs = ds*8 + ring;

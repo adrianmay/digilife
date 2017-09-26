@@ -13,6 +13,7 @@ This project is about arranging for software to evolve beyond human limits.
 '''
 == Goal
 
+.Goal
 ====
 Intelligent, useful, internet-native, freely evolving 
 software life-forms permanently established in world economy.

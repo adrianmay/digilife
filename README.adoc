@@ -1,14 +1,14 @@
-= Asciidoctor Demo
+= Digilife
 ////
 Big ol' comment
 
 sittin' right 'tween this here title 'n header metadata
 ////
-Dan Allen <thedoc@asciidoctor.org>
-:description: A demo of Asciidoctor. This document \
-              exercises numerous features of AsciiDoc \
-              to test Asciidoctor compliance.
-:library: Asciidoctor
+Adrian May <adrian.alexander.may@gmail.com>
+:description: VM for self-organising ecosystem of evolving economic agents. \
+  Agents must earn $ from (simulated) humans to rent processing resources, \
+  internet bandwidth, screen space, etc. \
+  Should mirror human intelligence if you believe Dawkins.
 :idprefix:
 :numbered:
 :imagesdir: images
@@ -258,4 +258,4 @@ One more thing. Happy documenting!
 digilife
 ========
 
-VM for self-organising ecosystem of evolving economic agents. A.s must earn $ from (simulated) humans to rent processing resources, internet bandwidth, screen space, etc. Should mirror human intelligence if you believe Dawkins.
+

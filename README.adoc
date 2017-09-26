@@ -1,14 +1,14 @@
 = Digilife
 Adrian May <adrian.alexander.may@gmail.com>
-:description: VM for self-organising ecosystem of evolving economic agents. \
-  Agents must earn money from (simulated) humans to rent processing resources, \
-  internet bandwidth, screen space, etc. \
-  Should mirror human intelligence if you believe Dawkins.
 :imagesdir: images
 :toc: preamble
 :css-signature: demo
 
-{description}
+As long as software can only develop by humans writing it, the intelligence of the former is limited to that of the latter.
+
+Evolution is the only process that can result in something more intelligent than anything which has existed before.
+
+This project is about arranging for software to evolve beyond human limits.
 
 == Intro
 

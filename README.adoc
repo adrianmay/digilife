@@ -24,8 +24,7 @@ ifdef::env-github[]
 :tip-caption: :bulb:
 endif::[]
 
-This is a demonstration of {library} {asciidoctor-version}.
-And this is the preamble of this document.
+{description}
 
 ifdef::env-github[]
 ++++

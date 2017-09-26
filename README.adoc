@@ -11,10 +11,15 @@ Evolution is the only process that can result in something more intelligent than
 This project is about arranging for software to evolve beyond human limits.
 
 '''
+== Goal
+
+****
+Intelligent, useful, internet-native, freely evolving software life-forms permanently established in world economy.
+****
 
 == Overview
 
-Natural selection relies upon competition for survival among close relatives. This is only guaranteed in a "Malthusian Equilibrium", i.e., when crowding makes life difficult.
+* 
 
 == Formulation
 

@@ -23,7 +23,17 @@ software life-forms permanently established in world economy.
 
 == Overview
 
-* 
+[TIP]
+.Admonition and callout icons
+====
+Asciidoctor can "draw" icons using {fontawesome-ref}[Font Awesome^] and CSS.
+
+To use this feature, set the value of the `icons` document attribute to `font`.
+Asciidoctor will then emit HTML markup that selects an appropriate font character from the Font Awesome font for each admonition block.
+
+Icons can also be used {icon-inline}[inline] and {icon-attribute}[styled].
+====
+
 
 == Formulation
 

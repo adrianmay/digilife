@@ -13,6 +13,8 @@ After about 10 hours in bochs on a 2GHz machine, this version discovers the prog
 
 aligned on 4-byte boundaries. This populates the whole memory, continuously repairs VM-damage and appears to rule out further evolution.
 
+
+
 The inc ebp is irrelevant here. The program copies the dword at si to si+4. If si and bp coincide, the program will copy itself and the new copy will be executed next, thus filling the memory to the end. If the direction flag is cleared, then the copy will be made at si-4, but won't be executed next. 
 
 This is a replicator but not specifically a self-replicator. It succeeds in populating the whole memory because there's a slight cheat in the VM whereby jump-ins after timer interrupts and faults always initialise si to pc. 
@@ -27,5 +29,20 @@ A weakness of this version is that VM-damage changes entire bytes rather than bi
 
 It's also worth noting that the program fits into 4 bytes and can thus be copied in a single instruction. (This version targets 32 bit CPUs.) If we graduate to 64 bit CPUs, longer programs could be copied in one go, but perhaps that's just what we don't want: interesting programs would take longer to emerge by chance, and no progress would be made towards programs of unlimited length.
 
+================================================
+Commit: 4d3f91878741877c0812f966a91e7d11f9e4d5c2
+================================================
 
+On another run, this program evolved:
+
+       0:	92                   	xchg   %ax,%dx
+       1:	ad                   	lods   %ds:(%si),%ax
+       2:	87 06 92 ad          	xchg   %ax,-0x526e
+       6:	87 06 92 ad          	xchg   %ax,-0x526e
+       a:	87 06 92 ad          	xchg   %ax,-0x526e
+
+This is actually a self-replicator. 
+The xchg drops the contents of ax into a location relative to PC, reads those contents into ax and does the same thing 4 bytes further along. 
+If the same program is already located at the point where ax gets its value from, then the whole memory will be whitewashed with it. 
+The assembly notation suggests that only 16 bits are being copied about so I'm a bit confused as to how the other half of the beast gets replicated.
 

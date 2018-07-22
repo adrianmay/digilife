@@ -13,7 +13,7 @@ COMPILE = $(CC) $(CFLAGS) -c
 LINK = $(CCL) $(LINKFLAGS) 
 ASSEMBLE = $(ASM) $(ASMFLAGS)
 
-run: zed.img bochsrc
+run: zed.img bochsrc 30M.sample
 	$(BOCHS) -qf bochsrc
 
 all: $(TARGET).img restore
@@ -41,6 +41,9 @@ kernel.bin: kernel.o
 
 bootsect.bin: bootsect.asm
 	$(ASSEMBLE) -o $@ $<
+
+30M.sample:
+	dd if=/dev/zero of=$@ bs=$$((1024*1024)) count=30
 
 restore: 
 	rm -rf nvram *.log *.vmsd *.vmem *.vmss *.vmxf 2> /dev/null;  true

@@ -211,7 +211,7 @@ void fry()
       );
 }
 
-void fryat(ip)
+void fryat(unsigned int ip)
 {
   dumbassip = (ip-rand()%6)%65536 ;
 

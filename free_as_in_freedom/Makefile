@@ -5,7 +5,7 @@ ASM = nasm
 # BOCHS=/home/ad/junk/build/b/bochs
 BOCHS=bochs
 
-CFLAGS = -ffreestanding -m32
+CFLAGS = -ffreestanding -m32 -fno-stack-protector
 # LINKFLAGS = -nostartfiles -Ttext 0x8000 -Map $(TARGET).map
 LINKFLAGS = -melf_i386 -nostartfiles -T zed.lds -Map $(TARGET).map
 ASMFLAGS = -f bin

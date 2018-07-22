@@ -363,7 +363,7 @@ memory: guest=512, host=256
 # now supported, but we still recommend to use the BIOS distributed with Bochs.
 # The start address is optional, since it can be calculated from image size.
 #=======================================================================
-romimage: file=/usr/local/share/bochs/BIOS-bochs-legacy 
+romimage: file=/usr/share/bochs/BIOS-bochs-legacy 
 #romimage: file=$BXSHARE/bios.bin-1.7.5 # http://www.seabios.org/SeaBIOS
 #romimage: file=mybios.bin, address=0xfff80000 # 512k at memory top
 
@@ -372,7 +372,7 @@ romimage: file=/usr/local/share/bochs/BIOS-bochs-legacy
 # You now need to load a VGA ROM BIOS into C0000.
 #=======================================================================
 #vgaromimage: file=bios/VGABIOS-elpin-2.40
-vgaromimage: file=/usr/local/share/bochs/VGABIOS-lgpl-latest
+vgaromimage: file=/usr/share/bochs/VGABIOS-lgpl-latest
 #vgaromimage: file=bios/VGABIOS-lgpl-latest-cirrus
 
 #=======================================================================

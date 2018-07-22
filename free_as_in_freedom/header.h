@@ -80,6 +80,7 @@ void out(unsigned short _port, unsigned char _data);
 //void keyboard_handler();
 void setup_gdt();
 void jump_tank();
+void nuketank();
 //void tank_main(); 
 //void tank_idle();
 void keyboard_task_loop();

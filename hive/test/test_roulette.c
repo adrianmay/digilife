@@ -2,7 +2,8 @@
 #include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "../roulette.c"
+#include "roulette.c"
+
 /* Recursive verification of tree invariants */
 static void verify_node(const Node *n, size_t *out_count, uint64_t *out_weight) {
     assert(n);

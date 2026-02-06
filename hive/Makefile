@@ -1,6 +1,17 @@
-hive: src/hive.c Makefile
-	gcc -o hive src/hive.c
 
-tests: src/roulette.c test/test_roulette.c
-	gcc  -o test.exe  src/roulette.c test/test_roulette.c
-	./test.exe > tests 
+all: hive
+
+# Turn .h.m4 into .m4.h, watching pile.m4 which it includes
+hive.m4.h:	hive.h.m4 pile.m4 Makefile
+	m4 hive.h.m4 > hive.m4.h
+
+# Turn .c.m4 into .m4.c, watching .m4.h which it includes
+hive.m4.c:	hive.c.m4 hive.m4.h Makefile
+	m4 hive.c.m4 > hive.m4.c 
+
+# Compile and link .m4.c, .c and pile.c
+hive: hive.m4.c hive.c pile.c Makefile
+	gcc -o hive hive.m4.c hive.c pile.c
+
+
+

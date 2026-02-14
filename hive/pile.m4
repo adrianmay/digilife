@@ -56,6 +56,7 @@ const '$1`Index zeroth'$1`Index = {0};
 const '$1`Index  first'$1`Index = {1};
 const '$1`Index    bad'$1`Index = {BAD_INDEX};
 ')dnl
+
 define(`PONDER_LIST',
 `PONDER_PILE('$1`)
 PONDER_PILE('$1`Node)
@@ -107,6 +108,7 @@ void iterate'$1`s('$1`List iHead, iteratorOf'$1`s cb, void * user) {
   }
 }
 ')dnl
+
 define(`PONDER_TREE',`PONDER_LIST('$1`)')dnl
 define(`DECL_TREE',`
 DECL_LIST('$1`,
@@ -194,6 +196,7 @@ void prepend'$1`InTree('$1`Index iNew, '$1`Index iSup) {
   if (isBad'$1`Index(iSup)) return;
 }
 ')dnl
+
 define(`PONDER_LOOK', `
 PONDER_PILE('$1`To'$2`)dnl
 ')dnl
@@ -233,5 +236,15 @@ bool lookup'$1`To'$2`('$1`To'$2`Index * piRoot, '$1` * f, '$2` * t) {
   if (0==memcmp(f, &pRoot->f, sizeof(pRoot->f))) { memcpy(t, &pRoot->t,sizeof(pRoot->t)); return true; }
   return lookup'$1`To'$2`(greater'$1`(f, &pRoot->f) ? &pRoot->g : &pRoot->l, f, t);
 }
+')dnl
+
+
+define(`PONDER_MINHEAP',
+`PONDER_PILE('$1`)
+')dnl
+define(`DECL_MINHEAP',
+`DECL_PILE('$1`, '$2`)
+bool insert'$1`('$1`, int * newLowScore); // returns if low score changed
+bool extractBelow'$1`(int, '$1`*); // returns if more
 ')dnl
 

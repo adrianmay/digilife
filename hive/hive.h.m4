@@ -1,4 +1,4 @@
-include(pile.m4)
+include(pile.m4)dnl
 #include "pile.h"
 
 #define KILO 1024
@@ -11,18 +11,27 @@ include(pile.m4)
 
 typedef uint64_t Cash;
 
-PONDER_PILE(Block)
+PONDER_PILE(Block)dnl
 typedef uint32_t BlockGhost;
-DECL_PILE(Block,
-Cash cash;
-)
-
-PONDER_PILE(Kill)
-typedef uint32_t KillGhost;
-DECL_PILE(Kill,
-uint64_t when;
-BlockIndex who;
+DECL_PILE(Block,`dnl
+  Cash cash;
+  uint32_t name;'
 )
 
 
+
+dnl typedef uint32_t ThingGhost;
+dnl typedef uint32_t ThingNodeGhost;
+dnl PONDER_LIST(Thing)dnl
+dnl DECL_LIST(Thing,`dnl
+dnl   uint64_t when;
+dnl   BlockIndex who;'
+dnl )dnl
+
+dnl typedef uint32_t ThongGhost;
+dnl typedef uint32_t ThongNodeGhost;
+dnl PONDER_TREE(Thong)dnl
+dnl DECL_TREE(Thong,`dnl
+dnl   int thont;'
+dnl )
 

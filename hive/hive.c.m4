@@ -1,9 +1,6 @@
 include(pile.m4)
 #include "hive.m4.h"
 
-IMPL_PILE(Global, 1, 1)
-Global prototypeGlobal = { 0 };
-
 IMPL_PILE(Block, B32, KILO)
 Block prototypeBlock = { 10 };
 MeapScore meapScoreOfBlock(BlockMeap * p) { return p->expires; }

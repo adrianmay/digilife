@@ -65,6 +65,8 @@ void * openPileInternal(Str filename, uint32_t rec, uint32_t preamble, uint32_t 
     ph->res = (PAGE*stp - sizeof(Pilehead))/rec;
     ph->top = 0;
     ph->fre = BAD_INDEX;
+    ph->frn = 0;
+    ph->usr = 0;
   }
   printf("Opened file map at %p\n",filemap);
   return filemap+sizeof(Pilehead);
@@ -93,6 +95,7 @@ uint32_t allocInternal(Pilehead * ph, uint32_t rec, uint32_t preamble, uint32_t 
     ret = ph->fre;
     uint32_t * pFree = findFreeOnPile(ph,rec,ret);
     ph->fre = *pFree;
+    ph->fre--;
     if (ghost) {
       uint32_t * pGhost = pFree+1; 
       memcpy(ghost, (void*) pGhost, ghostlen);
@@ -112,28 +115,21 @@ void freeInternal(Pilehead * ph, uint32_t i, uint32_t rec, uint32_t preamble, vo
   memset((void*)pFree,0xaa,rec);
   *pFree = ph->fre;
   ph->fre = i;
+  ph->frn++;
   memcpy((void*)(pFree+1), ghost, ghostlen);
 }
 
 // Nice to have explicit population count
 
-uint32_t countFree_(Pilehead * ph, uint32_t rec, uint32_t i, int sofar) {
-  uint32_t ni = *(uint32_t*)(((void*)(ph+1)) + rec*i);
-  if (ni == BAD_INDEX) return sofar;
-  return countFree_(ph, rec, ni, sofar+1);
-}
-
-uint32_t countFree(Pilehead * ph, uint32_t rec ) {
-  if (ph->fre==BAD_INDEX) return 0;
-  return countFree_(ph, rec, ph->fre, 1);
-}
+uint32_t countFree(Pilehead * ph, uint32_t rec ) { return ph->frn; }
+uint32_t countPop(Pilehead * ph, uint32_t rec ) { return ph->top - ph->frn; }
+uint32_t getUsr(Pilehead * ph) { return ph->usr; }
+void setUsr(Pilehead * ph, uint32_t u) { ph->usr = u; } 
+void modUsr(Pilehead * ph, int32_t u)  { ph->usr += u; } 
 
 uint32_t meapParent(uint32_t i) {return (i-1)/2;}
 uint32_t meapLeft  (uint32_t i) {return 2*i + 1;}
 uint32_t meapRight (uint32_t i) {return 2*i + 2;}
-void meapSwap(uint32_t i, uint32_t j) {
 
-}
-//////////////////////////
 
 

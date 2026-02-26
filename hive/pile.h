@@ -14,6 +14,8 @@ typedef struct { // This should be of a good size for alignment
   uint32_t res; // File has space for this many records
   uint32_t top; // Index of first untouched record
   uint32_t fre; // Index of free record containing a pointer to the next one
+  uint32_t frn; // Num free slots            
+  uint32_t usr; // Misc
 } Pilehead;
 
 // Pass filename, record length, something unused, how many records to make room for when growing, max records
@@ -26,4 +28,8 @@ uint32_t  allocInternal(Pilehead * ph, uint32_t rec, uint32_t preamble, uint32_t
 void   freeInternal (Pilehead * ph, uint32_t i, uint32_t rec, uint32_t preamble, void * ghost, int ghostlen);
 
 uint32_t countFree(Pilehead * ph, uint32_t rec);
+uint32_t countPop(Pilehead * ph, uint32_t rec);
+uint32_t getUsr(Pilehead * ph);
+void setUsr(Pilehead * ph, uint32_t u);
+void modUsr(Pilehead * ph, int32_t u);
 

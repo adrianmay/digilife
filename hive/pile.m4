@@ -21,6 +21,10 @@ typedef void (*walkerOf$1s)($1Index a, $1* p);
 void walk$1s(walkerOf$1s w);
 void trace$1(char * buf, $1 *);
 uint32_t countFree$1s();
+uint32_t countPop$1s();
+uint32_t getUsr$1();
+void setUsr$1(uint32_t u);
+void modUsr$1(int32_t u);
 uint32_t topOf$1s();
 extern $1 * arrayOf$1s;
 extern $1 prototype$1;')dnl
@@ -54,6 +58,10 @@ void walk$1s(walkerOf$1s w) { // How does the user know it aint free? Cos its st
 }
 uint32_t topOf$1s() { return pileheadOf$1s()->top; }
 uint32_t countFree$1s() { return countFree(pileheadOf$1s(), sizeof($1)); }
+uint32_t countPop$1s() { return countPop(pileheadOf$1s(), sizeof($1)); }
+uint32_t getUsr$1() { return getUsr(pileheadOf$1s()); }
+void setUsr$1(uint32_t u) { setUsr(pileheadOf$1s(), u); }
+void modUsr$1(int32_t u) { modUsr(pileheadOf$1s(), u); }
 const $1Index zeroth$1Index = {0};
 const $1Index  first$1Index = {1};
 const $1Index    bad$1Index = {BAD_INDEX};
@@ -288,9 +296,8 @@ void siftUp$1Meap($1MeapIndex miCur) {
   }
 }
 
-
 void siftDown$1Meap($1MeapIndex miCur) {
-  uint32_t numMeaps = getGlobal(zerothGlobalIndex)->num$1Meaps;
+  uint32_t numMeaps = countPopBlockMeaps();
   while (1) {
     $1MeapIndex miLeft  = { meapLeft (miCur.i) };
     $1MeapIndex miRight = { meapRight(miCur.i) };
@@ -302,6 +309,35 @@ void siftDown$1Meap($1MeapIndex miCur) {
     swap$1Meap(miCur, miSmallest);
     miCur = miSmallest;
   }
+}
+
+// We cant have gaps in the meap so we cant use free.
+
+void addTo$1Meap($1Index i, Tocks ex) {
+  $1MeapIndex mi;
+  uint32_t meapTop = getUsr$1Meap();
+  if (meapTop < topOf$1s())
+    mi.i = meapTop;
+  else
+    mi = alloc$1Meap(0);
+  modUsr$1Meap(1);
+
+  $1Meap * pM = get$1Meap(mi);
+  pM -> idx = i;
+  pM-> expires = ex;
+  $1 * p = get$1(i);
+  p -> killer = mi;
+  siftUp$1Meap(mi);
+}
+
+void removeFrom$1Meap($1Index i) {
+  $1 * p = get$1(i);
+  $1MeapIndex mi = p->killer;
+  $1MeapIndex li = { getUsr$1Meap() };
+  swap$1Meap(mi, li);
+  modUsr$1Meap(-1);
+  siftDown$1Meap(mi);
+  siftUp$1Meap(mi);
 }
 
 

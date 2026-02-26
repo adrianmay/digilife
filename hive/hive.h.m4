@@ -11,13 +11,6 @@ include(pile.m4)dnl
 
 typedef uint64_t Cash;
 
-PONDER_PILE(Global)dnl
-typedef uint32_t GlobalGhost;
-
-DECL_PILE(Global,`dnl
-  uint32_t numBlockMeaps;'
-)
-
 PONDER_PILE(Block)dnl
 PONDER_MEAP(Block)
 typedef uint32_t BlockGhost;

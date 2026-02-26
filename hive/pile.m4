@@ -1,3 +1,4 @@
+#include <stdint.h>
 define(`PONDER_PILE',`typedef struct { uint32_t i; } $1Index;')dnl
 dnl 
 // Simple fixed-record-size heap 
@@ -38,7 +39,8 @@ bool openPileOf$1s (bool forgetful) {
 }
 $1 * get$1 ($1Index i) { return arrayOf$1s + i.i; }
 $1Index alloc$1 ($1Ghost * g) {
-  $1Index i = { allocInternal(pileheadOf$1s(), sizeof($1), preambleOf$1(), stepOf$1(), (char*) &prototype$1, (void*)g, sizeof($1Ghost)) };
+  $1Index i = { allocInternal( pileheadOf$1s(), sizeof($1), preambleOf$1(), stepOf$1(), 
+                               (char*) &prototype$1, (void*)g, sizeof($1Ghost)  ) };
   return i;
 }
 void free$1 ($1Index i, $1Ghost * g) {
@@ -239,19 +241,69 @@ bool lookup$1To$2($1To$2Index * piRoot, $1 * f, $2 * t) {
 ')dnl
 dnl
 dnl
-typedef int meapScore;
+typedef uint64_t MeapScore;
 define(`PONDER_MEAP',
 `PONDER_PILE($1Meap)
 ')dnl
 define(`DECL_MEAP',
-`DECL_PILE($1Meap, )
+`DECL_PILE($1Meap,`dnl
+  $1Index idx;
+$2'
+)
 typedef void (* $1Modifier) ($1*);
-extern meapScore meapScoreOf$1($1*); // provide this - lowest gets to root of tree
-bool insert$1InMeap($1, meapScore * newLowScore); // returns if low score changed
-bool extractBelow$1InMeap(meapScore, $1*); // returns if more to come
+extern MeapScore meapScoreOf$1($1Meap*); // provide this - lowest gets to root of tree
+bool insert$1InMeap($1, MeapScore * newLowScore); // returns if low score changed
+bool extractBelow$1InMeap(MeapScore, $1*); // returns if more to come
 void modify$1InMeap($1Modifier);
 ')dnl
-define(`IMPL_MEAP',
-`void meapSwap()
+define(`IMPL_MEAP',`dnl
+IMPL_PILE($1Meap, $2, $3)
+
+void swap$1Meap($1MeapIndex mi1, $1MeapIndex mi2) {
+  $1Meap * pm1 = get$1Meap(mi1);
+  $1Meap * pm2 = get$1Meap(mi2);
+  $1 * p1 = get$1(pm1->idx);
+  $1 * p2 = get$1(pm2->idx);
+  $1Meap m;
+  memcpy(&m , pm1, sizeof($1Meap));
+  memcpy(pm1, pm2, sizeof($1Meap));
+  memcpy(pm2, &m , sizeof($1Meap));
+  p2->killer = mi1;
+  p1->killer = mi2;
+}
+
+uint32_t meapParent(uint32_t i);
+uint32_t meapLeft  (uint32_t i);
+uint32_t meapRight (uint32_t i);
+
+void siftUp$1Meap($1MeapIndex miCur) {
+  while (miCur.i>0) {
+    $1Meap* pCur = get$1Meap(miCur);
+    $1MeapIndex miParent = { meapParent(miCur.i) };
+    $1Meap* pParent = get$1Meap(miParent);
+    if (meapScoreOf$1(pParent) <= meapScoreOf$1(pCur))
+      break;
+    swap$1Meap(miCur, miParent);  
+    miCur = miParent;
+  }
+}
+
+
+void siftDown$1Meap($1MeapIndex miCur) {
+  uint32_t numMeaps = getGlobal(zerothGlobalIndex)->num$1Meaps;
+  while (1) {
+    $1MeapIndex miLeft  = { meapLeft (miCur.i) };
+    $1MeapIndex miRight = { meapRight(miCur.i) };
+    $1MeapIndex miSmallest = miCur;
+    uint64_t curScore = meapScoreOf$1(get$1Meap(miCur));
+    if      (miLeft.i  < numMeaps && meapScoreOf$1(get$1Meap(miLeft )) < curScore) miSmallest = miLeft;
+    else if (miRight.i < numMeaps && meapScoreOf$1(get$1Meap(miRight)) < curScore) miSmallest = miRight;
+    if (miSmallest.i == miCur.i) break;
+    swap$1Meap(miCur, miSmallest);
+    miCur = miSmallest;
+  }
+}
+
+
 ')dnl
 dnl

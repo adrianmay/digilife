@@ -11,14 +11,27 @@ include(pile.m4)dnl
 
 typedef uint64_t Cash;
 
-PONDER_PILE(Block)dnl
-typedef uint32_t BlockGhost;
-DECL_PILE(Block,`dnl
-  Cash cash;
-  uint32_t name;'
+PONDER_PILE(Global)dnl
+typedef uint32_t GlobalGhost;
+
+DECL_PILE(Global,`dnl
+  uint32_t numBlockMeaps;'
 )
 
+PONDER_PILE(Block)dnl
+PONDER_MEAP(Block)
+typedef uint32_t BlockGhost;
+typedef uint64_t Tocks;
 
+DECL_PILE(Block,`dnl
+  Cash cash;
+  BlockMeapIndex killer;'
+  uint32_t name;
+)
+
+typedef uint32_t BlockMeapGhost;
+DECL_MEAP(Block, `dnl
+  Tocks expires;')
 
 dnl typedef uint32_t ThingGhost;
 dnl typedef uint32_t ThingNodeGhost;

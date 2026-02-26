@@ -131,7 +131,9 @@ uint32_t countFree(Pilehead * ph, uint32_t rec ) {
 uint32_t meapParent(uint32_t i) {return (i-1)/2;}
 uint32_t meapLeft  (uint32_t i) {return 2*i + 1;}
 uint32_t meapRight (uint32_t i) {return 2*i + 2;}
+void meapSwap(uint32_t i, uint32_t j) {
 
+}
 //////////////////////////
 
 

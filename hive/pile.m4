@@ -260,7 +260,8 @@ $2'
 )
 typedef void (* $1Modifier) ($1*);
 extern MeapScore meapScoreOf$1($1Meap*); // provide this - lowest gets to root of tree
-bool insert$1InMeap($1, MeapScore * newLowScore); // returns if low score changed
+bool addTo$1Meap($1Index, Tocks tocks, MeapScore * newLowScore); // returns if low score changed
+bool removeFrom$1Meap($1Index, MeapScore * newLowScore); // returns if low score changed
 bool extractBelow$1InMeap(MeapScore, $1*); // returns if more to come
 void modify$1InMeap($1Modifier);
 ')dnl
@@ -284,16 +285,18 @@ uint32_t meapParent(uint32_t i);
 uint32_t meapLeft  (uint32_t i);
 uint32_t meapRight (uint32_t i);
 
-void siftUp$1Meap($1MeapIndex miCur) {
+// Returns whether or not root changed
+bool siftUp$1Meap($1MeapIndex miCur) {
   while (miCur.i>0) {
     $1Meap* pCur = get$1Meap(miCur);
     $1MeapIndex miParent = { meapParent(miCur.i) };
     $1Meap* pParent = get$1Meap(miParent);
     if (meapScoreOf$1(pParent) <= meapScoreOf$1(pCur))
-      break;
+      return false;
     swap$1Meap(miCur, miParent);  
     miCur = miParent;
   }
+  return true;
 }
 
 void siftDown$1Meap($1MeapIndex miCur) {
@@ -313,10 +316,12 @@ void siftDown$1Meap($1MeapIndex miCur) {
 
 // We cant have gaps in the meap so we cant use free.
 
-void addTo$1Meap($1Index i, Tocks ex) {
+
+bool addTo$1Meap($1Index i, Tocks ex, MeapScore * newLowScore) {
+  MeapScore nls;
   $1MeapIndex mi;
   uint32_t meapTop = getUsr$1Meap();
-  if (meapTop < topOf$1s())
+  if (meapTop < topOf$1Meaps())
     mi.i = meapTop;
   else
     mi = alloc$1Meap(0);
@@ -330,7 +335,7 @@ void addTo$1Meap($1Index i, Tocks ex) {
   siftUp$1Meap(mi);
 }
 
-void removeFrom$1Meap($1Index i) {
+bool removeFrom$1Meap($1Index i, MeapScore * newLowScore) {
   $1 * p = get$1(i);
   $1MeapIndex mi = p->killer;
   $1MeapIndex li = { getUsr$1Meap() };

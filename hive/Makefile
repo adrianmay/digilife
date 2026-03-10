@@ -1,21 +1,24 @@
 
 all: hive
 
+define prog_tmpl
+tmp/$(1).m4.h:	$(1).h.m4 pile.m4 Makefile tmp pile.h $(2)
+	[ -z $(2) ] || ./$(2) || { echo "Precondition '$(2)' failed"; false; }
+	m4 $(1).h.m4 > tmp/$(1).m4.h
+
+tmp/$(1).m4.c:	$(1).c.m4 tmp/$(1).m4.h Makefile pile.h
+	m4 -Itmp -I. $(1).c.m4 > tmp/$(1).m4.c 
+
+$(1): tmp/$(1).m4.c $(1).c pile.c Makefile pile.h
+	gcc -Itmp -I. -o $(1) tmp/$(1).m4.c $(1).c pile.c
+endef
+
+$(eval $(call prog_tmpl,test))
+$(eval $(call prog_tmpl,hive,test))
+
 tmp: 
 	mkdir tmp
 
-# Turn .h.m4 into .m4.h, watching pile.m4 which it includes
-tmp/hive.m4.h:	hive.h.m4 pile.m4 Makefile tmp pile.h
-	m4 hive.h.m4 > tmp/hive.m4.h
-
-# Turn .c.m4 into .m4.c, watching .m4.h which it includes
-tmp/hive.m4.c:	hive.c.m4 tmp/hive.m4.h Makefile pile.h
-	m4 -Itmp -I. hive.c.m4 > tmp/hive.m4.c 
-
-# Compile and link .m4.c, .c and pile.c
-hive: tmp/hive.m4.c hive.c pile.c Makefile pile.h
-	gcc -Itmp -I. -o hive tmp/hive.m4.c hive.c pile.c
-
 clean: 
-	rm -rf tmp hive *.pile
+	rm -rf tmp test hive *.pile
 

@@ -21,6 +21,8 @@ typedef struct { // This should be of a good size for alignment
 // Pass filename, record length, something unused, how many records to make room for when growing, max records
 void * openPileInternal(Str filename, uint32_t rec, uint32_t preamble, uint32_t stp, uint64_t lim);
 
+// Close, unmap, maybe delete
+void closeInternal(Pilehead * ph, const char * fn);
 // Alloc a record stuffing it with prototype, stuffing ghost with the former contents of the free block
 uint32_t  allocInternal(Pilehead * ph, uint32_t rec, uint32_t preamble, uint32_t stp, char * prototype, void * ghost, int ghostlen);
 

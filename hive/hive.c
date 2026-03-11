@@ -1,19 +1,25 @@
 #include <stdio.h>
 #include "hive.m4.h"
 int main() { 
-  openPileOfBlocks(false);
+  bool virgin = openPileOfBlocks(false);
   openPileOfBlockMeaps(false);
+  if (virgin) {
+    BlockIndex bi = allocBlock(0);
+    getBlock(bi)->cash = 100;
 
-
+  } else
+  {
+  }
   if (openPileOfBlockMeaps(false)) {
     //virgin
     BlockIndex bi = allocBlock(0);
     getBlock(bi)->cash = 100;
     printf("Virgin\n");
-    return 3; 
+    return 0; 
   } else {
     BlockIndex bi = {0};
     printf("Found: %d\n", getBlock(bi)->cash);
+    return 0; 
   }
 }
 

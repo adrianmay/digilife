@@ -1,4 +1,13 @@
 #include <stdint.h>
+
+#define KILO 1024
+#define MEGA (KILO*KILO)
+#define GIGA (MEGA*KILO)
+#define TERA (GIGA*KILO)
+#define B8 256ull
+#define B16 (B8*B8)
+#define B32 (B16*B16)
+
 define(`PONDER_PILE',`typedef struct { uint32_t i; } $1Index;')dnl
 dnl 
 // Simple fixed-record-size heap 
@@ -7,6 +16,7 @@ typedef struct {
 $2} $1;
 dnl
 bool openPileOf$1s(bool forgetful);
+void closePileOf$1s(bool delete);
 Pilehead * pileheadOf$1s();
 bool openForgetfulPileOf$1s();
 $1 * get$1($1Index);
@@ -41,6 +51,7 @@ bool openPileOf$1s (bool forgetful) {
   arrayOf$1s = ($1 *) openPileInternal(forgetful?"":"$1.pile", sizeof($1), preambleOf$1(), stepOf$1(), limitOf$1());
   return pileheadOf$1s() -> top == 0;
 }
+void closePileOf$1s(bool delete) { closeInternal(pileheadOf$1s(), delete?"$1.pile":0); }
 $1 * get$1 ($1Index i) { return arrayOf$1s + i.i; }
 $1Index alloc$1 ($1Ghost * g) {
   $1Index i = { allocInternal( pileheadOf$1s(), sizeof($1), preambleOf$1(), stepOf$1(), 
@@ -262,6 +273,7 @@ typedef void (* $1Modifier) ($1*);
 extern MeapScore meapScoreOf$1($1Meap*); // provide this - lowest gets to root of tree
 bool addTo$1Meap($1Index, Tocks tocks, MeapScore * newLowScore); // returns if low score changed
 bool removeFrom$1Meap($1Index, MeapScore * newLowScore); // returns if low score changed
+bool extractLowest$1InMeap();
 bool extractBelow$1InMeap(MeapScore, $1*); // returns if more to come
 void modify$1InMeap($1Modifier);
 ')dnl
@@ -277,8 +289,8 @@ void swap$1Meap($1MeapIndex mi1, $1MeapIndex mi2) {
   memcpy(&m , pm1, sizeof($1Meap));
   memcpy(pm1, pm2, sizeof($1Meap));
   memcpy(pm2, &m , sizeof($1Meap));
-  p2->killer = mi1;
-  p1->killer = mi2;
+  p2->meap = mi1;
+  p1->meap = mi2;
 }
 
 uint32_t meapParent(uint32_t i);
@@ -300,7 +312,7 @@ bool siftUp$1Meap($1MeapIndex miCur) {
 }
 
 void siftDown$1Meap($1MeapIndex miCur) {
-  uint32_t numMeaps = countPopBlockMeaps();
+  uint32_t numMeaps = countPop$1Meaps();
   while (1) {
     $1MeapIndex miLeft  = { meapLeft (miCur.i) };
     $1MeapIndex miRight = { meapRight(miCur.i) };
@@ -316,7 +328,6 @@ void siftDown$1Meap($1MeapIndex miCur) {
 
 // We cant have gaps in the meap so we cant use free.
 
-
 bool addTo$1Meap($1Index i, Tocks ex, MeapScore * newLowScore) {
   MeapScore nls;
   $1MeapIndex mi;
@@ -331,18 +342,21 @@ bool addTo$1Meap($1Index i, Tocks ex, MeapScore * newLowScore) {
   pM -> idx = i;
   pM-> expires = ex;
   $1 * p = get$1(i);
-  p -> killer = mi;
+  p->meap = mi;
   siftUp$1Meap(mi);
 }
 
 bool removeFrom$1Meap($1Index i, MeapScore * newLowScore) {
+  MeapScore ms = meapScoreOf$1(get$1Meap(zeroth$1MeapIndex));
   $1 * p = get$1(i);
-  $1MeapIndex mi = p->killer;
+  $1MeapIndex mi = p->meap;
   $1MeapIndex li = { getUsr$1Meap() };
   swap$1Meap(mi, li);
   modUsr$1Meap(-1);
   siftDown$1Meap(mi);
   siftUp$1Meap(mi);
+  *newLowScore = meapScoreOf$1(get$1Meap(zeroth$1MeapIndex));
+  return (*newLowScore < ms);
 }
 
 

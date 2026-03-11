@@ -1,28 +1,21 @@
 include(pile.m4)dnl
 #include "pile.h"
 
-#define KILO 1024
-#define MEGA (KILO*KILO)
-#define GIGA (MEGA*KILO)
-#define TERA (GIGA*KILO)
-#define B8 256ull
-#define B16 (B8*B8)
-#define B32 (B16*B16)
-
 typedef uint64_t Cash;
 
 PONDER_PILE(Block)dnl
-PONDER_MEAP(Block)
 typedef uint32_t BlockGhost;
+PONDER_MEAP(Block)
+typedef uint32_t BlockMeapGhost;
+
 typedef uint64_t Tocks;
 
 DECL_PILE(Block,`dnl
   Cash cash;
-  BlockMeapIndex killer;'
+  BlockMeapIndex meap;
   uint32_t name;
-)
+')
 
-typedef uint32_t BlockMeapGhost;
 DECL_MEAP(Block, `dnl
   Tocks expires;')
 

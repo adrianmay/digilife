@@ -72,6 +72,14 @@ void * openPileInternal(Str filename, uint32_t rec, uint32_t preamble, uint32_t 
   return filemap+sizeof(Pilehead);
 }
 
+void closeInternal(Pilehead * ph, const char * fn) {
+  int fd = ph->fd;
+  if (fd == -1) return;
+//  munmap(ph);
+  close(fd);
+  if (fn) unlink(fn);
+}
+
 void grow(Pilehead * ph, uint32_t rec, uint32_t preamble, uint32_t stp) {
   if (ph->res > ph->top) return;
   size_t oldLen = pileSize(ph, rec);

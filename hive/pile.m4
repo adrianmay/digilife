@@ -271,7 +271,7 @@ $2'
 )
 typedef void (* $1Modifier) ($1*);
 extern MeapScore meapScoreOf$1($1Meap*); // provide this - lowest gets to root of tree
-bool addTo$1Meap($1Index, Tocks tocks, MeapScore * newLowScore); // returns if low score changed
+bool addTo$1Meap($1Index, MeapScore * newLowScore); // returns if low score changed
 bool removeFrom$1Meap($1Index, MeapScore * newLowScore); // returns if low score changed
 bool extractLowest$1InMeap();
 bool extractBelow$1InMeap(MeapScore, $1*); // returns if more to come
@@ -328,7 +328,7 @@ void siftDown$1Meap($1MeapIndex miCur) {
 
 // We cant have gaps in the meap so we cant use free.
 
-bool addTo$1Meap($1Index i, Tocks ex, MeapScore * newLowScore) {
+bool addTo$1Meap($1Index i, MeapScore * newLowScore) {
   MeapScore nls;
   $1MeapIndex mi;
   uint32_t meapTop = getUsr$1Meap();
@@ -340,10 +340,9 @@ bool addTo$1Meap($1Index i, Tocks ex, MeapScore * newLowScore) {
 
   $1Meap * pM = get$1Meap(mi);
   pM -> idx = i;
-  pM-> expires = ex;
   $1 * p = get$1(i);
   p->meap = mi;
-  siftUp$1Meap(mi);
+  return siftUp$1Meap(mi);
 }
 
 bool removeFrom$1Meap($1Index i, MeapScore * newLowScore) {
@@ -358,6 +357,7 @@ bool removeFrom$1Meap($1Index i, MeapScore * newLowScore) {
   *newLowScore = meapScoreOf$1(get$1Meap(zeroth$1MeapIndex));
   return (*newLowScore < ms);
 }
+
 
 
 ')dnl

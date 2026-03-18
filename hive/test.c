@@ -21,7 +21,7 @@ bool makeMortalThing(uint64_t n, uint64_t x) {
   Thing * pT = getThing(i);
   pT->name = n;
   pT->cash = 100;
-  addToThingMeap(i, x, 0);
+  addToThingMeap(i, 0);
   return true;
 }
 

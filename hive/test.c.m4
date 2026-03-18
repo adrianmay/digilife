@@ -8,5 +8,5 @@ IMPL_MEAP(Thing, B32, KILO)
 ThingMeap prototypeThingMeap = { 0, 0 };
 
 MeapScore meapScoreOfThing(ThingMeap * pMeap) {
-  return pMeap->expires;
+  return getThing(pMeap->idx)->cash;
 }

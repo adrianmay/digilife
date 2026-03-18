@@ -24,16 +24,14 @@ int main() {
 }
 
 uint32_t newRandomName() { return -1; }
-Tocks buyTocks(Cash c) { return c; }
 
 BlockIndex newBlock(Cash total, Cash rent) {
   BlockIndex bi = allocBlock(0);
   Block * p = getBlock(bi);
   p->cash = total-rent;
   p->name = newRandomName();
-  Tocks tocks = buyTocks(rent);
   MeapScore earliest;
-  bool newEarliest = addToBlockMeap(bi, tocks, &earliest);
+  bool newEarliest = addToBlockMeap(bi, &earliest);
   // Just use Tocks and forget about abstracting MeapScore.
     
 }

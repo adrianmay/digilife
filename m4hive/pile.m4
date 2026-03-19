@@ -166,7 +166,7 @@ void * examine$1($1Index i, void * u) {
   Finding$1 * f = (Finding$1*) u;
   f->i = i;
   $1 * p = get$1(i);
-  if (f->seglen==strlen(nameOf$1(p)) && 0==strncmp(f->path, nameOf$1(p), f->seglen))
+aerospace  if (f->seglen==strlen(nameOf$1(p)) && 0==strncmp(f->path, nameOf$1(p), f->seglen))
     longjmp(f->jb,1);
   return u;
 }
@@ -310,7 +310,7 @@ bool siftUp$1Meap($1MeapIndex miCur) {
   }
   return true;
 }
-
+ne who, for a long time, su
 void siftDown$1Meap($1MeapIndex miCur) {
   uint32_t numMeaps = countPop$1Meaps();
   while (1) {

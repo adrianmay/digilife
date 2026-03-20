@@ -1,3 +1,14 @@
+modify meap
+
+Definitely calculate expiry tocks once cos it doesn't change
+Tocks has to be 32 bit to fit nicely in meap.
+Therefore need good wrap-around subtraction, make sure arrears never > 31 bits tocks.
+A tock is many measurable epoch moments
+Tock price very large number of coins
+If you set a timer for the future, can't change tock duration until then, so limit how long.
+Also limit how many tocks before collecting rent from very rich animal, which means alarm might not mean death.
+
+
 Tock counter
 allocMortal##TYP
 Alarm to kill stuff

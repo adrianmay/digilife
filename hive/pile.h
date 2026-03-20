@@ -32,16 +32,18 @@ Pilehead * openPile(const char * filename, Index rec, Index stp, Index lim);
 void closePile(Pilehead * ph, bool rm);
 Index allocInPile(Pilehead * ph, void * prototype, void * ghost, int ghostlen);
 void  * findInPile(Pilehead * ph, Index i);
+void freeInPile(Pilehead * ph, Index i, void * ghost, int ghostlen);
 void hidePile(Pilehead *);
 
 #define MAKEPILE1(TYP) \
-  typedef struct { Index i; } TYP##Index; \
+  typedef struct { Index i; } TYP##Index; 
 
 #define MAKEPILE2(TYP, LIM) \
   Pilehead * headOf##TYP##s; \
   bool open##TYP##Pile() { return (headOf##TYP##s = openPile(#TYP "s.pile", sizeof(TYP), 10, LIM))->top==0; } \
   TYP * get##TYP(TYP##Index i) { return findInPile(headOf##TYP##s, i.i); } \
   TYP##Index alloc##TYP() { return (TYP##Index) {.i=allocInPile(headOf##TYP##s, &prototype##TYP, 0, 0)}; } \
+  void free##TYP(TYP##Index i) { freeInPile(headOf##TYP##s, i.i, 0, 0); } \
   void close##TYP##Pile(bool rm) { closePile(headOf##TYP##s, rm); } \
   void hide##TYP##Pile() { hidePile(headOf##TYP##s); } \
   bool valid##TYP##Index(TYP##Index i) { return i.i != BAD_INDEX; }

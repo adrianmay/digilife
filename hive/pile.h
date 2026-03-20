@@ -29,6 +29,8 @@ typedef struct __attribute__((aligned(KILO))) { // This should be of a good size
 } Pilehead;
 
                             
+void * openGlobals_(uint64_t len, bool * virgin);
+void closeGlobals_(int fd, bool rm);
 Pilehead * openPile(const char * filename, Index rec, Index stp, Index lim);
 void closePile(Pilehead * ph, bool rm);
 Index allocInPile(Pilehead * ph, void * prototype, void * ghost, int ghostlen);
@@ -39,6 +41,11 @@ Index countPop(Pilehead * ph );
 Index getUsr(Pilehead * ph);
 void setUsr(Pilehead * ph, Index u);
 void modUsr(Pilehead * ph, int32_t u);
+
+#define MAKEGLOBALS \
+  Globals * g; \
+  bool openGlobals() { bool v; g = (Globals *) openGlobals_(sizeof(Globals), &v); return v; } \
+  void closeGlobals(bool rm) { closeGlobals_(g->fd, rm); }
 
 #define MAKEPILE1(TYP) \
   typedef struct { Index i; } TYP##Index; 

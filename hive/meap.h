@@ -1,5 +1,4 @@
 
-
 typedef uint64_t Score;
 
 typedef void (*OnMove) (void *, Index);
@@ -24,7 +23,28 @@ void meapRemove(Pilehead * ph, MeapCallbacks * mc, Index iCur);
   void meapInsert##TYP(TYP proto) { meapInsert(headOf##TYP##s, &MC##TYP, (void*)&proto); } \
   void meapRemove##TYP(TYP##Index i) { meapRemove(headOf##TYP##s, &MC##TYP, i.i); } \
 
+typedef uint64_t Tocks;  
+typedef uint64_t Cash;  
 
+#define MAKERENT1(TYP) \
+  MAKEPILE1(TYP) \
+  MAKEMEAP1(TYP##Meap) \
+  typedef struct { Tocks tocks; TYP##Index who; } TYP##Meap; \
+  typedef struct { Cash cash; Tocks lastPaidRent; TYP##MeapIndex meap; } TYP##Rent; \
+
+// TYP must have Rent rent
+
+#define MAKERENT2(TYP,LIM) \
+  MAKEPILE2(TYP,LIM) \
+  MAKEMEAP2(TYP##Meap,LIM) \
+  Score score##TYP##Meap(TYP##Meap * pMeap) { return pMeap->tocks; } \
+  void onMove##TYP##Meap(TYP##Meap * pMeap, TYP##MeapIndex i) { get##TYP(pMeap->who)->rent.meap = i; } \
+  void onNewLow##TYP##Meap(Score s) {  } \
+  bool openMortal##TYP##s() { open##TYP##Pile(); return open##TYP##MeapPile(); } \
+  void closeMortal##TYP##s(bool rm) { close##TYP##Pile(rm); close##TYP##MeapPile(rm); } \
+  void hideMortal##TYP##s() { hide##TYP##Pile(); hide##TYP##MeapPile(); } \
+  TYP##Index allocMortal##TYP() {  }
+  
 
 
 

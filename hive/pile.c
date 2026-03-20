@@ -30,6 +30,31 @@ uint32_t capacity(Pilehead * ph, size_t filelen) {
   return (filelen-sizeof(Pilehead)) / ph->rec;
 }
 
+#define GLOBALS_FILENAME "Globals.pile"
+
+void * openGlobals_(uint64_t len, bool * virgin) {
+  *virgin=false;
+  int fd = open(GLOBALS_FILENAME, O_RDWR | O_APPEND);
+  if (fd<0) {
+    *virgin=true;
+    fd = open(GLOBALS_FILENAME, O_RDWR | O_CREAT | O_APPEND, S_IRUSR|S_IWUSR);
+    ftruncate(fd, len);
+  }
+  if (fd<0) { fprintf(stderr, "Can't open file %s cos of %d\n", GLOBALS_FILENAME, fd); quit(1); }
+  void * reserve = mmap(0, len, PROT_NONE, MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
+  if (reserve == (void*)-1) { fprintf(stderr, "Can't make reserve mapping\n"); quit(1); }
+  void * filemap = mmap(reserve, fileSize(fd), PROT_READ|PROT_WRITE, MAP_SHARED_VALIDATE|MAP_FIXED, fd, 0);
+  if (filemap == (void*)-1) { fprintf(stderr, "Can't make file mapping\n"); quit(1);  }
+  return filemap;
+}
+
+void closeGlobals_(int fd, bool rm) {
+  if (fd == -1) return;
+//  munmap(ph);
+  close(fd);
+  if (rm) unlink(GLOBALS_FILENAME);
+}
+
 Pilehead * openPile(const char * filename, uint32_t rec, uint32_t stp, Index lim) { // returns array address
   if (rec<4) { printf("Record size too small for free indices.\n"); quit(1); }
   // Could this ^ be at compile time?

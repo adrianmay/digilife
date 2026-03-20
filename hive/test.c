@@ -6,9 +6,24 @@
 #define assertInt(VAR, VAL) \
   if (VAR != VAL) { \
     printf("FAILED at %d: Expected: " #VAL "; Got: %d\n", __LINE__, VAR); \
-    cleanup(); \
+    cleanup();  \
     exit(1); \
   }
+#define assertInt_(VAR, VAL, CLEANUP) \
+  if (VAR != VAL) { \
+    printf("FAILED at %d: Expected: " #VAL "; Got: %d\n", __LINE__, VAR); \
+    CLEANUP(); \
+    exit(1); \
+  }
+
+typedef struct __attribute__((aligned(KILO))) { 
+  int fd;
+  uint64_t epochTimeStarted; 
+  uint64_t epochTimeStopped; 
+  uint64_t epochTimeTock; 
+} Globals;
+
+MAKEGLOBALS
 
 MAKEPILE1(Thing);
 
@@ -22,18 +37,38 @@ MAKEPILE2(Thing, GIGA);
 
 MAKEMEAP1(MyMeap)
 
-typedef uint32_t Tocks;  
 typedef struct { Tocks tocks; } MyMeap;
 
 MyMeap prototypeMyMeap = { 0 };
 
 MAKEMEAP2(MyMeap, GIGA)
 
+void cleanup_globals() {
+  closeGlobals(true);
+}
+
 void cleanup() {
   closeThingPile(false); //Delete it for next time
   closeMyMeapPile(false); //Delete it for next time
   hideThingPile();                      
   hideMyMeapPile();                      
+  closeGlobals(true);
+}
+
+void globals() {
+  bool v = openGlobals();
+  assertInt_(v, true, cleanup_globals);
+  uint64_t i = g->epochTimeStarted + g->epochTimeStopped + g->epochTimeTock;
+  assertInt_(i, 0, cleanup_globals);
+  g->epochTimeStarted = 1;
+  g->epochTimeStopped = 2;
+  g->epochTimeTock = 3;
+  closeGlobals(false);
+  v = openGlobals();
+  assertInt_(v, false, cleanup_globals);
+  i = g->epochTimeStarted + g->epochTimeStopped + g->epochTimeTock;
+  assertInt_(i, 6, cleanup_globals);
+  closeGlobals(true);
 }
 
 void virginity() {
@@ -102,7 +137,7 @@ void reallocing() {
   assertInt(count,1002);
 }
 
-int basic() { 
+int pile() { 
   printf("Running basic pile tests\n"); 
   virginity();
   ThingIndex i = sumitems();
@@ -141,9 +176,23 @@ int meap() {
   assertWholeMeap(exp2, 4);
 }
 
+MAKERENT1(Block)
+
+typedef struct { Index name; BlockRent rent; } Block;
+Block prototypeBlock = {0, { 0, 0, (BlockMeapIndex) {BAD_INDEX}}};
+BlockMeap prototypeBlockMeap = {0, (BlockIndex) {BAD_INDEX}};
+
+MAKERENT2(Block, GIGA)
+
+int mortal() {
+
+}
+
 int main() { 
-  basic();
+  globals();
+  pile();
   meap();
+  mortal();
   cleanup();
   return 0;
 }

@@ -1,3 +1,4 @@
+HDR := $(wildcard *.h)
 SRC := $(wildcard *.c)
 OBJ := $(SRC:%.c=tmp/%.o)
 TARGET := hive
@@ -7,9 +8,9 @@ run: ${TARGET}
 	./${TARGET}
 
 ${TARGET}: ${OBJ}
-	 ${CC} $^ -o $@
+	 ${CC} -O0 $^ -o $@
 
-tmp/%.o: %.c | tmp
+tmp/%.o: %.c | tmp ${HDR}
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # ${OBJ}: ${SRC} | tmp

@@ -60,6 +60,7 @@ Pilehead * openPile(const char * filename, uint32_t rec, uint32_t stp, Index lim
   Pilehead * ph = (Pilehead*) filemap;
   ph->fd = fd;
   if (virgin) {
+    ph->hdr = sizeof(Pilehead);
     ph->rec = rec;
     ph->stp = stp;
     ph->lim = lim;
@@ -142,9 +143,4 @@ Index getUsr(Pilehead * ph) { return ph->usr; }
 void setUsr(Pilehead * ph, Index u) { ph->usr = u; } 
 void modUsr(Pilehead * ph, int32_t u)  { ph->usr += u; } 
 
-// MEAPs:
-
-Index meapParent(Index i) {return (i-1)/2;}
-Index meapLeft  (Index i) {return 2*i + 1;}
-Index meapRight (Index i) {return 2*i + 2;}
 

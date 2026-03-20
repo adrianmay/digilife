@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-
 #include "pile.h"
-//#include <assert.h>
+#include "meap.h"
 
 #define assertInt(VAR, VAL) \
   if (VAR != VAL) { \
@@ -17,7 +16,6 @@ typedef struct __attribute__((aligned(KILO))) {
   int x;
   ThingIndex next;
 } Thing;
-
 
 Thing prototypeThing = { 0, (ThingIndex) {BAD_INDEX} };
 MAKEPILE2(Thing, GIGA);
@@ -63,6 +61,8 @@ ThingIndex sumitems() {
 ThingIndex nextThing(ThingIndex i) { return getThing(i)->next; }
 
 void freeing(ThingIndex i0) {
+  int count = countThings();
+  assertInt(count,1001);
   ThingIndex i1 = nextThing(i0);
   ThingIndex i2 = nextThing(i1);
   ThingIndex i3 = nextThing(i2);
@@ -74,6 +74,8 @@ void freeing(ThingIndex i0) {
   getThing(i1)->next = i5;
   int total = sumThings(i0);
   assertInt(total,4994940);
+  count = countThings();
+  assertInt(count,998);
 }
 
 void reallocing() {
@@ -85,16 +87,41 @@ void reallocing() {
   assertInt(i.i,2);
   i = allocThing();
   assertInt(i.i,1001);
+  int count = countThings();
+  assertInt(count,1002);
 }
 
-int main() { 
-  printf("Running pile tests\n"); 
+int basic() { 
+  printf("Running basic pile tests\n"); 
   virginity();
   ThingIndex i = sumitems();
   freeing(i);
   reallocing();
   cleanup();
-  
   return 0; 
 }
 
+MAKEMEAP1(MyMeap)
+
+typedef uint32_t Tocks;  
+typedef struct { Tocks tocks; } MyMeap;
+
+MyMeap prototypeMyMeap = { 0 };
+
+MAKEMEAP2(MyMeap, GIGA)
+
+Score scoreMyMeap(MyMeap * p) {return p->tocks; }
+void onMoveMyMeap(MyMeap *, MyMeapIndex) {}  
+
+int meap() {
+  openMyMeapPile();
+  MyMeap m = (MyMeap) { 100 };
+  meapInsertMyMeap(m);
+  printf("HERE1\n");
+}
+
+int main() { 
+  basic();
+  meap();
+  return 0;
+}

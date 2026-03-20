@@ -3,18 +3,14 @@
 #include "pile.h"
 #include "meap.h"
 
-#define assertInt(VAR, VAL) \
-  if (VAR != VAL) { \
-    printf("FAILED at %d: Expected: " #VAL "; Got: %d\n", __LINE__, VAR); \
-    cleanup();  \
-    exit(1); \
-  }
 #define assertInt_(VAR, VAL, CLEANUP) \
   if (VAR != VAL) { \
     printf("FAILED at %d: Expected: " #VAL "; Got: %d\n", __LINE__, VAR); \
     CLEANUP(); \
     exit(1); \
   }
+
+#define assertInt(VAR, VAL) assertInt_(VAR, VAL, cleanup)
 
 typedef struct __attribute__((aligned(KILO))) { 
   int fd;
@@ -157,7 +153,6 @@ void assertWholeMeap(Index * p, int n) {
     MyMeap * v = getMyMeap((MyMeapIndex) {a});
     assertInt(v->tocks,p[a]);
   }
-
 }
 
 int meap() {

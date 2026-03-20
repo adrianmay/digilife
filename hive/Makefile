@@ -1,4 +1,3 @@
-HDR := $(wildcard *.h)
 SRC := $(wildcard *.c)
 OBJ := $(SRC:%.c=tmp/%.o)
 TARGET := hive
@@ -7,14 +6,12 @@ CC = gcc
 run: ${TARGET}
 	./${TARGET}
 
-${TARGET}: ${OBJ}
-	 ${CC} -O0 $^ -o $@
+${TARGET}: ${OBJ} 
+	echo ${HDR}
+	${CC} -g -O0 $^ -o $@
 
-tmp/%.o: %.c | tmp ${HDR}
-	$(CC) $(CFLAGS) -c $< -o $@
-
-# ${OBJ}: ${SRC} | tmp
-# 	 ${CC} -c $^ -o $@
+tmp/%.o: %.c 
+	$(CC) $(CFLAGS) -g -c $< -o $@
 
 tmp:
 	mkdir -p tmp
@@ -23,4 +20,14 @@ tmp:
 
 clean:
 	rm -f ${OBJ} ${TARGET}
+
+${OBJ}: tmp Makefile
+
+depend: .depend
+
+.depend: $(SRC)
+	rm -f "$@"
+	$(CC) $(CFLAGS) -MM $^ > "$@"
+
+include .depend
 

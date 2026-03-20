@@ -20,9 +20,20 @@ typedef struct __attribute__((aligned(KILO))) {
 Thing prototypeThing = { 0, (ThingIndex) {BAD_INDEX} };
 MAKEPILE2(Thing, GIGA);
 
+MAKEMEAP1(MyMeap)
+
+typedef uint32_t Tocks;  
+typedef struct { Tocks tocks; } MyMeap;
+
+MyMeap prototypeMyMeap = { 0 };
+
+MAKEMEAP2(MyMeap, GIGA)
+
 void cleanup() {
   closeThingPile(false); //Delete it for next time
+  closeMyMeapPile(false); //Delete it for next time
   hideThingPile();                      
+  hideMyMeapPile();                      
 }
 
 void virginity() {
@@ -97,31 +108,42 @@ int basic() {
   ThingIndex i = sumitems();
   freeing(i);
   reallocing();
-  cleanup();
   return 0; 
 }
 
-MAKEMEAP1(MyMeap)
-
-typedef uint32_t Tocks;  
-typedef struct { Tocks tocks; } MyMeap;
-
-MyMeap prototypeMyMeap = { 0 };
-
-MAKEMEAP2(MyMeap, GIGA)
-
 Score scoreMyMeap(MyMeap * p) {return p->tocks; }
 void onMoveMyMeap(MyMeap *, MyMeapIndex) {}  
+void onNewLowMyMeap(Score s) {}
+
+void assertWholeMeap(Index * p, int n) {
+  Index tot = getUsr(headOfMyMeaps);
+  assertInt(tot, n);
+  for (int a = 0; a<n; a++) {
+    MyMeap * v = getMyMeap((MyMeapIndex) {a});
+    assertInt(v->tocks,p[a]);
+  }
+
+}
 
 int meap() {
   openMyMeapPile();
-  MyMeap m = (MyMeap) { 100 };
-  meapInsertMyMeap(m);
-  printf("HERE1\n");
+  meapInsertMyMeap((MyMeap) { 0x30 });
+  meapInsertMyMeap((MyMeap) { 0x20 });
+  meapInsertMyMeap((MyMeap) { 0x50 });
+  meapInsertMyMeap((MyMeap) { 0x10 });
+  meapInsertMyMeap((MyMeap) { 0x08 });
+  meapInsertMyMeap((MyMeap) { 0x18 });
+  meapRemoveMyMeap((MyMeapIndex){0});
+  Index exp1[] = {0x10, 0x20, 0x18, 0x30, 0x50};
+  assertWholeMeap(exp1, 5);
+  meapRemoveMyMeap((MyMeapIndex){0});
+  Index exp2[] = {0x18, 0x20, 0x50, 0x30};
+  assertWholeMeap(exp2, 4);
 }
 
 int main() { 
   basic();
   meap();
+  cleanup();
   return 0;
 }

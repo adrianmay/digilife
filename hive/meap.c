@@ -33,26 +33,24 @@ void siftUp(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
 }
 
 void siftDown(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
-  Index cnt = countPop(ph);
+  Index cnt = getUsr(ph);
   while (1) {
     Index iL = left(iCur);
     Index iR = right(iCur);
     Index iSmallest = iCur;
     Score sCur = mc->onScore(findInPile(ph, iCur));
     Score sL =  mc->onScore(findInPile(ph, iL));
-    if (iL < cnt && sL < sCur) iSmallest = iL;
-    else {
-      Score sR =  mc->onScore(findInPile(ph, iR));
-      if (iR < cnt && sR < sCur) iSmallest = iR;
-    }
+    Score sR =  mc->onScore(findInPile(ph, iR));
+    Score sSmallest = sCur;
+    if (iL < cnt && sL < sSmallest) { iSmallest = iL; sSmallest = sL; }
+    if (iR < cnt && sR < sSmallest) iSmallest = iR;
     if (iSmallest == iCur) break;
     swap(ph, mc, iCur, iSmallest);
     iCur = iSmallest;
   } // end of while
 }
 
-void insert(Pilehead * ph, MeapCallbacks * mc, void * proto) {
-  printf("HERE\n");
+void meapInsert(Pilehead * ph, MeapCallbacks * mc, void * proto) {
   Index iSlot;
   Index meapTop = getUsr(ph);
   if (meapTop < ph->top) 
@@ -65,4 +63,14 @@ void insert(Pilehead * ph, MeapCallbacks * mc, void * proto) {
   if (iSlot>0) siftUp(ph, mc, iSlot);
 }
 
+void meapRemove(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
+  Score sLowOrig = mc->onScore(findInPile(ph, 0));
+  Index iLast = getUsr(ph)-1;
+  swap(ph, mc, iLast, iCur);
+  modUsr(ph, -1);
+  siftDown(ph, mc, iCur);
+  siftUp(ph, mc, iCur);
+  Score sLowNow = mc->onScore(findInPile(ph, 0));
+  if (sLowNow != sLowOrig) mc->onNewLow(sLowNow);
+}
 

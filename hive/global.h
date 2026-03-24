@@ -12,6 +12,7 @@
 #define B16 (B8*B8)         
 #define B32 (B16*B16)       
 
+// Ought to be using the FPU here
 typedef uint32_t Tocks;  // A tock might be around a microsecond, but varies
 typedef uint32_t Index;
 typedef uint32_t TockDuration; // In nanoseconds.
@@ -29,4 +30,6 @@ typedef struct __attribute__((aligned(KILO))) {
 } Globals;
 
 extern Globals * g;
+
+void initDefaultGlobals();
 

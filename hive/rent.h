@@ -16,7 +16,6 @@ void updateTocks();
 #define MAKERENT2(TYP,LIM) \
   MAKEPILE2(TYP,LIM) \
   MAKEMEAP2(TYP##Meap,LIM) \
-  TYP##Index makeRent##TYP(TYP##Index i) {  } \
   Score getScore##TYP##Meap(TYP##Meap * pMeap) { return pMeap->tocks; } \
   void onMove##TYP##Meap(TYP##Meap * pMeap, TYP##MeapIndex i) { get##TYP(pMeap->who)->rent.meap = i; } \
   void onNewLow##TYP##Meap(Score s) { wake(); } \

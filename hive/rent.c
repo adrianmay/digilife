@@ -14,7 +14,6 @@ typedef struct {
   void (*onKill)();
 } RentContext;
 
-
 void updateTocks() {
 } 
 

@@ -39,7 +39,7 @@ void modUsr(Pilehead * ph, int32_t u);
 #define MAKEPILE2(TYP, LIM) \
   Pilehead * headOf##TYP##s; \
   bool open##TYP##Pile() { return (headOf##TYP##s = openPile(#TYP "s.pile", sizeof(TYP), 10, LIM))->top==0; } \
-  TYP * get##TYP(TYP##Index i) { return findInPile(headOf##TYP##s, i.i); } \
+  TYP * get##TYP(TYP##Index i) { return (TYP*)findInPile(headOf##TYP##s, i.i); } \
   TYP##Index alloc##TYP(TYP ** pNew) { return (TYP##Index) {.i=allocInPile(headOf##TYP##s, (void**)pNew, 0, 0)}; } \
   void free##TYP(TYP##Index i) { freeInPile(headOf##TYP##s, i.i, 0, 0); } \
   void close##TYP##Pile(bool rm) { closePile(headOf##TYP##s, rm); } \

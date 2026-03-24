@@ -26,50 +26,50 @@ void wrap() {
   z = wrapAdd8(250,10);       assertInt0(z,4);
 }
 
+
 void handler(union sigval sv) {}
 
-void now() {
-  int r;
-  timer_t tid;
-  struct sigevent se = { 
-    .sigev_notify = SIGEV_THREAD, 
-    .sigev_notify_function = handler,
-      
-  };
-  r = timer_create(CLOCK_PROCESS_CPUTIME_ID, &se, &tid);
-  assertInt_(r,0,cleanup_nothing);
-  r = timer_create(CLOCK_THREAD_CPUTIME_ID, &se, &tid);
-  assertInt_(r,0,cleanup_nothing);
-  r = timer_create(CLOCK_THREAD_CPUTIME_ID, &se, &tid);
-  assertInt_(r,0,cleanup_nothing);
-  r = timer_create(CLOCK_THREAD_CPUTIME_ID, &se, &tid);
-  assertInt_(r,0,cleanup_nothing);
-
-//  uint64_t z=1;
-//  struct timespec ts;
-//  uint64_t start, now;
-//  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts); now = ts.tv_sec*1000000 + ts.tv_nsec/1000;
-//  start=now;
-//  for (int a=0;a<99999999;a++) z*=a;
-//  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts); now = ts.tv_sec*1000000 + ts.tv_nsec/1000;
-//  printf("USED: %f\n", (((double)(now-start))/1000000.0));
-//  for (int a=0;a<99999999;a++) z*=a;
-//  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts); now = ts.tv_sec*1000000 + ts.tv_nsec/1000;
-//  printf("USED: %f\n", (((double)(now-start))/1000000.0));
-//  for (int a=0;a<99999999;a++) z*=a;
-//  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts); now = ts.tv_sec*1000000 + ts.tv_nsec/1000;
-//  printf("USED: %f\n", (((double)(now-start))/1000000.0));
-//  for (int a=0;a<99999999;a++) z*=a;
-//  int z=1;
-//  realTime();
-//  printf("%ld\n", CLOCKS_PER_SEC);
-//  for (int a=0;a<999999999;a++) z*=a;
-//  printf("REAL: %ld\n", realTime());
-//  printf("CPU : %ld\n", ticksUsed());
-//  for (int a=0;a<999999999;a++) z*=a;
-//  printf("REAL: %ld\n", realTime());
-//  printf("CPU : %ld\n", ticksUsed());
-}
+//    void now() {
+//      int r;
+//      timer_t tid;
+//      struct sigevent se = { 
+//        .sigev_notify = SIGEV_THREAD, 
+//        .sigev_notify_function = handler
+//      };
+//      r = timer_create(CLOCK_PROCESS_CPUTIME_ID, &se, &tid);
+//      assertInt_(r,0,cleanup_nothing);
+//      r = timer_create(CLOCK_THREAD_CPUTIME_ID, &se, &tid);
+//      assertInt_(r,0,cleanup_nothing);
+//      r = timer_create(CLOCK_THREAD_CPUTIME_ID, &se, &tid);
+//      assertInt_(r,0,cleanup_nothing);
+//      r = timer_create(CLOCK_THREAD_CPUTIME_ID, &se, &tid);
+//      assertInt_(r,0,cleanup_nothing);
+//    
+//    //  uint64_t z=1;
+//    //  struct timespec ts;
+//    //  uint64_t start, now;
+//    //  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts); now = ts.tv_sec*1000000 + ts.tv_nsec/1000;
+//    //  start=now;
+//    //  for (int a=0;a<99999999;a++) z*=a;
+//    //  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts); now = ts.tv_sec*1000000 + ts.tv_nsec/1000;
+//    //  printf("USED: %f\n", (((double)(now-start))/1000000.0));
+//    //  for (int a=0;a<99999999;a++) z*=a;
+//    //  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts); now = ts.tv_sec*1000000 + ts.tv_nsec/1000;
+//    //  printf("USED: %f\n", (((double)(now-start))/1000000.0));
+//    //  for (int a=0;a<99999999;a++) z*=a;
+//    //  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts); now = ts.tv_sec*1000000 + ts.tv_nsec/1000;
+//    //  printf("USED: %f\n", (((double)(now-start))/1000000.0));
+//    //  for (int a=0;a<99999999;a++) z*=a;
+//    //  int z=1;
+//    //  realTime();
+//    //  printf("%ld\n", CLOCKS_PER_SEC);
+//    //  for (int a=0;a<999999999;a++) z*=a;
+//    //  printf("REAL: %ld\n", realTime());
+//    //  printf("CPU : %ld\n", ticksUsed());
+//    //  for (int a=0;a<999999999;a++) z*=a;
+//    //  printf("REAL: %ld\n", realTime());
+//    //  printf("CPU : %ld\n", ticksUsed());
+//    }
 
 #define assertInt(VAR, VAL) assertInt_(VAR, VAL, cleanup)
 
@@ -204,12 +204,11 @@ void onNewLowMyMeap(Score s) {}
 void assertWholeMeap(Index * pExp, int n) {
   Index tot = getUsr(headOfMyMeaps);
   assertInt(tot, n);
-  for (int a = 0; a<n; a++) {
+  for (uint32_t a = 0; a<n; a++) {
     MyMeap * v = getMyMeap((MyMeapIndex) {a});
     assertInt(v->tocks,pExp[a]);
   }
 }
-
 
 int meap() {
   MyMeap * pMeap;
@@ -228,6 +227,7 @@ int meap() {
   meapRemoveMyMeap((MyMeapIndex){0});
   Index exp2[] = {0x18, 0x20, 0x50, 0x30};
   assertWholeMeap(exp2, 4);
+  return 0;
 }
 
 MAKERENT1(Block)
@@ -237,6 +237,7 @@ typedef struct { Index name; BlockRent rent; } Block;
 MAKERENT2(Block, GIGA)
 
 int rent() {
+  return 0;
 }
 
 int main() { 

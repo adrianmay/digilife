@@ -1,16 +1,13 @@
 HDR := $(wildcard *.h)
-SRC := $(wildcard *.c)
+SRC := $(shell find . -name '[a-z]*\.c')
 OBJ := $(SRC:%.c=tmp/%.o)
 CC = gcc
 
-run: test hive
-	./test && ./hive
+run: Test Hive
+	./Test && ./Hive
 
-%: ${OBJ} tmp/%.o
+%: tmp/%.o ${OBJ} 
 	${CC} -g -O0 $^ -o $@
-
-tmp/%.o: %.C 
-	$(CC) $(CFLAGS) -g -c $< -o $@
 
 tmp/%.o: %.c 
 	$(CC) $(CFLAGS) -g -c $< -o $@
@@ -21,7 +18,7 @@ tmp: tags
 .PHONY: clean run
 
 clean:
-	rm -f ${OBJ} test hive
+	rm -rf tmp test hive
 
 ${OBJ}: tmp Makefile
 
@@ -35,4 +32,6 @@ include .depend
 
 tags: $(SRC) $(HDR)
 	ctags *.h *.c
+
+.SUFFIXES:
 

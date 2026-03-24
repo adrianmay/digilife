@@ -1,7 +1,8 @@
 #include <stdio.h>
+#include <time.h>
 #include <stdlib.h>
-#include "pile.h"
-#include "meap.h"
+#include <signal.h>
+#include "rent.h"
 
 #define assertInt_(VAR, VAL, CLEANUP) \
   if (VAR != VAL) { \
@@ -10,14 +11,65 @@
     exit(1); \
   }
 
-#define assertInt(VAR, VAL) assertInt_(VAR, VAL, cleanup)
+void cleanup_nothing() {}
+#define assertInt0(VAR, VAL) assertInt_(VAR, VAL, cleanup_nothing)
 
-typedef struct __attribute__((aligned(KILO))) { 
-  int fd;
-  uint64_t epochTimeStarted; 
-  uint64_t epochTimeStopped; 
-  uint64_t epochTimeTock; 
-} Globals;
+void wrap() {
+  uint8_t z;
+  z = wrapSubtract8(3,1);     assertInt0(z,2);
+  z = wrapSubtract8(10,250);  assertInt0(z,16);
+  z = wrapSubtract8(250,10);  assertInt0(z,240);
+  z = wrapSubtract8(250,255); assertInt0(z,251);
+  z = wrapAdd8(250,250);      assertInt0(z,244);
+  z = wrapAdd8(250,10);       assertInt0(z,4);
+}
+
+void handler(union sigval sv) {}
+
+void now() {
+  int r;
+  timer_t tid;
+  struct sigevent se = { 
+    .sigev_notify = SIGEV_THREAD, 
+    .sigev_notify_function = handler,
+      
+  };
+  r = timer_create(CLOCK_PROCESS_CPUTIME_ID, &se, &tid);
+  assertInt_(r,0,cleanup_nothing);
+  r = timer_create(CLOCK_THREAD_CPUTIME_ID, &se, &tid);
+  assertInt_(r,0,cleanup_nothing);
+  r = timer_create(CLOCK_THREAD_CPUTIME_ID, &se, &tid);
+  assertInt_(r,0,cleanup_nothing);
+  r = timer_create(CLOCK_THREAD_CPUTIME_ID, &se, &tid);
+  assertInt_(r,0,cleanup_nothing);
+
+//  uint64_t z=1;
+//  struct timespec ts;
+//  uint64_t start, now;
+//  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts); now = ts.tv_sec*1000000 + ts.tv_nsec/1000;
+//  start=now;
+//  for (int a=0;a<99999999;a++) z*=a;
+//  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts); now = ts.tv_sec*1000000 + ts.tv_nsec/1000;
+//  printf("USED: %f\n", (((double)(now-start))/1000000.0));
+//  for (int a=0;a<99999999;a++) z*=a;
+//  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts); now = ts.tv_sec*1000000 + ts.tv_nsec/1000;
+//  printf("USED: %f\n", (((double)(now-start))/1000000.0));
+//  for (int a=0;a<99999999;a++) z*=a;
+//  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts); now = ts.tv_sec*1000000 + ts.tv_nsec/1000;
+//  printf("USED: %f\n", (((double)(now-start))/1000000.0));
+//  for (int a=0;a<99999999;a++) z*=a;
+//  int z=1;
+//  realTime();
+//  printf("%ld\n", CLOCKS_PER_SEC);
+//  for (int a=0;a<999999999;a++) z*=a;
+//  printf("REAL: %ld\n", realTime());
+//  printf("CPU : %ld\n", ticksUsed());
+//  for (int a=0;a<999999999;a++) z*=a;
+//  printf("REAL: %ld\n", realTime());
+//  printf("CPU : %ld\n", ticksUsed());
+}
+
+#define assertInt(VAR, VAL) assertInt_(VAR, VAL, cleanup)
 
 MAKEGLOBALS
 
@@ -54,15 +106,15 @@ void cleanup() {
 void globals() {
   bool v = openGlobals();
   assertInt_(v, true, cleanup_globals);
-  uint64_t i = g->epochTimeStarted + g->epochTimeStopped + g->epochTimeTock;
+  uint64_t i = g->lastKnownTock + g->tocksReviewedAt + g->nsPerTock;
   assertInt_(i, 0, cleanup_globals);
-  g->epochTimeStarted = 1;
-  g->epochTimeStopped = 2;
-  g->epochTimeTock = 3;
+  g->lastKnownTock = 1;
+  g->tocksReviewedAt = 2;
+  g->nsPerTock = 3;
   closeGlobals(false);
   v = openGlobals();
   assertInt_(v, false, cleanup_globals);
-  i = g->epochTimeStarted + g->epochTimeStopped + g->epochTimeTock;
+  i = g->lastKnownTock + g->tocksReviewedAt + g->nsPerTock;
   assertInt_(i, 6, cleanup_globals);
   closeGlobals(true);
 }
@@ -142,7 +194,7 @@ int pile() {
   return 0; 
 }
 
-Score scoreMyMeap(MyMeap * p) {return p->tocks; }
+Score onScoreMyMeap(MyMeap * p) {return p->tocks; }
 void onMoveMyMeap(MyMeap *, MyMeapIndex) {}  
 void onNewLowMyMeap(Score s) {}
 
@@ -180,14 +232,16 @@ BlockMeap prototypeBlockMeap = {0, (BlockIndex) {BAD_INDEX}};
 MAKERENT2(Block, GIGA)
 
 int mortal() {
-
 }
 
 int main() { 
+  wrap();
   globals();
   pile();
   meap();
   mortal();
   cleanup();
+  now();
   return 0;
 }
+

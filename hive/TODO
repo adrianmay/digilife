@@ -1,10 +1,36 @@
-modify meap
 
-Definitely calculate expiry tocks once cos it doesn't change
-Tocks has to be 32 bit to fit nicely in meap.
-Therefore need good wrap-around subtraction, make sure arrears never > 31 bits tocks.
-A tock is many measurable epoch moments
-Tock price very large number of coins
+// Definitely calculate expiry tocks once cos it doesn't change
+// Tocks has to be 32 bit to fit nicely in meap.
+// A tock is many measurable epoch moments
+// Tock price very large number of coins
+// timespec has 64 bits for seconds so will never wrap.
+// 64 bits of nanoseconds is 584 years but CPU time multiplies by the number of CPUs, so make sure the procees gets rebooted sometimes.
+// Timing seems very accurate nowadays.
+
+For animal memory expiry, the main thread can loop: 
+  Work out tocks based on current memory price and last review CPU uptime.
+  Iterate getting and killing overstays (no need to terminate their processes cos they're funded by the message.)
+  Review memory price if it's been a while since we did.
+  Sleep until just after soonest expiry, or a max price review period.
+When some other thread changes soonest expiry, it signals this thread which just causes another iteration: no parameters needed.
+Message expiry same. Still no need to kill processes cos the message is removed when the process starts.  
+
+For process timing, there's a similar sleeper thread per runner thread. 
+It has a field for the time it should sleep for, runs in a sleepy loop, and might expire or be signalled. 
+If it expires it calls a killer function. If it's signalled it just loops.
+Start it when starting a message according to the message balance and CPU price. To do that, set the timeout and signal the sleeper thread.
+If the message terminates on time, set the timeout to infinity and signal the sleeper thread.
+The killer function kills the runner thread. 
+  There's a pool of them, one of which will automatically choose another message and continue.
+  Message-specific data should be on the runner thread's stack so this should do no global harm, or basic harm to the running animal.
+
+
+Epochtime
+Multi-timer til epoch time
+
+
+
+Make sure arrears never > 31 bits tocks. Tocks can be short.
 If you set a timer for the future, can't change tock duration until then, so limit how long.
 Also limit how many tocks before collecting rent from very rich animal, which means alarm might not mean death.
 

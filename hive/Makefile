@@ -1,6 +1,7 @@
+HDR := $(wildcard *.h)
 SRC := $(wildcard *.c)
 OBJ := $(SRC:%.c=tmp/%.o)
-TARGET := hive
+TARGET := hive 
 CC = gcc
 
 run: ${TARGET}
@@ -13,7 +14,7 @@ ${TARGET}: ${OBJ}
 tmp/%.o: %.c 
 	$(CC) $(CFLAGS) -g -c $< -o $@
 
-tmp:
+tmp: tags
 	mkdir -p tmp
 
 .PHONY: clean run
@@ -30,4 +31,7 @@ depend: .depend
 	$(CC) $(CFLAGS) -MM $^ > "$@"
 
 include .depend
+
+tags: $(SRC) $(HDR)
+	ctags *.h *.c
 

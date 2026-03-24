@@ -1,18 +1,4 @@
-#include <stdint.h>         
-#include <stdbool.h>
-
-#define BAD_INDEX UINT32_MAX
-#define MAX_FILENAME 256
-#define PAGE 4096    
-#define KILO 1024           
-#define MEGA (KILO*KILO)    
-#define GIGA (MEGA*KILO)    
-#define TERA (GIGA*KILO)    
-#define B8 256ull           
-#define B16 (B8*B8)         
-#define B32 (B16*B16)       
-
-typedef uint32_t Index;
+#include "global.h"
 
 typedef struct __attribute__((aligned(KILO))) { // This should be of a good size for alignment
   Index hdr; // Size of this header
@@ -45,7 +31,7 @@ void modUsr(Pilehead * ph, int32_t u);
 #define MAKEGLOBALS \
   Globals * g; \
   bool openGlobals() { bool v; g = (Globals *) openGlobals_(sizeof(Globals), &v); return v; } \
-  void closeGlobals(bool rm) { closeGlobals_(g->fd, rm); }
+  void closeGlobals(bool rm) { closeGlobals_(g->fd, rm); } \
 
 #define MAKEPILE1(TYP) \
   typedef struct { Index i; } TYP##Index; 
@@ -59,5 +45,5 @@ void modUsr(Pilehead * ph, int32_t u);
   void close##TYP##Pile(bool rm) { closePile(headOf##TYP##s, rm); } \
   void hide##TYP##Pile() { hidePile(headOf##TYP##s); } \
   bool valid##TYP##Index(TYP##Index i) { return i.i != BAD_INDEX; } \
-  Index count##TYP##s() { return countPop(headOf##TYP##s); }
+  Index count##TYP##s() { return countPop(headOf##TYP##s); } \
 

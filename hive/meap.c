@@ -1,6 +1,5 @@
 #include <string.h>
 #include <stdio.h>
-#include "pile.h"
 #include "meap.h"
 
 Index parent(Index i) {return (i-1)/2;}
@@ -68,6 +67,14 @@ void meapRemove(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
   Index iLast = getUsr(ph)-1;
   swap(ph, mc, iLast, iCur);
   modUsr(ph, -1);
+  siftDown(ph, mc, iCur);
+  siftUp(ph, mc, iCur);
+  Score sLowNow = mc->onScore(findInPile(ph, 0));
+  if (sLowNow != sLowOrig) mc->onNewLow(sLowNow);
+}
+
+void meapReview(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
+  Score sLowOrig = mc->onScore(findInPile(ph, 0));
   siftDown(ph, mc, iCur);
   siftUp(ph, mc, iCur);
   Score sLowNow = mc->onScore(findInPile(ph, 0));

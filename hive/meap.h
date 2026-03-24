@@ -7,8 +7,9 @@ uint32_t wrapSubtract32(uint32_t a, uint32_t b);
 typedef void (*OnMove) (void *, Index);
 typedef Score (*OnScore) (void *);
 typedef void (*OnNewLow) (Score low);
-typedef struct { void * tmp; OnScore onScore; OnMove onMove; OnNewLow onNewLow; } MeapCallbacks;
-void meapInsert(Pilehead * ph, MeapCallbacks * mc, void * proto);
+typedef void (*OnNew) (Index iMeap, uint32_t hint);
+typedef struct { void * tmp; OnScore getScore; OnNew onNew; OnMove onMove; OnNewLow onNewLow; } MeapCallbacks;
+void meapInsert(Pilehead * ph, MeapCallbacks * mc, void ** pNew, uint32_t hint);
 void meapRemove(Pilehead * ph, MeapCallbacks * mc, Index iCur);
 void meapReview(Pilehead * ph, MeapCallbacks * mc, Index iCur);
 
@@ -17,14 +18,16 @@ void meapReview(Pilehead * ph, MeapCallbacks * mc, Index iCur);
 
 #define MAKEMEAP2(TYP, LIM) \
   MAKEPILE2(TYP, LIM) \
-  extern Score onScore##TYP(TYP *); \
+  extern Score getScore##TYP(TYP *); \
   extern void onMove##TYP(TYP *, TYP##Index to); \
+  extern void onNew##TYP(TYP##Index i, uint32_t hint); \
   extern void onNewLow##TYP(Score); \
-  void onMove_##TYP(void * p, Index to) { onMove##TYP((TYP*)p, (TYP##Index) {to}); } \
-  Score onScore_##TYP(void * p) { return onScore##TYP((TYP*)p); } \
+  void onMove_##TYP(void * p, Index to)     { onMove##TYP((TYP*)p, (TYP##Index) {to}); } \
+  void onNew_##TYP (Index i, uint32_t hint) { onNew##TYP ((TYP##Index){i}, hint);} \
+  Score getScore_##TYP(void * p) { return getScore##TYP((TYP*)p); } \
   TYP tmp##TYP; \
-  MeapCallbacks MC##TYP = { &tmp##TYP, onScore_##TYP, onMove_##TYP, onNewLow##TYP } ; \
-  void meapInsert##TYP(TYP proto) { meapInsert(headOf##TYP##s, &MC##TYP, (void*)&proto); } \
+  MeapCallbacks MC##TYP = { &tmp##TYP, getScore_##TYP, onNew_##TYP, onMove_##TYP, onNewLow##TYP } ; \
+  void meapInsert##TYP(TYP ** pNew, uint32_t hint) { meapInsert(headOf##TYP##s, &MC##TYP, (void**)pNew, hint); } \
   void meapRemove##TYP(TYP##Index i) { meapRemove(headOf##TYP##s, &MC##TYP, i.i); } \
   void meapReview##TYP(TYP##Index i) { meapReview(headOf##TYP##s, &MC##TYP, i.i); } \
 

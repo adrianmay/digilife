@@ -36,7 +36,7 @@ Also limit how many tocks before collecting rent from very rich animal, which me
 
 
 Tock counter
-allocMortal##TYP
+allocRent##TYP
 Alarm to kill stuff
 Virgin as global
 

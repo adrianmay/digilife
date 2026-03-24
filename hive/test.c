@@ -6,7 +6,7 @@
 
 #define assertInt_(VAR, VAL, CLEANUP) \
   if (VAR != VAL) { \
-    printf("FAILED at %d: Expected: " #VAL "; Got: %d\n", __LINE__, VAR); \
+    fprintf(stderr, "FAILED at %d: Expected: " #VAL "=%d ; Got: %d\n", __LINE__, VAL, VAR); \
     CLEANUP(); \
     exit(1); \
   }
@@ -80,7 +80,6 @@ typedef struct __attribute__((aligned(KILO))) {
   ThingIndex next;
 } Thing;
 
-Thing prototypeThing = { 0, (ThingIndex) {BAD_INDEX} };
 MAKEPILE2(Thing, GIGA);
 
 MAKEMEAP1(MyMeap)
@@ -97,8 +96,8 @@ void cleanup_globals() {
 
 void cleanup() {
   closeThingPile(false); //Delete it for next time
-  closeMyMeapPile(false); //Delete it for next time
   hideThingPile();                      
+  closeMyMeapPile(false); //Delete it for next time
   hideMyMeapPile();                      
   closeGlobals(true);
 }
@@ -122,7 +121,7 @@ void globals() {
 void virginity() {
   bool vir1 = openThingPile(); //Assume it doesn't exist
   //assertInt(vir1,true);
-  ThingIndex i = allocThing();
+  ThingIndex i = allocThing(0);
   closeThingPile(false); //Don't delete the pile
   bool vir2 = openThingPile();
   assertInt(vir2,false);
@@ -137,14 +136,15 @@ int sumThings(ThingIndex i0) {
 }
 
 ThingIndex sumitems() {
-  bool vir3 = openThingPile(); //Assume it doesn't exist
-  assertInt(vir3,true);
+  bool vir = openThingPile(); //Assume it doesn't exist
+  Thing * pT;
+  assertInt(vir,true);
   ThingIndex i0, i;
-  i0 = i = allocThing(); // Must be index zero
-  Thing * pT = getThing(i);
+  i0 = i = allocThing(&pT); // Must be index zero
+  pT->x = 0; 
   for (int a=0;a<1000;a++) {
-    pT->next=allocThing();
-    pT = getThing(pT->next);
+    pT->next=allocThing(&pT);
+    pT->next = badThingIndex;                       
     pT->x = 10*a;
   }
   int total = sumThings(i0);
@@ -173,13 +173,13 @@ void freeing(ThingIndex i0) {
 }
 
 void reallocing() {
-  ThingIndex i = allocThing();
+  ThingIndex i = allocThing(0);
   assertInt(i.i,3);
-  i = allocThing();
+  i = allocThing(0);
   assertInt(i.i,4);
-  i = allocThing();
+  i = allocThing(0);
   assertInt(i.i,2);
-  i = allocThing();
+  i = allocThing(0);
   assertInt(i.i,1001);
   int count = countThings();
   assertInt(count,1002);
@@ -188,33 +188,38 @@ void reallocing() {
 int pile() { 
   printf("Running basic pile tests\n"); 
   virginity();
-  ThingIndex i = sumitems();
-  freeing(i);
+  ThingIndex i0 = sumitems();
+  freeing(i0);
   reallocing();
   return 0; 
 }
 
-Score onScoreMyMeap(MyMeap * p) {return p->tocks; }
+Score getScoreMyMeap(MyMeap * p) {return p->tocks; }
+void onNewMyMeap(MyMeapIndex i, uint32_t hint) { getMyMeap(i)->tocks = hint; }  
 void onMoveMyMeap(MyMeap *, MyMeapIndex) {}  
 void onNewLowMyMeap(Score s) {}
 
-void assertWholeMeap(Index * p, int n) {
+void assertWholeMeap(Index * pExp, int n) {
   Index tot = getUsr(headOfMyMeaps);
   assertInt(tot, n);
   for (int a = 0; a<n; a++) {
     MyMeap * v = getMyMeap((MyMeapIndex) {a});
-    assertInt(v->tocks,p[a]);
+    assertInt(v->tocks,pExp[a]);
   }
 }
 
+
 int meap() {
+  MyMeap * pMeap;
   openMyMeapPile();
-  meapInsertMyMeap((MyMeap) { 0x30 });
-  meapInsertMyMeap((MyMeap) { 0x20 });
-  meapInsertMyMeap((MyMeap) { 0x50 });
-  meapInsertMyMeap((MyMeap) { 0x10 });
-  meapInsertMyMeap((MyMeap) { 0x08 });
-  meapInsertMyMeap((MyMeap) { 0x18 });
+  meapInsertMyMeap(&pMeap, 0x30);
+  meapInsertMyMeap(&pMeap, 0x20);
+  Index exp3[] = {0x20, 0x30};
+  assertWholeMeap(exp3, 2);
+  meapInsertMyMeap(&pMeap, 0x50);
+  meapInsertMyMeap(&pMeap, 0x10);
+  meapInsertMyMeap(&pMeap, 0x08);
+  meapInsertMyMeap(&pMeap, 0x18);
   meapRemoveMyMeap((MyMeapIndex){0});
   Index exp1[] = {0x10, 0x20, 0x18, 0x30, 0x50};
   assertWholeMeap(exp1, 5);
@@ -226,12 +231,10 @@ int meap() {
 MAKERENT1(Block)
 
 typedef struct { Index name; BlockRent rent; } Block;
-Block prototypeBlock = {0, { 0, 0, (BlockMeapIndex) {BAD_INDEX}}};
-BlockMeap prototypeBlockMeap = {0, (BlockIndex) {BAD_INDEX}};
 
 MAKERENT2(Block, GIGA)
 
-int mortal() {
+int rent() {
 }
 
 int main() { 
@@ -239,9 +242,10 @@ int main() {
   globals();
   pile();
   meap();
-  mortal();
+  rent();
+//  now();
   cleanup();
-  now();
   return 0;
 }
 
+ 

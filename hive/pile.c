@@ -96,7 +96,6 @@ Pilehead * openPile(const char * filename, uint32_t rec, uint32_t stp, Index lim
     ph->usr = 0;
     strncpy(ph->fn, filename, MAX_FILENAME-1);
   }
-  printf("Opened file map at %p\n",filemap);
   return ph;
 }
 
@@ -132,7 +131,7 @@ void growPile(Pilehead * ph) {
 void  * findInPile(Pilehead * ph, Index i) { return (((void*)(ph+1)) + i*ph->rec); }                                         
 Index * findFreeInPile(Pilehead * ph, Index i) { return (Index*) findInPile(ph,i); }
 
-Index allocInPile(Pilehead * ph, void * prototype, void * ghost, int ghostlen) {
+Index allocInPile(Pilehead * ph, void ** pNew, void * ghost, int ghostlen) {
   Index ret;
   if (ph->fre != BAD_INDEX) {
     ret = ph->fre;
@@ -148,8 +147,7 @@ Index allocInPile(Pilehead * ph, void * prototype, void * ghost, int ghostlen) {
     ph->top++; 
     ret = ph->top-1;
   } 
-  char * pNew = findInPile(ph, ret);
-  memcpy(pNew, prototype, ph->rec);
+  if (pNew) *pNew = findInPile(ph, ret);
   return ret;
 }   
   

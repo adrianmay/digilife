@@ -21,9 +21,9 @@ void siftUp(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
   if (iCur == 0) return;
   Score sCur;
   while (iCur > 0) {
-    sCur = mc->onScore(findInPile(ph, iCur));
+    sCur = mc->getScore(findInPile(ph, iCur));
     Index iPar = parent(iCur);
-    Score sPar = mc->onScore(findInPile(ph, iPar));
+    Score sPar = mc->getScore(findInPile(ph, iPar));
     if (sPar <= sCur) return;
     swap(ph, mc, iCur, iPar);
     iCur = iPar;
@@ -37,9 +37,9 @@ void siftDown(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
     Index iL = left(iCur);
     Index iR = right(iCur);
     Index iSmallest = iCur;
-    Score sCur = mc->onScore(findInPile(ph, iCur));
-    Score sL =  mc->onScore(findInPile(ph, iL));
-    Score sR =  mc->onScore(findInPile(ph, iR));
+    Score sCur = mc->getScore(findInPile(ph, iCur));
+    Score sL =  mc->getScore(findInPile(ph, iL));
+    Score sR =  mc->getScore(findInPile(ph, iR));
     Score sSmallest = sCur;
     if (iL < cnt && sL < sSmallest) { iSmallest = iL; sSmallest = sL; }
     if (iR < cnt && sR < sSmallest) iSmallest = iR;
@@ -49,35 +49,37 @@ void siftDown(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
   } // end of while
 }
 
-void meapInsert(Pilehead * ph, MeapCallbacks * mc, void * proto) {
+void meapInsert(Pilehead * ph, MeapCallbacks * mc, void ** pNew, uint32_t hint) {
   Index iSlot;
   Index meapTop = getUsr(ph);
-  if (meapTop < ph->top) 
+  if (meapTop < ph->top) {
     iSlot = meapTop;
+    *pNew = findInPile(ph, iSlot);
+  }  
   else
-    iSlot = allocInPile(ph, proto, 0, 0);
+    iSlot = allocInPile(ph, pNew, 0, 0);
+  mc->onNew(iSlot, hint);
   modUsr(ph, 1);
-  void * pSlot = findInPile(ph, iSlot);
-  mc->onMove(pSlot, iSlot);
+  mc->onMove(*pNew, iSlot);
   if (iSlot>0) siftUp(ph, mc, iSlot);
 }
 
 void meapRemove(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
-  Score sLowOrig = mc->onScore(findInPile(ph, 0));
+  Score sLowOrig = mc->getScore(findInPile(ph, 0));
   Index iLast = getUsr(ph)-1;
   swap(ph, mc, iLast, iCur);
   modUsr(ph, -1);
   siftDown(ph, mc, iCur);
   siftUp(ph, mc, iCur);
-  Score sLowNow = mc->onScore(findInPile(ph, 0));
+  Score sLowNow = mc->getScore(findInPile(ph, 0));
   if (sLowNow != sLowOrig) mc->onNewLow(sLowNow);
 }
 
 void meapReview(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
-  Score sLowOrig = mc->onScore(findInPile(ph, 0));
+  Score sLowOrig = mc->getScore(findInPile(ph, 0));
   siftDown(ph, mc, iCur);
   siftUp(ph, mc, iCur);
-  Score sLowNow = mc->onScore(findInPile(ph, 0));
+  Score sLowNow = mc->getScore(findInPile(ph, 0));
   if (sLowNow != sLowOrig) mc->onNewLow(sLowNow);
 }
 

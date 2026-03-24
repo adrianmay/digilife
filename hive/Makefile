@@ -8,7 +8,6 @@ run: ${TARGET}
 	./${TARGET}
 
 ${TARGET}: ${OBJ} 
-	echo ${HDR}
 	${CC} -g -O0 $^ -o $@
 
 tmp/%.o: %.c 

@@ -29,6 +29,7 @@ typedef struct __attribute__((aligned(KILO))) {
   Tocks lastKnownTock; // 
   uint64_t nsNotTocked; // Tocks were rounded down, such that this much time was not charged
   TockDuration nsPerTock; // Easy way to adjust price per ns, while keeping price per tock fixed.
+  TockPrice groatsPerTock;                       
 } Globals;
 
 extern Globals * g;

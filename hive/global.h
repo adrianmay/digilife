@@ -12,16 +12,12 @@
 #define B16 (B8*B8)         
 #define B32 (B16*B16)       
 
-typedef uint32_t Index;
-typedef uint64_t Nanosecs;
 typedef uint32_t Tocks;  // A tock might be around a microsecond, but varies
+typedef uint32_t Index;
 typedef uint32_t TockDuration; // In nanoseconds.
 typedef uint64_t Score;
 typedef uint64_t Cash;  
 typedef uint32_t TockPrice; // The currency unit can be tiny.
-
-Nanosecs ageOfProcess();
-Nanosecs ageOfThread();
 
 typedef struct __attribute__((aligned(KILO))) { 
   int fd; // For globals

@@ -1,8 +1,10 @@
+#include <pthread.h>
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
 #include <signal.h>
 #include "rent.h"
+#include "time.h"
 
 #define assertInt_(VAR, VAL, CLEANUP) \
   if (VAR != VAL) { \
@@ -242,9 +244,10 @@ int main() {
   globals();
   pile();
   meap();
-  rent();
+//  rent();
 //  now();
   cleanup();
+  trysleep();
   return 0;
 }
 

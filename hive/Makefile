@@ -1,14 +1,16 @@
 HDR := $(wildcard *.h)
 SRC := $(wildcard *.c)
 OBJ := $(SRC:%.c=tmp/%.o)
-TARGET := hive 
 CC = gcc
 
-run: ${TARGET}
-	./${TARGET}
+run: test hive
+	./test && ./hive
 
-${TARGET}: ${OBJ} 
+%: ${OBJ} tmp/%.o
 	${CC} -g -O0 $^ -o $@
+
+tmp/%.o: %.C 
+	$(CC) $(CFLAGS) -g -c $< -o $@
 
 tmp/%.o: %.c 
 	$(CC) $(CFLAGS) -g -c $< -o $@
@@ -19,7 +21,7 @@ tmp: tags
 .PHONY: clean run
 
 clean:
-	rm -f ${OBJ} ${TARGET}
+	rm -f ${OBJ} test hive
 
 ${OBJ}: tmp Makefile
 

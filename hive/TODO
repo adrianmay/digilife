@@ -7,6 +7,9 @@
 // 64 bits of nanoseconds is 584 years but CPU time multiplies by the number of CPUs, so make sure the procees gets rebooted sometimes.
 // Timing seems very accurate nowadays.
 
+Persistent and volatile globals.
+
+
 For animal memory expiry, the main thread can loop: 
   Work out tocks based on current memory price and last review CPU uptime.
   Iterate getting and killing overstays (no need to terminate their processes cos they're funded by the message.)

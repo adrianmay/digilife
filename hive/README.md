@@ -57,7 +57,7 @@ There's no explicit payment of memory rent, but before an animal's code runs, th
 
 Memory time is measured in "tocks", each being a dynamically variable number of nanoseconds. This is how memory prices are adjusted at run time without recomputing the time bombs.
 
-### tombola
+### raffle
 
 This is a binary tree serialised like a min heap, but each node has a "weight" and tracks the total weight of its left and right subtrees. If we uniformly roll a random natural number less than the total weight of the tree, we can descend the tree to select a node with a probability proportional to its weight.
 
@@ -65,11 +65,11 @@ This is a binary tree serialised like a min heap, but each node has a "weight" a
 
 Animals may send a message to themselves or another. This is the only way to execute code, namely, that of the receiver. 
 
-A message must indicate how much it wants to pay for CPU time, and a tombola will tend to choose the highest bidders. 
+A message must indicate how much it wants to pay for CPU time, and a raffle will tend to choose the highest bidders. 
 
 The finance for the CPU job is transfered from the sender to the message itself when emitting the message. 
 
-The message will incur memory rent while it waits in the tombola (but not much because a message is small.) During execution, an auxillary thread will sleep until the message finance is expected to run out, then abort the job. If the job yields before message finance is exhausted, the receiving animal keeps the balance. This mechanism therefore serves as the main means of payment, which makes sense because the receiver of a payment probably wants to run code to update its opinion of the sender, who also wants that to happen. 
+The message will incur memory rent while it waits in the raffle (but not much because a message is small.) During execution, an auxillary thread will sleep until the message finance is expected to run out, then abort the job. If the job yields before message finance is exhausted, the receiving animal keeps the balance. This mechanism therefore serves as the main means of payment, which makes sense because the receiver of a payment probably wants to run code to update its opinion of the sender, who also wants that to happen. 
 
 This system is spam-proof.
 

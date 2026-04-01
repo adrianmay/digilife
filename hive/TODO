@@ -7,9 +7,7 @@
 // 64 bits of nanoseconds is 584 years but CPU time multiplies by the number of CPUs, so make sure the procees gets rebooted sometimes.
 // Timing seems very accurate nowadays.
 
-Clean up time.c, generalise which thread, move test to Test
-
-Test that CPU time multiplies by thread count.
+Test meap with edge cases, check onNewLow called.
 
 For animal memory expiry, the main thread can loop: 
   Work out tocks based on current memory price and last review CPU uptime.
@@ -17,6 +15,7 @@ For animal memory expiry, the main thread can loop:
   Review memory price if it's been a while since we did.
   Sleep until just after soonest expiry, or a max price review period.
 When some other thread changes soonest expiry, it signals this thread which just causes another iteration: no parameters needed.
+Gotta disable thread interrupts when chomping through dead animals.
 Message expiry same. Still no need to kill processes cos the message is removed when the process starts.  
 
 For process timing, there's a similar sleeper thread per runner thread. 

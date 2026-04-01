@@ -19,6 +19,24 @@ Nanosecs age(clockid_t what) {
 Nanosecs ageOfProcess() { return age(CLOCK_PROCESS_CPUTIME_ID); }
 Nanosecs ageOfThread()  { return age(CLOCK_THREAD_CPUTIME_ID); }
 
+void signal_handler(int sig) { }
+void defangSignal() {
+  struct sigaction sa;
+  sa.sa_handler = signal_handler;
+  sigemptyset(&sa.sa_mask);
+  sa.sa_flags = 0;
+  sigaction(SIGALRM, &sa, NULL);
+}
+
+// First do this in the thread that will sleep and be interrupted,
+//   keeping the returned thread id where the interrupting thread
+//   can see it:
+pthread_t initTiming() {
+  defangSignal();
+  return pthread_self();
+}
+
+// Then sleep in that thread:
 void sleepS(int s) {
   struct timespec ts;
   ts.tv_sec=s;
@@ -33,39 +51,7 @@ void sleepNs(Nanosecs ns) {
   nanosleep(&ts, 0);
 }
 
-pthread_t main_thread_id;
-
-void signal_handler(int sig) { }
-
-void defangSignal() {
-  struct sigaction sa;
-  sa.sa_handler = signal_handler;
-  sigemptyset(&sa.sa_mask);
-  sa.sa_flags = 0;
-  sigaction(SIGALRM, &sa, NULL);
-}
-
-void wake() {
-  printf("killing main thread\n");
-  pthread_kill(main_thread_id, SIGALRM);
-}
-
-void initTiming() {
-  defangSignal();
-  main_thread_id = pthread_self();
-}
-
-void * interrupter(void *) {
-  sleepS(1);
-  wake();
-}
-
-void trysleep() {
-  initTiming();
-  pthread_t pid;
-  pthread_create(&pid, 0, interrupter, 0);
-  sleepS(2);
-  printf("leaving main thread\n");
-}
+// Interrupt it from a different thread with this:
+void wake(pthread_t tid) { pthread_kill(tid, SIGALRM); }
 
 

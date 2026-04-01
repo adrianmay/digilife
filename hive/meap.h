@@ -4,13 +4,25 @@ typedef void (*OnMove) (void *, Index);
 typedef Score (*OnScore) (void *);
 typedef void (*OnNewLow) (Score low);
 typedef void (*OnNew) (Index iMeap, uint32_t hint);
+// These callbacks customise the behaviour of a meap:
 typedef struct { void * tmp; OnScore getScore; OnNew onNew; OnMove onMove; OnNewLow onNewLow; } MeapCallbacks;
+
 void meapInsert(Pilehead * ph, MeapCallbacks * mc, void ** pNew, uint32_t hint);
 void meapRemove(Pilehead * ph, MeapCallbacks * mc, Index iCur);
 void meapReview(Pilehead * ph, MeapCallbacks * mc, Index iCur);
 
 #define MAKEMEAP1(TYP) \
   MAKEPILE1(TYP) \
+
+// You provide the stuff marked extern...
+// Score is the thing that min heap minimises
+// onMove might need to update something, in our case, the animal must know the meap index
+// onNew sets up the fields of the meap (and animal) after we have the meap slot 
+//   and before we fix the ordering of the meap.
+// onNewLow is triggered when some change of cash or removal of dead stuff results in a new earliest expected death.
+//   We will interrupt a sleep and re-start it with the new earliest.
+// Otherwise it's mostly casted versions of the stuff in meap.c
+// The tmp is used in swap in meap.c.
 
 #define MAKEMEAP2(TYP, LIM) \
   MAKEPILE2(TYP, LIM) \

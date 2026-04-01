@@ -20,14 +20,19 @@ void updateTocks() {
   pg->nsNotTocked = qr.rem;
 } 
 
-Tocks killAllExpired() { return 0; }
+Tocks killAllExpired() { //Keep killing bankrupt animals and return the expected next death tock.
+  return 0;              //Don't trigger wake up signals in the process.
+}
 
-void reviewTockDuration() {}
+void reviewTockDuration() { // Advanced stuff to keep the memory usage slightly below max
+}
 
 void sleepUntilTock(Tocks wakeat) {
   sleepNs(pg->nsPerTock * wrapSubtractTocks(wakeat,  pg->lastKnownTock));
 }
 
+// This is the main sleepy rent killer and tock tracker.
+// It doesn't care if the sleep times out or is interrupted.
 void rentCollector(RentContext * ctx) {
   while (vg.shouldRun) {
     updateTocks();  
@@ -37,27 +42,3 @@ void rentCollector(RentContext * ctx) {
   }
 }
 
-//    clock_t ticksUsed() {
-//      struct tms t;
-//      times(&t);
-//      clock_t now = t.tms_utime + t.tms_stime;
-//      return now;
-//    }
-//    
-//    uint64_t realTime() {
-//      static uint64_t last = 0;
-//      struct timeval now_;
-//      gettimeofday(&now_, 0);
-//      uint64_t now = 1000000 * now_.tv_sec + now_.tv_usec;
-//      uint64_t ret = now - last;
-//      last = now;
-//      return ret;
-//    }
-//    
-//    void setTimer(time_t when) {
-//      struct tms t;
-//      times(&t);
-//      clock_t now = t.tms_utime + t.tms_stime;
-//      //struct itimerval i; 
-//      //getitimer();
-//    }

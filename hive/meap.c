@@ -15,7 +15,6 @@ void swap(Pilehead * ph, MeapCallbacks * mc, Index i1, Index i2) {
   mc->onMove(p2, i1);
 }
 
-// Returns whether or not root changed
 void siftUp(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
   if (iCur == 0) return;
   Score sCur;
@@ -23,11 +22,12 @@ void siftUp(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
     sCur = mc->getScore(findInPile(ph, iCur));
     Index iPar = parent(iCur);
     Score sPar = mc->getScore(findInPile(ph, iPar));
-    if (sPar <= sCur) return;
+    if (sPar <= sCur) 
+      return;
     swap(ph, mc, iCur, iPar);
     iCur = iPar;
   }
-  mc->onNewLow(sCur);
+  mc->onNewLow(sCur); // Otherwise we already returned
 }
 
 void siftDown(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
@@ -60,25 +60,20 @@ void meapInsert(Pilehead * ph, MeapCallbacks * mc, void ** pNew, uint32_t hint) 
   mc->onNew(iSlot, hint);
   modUsr(ph, 1);
   mc->onMove(*pNew, iSlot);
-  if (iSlot>0) siftUp(ph, mc, iSlot);
+  if (iSlot>0) 
+    siftUp(ph, mc, iSlot); // This calls OnNewLow if it must
 }
 
 void meapRemove(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
-  Score sLowOrig = mc->getScore(findInPile(ph, 0));
   Index iLast = getUsr(ph)-1;
   swap(ph, mc, iLast, iCur);
   modUsr(ph, -1);
   siftDown(ph, mc, iCur);
   siftUp(ph, mc, iCur);
-  Score sLowNow = mc->getScore(findInPile(ph, 0));
-  if (sLowNow != sLowOrig) mc->onNewLow(sLowNow);
 }
 
 void meapReview(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
-  Score sLowOrig = mc->getScore(findInPile(ph, 0));
   siftDown(ph, mc, iCur);
   siftUp(ph, mc, iCur);
-  Score sLowNow = mc->getScore(findInPile(ph, 0));
-  if (sLowNow != sLowOrig) mc->onNewLow(sLowNow);
 }
 

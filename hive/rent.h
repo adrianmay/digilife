@@ -1,8 +1,9 @@
 #include "meap.h"
+#include "global.h"
+#include "time.h"
 
 Tocks    wrapSubtractTocks(Tocks a, Tocks b);
 Tocks    wrapAddTocks(Tocks a, Tocks b);
-
 void updateTocks();
 
 #define MAKERENT1(TYP) \

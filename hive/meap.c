@@ -1,5 +1,4 @@
 #include <string.h>
-#include <stdio.h>
 #include "meap.h"
 
 Index parent(Index i) {return (i-1)/2;}

@@ -1,4 +1,4 @@
-#include "global.h"
+#include "types.h"
 
 typedef struct __attribute__((aligned(KILO))) { // This should be of a good size for alignment
   Index hdr; // Size of this header

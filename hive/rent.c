@@ -1,8 +1,5 @@
 #define _POSIX_C_SOURCE 199309L
-#include <time.h>
-#include <sys/times.h>
 #include "rent.h"
-#include "time.h"
 
 #define SEC_TO_NS(sec) ((sec)*1000000000)
 

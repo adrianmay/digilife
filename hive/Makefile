@@ -18,7 +18,7 @@ tmp: tags
 .PHONY: clean run
 
 clean:
-	rm -rf tmp test hive
+	rm -rf tmp Test Hive
 
 ${OBJ}: tmp Makefile
 

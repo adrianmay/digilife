@@ -29,9 +29,16 @@ void setUsr(Pilehead * ph, Index u);
 void modUsr(Pilehead * ph, int32_t u);
 
 #define MAKEGLOBALS \
-  Globals * g; \
-  bool openGlobals() { bool v; g = (Globals *) openGlobals_(sizeof(Globals), &v); return v; } \
-  void closeGlobals(bool rm) { closeGlobals_(g->fd, rm); } \
+  VolatileGlobals vg; \
+  PersistentGlobals * pg; \
+  bool openGlobals() { \
+    bool v; \
+    pg = (PersistentGlobals *) openGlobals_(sizeof(PersistentGlobals), &v); \
+    if (v) initVirginPersistentGlobals(); \
+    initVolatileGlobals(); \
+    return v; \
+  } \
+  void closeGlobals(bool rm) { closeGlobals_(pg->fd, rm); } \
 
 #define MAKEPILE1(TYP) \
   typedef struct { Index i; } TYP##Index; 

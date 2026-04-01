@@ -1,6 +1,4 @@
-#include <stdint.h>         
-
-typedef uint64_t Nanosecs;
+#include "types.h"
 
 uint8_t  wrapSubtract8 (uint8_t  a, uint8_t  b);
 uint32_t wrapSubtract32(uint32_t a, uint32_t b);

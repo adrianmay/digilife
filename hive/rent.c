@@ -15,17 +15,24 @@ typedef struct {
 } RentContext;
 
 void updateTocks() {
+  Nanosecs now = ageOfProcess();
+  Nanosecs sleptFor = now - vg.tocksReviewedAt;
+  Nanosecs toBill = sleptFor + pg->nsNotTocked;
+  lldiv_t qr = lldiv(toBill, pg->nsPerTock);
+  pg->lastKnownTock = qr.quot;
+  pg->nsNotTocked = qr.rem;
 } 
 
 Tocks killAllExpired() { return 0; }
+
 void reviewTockDuration() {}
 
 void sleepUntilTock(Tocks wakeat) {
-  sleepNs(g->nsPerTock * wrapSubtractTocks(wakeat,  g->lastKnownTock));
+  sleepNs(pg->nsPerTock * wrapSubtractTocks(wakeat,  pg->lastKnownTock));
 }
 
 void rentCollector(RentContext * ctx) {
-  while (true) {
+  while (vg.shouldRun) {
     updateTocks();  
     Tocks nextKill = killAllExpired();
     reviewTockDuration();

@@ -25,10 +25,10 @@ void updateTocks();
     TYP##Index iTyp = (TYP##Index){hint}; \
     TYP * pTyp = get##TYP(iTyp); \
     TYP##Rent * pRent = &pTyp->rent; \
-    pRent->lastPaidRent = g->lastKnownTock; \
+    pRent->lastPaidRent = pg->lastKnownTock; \
     pRent->meap = iMeap; \
     pMeap->who = iTyp; \
-    pMeap->tocks = pRent->cash/g->groatsPerTock + g->lastKnownTock + 1; \
+    pMeap->tocks = pRent->cash/pg->groatsPerTock + pg->lastKnownTock + 1; \
   } \
   bool openRent##TYP##s() { open##TYP##Pile(); return open##TYP##MeapPile(); } \
   void closeRent##TYP##s(bool rm) { close##TYP##Pile(rm); close##TYP##MeapPile(rm); } \

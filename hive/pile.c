@@ -10,15 +10,7 @@
 
 #include "pile.h"
 
-void initDefaultGlobals() {
-  g->tocksReviewedAt = 0;
-  g->lastKnownTock = 0;
-  g->nsNotTocked = 0;
-  g->nsPerTock = 1000;
-  g->groatsPerTock = 1000;
-}
-
-typedef int (*cb)();
+// typedef int (*cb)();
 int quit(int i) {exit(i);} // { return *((int*)(0)); }                         
     
 int fileSize(int fd) {                                                         

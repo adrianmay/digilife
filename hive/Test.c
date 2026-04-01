@@ -107,16 +107,16 @@ void cleanup() {
 void globals() {
   bool v = openGlobals();
   assertInt_(v, true, cleanup_globals);
-  uint64_t i = g->lastKnownTock + g->tocksReviewedAt + g->nsPerTock;
-  assertInt_(i, 0, cleanup_globals);
-  g->lastKnownTock = 1;
-  g->tocksReviewedAt = 2;
-  g->nsPerTock = 3;
+  uint64_t i = pg->lastKnownTock + vg.tocksReviewedAt + pg->nsPerTock;
+  assertInt_(i, 1000, cleanup_globals);
+  vg.tocksReviewedAt = 2;
+  pg->lastKnownTock = 1;
+  pg->nsPerTock = 3;
   closeGlobals(false);
-  v = openGlobals();
+  v = openGlobals(); // Resets vg
   assertInt_(v, false, cleanup_globals);
-  i = g->lastKnownTock + g->tocksReviewedAt + g->nsPerTock;
-  assertInt_(i, 6, cleanup_globals);
+  i = pg->lastKnownTock + vg.tocksReviewedAt + pg->nsPerTock;
+  assertInt_(i, 4, cleanup_globals);
   closeGlobals(true);
 }
 

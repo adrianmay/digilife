@@ -1,9 +1,5 @@
 #include "pile.h"
 
-uint8_t wrapAdd8(uint8_t a, uint8_t b);
-uint8_t wrapSubtract8(uint8_t a, uint8_t b);
-uint32_t wrapAdd32(uint32_t a, uint32_t b);
-uint32_t wrapSubtract32(uint32_t a, uint32_t b);
 typedef void (*OnMove) (void *, Index);
 typedef Score (*OnScore) (void *);
 typedef void (*OnNewLow) (Score low);

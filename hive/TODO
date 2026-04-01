@@ -7,6 +7,8 @@
 // 64 bits of nanoseconds is 584 years but CPU time multiplies by the number of CPUs, so make sure the procees gets rebooted sometimes.
 // Timing seems very accurate nowadays.
 
+Clean up time.c, generalise which thread, move test to Test
+
 Test that CPU time multiplies by thread count.
 
 For animal memory expiry, the main thread can loop: 

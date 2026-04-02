@@ -1,6 +1,11 @@
 
 pthread_t tid;
 
+#include <pthread.h>
+void x() {
+  printf("%d\n", sizeof(pthread_rwlock_t));
+}
+
 void * interrupter(void *) {
   sleepS(1);
   wake(tid);

@@ -82,7 +82,6 @@ void * incrementBy(Thing * p, void * u) {
   p->x += *pi;
   (*pi)*=2;
   return 0;
-
 }
 
 bool with(ThingIndex i0) {

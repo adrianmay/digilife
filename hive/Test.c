@@ -31,7 +31,7 @@ bool bkt(B up, B along, V down) {
 #include "test/pile.c"
 // #include "test/meap.c"
 // #include "test/rent.c"
-// #include "test/experiments.c"
+#include "test/experiments.c"
 
 ///////////////////////////////////////////////////////
 /// EXPERIMENTS
@@ -41,6 +41,7 @@ bool bkt(B up, B along, V down) {
 
 int main() {
   setlocale(LC_NUMERIC, "");
+  x();
   bool suc = globals()
           && wrap()
           && pile()

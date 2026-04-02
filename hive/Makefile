@@ -1,5 +1,5 @@
 HDR := $(wildcard *.h)
-SRC := $(shell find . -name '[a-z]*\.c')
+SRC := $(shell find . -maxdepth 1 -name '[a-z]*\.c')
 OBJ := $(SRC:%.c=tmp/%.o)
 CC = gcc
 

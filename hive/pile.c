@@ -1,3 +1,8 @@
+/*
+This is pile.c: the C source code to provide persistent fixed-block-size allocators. 
+Read pile.h first.
+*/
+
 #include <fcntl.h>                                   
 #include <stdio.h>
 #include <string.h>
@@ -15,6 +20,8 @@ int fileSize(int fd) {
   return sb.st_size;
 } 
   
+// The minimum stretch of virtual memory that can accomodate a pile with
+//  a known record size and number of slots reserved (not necessarily in use).
 size_t pileSize(Pilehead * ph) {
   int x = ph->rec * ph->res + sizeof(Pilehead),                                    
       d = x/PAGE,
@@ -22,12 +29,17 @@ size_t pileSize(Pilehead * ph) {
   return PAGE*(d + (r?1:0)); //Round up to whole page
 } 
   
+// How many slots in a pile of a given filesize, given a known record size
 uint32_t capacity(Pilehead * ph, size_t filelen) {
   return (filelen-sizeof(Pilehead)) / ph->rec;
 }
 
+// This is the simple thing for globals.....
+
 #define GLOBALS_FILENAME "Globals.pile"
 
+// Takes a size for the whole struct/file, returns (by reference) whether or not it just got
+// created (or was found in a pre-existing file) and the pointer to the mapped memory.
 void * openGlobals_(uint64_t len, bool * virgin) {
   *virgin=false;
   int fd = open(GLOBALS_FILENAME, O_RDWR | O_APPEND);
@@ -44,12 +56,15 @@ void * openGlobals_(uint64_t len, bool * virgin) {
   return filemap;
 }
 
+// Close and maybe delete the file
 void closeGlobals_(int fd, bool rm) {
   if (fd == -1) return;
 //  munmap(ph);
   close(fd);
   if (rm) unlink(GLOBALS_FILENAME);
 }
+
+//Now for the proper pile.....
 
 Pilehead * openPile(const char * filename, uint32_t rec, uint32_t stp, Index lim) { // returns array address
   if (rec<4) { printf("Record size too small for free indices.\n"); quit(1); }
@@ -103,6 +118,7 @@ void closePile(Pilehead * ph, bool rm) {
   if (rm) unlink(ph->fn);
 }
 
+// Just for debugging - pretends to delete it but you can still find it.
 void hidePile(Pilehead * ph) {
   char dest[MAX_FILENAME+1];
   *dest='.';
@@ -110,6 +126,7 @@ void hidePile(Pilehead * ph) {
   rename(ph->fn, dest);
 }
 
+// Overstepped the high watermark so grow
 void growPile(Pilehead * ph) {
   if (ph->res > ph->top) return;
   size_t oldLen = pileSize(ph);
@@ -124,9 +141,12 @@ void growPile(Pilehead * ph) {
   }
 }
 
+// The main way to dereference an index:
 void  * findInPile(Pilehead * ph, Index i) { return (((void*)(ph+1)) + i*ph->rec); }                                         
+// If it's free, we know we're pointing at an index of another free block or BAD_INDEX, so cast it:
 Index * findFreeInPile(Pilehead * ph, Index i) { return (Index*) findInPile(ph,i); }
 
+// Allocate a new slot by trying the free list, or incrementing top, or growing
 Index allocInPile(Pilehead * ph, void ** pNew, void * ghost, int ghostlen) {
   Index ret;
   if (ph->fre != BAD_INDEX) {
@@ -147,6 +167,7 @@ Index allocInPile(Pilehead * ph, void ** pNew, void * ghost, int ghostlen) {
   return ret;
 }   
   
+// Free a block to the free list
 void freeInPile(Pilehead * ph, Index i, void * ghost, int ghostlen) {
   Index * pFree = findFreeInPile(ph,i);                                                                                                
   memset((void*)pFree,0xaa,ph->rec);
@@ -156,6 +177,7 @@ void freeInPile(Pilehead * ph, Index i, void * ghost, int ghostlen) {
   memcpy((Index*)(pFree+1), ghost, ghostlen);
 } 
   
+// Sundry utils:
 Index countFree(Pilehead * ph ) { return ph->frn; }
 Index countPop(Pilehead * ph ) { return ph->top - ph->frn; }      
 Index getUsr(Pilehead * ph) { return ph->usr; }

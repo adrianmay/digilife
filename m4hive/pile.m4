@@ -342,7 +342,7 @@ bool addTo$1Meap($1Index i, MeapScore * newLowScore) {
   pM -> idx = i;
   $1 * p = get$1(i);
   p->meap = mi;
-  return siftUp$1Meap(mi);
+  siftUp$1Meap(mi);
 }
 
 bool removeFrom$1Meap($1Index i, MeapScore * newLowScore) {

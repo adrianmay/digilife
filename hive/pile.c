@@ -146,6 +146,12 @@ void  * findInPile(Pilehead * ph, Index i) { return (((void*)(ph+1)) + i*ph->rec
 // If it's free, we know we're pointing at an index of another free block or BAD_INDEX, so cast it:
 Index * findFreeInPile(Pilehead * ph, Index i) { return (Index*) findInPile(ph,i); }
 
+void * withInPile(Pilehead * ph, Index i, F f, void * u) {
+  void * p = findInPile(ph, i);
+  void * ret = f(p, u);
+  return ret;
+}
+                                                //
 // Allocate a new slot by trying the free list, or incrementing top, or growing
 Index allocInPile(Pilehead * ph, void ** pNew, void * ghost, int ghostlen) {
   Index ret;

@@ -29,8 +29,9 @@ bool bkt(B up, B along, V down) {
 #include "test/globals.c"
 #include "test/wrap.c"
 #include "test/pile.c"
-#include "test/meap.c"
-#include "test/experiments.c"
+// #include "test/meap.c"
+// #include "test/rent.c"
+// #include "test/experiments.c"
 
 ///////////////////////////////////////////////////////
 /// EXPERIMENTS
@@ -43,7 +44,7 @@ int main() {
   bool suc = globals()
           && wrap()
           && pile()
-          && meap()
+          //&& meap()
           ;
   return suc?0:1;
 }

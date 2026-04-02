@@ -1,8 +1,9 @@
 .*
-hive/hive
-test
+Hive
+Test
 tags
 core.*
 tmp
 *.pile
-
+m4hive/hive
+m4hive/test

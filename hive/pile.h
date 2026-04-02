@@ -54,8 +54,10 @@ typedef struct __attribute__((aligned(KILO))) { // This should be of a good size
 // The full pile:
 Pilehead * openPile(const char * filename, Index rec, Index stp, Index lim);
 void closePile(Pilehead * ph, bool rm);
+
 Index allocInPile(Pilehead * ph, void ** pNew, void * ghost, int ghostlen); // Free block contents get copied to ghost
 void * findInPile(Pilehead * ph, Index i); // Just deref the index
+void * withInPile(Pilehead * ph, Index i, F f, void * u); // With derefed index
 void freeInPile(Pilehead * ph, Index i, void * ghost, int ghostlen); // Ghost gets inserted into free block for debugging
 void hidePile(Pilehead *); // Rename it for debugging
 Index countPop(Pilehead * ph );
@@ -74,6 +76,8 @@ void modUsr(Pilehead * ph, int32_t u);
   Pilehead * headOf##TYP##s; \
   bool open##TYP##Pile() { return (headOf##TYP##s = openPile(#TYP "s.pile", sizeof(TYP), 10, LIM))->top==0; } \
   TYP * get##TYP(TYP##Index i) { return (TYP*)findInPile(headOf##TYP##s, i.i); } \
+  typedef void * (*F_##TYP)(TYP * p, void * u); \
+  void * with##TYP(TYP##Index i, F_##TYP f, void * u) { return withInPile(headOf##TYP##s, i.i, (F)f, u); } \
   TYP##Index alloc##TYP(TYP ** pNew) { return (TYP##Index) {.i=allocInPile(headOf##TYP##s, (void**)pNew, 0, 0)}; } \
   void free##TYP(TYP##Index i) { freeInPile(headOf##TYP##s, i.i, 0, 0); } \
   void close##TYP##Pile(bool rm) { closePile(headOf##TYP##s, rm); } \

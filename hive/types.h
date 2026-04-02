@@ -23,4 +23,4 @@ typedef uint64_t Score;
 typedef uint64_t Cash;  
 typedef uint32_t TockPrice; // The currency unit can be tiny.
 
-
+typedef void * (*F)(void * item, void * u);

@@ -77,12 +77,33 @@ bool reallocing() {
   return true;
 }
 
+void * incrementBy(Thing * p, void * u) {
+  int * pi = ((int*)u);
+  p->x += *pi;
+  (*pi)*=2;
+  return 0;
+
+}
+
+bool with(ThingIndex i0) {
+  int total = sumThings(i0);
+  assertInt(total,4994940);
+  int i = 3;
+  withThing(i0, incrementBy, ((void*)&i));
+  total = sumThings(i0);
+  assertInt(total,4994943);
+  assertInt(i,6);
+  
+}
+
 bool testThingPile() {
   ThingIndex i0;
   return virginity()
       && (sumitems(&i0), true)
       && freeing(i0)
-      && reallocing();
+      && reallocing()
+      && with(i0)
+      ;
 }
 
 void cleanupThingPile() { closeThingPile(false); hideThingPile(); }

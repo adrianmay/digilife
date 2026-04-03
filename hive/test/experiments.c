@@ -12,9 +12,9 @@ void * interrupter(void * p) {
 
 bool trysleep() {
   printf("starting sleep test\n");
-  pthread_t pidm, pids = sleepS(2);
-  pthread_create(&pidm, 0, interrupter, &pids);
-  wait(pids);
+  pthread_t mtid, stid = sleepS(2);
+  pthread_create(&mtid, 0, interrupter, &stid);
+  wait(stid);
   printf("leaving sleep test\n");
   return true;
 }

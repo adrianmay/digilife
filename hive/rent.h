@@ -1,9 +1,9 @@
-#include "meap.h"
-#include "global.h"
 #include "time.h"
+#include "global.h"
+#include "meap.h"
 
-Tocks    wrapSubtractTocks(Tocks a, Tocks b);
-Tocks    wrapAddTocks(Tocks a, Tocks b);
+extern Tocks    wrapSubtractTocks(Tocks a, Tocks b);
+extern Tocks    wrapAddTocks(Tocks a, Tocks b);
 void updateTocks();
 
 #define MAKERENT1(TYP) \
@@ -21,7 +21,6 @@ void updateTocks();
 //       who would die early because of tocks wrapping.
 //     It's not tragic for things to be slightly late in dying.  
 // onMove just tells the animal where its meap is.
-// onNewLow just wakes up the sleepy renter thread which does all tocks and rent housekeeping
 //   then goes back to sleep until the next expected death. 
 //     For that it needs to know the thread id of said thread. This could be global. 
 //     Might want to suppress waking during the killing phase of housekeeping.
@@ -33,8 +32,8 @@ void updateTocks();
   MAKEPILE2(TYP,LIM) \
   MAKEMEAP2(TYP##Meap,LIM) \
   Score getScore##TYP##Meap(TYP##Meap * pMeap) { return pMeap->tocks; } \
+  extern void mourn##TYP##Meap(TYP##Meap *); \
   void onMove##TYP##Meap(TYP##Meap * pMeap, TYP##MeapIndex i) { get##TYP(pMeap->who)->rent.meap = i; } \
-  void onNewLow##TYP##Meap(Score s) { wake(0); } \
   void onNew##TYP##Meap(TYP##MeapIndex iMeap, uint32_t hint) { \
     updateTocks(); \
     TYP##Meap * pMeap = get##TYP##Meap(iMeap); \
@@ -49,5 +48,6 @@ void updateTocks();
   bool openRent##TYP##s() { open##TYP##Pile(); return open##TYP##MeapPile(); } \
   void closeRent##TYP##s(bool rm) { close##TYP##Pile(rm); close##TYP##MeapPile(rm); } \
   void hideRent##TYP##s() { hide##TYP##Pile(); hide##TYP##MeapPile(); } \
+  Tocks kill##TYP##s(Score thresh) { TYP##Meap meap; while ( chomp##TYP##Meap(thresh, &meap) ) mourn##TYP##Meap(&meap); return meap.tocks; }
   
 

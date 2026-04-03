@@ -3,6 +3,9 @@
 #include <signal.h>
 #include "time.h"
 
+#pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
+#pragma GCC diagnostic ignored "-Wpointer-to-int-cast"
+
 uint8_t  wrapSubtract8 (uint8_t  a, uint8_t  b) { return a - b; }
 uint32_t wrapSubtract32(uint32_t a, uint32_t b) { return a - b; }
 uint64_t wrapSubtract64(uint64_t a, uint64_t b) { return a - b; }
@@ -85,5 +88,5 @@ pthread_t sleepNs(Nanosecs ns) {
 }
 
 void wait(pthread_t tid) { pthread_join(tid, 0); }
-void wake(pthread_t tid) { pthread_kill(tid, SIGINT); }
+void wake(pthread_t tid) { pthread_cancel(tid); }
 

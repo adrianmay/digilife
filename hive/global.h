@@ -3,6 +3,7 @@
 typedef struct {
   Nanosecs tocksReviewedAt; // Exact CPU uptime 
   bool shouldRun;                          
+  pthread_t rentSleeperTid;
 } VolatileGlobals;
 
 typedef struct __attribute__((aligned(KILO))) { 

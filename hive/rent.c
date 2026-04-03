@@ -3,13 +3,15 @@
 
 #define SEC_TO_NS(sec) ((sec)*1000000000)
 
-Tocks    wrapSubtractTocks(Tocks a, Tocks b) { return wrapSubtract32(a, b); }
-Tocks    wrapAddTocks     (Tocks a, Tocks b) { return wrapAdd32     (a, b); }
+typedef Tocks (*KILLER)();
 
 typedef struct {
-  uint32_t thingSize;
-  void (*onKill)();
+  Pilehead * ph; // The meap pile
+  void (*onKill)(void * victim);
 } RentContext;
+
+Tocks    wrapSubtractTocks(Tocks a, Tocks b) { return wrapSubtract32(a, b); }
+Tocks    wrapAddTocks     (Tocks a, Tocks b) { return wrapAdd32     (a, b); }
 
 void updateTocks() {
   Nanosecs now = ageOfProcess();
@@ -20,25 +22,24 @@ void updateTocks() {
   pg->nsNotTocked = qr.rem;
 } 
 
-Tocks killAllExpired() { //Keep killing bankrupt animals and return the expected next death tock.
-  return 0;              //Don't trigger wake up signals in the process.
-}
 
 void reviewTockDuration() { // Advanced stuff to keep the memory usage slightly below max
 }
 
-void sleepUntilTock(Tocks wakeat) {
-  sleepNs(pg->nsPerTock * wrapSubtractTocks(wakeat,  pg->lastKnownTock));
-}
 
 // This is the main sleepy rent killer and tock tracker.
 // It doesn't care if the sleep times out or is interrupted.
-void rentCollector(RentContext * ctx) {
+void rentCollector(KILLER killer) {
   while (vg.shouldRun) {
     updateTocks();  
-    Tocks nextKill = killAllExpired();
+    Tocks wakeat1 = killer(); 
+    // Race: If right now, new low is reached by e.g. lowest making payment, then will oversleep.
+    vg.rentSleeperTid = sleepNs(pg->nsPerTock * wrapSubtractTocks(wakeat1,  pg->lastKnownTock));
+    // But if now, it will have woken the sleeper, so OK
+    Tocks wakeat2 = killer(); // Solution 
+    if (wakeat2 < wakeat1) wake(vg.rentSleeperTid);
     reviewTockDuration();
-    sleepUntilTock(nextKill+1);
+    wait(vg.rentSleeperTid);
   }
 }
 

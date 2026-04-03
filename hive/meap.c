@@ -15,19 +15,18 @@ void swap(Pilehead * ph, MeapCallbacks * mc, Index i1, Index i2) {
   mc->onMove(p2, i1);
 }
 
-void siftUp(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
-  if (iCur == 0) return;
+bool siftUp(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
+  if (iCur == 0) return false;
   Score sCur;
   while (iCur > 0) {
     sCur = mc->getScore(findInPile(ph, iCur));
     Index iPar = parent(iCur);
     Score sPar = mc->getScore(findInPile(ph, iPar));
-    if (sPar <= sCur) 
-      return;
+    if (sPar <= sCur) return false;
     swap(ph, mc, iCur, iPar);
     iCur = iPar;
   }
-  mc->onNewLow(sCur); // Otherwise we already returned
+  return true;
 }
 
 void siftDown(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
@@ -37,8 +36,8 @@ void siftDown(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
     Index iR = right(iCur);
     Index iSmallest = iCur;
     Score sCur = mc->getScore(findInPile(ph, iCur));
-    Score sL =  mc->getScore(findInPile(ph, iL));
-    Score sR =  mc->getScore(findInPile(ph, iR));
+    Score sL   = mc->getScore(findInPile(ph, iL));
+    Score sR   = mc->getScore(findInPile(ph, iR));
     Score sSmallest = sCur;
     if (iL < cnt && sL < sSmallest) { iSmallest = iL; sSmallest = sL; }
     if (iR < cnt && sR < sSmallest) iSmallest = iR;
@@ -48,7 +47,7 @@ void siftDown(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
   } // end of while
 }
 
-void meapInsert(Pilehead * ph, MeapCallbacks * mc, void ** pNew, uint32_t hint) {
+bool meapInsert(Pilehead * ph, MeapCallbacks * mc, void ** pNew, uint32_t hint) {
   Index iSlot;
   Index meapTop = getUsr(ph);
   if (meapTop < ph->top) {
@@ -61,19 +60,32 @@ void meapInsert(Pilehead * ph, MeapCallbacks * mc, void ** pNew, uint32_t hint) 
   modUsr(ph, 1);
   mc->onMove(*pNew, iSlot);
   if (iSlot>0) 
-    siftUp(ph, mc, iSlot); // This calls OnNewLow if it must
+    return siftUp(ph, mc, iSlot); 
+  return false;
 }
 
-void meapRemove(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
+bool meapReview(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
+  siftDown(ph, mc, iCur);
+  return siftUp(ph, mc, iCur);
+}
+
+bool meapRemove(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
   Index iLast = getUsr(ph)-1;
   swap(ph, mc, iLast, iCur);
   modUsr(ph, -1);
-  siftDown(ph, mc, iCur);
-  siftUp(ph, mc, iCur);
+  return meapReview(ph, mc, iCur);
 }
-
-void meapReview(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
-  siftDown(ph, mc, iCur);
-  siftUp(ph, mc, iCur);
+  
+bool chomp(Pilehead * ph, MeapCallbacks * mc, Score thresh, void * out, int outlen) {
+  Index i0 = (Index) {0};
+  void * p = findInPile(ph, i0);
+  Score sZ = mc->getScore(p);
+  if (sZ<thresh) {
+    meapRemove(ph, mc, i0);
+    memcpy(out, p, outlen);
+    return true; // We don't care if the lowest score changed or not. 
+  }             // Just want to know if there's more to kill.
+  memcpy(out, p, outlen);
+  return false;
 }
 

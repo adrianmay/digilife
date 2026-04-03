@@ -1,15 +1,16 @@
 #include "pile.h"
+#include <pthread.h>
 
 typedef void (*OnMove) (void *, Index);
 typedef Score (*OnScore) (void *);
-typedef void (*OnNewLow) (Score low);
 typedef void (*OnNew) (Index iMeap, uint32_t hint);
 // These callbacks customise the behaviour of a meap:
-typedef struct { void * tmp; OnScore getScore; OnNew onNew; OnMove onMove; OnNewLow onNewLow; } MeapCallbacks;
+typedef struct { pthread_mutex_t * mutex; void * tmp; OnScore getScore; OnNew onNew; OnMove onMove; } MeapCallbacks;
 
-void meapInsert(Pilehead * ph, MeapCallbacks * mc, void ** pNew, uint32_t hint);
-void meapRemove(Pilehead * ph, MeapCallbacks * mc, Index iCur);
-void meapReview(Pilehead * ph, MeapCallbacks * mc, Index iCur);
+bool meapInsert(Pilehead * ph, MeapCallbacks * mc, void ** pNew, uint32_t hint);
+bool meapRemove(Pilehead * ph, MeapCallbacks * mc, Index iCur);
+bool meapReview(Pilehead * ph, MeapCallbacks * mc, Index iCur);
+bool chomp(Pilehead * ph, MeapCallbacks * mc, Score thresh, void * out, int outlen);
 
 #define MAKEMEAP1(TYP) \
   MAKEPILE1(TYP) \
@@ -29,15 +30,16 @@ void meapReview(Pilehead * ph, MeapCallbacks * mc, Index iCur);
   extern Score getScore##TYP(TYP *); \
   extern void onMove##TYP(TYP *, TYP##Index to); \
   extern void onNew##TYP(TYP##Index i, uint32_t hint); \
-  extern void onNewLow##TYP(Score); \
   void onMove_##TYP(void * p, Index to)     { onMove##TYP((TYP*)p, (TYP##Index) {to}); } \
   void onNew_##TYP (Index i, uint32_t hint) { onNew##TYP ((TYP##Index){i}, hint);} \
   Score getScore_##TYP(void * p) { return getScore##TYP((TYP*)p); } \
   TYP tmp##TYP; \
-  MeapCallbacks MC##TYP = { &tmp##TYP, getScore_##TYP, onNew_##TYP, onMove_##TYP, onNewLow##TYP } ; \
+  pthread_mutex_t mutex##TYP; \
+  MeapCallbacks MC##TYP = { &mutex##TYP, &tmp##TYP, getScore_##TYP, onNew_##TYP, onMove_##TYP } ; \
   void meapInsert##TYP(TYP ** pNew, uint32_t hint) { meapInsert(headOf##TYP##s, &MC##TYP, (void**)pNew, hint); } \
   void meapRemove##TYP(TYP##Index i) { meapRemove(headOf##TYP##s, &MC##TYP, i.i); } \
   void meapReview##TYP(TYP##Index i) { meapReview(headOf##TYP##s, &MC##TYP, i.i); } \
+  bool chomp##TYP(Score thresh, TYP * p) {return chomp(headOf##TYP##s, &MC##TYP, thresh, (void*)p, sizeof(TYP));}
 
 
 

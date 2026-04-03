@@ -31,7 +31,7 @@ depend: .depend
 include .depend
 
 tags: $(SRC) $(HDR)
-	ctags *.h *.c
+	ctags *.h *.c test/*.c
 
 .SUFFIXES:
 

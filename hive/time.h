@@ -11,7 +11,9 @@ uint64_t wrapAdd64     (uint64_t a, uint64_t b);
 Nanosecs ageOfProcess();
 Nanosecs ageOfThread();
 pthread_t initTiming();
-void sleepNs(Nanosecs ns);
-void sleepS(int ns);
+pthread_t sleepNs(Nanosecs ns);
+pthread_t sleepS(int s);
+void wait(pthread_t);
 void wake(pthread_t);
+void sleepS_(int s) ;
 

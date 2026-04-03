@@ -1,22 +1,22 @@
 
-pthread_t tid;
-
 #include <pthread.h>
 void x() {
   printf("%d\n", sizeof(pthread_rwlock_t));
 }
 
-void * interrupter(void *) {
-  sleepS(1);
-  wake(tid);
+void * interrupter(void * p) {
+  pthread_t * pTid = (pthread_t*) p;
+  sleepS_(1);
+  wake(*pTid);
 }
 
-void trysleep() {
-  tid = initTiming();
-  pthread_t pid;
-  pthread_create(&pid, 0, interrupter, 0);
-  sleepS(2);
-  printf("leaving main thread\n");
+bool trysleep() {
+  printf("starting sleep test\n");
+  pthread_t pidm, pids = sleepS(2);
+  pthread_create(&pidm, 0, interrupter, &pids);
+  wait(pids);
+  printf("leaving sleep test\n");
+  return true;
 }
 
 ///////////////////////////////////////////////////////

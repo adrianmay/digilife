@@ -45,6 +45,7 @@ int main() {
   bool suc = globals()
           && wrap()
           && pile()
+          && trysleep()
           //&& meap()
           ;
   return suc?0:1;

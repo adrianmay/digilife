@@ -1,9 +1,9 @@
 #define _POSIX_C_SOURCE 199309L
+#include <stdio.h>
 #include "rent.h"
 
 #define SEC_TO_NS(sec) ((sec)*1000000000)
 
-typedef Tocks (*KILLER)();
 
 typedef struct {
   Pilehead * ph; // The meap pile
@@ -33,6 +33,7 @@ void rentCollector(KILLER killer) {
   while (vg.shouldRun) {
     updateTocks();  
     Tocks wakeat1 = killer(); 
+    if (wakeat1==0) return;
     // Race: If right now, new low is reached by e.g. lowest making payment, then will oversleep.
     vg.rentSleeperTid = sleepNs(pg->nsPerTock * wrapSubtractTocks(wakeat1,  pg->lastKnownTock));
     // But if now, it will have woken the sleeper, so OK

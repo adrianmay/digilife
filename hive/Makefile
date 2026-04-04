@@ -4,7 +4,8 @@ OBJ := $(SRC:%.c=tmp/%.o)
 CC = gcc
 
 run: Test Hive
-	./Test && ./Hive
+	rm -rf core.*
+	stdbuf --output=L ./Test && stdbuf --output=L ./Hive
 
 %: tmp/%.o ${OBJ} 
 	${CC} -g -O0 $^ -o $@

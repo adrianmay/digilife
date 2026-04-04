@@ -10,7 +10,7 @@ typedef struct { pthread_mutex_t * mutex; void * tmp; OnScore getScore; OnNew on
 bool meapInsert(Pilehead * ph, MeapCallbacks * mc, void ** pNew, uint32_t hint);
 bool meapRemove(Pilehead * ph, MeapCallbacks * mc, Index iCur);
 bool meapReview(Pilehead * ph, MeapCallbacks * mc, Index iCur);
-bool chomp(Pilehead * ph, MeapCallbacks * mc, Score thresh, void * out, int outlen);
+int chomp(Pilehead * ph, MeapCallbacks * mc, Score thresh, void * out, int outlen); // Returns: 1: call again, 0: Done for now, -1: extinct
 
 #define MAKEMEAP1(TYP) \
   MAKEPILE1(TYP) \
@@ -39,7 +39,7 @@ bool chomp(Pilehead * ph, MeapCallbacks * mc, Score thresh, void * out, int outl
   void meapInsert##TYP(TYP ** pNew, uint32_t hint) { meapInsert(headOf##TYP##s, &MC##TYP, (void**)pNew, hint); } \
   void meapRemove##TYP(TYP##Index i) { meapRemove(headOf##TYP##s, &MC##TYP, i.i); } \
   void meapReview##TYP(TYP##Index i) { meapReview(headOf##TYP##s, &MC##TYP, i.i); } \
-  bool chomp##TYP(Score thresh, TYP * p) {return chomp(headOf##TYP##s, &MC##TYP, thresh, (void*)p, sizeof(TYP));}
+  int chomp##TYP(Score thresh, TYP * p) {return chomp(headOf##TYP##s, &MC##TYP, thresh, (void*)p, sizeof(TYP));}
 
 
 

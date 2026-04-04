@@ -11,11 +11,11 @@ void * interrupter(void * p) {
 }
 
 bool trysleep() {
-  printf("starting sleep test\n");
+  printf("Starting sleep test at %'lld\n", ageOfTime());
   pthread_t mtid, stid = sleepS(2);
   pthread_create(&mtid, 0, interrupter, &stid);
   wait(stid);
-  printf("leaving sleep test\n");
+  printf("Leaving sleep test at %'lld\n", ageOfTime());
   return true;
 }
 

@@ -5,6 +5,8 @@
 extern Tocks    wrapSubtractTocks(Tocks a, Tocks b);
 extern Tocks    wrapAddTocks(Tocks a, Tocks b);
 void updateTocks();
+typedef Tocks (*KILLER)();
+void rentCollector(KILLER killer);
 
 #define MAKERENT1(TYP) \
   MAKEPILE1(TYP) \
@@ -48,6 +50,14 @@ void updateTocks();
   bool openRent##TYP##s() { open##TYP##Pile(); return open##TYP##MeapPile(); } \
   void closeRent##TYP##s(bool rm) { close##TYP##Pile(rm); close##TYP##MeapPile(rm); } \
   void hideRent##TYP##s() { hide##TYP##Pile(); hide##TYP##MeapPile(); } \
-  Tocks kill##TYP##s(Score thresh) { TYP##Meap meap; while ( chomp##TYP##Meap(thresh, &meap) ) mourn##TYP##Meap(&meap); return meap.tocks; }
+  Tocks kill##TYP##s(Score thresh) { \
+    int c; \
+    TYP##Meap meap; \
+    while ( (c=chomp##TYP##Meap(thresh, &meap))==1 ) { \
+      mourn##TYP##Meap(&meap); \
+    } \
+    if (c==-1) return 0; \
+    return meap.tocks; \
+  }
   
 

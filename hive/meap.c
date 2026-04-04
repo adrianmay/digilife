@@ -1,11 +1,14 @@
+#include <stdio.h>
 #include <string.h>
 #include "meap.h"
+#include "time.h" // Just for printing slowly
 
 Index parent(Index i) {return (i-1)/2;}
 Index left  (Index i) {return 2*i + 1;}
 Index right (Index i) {return 2*i + 2;}
 
 void swap(Pilehead * ph, MeapCallbacks * mc, Index i1, Index i2) {
+  if (i1==i2) return;
   void * p1 = findInPile(ph, i1);
   void * p2 = findInPile(ph, i2);
   memcpy(mc->tmp, p1, ph->rec);
@@ -76,16 +79,20 @@ bool meapRemove(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
   return meapReview(ph, mc, iCur);
 }
   
-bool chomp(Pilehead * ph, MeapCallbacks * mc, Score thresh, void * out, int outlen) {
-  Index i0 = (Index) {0};
-  void * p = findInPile(ph, i0);
+int chomp(Pilehead * ph, MeapCallbacks * mc, Score thresh, void * out, int outlen) {
+  uint32_t u = getUsr(ph); 
+  sleepS_(1);
+  if (u==0) {
+    return -1;
+  }
+  void * p = findInPile(ph, 0);
   Score sZ = mc->getScore(p);
   if (sZ<thresh) {
-    meapRemove(ph, mc, i0);
     memcpy(out, p, outlen);
-    return true; // We don't care if the lowest score changed or not. 
+    meapRemove(ph, mc, 0);
+    return 1; // We don't care if the lowest score changed or not. 
   }             // Just want to know if there's more to kill.
   memcpy(out, p, outlen);
-  return false;
+  return 0;
 }
 

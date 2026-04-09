@@ -19,7 +19,7 @@ tmp: tags
 .PHONY: clean run
 
 clean:
-	rm -rf tmp Test Hive .depend tags
+	rm -rf tmp Test Hive .depend tags *.pile
 
 ${OBJ}: tmp Makefile
 

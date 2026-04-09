@@ -58,6 +58,7 @@ bool bkt(B up, B along, V down) {
 
 
 int main() {
+  srand(0);
   setlocale(LC_NUMERIC, "");
   //x();
   bool suc = 

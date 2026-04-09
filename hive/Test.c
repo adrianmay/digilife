@@ -5,7 +5,19 @@
 
 #define assertInt(VAR, VAL) \
   if (VAR != VAL) { \
-    fprintf(stderr, "FAILED at %d: Expected: " #VAL "=%d ; Got: %d\n", __LINE__, VAL, VAR); \
+    fprintf(stderr, "%s:%d: Expected: " #VAL "=%d ; Got: %d\n", __FILE__, __LINE__, VAL, VAR); \
+    return false; \
+  }
+
+#define assertIntSuf(VAR, VAL, SUF) \
+  if (VAR != VAL) { \
+    fprintf(stderr, "%s:%d: Expected: " #VAL "=%d ; Got: %d %s\n", __FILE__, __LINE__, VAL, VAR, SUF); \
+    return false; \
+  }
+
+#define assertIntHex(VAR, VAL) \
+  if (VAR != VAL) { \
+    fprintf(stderr, "%s:%d: Expected: " #VAL "=0x%x ; Got: 0x%x\n", __FILE__, __LINE__, VAL, VAR); \
     return false; \
   }
 
@@ -41,14 +53,14 @@ bool bkt(B up, B along, V down) {
 
 int main() {
   setlocale(LC_NUMERIC, "");
-  x();
+  //x();
   bool suc = 
 //    globals() && 
 //    wrap() && 
 //    pile() && 
 //    trysleep() && 
-//    meap() && 
-    rent() &&
+    meap() && 
+//    rent() &&
     true;
   return suc?0:1;
 }

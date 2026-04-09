@@ -50,20 +50,21 @@ void siftDown(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
   } // end of while
 }
 
+// Returns whether or not the root changed.
 bool meapInsert(Pilehead * ph, MeapCallbacks * mc, void ** pNew, uint32_t hint) {
   Index iSlot;
-  Index meapTop = getUsr(ph);
-  if (meapTop < ph->top) {
+  Index meapTop = getUsr(ph); // We can't use the real free cos the meap must remain contiguous, so we have our own count of active meaps.
+  if (meapTop < ph->top) { 
     iSlot = meapTop;
     *pNew = findInPile(ph, iSlot);
   }  
   else
     iSlot = allocInPile(ph, pNew, 0, 0);
-  mc->onNew(iSlot, hint);
+  mc->onNew(iSlot, hint); // Expected to stuff iSlot with things that depend on hint
   modUsr(ph, 1);
-  mc->onMove(*pNew, iSlot);
+  mc->onMove(*pNew, iSlot); //Expected to keep track of where the meap is.
   if (iSlot>0) 
-    return siftUp(ph, mc, iSlot); 
+    return siftUp(ph, mc, iSlot); // Will call onMove if it moves this meap.
   return false;
 }
 
@@ -79,9 +80,9 @@ bool meapRemove(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
   return meapReview(ph, mc, iCur);
 }
   
+// Returns -1 if empty, 1 if it killed something, 0 just returned the champ without changes
 int chomp(Pilehead * ph, MeapCallbacks * mc, Score thresh, void * out, int outlen) {
   uint32_t u = getUsr(ph); 
-  sleepS_(1);
   if (u==0) {
     return -1;
   }

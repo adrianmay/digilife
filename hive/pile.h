@@ -73,7 +73,7 @@ void modUsr(Pilehead * ph, int32_t u);
   typedef struct { Index i; } TYP##Index; 
 
 #define MAKEPILE2(TYP, LIM) \
-  Pilehead * headOf##TYP##s; \
+  Pilehead * headOf##TYP##s = 0; \
   bool open##TYP##Pile() { return (headOf##TYP##s = openPile(#TYP "s.pile", sizeof(TYP), 10, LIM))->top==0; } \
   TYP * get##TYP(TYP##Index i) { return (TYP*)findInPile(headOf##TYP##s, i.i); } \
   typedef void * (*F_##TYP)(TYP * p, void * u); \

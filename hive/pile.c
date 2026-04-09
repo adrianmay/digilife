@@ -111,6 +111,7 @@ Pilehead * openPile(const char * filename, uint32_t rec, uint32_t stp, Index lim
 }
 
 void closePile(Pilehead * ph, bool rm) {
+  if (!ph) return;
   int fd = ph->fd;
   if (fd == -1) return;
 //  munmap(ph);
@@ -120,6 +121,7 @@ void closePile(Pilehead * ph, bool rm) {
 
 // Just for debugging - pretends to delete it but you can still find it.
 void hidePile(Pilehead * ph) {
+  if (!ph) return;
   char dest[MAX_FILENAME+1];
   *dest='.';
   strcpy(dest+1,ph->fn);

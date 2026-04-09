@@ -154,7 +154,7 @@ void * withInPile(Pilehead * ph, Index i, F f, void * u) {
 // Allocate a new slot by trying the free list, or incrementing top, or growing
 Index allocInPile(Pilehead * ph, void ** pNew, void * ghost, int ghostlen) {
   Index ret;
-  if (ph->fre != BAD_INDEX) {
+  if (ph->fre != BAD_INDEX && ph->frn > LIKE_FREE) {
     ret = ph->fre;
     Index * pFree = findFreeInPile(ph,ret);
     ph->fre = *pFree;

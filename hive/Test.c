@@ -62,12 +62,12 @@ int main() {
   setlocale(LC_NUMERIC, "");
   //x();
   bool suc = 
-//    globals() && 
-//    wrap() && 
-//    pile() && 
-//    trysleep() && 
+    globals() && 
+    wrap() && 
+    pile() && 
+    trysleep() && 
     meap() && 
-//    rent() &&
+    rent() &&
     true;
   return suc?0:1;
 }

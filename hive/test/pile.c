@@ -67,11 +67,11 @@ bool reallocing() {
   ThingIndex i = allocThing(0);
   assertInt(i.i,3);
   i = allocThing(0);
-  assertInt(i.i,4);
-  i = allocThing(0);
-  assertInt(i.i,2);
-  i = allocThing(0);
   assertInt(i.i,1001);
+  i = allocThing(0);
+  assertInt(i.i,1002);
+  i = allocThing(0);
+  assertInt(i.i,1003);
   int count = countThings();
   assertInt(count,1002);
   return true;

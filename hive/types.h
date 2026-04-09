@@ -14,6 +14,7 @@
 #define B16 (B8*B8)         
 #define B32 (B16*B16)       
 
+#define LIKE_FREE 2
 // Ought to be using the FPU here
 typedef uint64_t Nanosecs;
 typedef uint32_t Tocks;  // A tock might be around a microsecond, but varies

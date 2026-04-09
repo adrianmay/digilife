@@ -44,5 +44,3 @@ int chomp(Pilehead * ph, MeapCallbacks * mc, Score thresh, void * out, int outle
   void meapReview##TYP(TYP##Index i) { meapReview(headOf##TYP##s, &MC##TYP, i.i); } \
   int chomp##TYP(Score thresh, TYP * p) {return chomp(headOf##TYP##s, &MC##TYP, thresh, (void*)p, sizeof(TYP));}
 
-
-

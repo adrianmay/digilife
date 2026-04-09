@@ -105,6 +105,6 @@ bool testThingPile() {
       ;
 }
 
-void cleanupThingPile() { closeThingPile(false); hideThingPile(); }
+void cleanupThingPile() { closeThingPile(2); }
 bool pile() { return bkt(nowt,testThingPile,cleanupThingPile); }
 

@@ -12,7 +12,7 @@ Read pile.h first.
 #include "pile.h"
 
 // typedef int (*cb)();
-int quit(int i) {exit(i);} // { return *((int*)(0)); }                         
+int quit(int i) {abort();} // { return *((int*)(0)); }                         
     
 int fileSize(int fd) {                                                         
   struct stat sb;                                                              
@@ -59,7 +59,7 @@ void * openGlobals_(uint64_t len, bool * virgin) {
 // Close and maybe delete the file
 void closeGlobals_(int fd, bool rm) {
   if (fd == -1) return;
-//  munmap(ph);
+  //munmap(ph);
   close(fd);
   if (rm) unlink(GLOBALS_FILENAME);
 }
@@ -110,22 +110,19 @@ Pilehead * openPile(const char * filename, uint32_t rec, uint32_t stp, Index lim
   return ph;
 }
 
-void closePile(Pilehead * ph, bool rm) {
+void closePile(Pilehead * ph, int rm) {
   if (!ph) return;
   int fd = ph->fd;
   if (fd == -1) return;
-//  munmap(ph);
   close(fd);
-  if (rm) unlink(ph->fn);
-}
-
-// Just for debugging - pretends to delete it but you can still find it.
-void hidePile(Pilehead * ph) {
-  if (!ph) return;
-  char dest[MAX_FILENAME+1];
-  *dest='.';
-  strcpy(dest+1,ph->fn);
-  rename(ph->fn, dest);
+  if (rm==1) unlink(ph->fn);
+  if (rm==2) {
+    char dest[MAX_FILENAME+1];
+    *dest='.';
+    strcpy(dest+1,ph->fn);
+    rename(ph->fn, dest);
+  }
+  munmap(ph, ((uint64_t)ph->lim)*PAGE);
 }
 
 // Overstepped the high watermark so grow

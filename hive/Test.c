@@ -21,6 +21,12 @@
     return false; \
   }
 
+#define assertIntSufHex(VAR, VAL, SUF) \
+  if (VAR != VAL) { \
+    fprintf(stderr, "%s:%d: Expected: " #VAL "=%x ; Got: %x %s\n", __FILE__, __LINE__, VAL, VAR, SUF); \
+    return false; \
+  }
+
 typedef bool  (*B)();
 typedef void (*V)();
 void B2V(B b) { (*b)(); }

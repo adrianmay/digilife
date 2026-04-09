@@ -74,7 +74,9 @@ bool meapReview(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
 }
 
 bool meapRemove(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
-  Index iLast = getUsr(ph)-1;
+  Index cnt = getUsr(ph);
+  if (!cnt) return false;
+  Index iLast = cnt-1;
   swap(ph, mc, iLast, iCur);
   modUsr(ph, -1);
   return meapReview(ph, mc, iCur);

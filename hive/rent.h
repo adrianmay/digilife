@@ -48,8 +48,7 @@ void rentCollector(KILLER killer);
     pMeap->tocks = pRent->cash/pg->groatsPerTock + pg->lastKnownTock + 1; \
   } \
   bool openRent##TYP##s() { open##TYP##Pile(); return open##TYP##MeapPile(); } \
-  void closeRent##TYP##s(bool rm) { close##TYP##Pile(rm); close##TYP##MeapPile(rm); } \
-  void hideRent##TYP##s() { hide##TYP##Pile(); hide##TYP##MeapPile(); } \
+  void closeRent##TYP##s(int rm) { close##TYP##Pile(rm); close##TYP##MeapPile(rm); } \
   Tocks kill##TYP##s(Score thresh) { \
     int c; \
     TYP##Meap meap; \

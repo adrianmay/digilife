@@ -53,13 +53,12 @@ typedef struct __attribute__((aligned(KILO))) { // This should be of a good size
 // Forward references of stuff in the corresponding C file:
 // The full pile:
 Pilehead * openPile(const char * filename, Index rec, Index stp, Index lim);
-void closePile(Pilehead * ph, bool rm);
+void closePile(Pilehead * ph, int rm); // 1->delete, 2->hide
 
 Index allocInPile(Pilehead * ph, void ** pNew, void * ghost, int ghostlen); // Free block contents get copied to ghost
 void * findInPile(Pilehead * ph, Index i); // Just deref the index
 void * withInPile(Pilehead * ph, Index i, F f, void * u); // With derefed index
 void freeInPile(Pilehead * ph, Index i, void * ghost, int ghostlen); // Ghost gets inserted into free block for debugging
-void hidePile(Pilehead *); // Rename it for debugging
 Index countPop(Pilehead * ph );
 Index getUsr(Pilehead * ph); // Misc number
 void setUsr(Pilehead * ph, Index u);
@@ -80,8 +79,7 @@ void modUsr(Pilehead * ph, int32_t u);
   void * with##TYP(TYP##Index i, F_##TYP f, void * u) { return withInPile(headOf##TYP##s, i.i, (F)f, u); } \
   TYP##Index alloc##TYP(TYP ** pNew) { return (TYP##Index) {.i=allocInPile(headOf##TYP##s, (void**)pNew, 0, 0)}; } \
   void free##TYP(TYP##Index i) { freeInPile(headOf##TYP##s, i.i, 0, 0); } \
-  void close##TYP##Pile(bool rm) { closePile(headOf##TYP##s, rm); } \
-  void hide##TYP##Pile() { hidePile(headOf##TYP##s); } \
+  void close##TYP##Pile(int rm) { closePile(headOf##TYP##s, rm); } \
   bool valid##TYP##Index(TYP##Index i) { return i.i != BAD_INDEX; } \
   const TYP##Index bad##TYP##Index = (TYP##Index) {BAD_INDEX}; \
   Index count##TYP##s() { return countPop(headOf##TYP##s); } \

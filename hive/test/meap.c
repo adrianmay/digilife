@@ -1,3 +1,5 @@
+#include <string.h>
+
 MAKEMEAP1(MyMeap)
 typedef struct { Tocks tocks; } MyMeap;
 MyMeap prototypeMyMeap = { 0 };
@@ -21,7 +23,7 @@ void onNewLowMyMeap(Score s) {}
 #define assertIntM(A, B) {  \
   char s[30]; \
   sprintf(s, "with meap setup %d", setupNum); \
-  assertIntSuf(A, B, s); \
+  assertIntSufHex(A, B, s); \
 }
 
 MyMeap * pMeap;
@@ -29,6 +31,8 @@ MyMeap * pMeap;
 #define CHOMPNOTHING 1
 uint doWhat;
 void expect(uint what) {doWhat |= what;}
+int fullChompN; Score fullChompP[10];
+void expectFullChomp(int n, Score * p) { fullChompN=n; memcpy(fullChompP, p, n*sizeof(Score)); }
 
 bool setupEmpty() { openMyMeapPile(); return true; }
 
@@ -36,6 +40,7 @@ bool setupSingleton() {
   setupEmpty(); 
   meapInsertMyMeap(&pMeap, 0x88);
   expect(CHOMPNOTHING);
+  expectFullChomp(1, (Score []){0x88});
   return true;
 }
 
@@ -43,23 +48,27 @@ bool setup2Inc() {
   setupSingleton(); 
   meapInsertMyMeap(&pMeap, 0xc8);
   expect(CHOMPNOTHING);
+  expectFullChomp(2, (Score []){0x88, 0xc8});
   return true;
 }
 bool setup2Dec() { 
   setupSingleton(); 
   meapInsertMyMeap(&pMeap, 0x48);
   expect(CHOMPNOTHING);
+  expectFullChomp(2, (Score []){0x48, 0x88});
   return true;
 }
 bool setup2CloseInc() { 
   setupSingleton(); 
   meapInsertMyMeap(&pMeap, 0x89);
   expect(CHOMPNOTHING);
+  expectFullChomp(2, (Score []){0x88, 0x89});
   return true;
 }
 bool setup2CloseDec() { 
   setupSingleton(); 
   meapInsertMyMeap(&pMeap, 0x87);
+  expectFullChomp(2, (Score []){0x88, 0x87}); // Cos score (/16) is same
   expect(CHOMPNOTHING);
   return true;
 }
@@ -69,6 +78,7 @@ bool setup3(Score a, Score b, Score c) {
   meapInsertMyMeap(&pMeap, a);
   meapInsertMyMeap(&pMeap, b);
   meapInsertMyMeap(&pMeap, c);
+  expectFullChomp(3, (Score []){0x18, 0x28, 0x38});
   return true;
 }
 
@@ -78,8 +88,12 @@ bool setup213()   { return setup3(0x28,0x18,0x38) || true; }
 bool setup231()   { return setup3(0x28,0x38,0x18) || true; }
 bool setup312()   { return setup3(0x38,0x18,0x28) || true; }
 bool setup321()   { return setup3(0x38,0x28,0x18) || true; }
-bool setup3Same() { expect(CHOMPNOTHING);
-                    return setup3(0x37,0x38,0x39) || true; }
+bool setup3Same() { 
+  setup3(0x37,0x38,0x39); 
+  expect(CHOMPNOTHING);
+  expectFullChomp(3, (Score []){0x37,0x39,0x38}); // Shouldn't be fussy about the order
+  return true;
+}
 
 typedef bool (*BV)();
 
@@ -125,6 +139,20 @@ bool chompOk() {
   return true;
 }
 
+bool chompMore() {
+  MyMeap m;
+  for (int i=0;i<fullChompN;i++) {
+    int res = chompMyMeap(100000, &m);
+    int exp = fullChompP[i];
+    //printf("chompMore: setup=%d, i=%d, res=%d, tocks=0x%x, exp=0x%x\n", setupNum, i, res, m.tocks, exp);
+    assertIntM(m.tocks, exp);
+    assertIntM(res, 1);
+  }
+  int res = chompMyMeap(100000, &m);
+  assertIntM(res, -1);
+  return true;
+}
+
 bool testMeap1() {
   return
     count() &&
@@ -137,18 +165,26 @@ bool testMeap1() {
 bool testMeap2() {
   return
     count() &&
+    chompMore() &&
     true;
 }
 
-BV testers[] = {testMeap1, testMeap2};
+bool testMeap3() {
+  return
+    //(meapRemoveMyMeap((MyMeapIndex){2}),true) &&
+    //chompMoreWithout2() &&
+    true;
+}
+
+BV testers[] = {testMeap1, testMeap2, testMeap3};
 #define numMeapTesters (sizeof(testers)/sizeof(BV))
 
-void cleanupMeap() { closeMyMeapPile(false); hideMyMeapPile(); }
+void cleanupMeap() { closeMyMeapPile(2); }
 
 bool meap() { 
   for (testNum=0;testNum<numMeapTesters;testNum++) {
     for (setupNum=0;setupNum<numMeapSetups; setupNum++) {
-      doWhat=0;
+      doWhat=0; fullChompN=0;
       bkt(setterUppers[setupNum], testers[testNum], cleanupMeap);
     }
   }

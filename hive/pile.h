@@ -44,15 +44,16 @@ typedef struct __attribute__((aligned(KILO))) { // This should be of a good size
   Index lim; // Max pages
   Index res; // File has space for this many records
   Index top; // Index of first untouched record, i.e., high watermark
-  Index fre; // Index of first free record containing an index of the next one or BAD_INDEX
-  Index frn; // Num free slots
+  Index fri; // Index of recently freed record
+  Index fro; // Index of next free record to be used in alloc
+  _Atomic Index frn; // Num free slots
   char fn[MAX_FILENAME]; // So we can offer to delete it upon closing           
   uint32_t usr; // Misc persistent variable about this pile.
 } Pilehead;
                             
 // Forward references of stuff in the corresponding C file:
 // The full pile:
-Pilehead * openPile(const char * filename, Index rec, Index stp, Index lim);
+Pilehead * openPile(const char * filename, Index rec, Index stp, Index lim, bool * virgin);
 void closePile(Pilehead * ph, int rm); // 1->delete, 2->hide
 
 Index allocInPile(Pilehead * ph, void ** pNew, void * ghost, int ghostlen); // Free block contents get copied to ghost
@@ -73,7 +74,7 @@ void modUsr(Pilehead * ph, int32_t u);
 
 #define MAKEPILE2(TYP, LIM) \
   Pilehead * headOf##TYP##s = 0; \
-  bool open##TYP##Pile() { return (headOf##TYP##s = openPile(#TYP "s.pile", sizeof(TYP), 10, LIM))->top==0; } \
+  bool open##TYP##Pile() { bool v; headOf##TYP##s = openPile(#TYP "s.pile", sizeof(TYP), 10, LIM, &v); return v; } \
   TYP * get##TYP(TYP##Index i) { return (TYP*)findInPile(headOf##TYP##s, i.i); } \
   typedef void * (*F_##TYP)(TYP * p, void * u); \
   void * with##TYP(TYP##Index i, F_##TYP f, void * u) { return withInPile(headOf##TYP##s, i.i, (F)f, u); } \

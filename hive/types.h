@@ -2,6 +2,7 @@
 #include <stdint.h>         
 #include <stdbool.h>
 #include <stdlib.h>         
+#include <stdatomic.h>
 
 #define BAD_INDEX UINT32_MAX
 #define MAX_FILENAME 256

@@ -66,22 +66,22 @@ void closeGlobals_(int fd, bool rm) {
 
 //Now for the proper pile.....
 
-Pilehead * openPile(const char * filename, uint32_t rec, uint32_t stp, Index lim) { // returns array address
+Pilehead * openPile(const char * filename, uint32_t rec, uint32_t stp, Index lim, bool * virgin) { // returns array address
   if (rec<4) { printf("Record size too small for free indices.\n"); quit(1); }
   // Could this ^ be at compile time?
   int fd;
-  bool virgin=false;
+  *virgin=false;
   if (filename[0]) {
     fd = open(filename, O_RDWR | O_APPEND);
     if (fd<0) {
-      virgin=true;
+      *virgin=true;
       fd = open(filename, O_RDWR | O_CREAT | O_APPEND, S_IRUSR|S_IWUSR);
       ftruncate(fd, PAGE*stp);
     }
     if (fd<0) { fprintf(stderr, "Can't open file %s cos of %d\n", filename, fd); quit(1); }
   } else { // allowing memory-only piles for test and forget
     fd = -1;
-    virgin = true;
+    *virgin = true;
   }
   void * reserve;
   reserve = mmap(0, ((uint64_t)lim)*PAGE, PROT_NONE, MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
@@ -95,17 +95,20 @@ Pilehead * openPile(const char * filename, uint32_t rec, uint32_t stp, Index lim
   if (filemap == (void*)-1) { fprintf(stderr, "Can't make file mapping\n"); quit(1);  }
   Pilehead * ph = (Pilehead*) filemap;
   ph->fd = fd;
-  if (virgin) {
+  if (*virgin) {
     ph->hdr = sizeof(Pilehead);
     ph->rec = rec;
     ph->stp = stp;
     ph->lim = lim;
     ph->res = (PAGE*stp - sizeof(Pilehead))/rec;
     ph->top = 0;
-    ph->fre = BAD_INDEX;
+    ph->fri = BAD_INDEX;
+    ph->fro = BAD_INDEX;
     ph->frn = 0;
     ph->usr = 0;
     strncpy(ph->fn, filename, MAX_FILENAME-1);
+    for (int a=0;a<LIKE_FREE;a++) 
+      freeInPile(ph, allocInPile(ph, 0, 0, 0), 0, 0);
   }
   return ph;
 }
@@ -152,13 +155,16 @@ void * withInPile(Pilehead * ph, Index i, F f, void * u) {
 }
                                                 //
 // Allocate a new slot by trying the free list, or incrementing top, or growing
+// Should be in a mutex
 Index allocInPile(Pilehead * ph, void ** pNew, void * ghost, int ghostlen) {
   Index ret;
-  if (ph->fre != BAD_INDEX && ph->frn > LIKE_FREE) {
-    ret = ph->fre;
+  if (ph->fro != BAD_INDEX && ph->frn > LIKE_FREE) {
+    atomic_fetch_sub(&ph->frn, 1);           
+    // Take mutex
+    ret = ph->fro;
     Index * pFree = findFreeInPile(ph,ret);
-    ph->fre = *pFree;
-    ph->frn--;
+    ph->fro = *pFree;
+    // Release mutex
     if (ghost) { 
       Index * pGhost = pFree+1;
       memcpy(ghost, (void*) pGhost, ghostlen);
@@ -173,13 +179,20 @@ Index allocInPile(Pilehead * ph, void ** pNew, void * ghost, int ghostlen) {
 }   
   
 // Free a block to the free list
+// Only the rent collector thread does this?
 void freeInPile(Pilehead * ph, Index i, void * ghost, int ghostlen) {
-  Index * pFree = findFreeInPile(ph,i);                                                                                                
-  memset((void*)pFree,0xaa,ph->rec);
-  *pFree = ph->fre;
-  ph->fre = i;
-  ph->frn++;
-  memcpy((Index*)(pFree+1), ghost, ghostlen);
+  Index * pFree = findFreeInPile(ph,i); // Get the block
+  memset((void*)pFree,0xaa,ph->rec); // Erase for privacy
+  *pFree = BAD_INDEX;
+  if (ph->fri != BAD_INDEX) {
+    Index * pOldInEnd = findFreeInPile(ph,ph->fri); // Get the block
+    *pOldInEnd = i; // Point old in end at newly freed block                                                 
+  }
+  ph->fri = i; //Set free in end to that block
+  memcpy((Index*)(pFree+1), ghost, ghostlen); //Stuff the ghost into the rest
+  if (ph->fro==BAD_INDEX) ph->fro = i; // Only if this is the first do we mess with the out end
+  atomic_fetch_add(&ph->frn, 1);           
+  // Should assert that fri and fro have same badness
 } 
   
 // Sundry utils:

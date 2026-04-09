@@ -27,9 +27,8 @@ int sumThings(ThingIndex i0) {
 
 bool sumitems(ThingIndex * i0) {
   bool vir = openThingPile(); //Assume it doesn't exist
-  Thing * pT;
   assertInt(vir,true);
-  ThingIndex i;
+  ThingIndex i; Thing * pT;
   *i0 = i = allocThing(&pT); // Must be index zero
   pT->x = 0; 
   for (int a=0;a<1000;a++) {
@@ -47,8 +46,8 @@ ThingIndex nextThing(ThingIndex i) { return getThing(i)->next; }
 bool freeing(ThingIndex i0) {
   int count = countThings();
   assertInt(count,1001);
-  ThingIndex i1 = nextThing(i0);
-  ThingIndex i2 = nextThing(i1);
+  ThingIndex i1 = nextThing(i0); //3
+  ThingIndex i2 = nextThing(i1); //4
   ThingIndex i3 = nextThing(i2);
   ThingIndex i4 = nextThing(i3);
   ThingIndex i5 = nextThing(i4);
@@ -63,15 +62,15 @@ bool freeing(ThingIndex i0) {
   return true;
 }
 
-bool reallocing() {
+bool reallocing() { //Free list = 0, 1, 4, 5, 6
   ThingIndex i = allocThing(0);
-  assertInt(i.i,3);
+  assertInt(i.i,0);
   i = allocThing(0);
-  assertInt(i.i,1001);
+  assertInt(i.i,1);
   i = allocThing(0);
-  assertInt(i.i,1002);
+  assertInt(i.i,4);
   i = allocThing(0);
-  assertInt(i.i,1003);
+  assertInt(i.i,1003); // Keeping the 5 and 6
   int count = countThings();
   assertInt(count,1002);
   return true;

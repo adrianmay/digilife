@@ -3,77 +3,62 @@ CFLAGS = -g -iquote h -MMD -MP
 
 BUILDDIR = .
 OBJDIR   = ${BUILDDIR}/obj
-OUTDIR   = ${BUILDDIR}
+OUTDIR   = ${BUILDDIR}/out
+
+${OBJDIR}/%.o: %.c 
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
 
 LIB      = ${OBJDIR}/hive.a
-TEST     = ${OUTDIR}/Test
-HIVE     = ${OUTDIR}/Hive
+test     = ${OUTDIR}/test
+hive     = ${OUTDIR}/hive
 
-run: ${TEST} ${HIVE}
+run: ${test} ${hive} tags
 	rm -f core.*
 	rm -f *.pile
-	stdbuf --output=L ${TEST} && stdbuf --output=L ${HIVE}
+	stdbuf --output=L ${test} && stdbuf --output=L ${hive}
 
-#################################
+define make-obj
+$(1)C   := $$(wildcard $(1)/*.c)
+$(1)OBJ := $$($(1)C:%.c=$${OBJDIR}/%.o)
+$(1)DEP := $$($(1)OBJ:.o=.d)
+-include $$($(1)DEP)
+endef
 
-HIVEOBJDIR = ${OBJDIR}/hive
-HIVEH   = $(wildcard hive/*.h)
-HIVEC   = $(wildcard hive/*.c)
-HIVEOBJ = $(HIVEC:%.c=${OBJDIR}/%.o)
-HIVEDEP = $(HIVEOBJ:.o=.d)
+define make-lib
+$(call make-obj,$(1))
+# $$($(1)): $$($(1)OBJ) $$(LIB)
+# 	$$(CC) -g -O0 $$^ -o $$@
+endef
 
-${HIVE}: ${HIVEOBJ} ${LIB}
-	@mkdir -p ${OUTDIR}
-	${CC} -g -O0 $^ -o $@
+define make-program
+$(call make-obj,$(1))
+$$($(1)): $$($(1)OBJ) $$(LIB)
+	$$(CC) -g -O0 $$^ -o $$@
+endef
 
-${HIVEOBJDIR}/%.o: hive/%.c 
-	@mkdir -p ${HIVEOBJDIR}
-	$(CC) $(CFLAGS) -c $< -o $@
+# $(eval $(call make-lib,lib))
+$(eval $(call make-program,hive))
+$(eval $(call make-program,test))
 
-
-#################################
-
-TESTOBJDIR = ${OBJDIR}/test
-TESTH   = $(wildcard test/*.h)
-TESTC   = $(wildcard test/*.c)
-TESTOBJ = $(TESTC:%.c=${OBJDIR}/%.o)
-TESTDEP = $(TESTOBJ:.o=.d)
-
-${TEST}: ${TESTOBJ} ${LIB}
-	@mkdir -p ${OUTDIR}
-	${CC} -g -O0 $^ -o $@
-
-${TESTOBJDIR}/%.o: test/%.c 
-	@mkdir -p ${TESTOBJDIR}
-	$(CC) $(CFLAGS) -c $< -o $@
-
-#################################
-
-LIBOBJDIR = ${OBJDIR}/lib
-LIBH = $(wildcard h/*.h)
 LIBC = $(wildcard lib/*.c)
 LIBOBJ = $(LIBC:%.c=${OBJDIR}/%.o)
 LIBDEP = $(LIBOBJ:.o=.d)
+-include $(LIBDEP)
 
 ${LIB}: ${LIBOBJ}
 	@mkdir -p ${OUTDIR}
 	ar rcs $@ $^
 
-${LIBOBJDIR}/%.o: lib/%.c 
-	@mkdir -p ${LIBOBJDIR}
-	$(CC) $(CFLAGS) -c $< -o $@
-
 #################################
 
-ALL = ${LIBH} ${LIBC} ${TESTH} ${TESTC} ${HIVEH} ${HIVEC}
+ALL = $(shell find . -name '*.c' -or -name '*.h')
  
 tags: ${ALL}
 	ctags ${ALL}
 
--include $(LIBDEP)  $(TESTDEP)	$(HIVEDEP)	
-
 clean:
-	rm -rf ${TEST} ${HIVE} ${OBJDIR}
+	rm -rf ${OUTDIR} ${OBJDIR} *.pile
 
 
 

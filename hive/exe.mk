@@ -10,7 +10,7 @@ DEP = $(OBJ:.o=.d)
 
 CFLAGS = -g -iquote ../h -MMD -MP
 
-run: ${TGT}
+run: tags ${TGT}
 	rm -f core.*
 	stdbuf --output=L ${TGT}
 
@@ -26,6 +26,12 @@ ${OBJDIR}/%.o: %.c
 
 ../tmp/lib/hive.a: 
 	${MAKE} -C ../lib
+
+C := $(shell find .. -name '[a-z]*\.c' )
+H := $(shell find .. -name '[a-z]*\.h' )
+
+tags: ${H} ${C}
+	ctags ${H} ${C} 
 
 clean: 
 	rm -rf ${OBJDIR} ${TGT}

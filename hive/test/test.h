@@ -1,10 +1,10 @@
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdint.h>
 //#include <pthread.h>
 //#include <stdlib.h>
 //#include <locale.h>
 //#include <signal.h>
-//#include <stdint.h>
 
 typedef void (*V)();
 typedef bool  (*B)();
@@ -37,12 +37,13 @@ typedef bool (*BV)();
 
 bool bkt(B up, B along, V down);
 bool nowt();
+void * sweat(void *);
 
-bool globals();
+bool sleep();
 bool wrap();
 bool pile();
-bool trysleep();
 bool meap();
+bool globals();
 bool rent();
 
 bool openGlobals();

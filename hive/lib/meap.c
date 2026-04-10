@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "meap.h"
-#include "time.h" // Just for printing slowly
+#include "sleep.h" // Just for printing slowly
 
 Index parent(Index i) {return (i-1)/2;}
 Index left  (Index i) {return 2*i + 1;}

@@ -1,7 +1,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <signal.h>
-#include "time.h"
+#include "sleep.h"
 
 #pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
 #pragma GCC diagnostic ignored "-Wpointer-to-int-cast"
@@ -47,14 +47,14 @@ void sleepS_(int s) {
   struct timespec ts;
   ts.tv_sec=s;
   ts.tv_nsec=0;
-  nanosleep(&ts, 0);
+  clock_nanosleep(CLOCK_PROCESS_CPUTIME_ID, 0, &ts, 0);
 }
 
 void sleepNs_(Nanosecs ns) {
   struct timespec ts;
   ts.tv_sec=ns/1000000000;
   ts.tv_nsec=ns%1000000000;
-  nanosleep(&ts, 0);
+  clock_nanosleep(CLOCK_PROCESS_CPUTIME_ID, 0, &ts, 0);
 }
 
 // DIFFERENT STYLE:

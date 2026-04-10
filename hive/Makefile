@@ -1,7 +1,7 @@
 C := $(shell find . -name '[a-z]*\.c' -printf '%P\n')
 H := $(shell find . -name '[a-z]*\.h' -printf '%P\n')
 
-run: bin/test bin/hive
+run: tags bin/test bin/hive
 	rm -f core.*
 	stdbuf --output=L bin/test && stdbuf --output=L bin/hive
 

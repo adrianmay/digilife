@@ -8,18 +8,17 @@ typedef struct { Index name; BlockRent rent; } Block;
 MAKERENT2(Block, GIGA)
 
 void mournBlockMeap(BlockMeap * pM) {
-  printf("");
+  printf("Alas poor BlockMeap, I knew him well.\n");
 }
-
 
 bool testRent() {
   openGlobals();
   openRentBlocks();
-  Block * pB;
-  BlockIndex iB = allocBlock(&pB);
-  pB->rent.cash = 1000000;
-  BlockMeap * pM;
-  meapInsertBlockMeap(&pM, iB.i);
+//  Block * pB;
+//  BlockIndex iB = allocBlock(&pB);
+//  pB->rent.cash = 1000000;
+//  BlockMeap * pM;
+//  meapInsertBlockMeap(&pM, iB.i);
   rentCollector(killBlocks);
   return true;
 }

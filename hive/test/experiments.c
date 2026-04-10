@@ -1,10 +1,6 @@
 #include "test.h"
 #include "time.h"
 
-bool x() {
-  printf("%d\n", sizeof(pthread_rwlock_t));
-}
-
 void * interrupter(void * p) {
   pthread_t * pTid = (pthread_t*) p;
   sleepS_(1);

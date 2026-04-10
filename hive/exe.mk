@@ -24,7 +24,7 @@ ${OBJDIR}/%.o: %.c
 
 -include $(DEP)	
 
-../tmp/lib/hive.a: 
+../tmp/lib/hive.a: ../h ../lib
 	${MAKE} -C ../lib
 
 C := $(shell find .. -name '[a-z]*\.c' )

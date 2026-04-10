@@ -10,7 +10,7 @@ typedef struct { pthread_mutex_t * mutex; void * tmp; OnScore getScore; OnNew on
 Index parent(Index i);
 Index left  (Index i);
 Index right (Index i);
-bool meapInsert(Pilehead * ph, MeapCallbacks * mc, void ** pNew, uint32_t hint);
+bool meapInsert(Pilehead * ph, MeapCallbacks * mc, Index * pI, void ** pNew, uint32_t hint);
 bool meapRemove(Pilehead * ph, MeapCallbacks * mc, Index iCur);
 bool meapReview(Pilehead * ph, MeapCallbacks * mc, Index iCur);
 int chomp(Pilehead * ph, MeapCallbacks * mc, Score thresh, void * out, int outlen); // Returns: 1: call again, 0: Done for now, -1: extinct
@@ -39,7 +39,7 @@ int chomp(Pilehead * ph, MeapCallbacks * mc, Score thresh, void * out, int outle
   TYP tmp##TYP; \
   pthread_mutex_t mutex##TYP; \
   MeapCallbacks MC##TYP = { &mutex##TYP, &tmp##TYP, getScore_##TYP, onNew_##TYP, onMove_##TYP } ; \
-  bool meapInsert##TYP(TYP ** pNew, uint32_t hint) { return meapInsert(headOf##TYP##s, &MC##TYP, (void**)pNew, hint); } \
+  bool meapInsert##TYP(TYP##Index * pI, TYP ** pNew, uint32_t hint) { return meapInsert(headOf##TYP##s, &MC##TYP, (&pI->i), (void**)pNew, hint); } \
   void meapRemove##TYP(TYP##Index i) { meapRemove(headOf##TYP##s, &MC##TYP, i.i); } \
   void meapReview##TYP(TYP##Index i) { meapReview(headOf##TYP##s, &MC##TYP, i.i); } \
   int chomp##TYP(Score thresh, TYP * p) {return chomp(headOf##TYP##s, &MC##TYP, thresh, (void*)p, sizeof(TYP));}

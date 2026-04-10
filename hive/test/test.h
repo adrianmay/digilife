@@ -10,6 +10,12 @@ typedef void (*V)();
 typedef bool  (*B)();
 typedef bool (*BV)();
 
+#define assertCond(VAR, COND) \
+  if (!(VAR COND)) { \
+    fprintf(stderr, "%s:%d: Expected: " #COND "; Got: %'lld\n", __FILE__, __LINE__, VAR); \
+    return false; \
+  }
+
 #define assertInt(VAR, VAL) \
   if (VAR != VAL) { \
     fprintf(stderr, "%s:%d: Expected: " #VAL "=%d ; Got: %d\n", __FILE__, __LINE__, VAL, VAR); \
@@ -38,6 +44,8 @@ typedef bool (*BV)();
 bool bkt(B up, B along, V down);
 bool nowt();
 void * sweat(void *);
+void * sweat_forever(void *);
+void background(void * (*f)(void *));
 
 bool sleep();
 bool wrap();

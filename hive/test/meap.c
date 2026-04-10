@@ -25,6 +25,7 @@ MAKEMEAP2(MyMeap, GIGA)
 }
 
 MyMeap * pMeap;
+MyMeapIndex iMeap;
 
 #define CHOMPNOTHING 1
 uint doWhat;
@@ -40,7 +41,7 @@ bool setupEmpty() { openMyMeapPile(); return true; }
 
 bool setupSingleton() { 
   setupEmpty(); 
-  meapInsertMyMeap(&pMeap, 0x88);
+  meapInsertMyMeap(&iMeap, &pMeap, 0x88);
   expect(CHOMPNOTHING);
   expectFullChomp(1, (Score []){0x88});
   return true;
@@ -48,28 +49,28 @@ bool setupSingleton() {
 
 bool setup2Inc() { 
   setupSingleton(); 
-  meapInsertMyMeap(&pMeap, 0xc8);
+  meapInsertMyMeap(&iMeap, &pMeap, 0xc8);
   expect(CHOMPNOTHING);
   expectFullChomp(2, (Score []){0x88, 0xc8});
   return true;
 }
 bool setup2Dec() { 
   setupSingleton(); 
-  meapInsertMyMeap(&pMeap, 0x48);
+  meapInsertMyMeap(&iMeap, &pMeap, 0x48);
   expect(CHOMPNOTHING);
   expectFullChomp(2, (Score []){0x48, 0x88});
   return true;
 }
 bool setup2CloseInc() { 
   setupSingleton(); 
-  meapInsertMyMeap(&pMeap, 0x89);
+  meapInsertMyMeap(&iMeap, &pMeap, 0x89);
   expect(CHOMPNOTHING);
   expectFullChomp(2, (Score []){0x88, 0x89});
   return true;
 }
 bool setup2CloseDec() { 
   setupSingleton(); 
-  meapInsertMyMeap(&pMeap, 0x87);
+  meapInsertMyMeap(&iMeap, &pMeap, 0x87);
   expectFullChomp(2, (Score []){0x88, 0x87}); // Cos score (/16) is same
   expect(CHOMPNOTHING);
   return true;
@@ -77,9 +78,9 @@ bool setup2CloseDec() {
 
 bool setup3(Score a, Score b, Score c) {
   setupEmpty(); 
-  meapInsertMyMeap(&pMeap, a);
-  meapInsertMyMeap(&pMeap, b);
-  meapInsertMyMeap(&pMeap, c);
+  meapInsertMyMeap(&iMeap, &pMeap, a);
+  meapInsertMyMeap(&iMeap, &pMeap, b);
+  meapInsertMyMeap(&iMeap, &pMeap, c);
   expectFullChomp(3, (Score []){0x18, 0x28, 0x38});
   return true;
 }
@@ -196,7 +197,7 @@ bool testMeap4() {
 BV testers[] = {testMeap1, testMeap2, testMeap3, testMeap4};
 #define numMeapTesters (sizeof(testers)/sizeof(BV))
 
-void cleanupMeap() { closeMyMeapPile(2); }
+void cleanupMeap() { closeMyMeapPile(1); }
 
 bool meap() { 
   for (testNum=0;testNum<numMeapTesters;testNum++) {

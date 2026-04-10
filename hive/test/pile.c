@@ -14,10 +14,10 @@ bool virginity() {
   bool vir1 = openThingPile(); //Assume it doesn't exist
   assertInt(vir1,true);
   ThingIndex i = allocThing(0);
-  closeThingPile(false); //Don't delete the pile
+  closeThingPile(0); //Don't delete the pile
   bool vir2 = openThingPile();
   assertInt(vir2,false);
-  closeThingPile(true); //Delete it for next time
+  closeThingPile(1); //Delete it for next time
   return true;
 }
 
@@ -107,6 +107,6 @@ bool testThingPile() {
       ;
 }
 
-void cleanupThingPile() { closeThingPile(2); }
+void cleanupThingPile() { closeThingPile(1); }
 bool pile() { return bkt(nowt,testThingPile,cleanupThingPile); }
 

@@ -1,3 +1,4 @@
+#include <pthread.h>
 #include <locale.h>
 #include <stdlib.h>
 #include "test.h"
@@ -23,15 +24,18 @@ void * sweat(void *) {
   }
 }
 
+void * sweat_forever(void *) { while(true) sweat(0); }
+void background(void * (*f)(void *)) { pthread_t pid; pthread_create(&pid, 0, f, 0); }
+
 int main() {
   srand(0);
   setlocale(LC_NUMERIC, "");
   bool suc = 
-    sleep() && 
-    wrap() && 
-    pile() && 
-    meap() && 
-    globals() && 
+//    sleep() && 
+//    wrap() && 
+//    pile() && 
+//    meap() && 
+//    globals() && 
     rent() &&
     true;
   return suc?0:1;

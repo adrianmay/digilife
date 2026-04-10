@@ -5,7 +5,7 @@
 extern Tocks    wrapSubtractTocks(Tocks a, Tocks b);
 extern Tocks    wrapAddTocks(Tocks a, Tocks b);
 void updateTocks();
-typedef Tocks (*KILLER)();
+typedef Tocks (*KILLER)(Score thresh);
 void rentCollector(KILLER killer);
 
 #define MAKERENT1(TYP) \

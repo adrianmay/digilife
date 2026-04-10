@@ -23,26 +23,6 @@ Nanosecs ageOfTime()    { return age(CLOCK_REALTIME); }
 Nanosecs ageOfProcess() { return age(CLOCK_PROCESS_CPUTIME_ID); }
 Nanosecs ageOfThread()  { return age(CLOCK_THREAD_CPUTIME_ID); }
 
-// void signal_handler(int sig) { }
-// void defangSignal() {
-//   struct sigaction sa;
-//   sa.sa_handler = signal_handler;
-//   sigemptyset(&sa.sa_mask);
-//   sa.sa_flags = 0;
-//   sigaction(SIGALRM, &sa, NULL);
-// }
-// 
-// // First do this in the thread that will sleep and be interrupted,
-// //   keeping the returned thread id where the interrupting thread
-// //   can see it:
-// pthread_t initTiming() {
-//   defangSignal();
-//   return pthread_self();
-// }
- 
-// // Interrupt it from a different thread with this:
-// void wake(pthread_t tid) { pthread_kill(tid, SIGALRM); }
-
 void sleepS_(int s) {
   struct timespec ts;
   ts.tv_sec=s;
@@ -52,13 +32,12 @@ void sleepS_(int s) {
 
 void sleepNs_(Nanosecs ns) {
   struct timespec ts;
-  ts.tv_sec=ns/1000000000;
+  ts.tv_sec =ns/1000000000;
   ts.tv_nsec=ns%1000000000;
   clock_nanosleep(CLOCK_PROCESS_CPUTIME_ID, 0, &ts, 0);
 }
 
-// DIFFERENT STYLE:
-// Launch a thread that sleeps for a while and can be SIGKILLed.
+// Launch a thread that sleeps for a while and can be killed.
 // Join with that thread.
 // This can be started before doing work in the main thread, 
 //   and if a KILL turns up during that work the join will

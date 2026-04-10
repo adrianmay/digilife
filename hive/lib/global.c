@@ -3,7 +3,7 @@
 void initVirginPersistentGlobals() {
   pg->lastKnownTock = 0;
   pg->nsNotTocked = 0;
-  pg->nsPerTock = 1000;
+  pg->nsPerTock = 1000000;
   pg->groatsPerTock = 1;
 }
 

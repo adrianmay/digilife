@@ -12,13 +12,13 @@ bool testGlobals() {
   vg.tocksReviewedAt = 2;
   pg->lastKnownTock = 1;
   pg->nsPerTock = 3;
-  closeGlobals(false);
+  closeGlobals(0);
   v = openGlobals(); // Resets vg
   assertInt(v, false);
   i = pg->lastKnownTock + vg.tocksReviewedAt + pg->nsPerTock;
   assertInt(i, 4);
 }
 
-void cleanupGlobals() { closeGlobals(true); }
+void cleanupGlobals() { closeGlobals(1); }
 bool globals() { return bkt(nowt,testGlobals,cleanupGlobals); }
 

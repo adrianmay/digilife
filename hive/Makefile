@@ -1,27 +1,27 @@
 HDR := $(wildcard *.h)
-SRC := $(shell find . -maxdepth 1 -name '[a-z]*\.c')
+SRC := $(shell find . -maxdepth 1 -name '[a-z]*\.c' -printf '%P\n')
 OBJ := $(SRC:%.c=tmp/%.o)
 CC = gcc
 
-run: Test Hive
+run: tmp bin/Test bin/Hive
 	rm -rf core.*
-	stdbuf --output=L ./Test && stdbuf --output=L ./Hive
+	stdbuf --output=L bin/Test && stdbuf --output=L bin/Hive
 
-%: tmp/%.o ${OBJ} 
+bin/%: tmp/%.o ${OBJ} 
 	${CC} -g -O0 $^ -o $@
 
 tmp/%.o: %.c 
 	$(CC) $(CFLAGS) -g -c $< -o $@
 
-tmp: tags
-	mkdir -p tmp
+tmp:
+	mkdir -p tmp bin
 
-.PHONY: clean run
+.PHONY: clean run tmp
 
 clean:
-	rm -rf tmp Test Hive .depend tags *.pile
+	rm -rf bin tmp Test Hive .depend tags *.pile
 
-${OBJ}: tmp Makefile
+${OBJ}: Makefile $(HDR)
 
 depend: .depend
 

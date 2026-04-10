@@ -1,38 +1,17 @@
-HDR := $(wildcard *.h)
-SRC := $(shell find . -maxdepth 1 -name '[a-z]*\.c' -printf '%P\n')
-OBJ := $(SRC:%.c=tmp/%.o)
-CC = gcc
+C := $(shell find . -name '[a-z]*\.c' -printf '%P\n')
+H := $(shell find . -name '[a-z]*\.h' -printf '%P\n')
 
-run: tmp bin/Test bin/Hive
-	rm -rf core.*
-	stdbuf --output=L bin/Test && stdbuf --output=L bin/Hive
+run: bin/test bin/hive
+	stdbuf --output=L bin/test && stdbuf --output=L bin/hive
 
-bin/%: tmp/%.o ${OBJ} 
-	${CC} -g -O0 $^ -o $@
+bin/test:
+	${MAKE} -C test ../bin/test
 
-tmp/%.o: %.c 
-	$(CC) $(CFLAGS) -g -c $< -o $@
+bin/hive:
+	${MAKE} -C hive ../bin/hive
 
-tmp:
-	mkdir -p tmp bin
-
-.PHONY: clean run tmp
+tags: ${H} ${C}
+	ctags ${H} ${C} 
 
 clean:
-	rm -rf bin tmp Test Hive .depend tags *.pile
-
-${OBJ}: Makefile $(HDR)
-
-depend: .depend
-
-.depend: $(SRC)
-	rm -f "$@"
-	$(CC) $(CFLAGS) -MM $^ > "$@"
-
-include .depend
-
-tags: $(SRC) $(HDR)
-	ctags *.h *.c test/*.c
-
-.SUFFIXES:
-
+	rm -rf tmp bin tags

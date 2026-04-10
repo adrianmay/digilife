@@ -1,3 +1,5 @@
+#include "test.h"
+#include "rent.h"
 
 MAKERENT1(Block)
 

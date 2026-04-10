@@ -1,6 +1,7 @@
+#include "test.h"
+#include "time.h"
 
-#include <pthread.h>
-void x() {
+bool x() {
   printf("%d\n", sizeof(pthread_rwlock_t));
 }
 

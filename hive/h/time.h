@@ -1,5 +1,4 @@
 #include "types.h"
-#include <pthread.h>
 
 uint8_t  wrapSubtract8 (uint8_t  a, uint8_t  b);
 uint32_t wrapSubtract32(uint32_t a, uint32_t b);

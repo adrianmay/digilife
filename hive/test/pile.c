@@ -1,3 +1,6 @@
+#include "test.h"
+#include "pile.h"
+
 MAKEPILE1(Thing);
 
 typedef struct __attribute__((aligned(KILO))) { 

@@ -1,4 +1,6 @@
 #include <string.h>
+#include "test.h"
+#include "meap.h"
 
 MAKEMEAP1(MyMeap)
 typedef struct { Tocks tocks; } MyMeap;
@@ -95,7 +97,6 @@ bool setup3Same() {
   return true;
 }
 
-typedef bool (*BV)();
 
 BV setterUppers[] = {
   setupEmpty, setupSingleton, 

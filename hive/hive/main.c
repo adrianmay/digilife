@@ -12,6 +12,6 @@ int init() {
 }
 
 int main() {
-  printf("Hello from hive\n");
+  printf("HELLO FROM HIVE\n");
   return 0;
 }

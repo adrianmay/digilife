@@ -1,7 +1,14 @@
+#include <pthread.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <locale.h>
 #include <signal.h>
-#include "rent.h"
+#include <stdbool.h>
+#include <stdint.h>
+
+typedef void (*V)();
+typedef bool  (*B)();
+typedef bool (*BV)();
 
 #define assertInt(VAR, VAL) \
   if (VAR != VAL) { \
@@ -27,47 +34,18 @@
     return false; \
   }
 
-typedef bool  (*B)();
-typedef void (*V)();
-void B2V(B b) { (*b)(); }
 
-bool nowt() { return true; }
+bool bkt(B up, B along, V down);
+bool nowt();
 
-bool bkt(B up, B along, V down) {
-  bool suc;
-  if (suc=(*up)()) {
-    suc = (*along)();
-    (*down)();
-  }
-  return suc;
-}
+bool x();
+bool globals();
+bool wrap();
+bool pile();
+bool trysleep();
+bool meap();
+bool rent();
 
-///////////////////////////////////////////////////////
+bool openGlobals();
+void closeGlobals(bool);
 
-#include "test/globals.c"
-#include "test/wrap.c"
-#include "test/pile.c"
-#include "test/meap.c"
-#include "test/rent.c"
-#include "test/experiments.c"
-
-///////////////////////////////////////////////////////
-/// EXPERIMENTS
-
-///////////////////////////////////////////////////////
-
-
-int main() {
-  srand(0);
-  setlocale(LC_NUMERIC, "");
-  //x();
-  bool suc = 
-    globals() && 
-    wrap() && 
-    pile() && 
-    trysleep() && 
-    meap() && 
-    rent() &&
-    true;
-  return suc?0:1;
-}

@@ -1,6 +1,6 @@
 #include "time.h"
-#include "global.h"
 #include "meap.h"
+#include "global.h"
 
 extern Tocks    wrapSubtractTocks(Tocks a, Tocks b);
 extern Tocks    wrapAddTocks(Tocks a, Tocks b);

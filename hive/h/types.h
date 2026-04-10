@@ -1,4 +1,5 @@
 //This is types.h
+#include <pthread.h>
 #include <stdint.h>         
 #include <stdbool.h>
 #include <stdlib.h>         
@@ -10,7 +11,6 @@
 #define KILO 1024ull           
 #define MEGA (KILO*KILO)    
 #define GIGA (MEGA*KILO)    
-//#define TERA (GIGA*KILO)    
 #define B8 256ull           
 #define B16 (B8*B8)         
 #define B32 (B16*B16)       

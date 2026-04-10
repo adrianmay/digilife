@@ -9,7 +9,7 @@ ${OBJDIR}/%.o: %.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-LIB      = ${OBJDIR}/hive.a
+lib      = ${OBJDIR}/hive.a
 test     = ${OUTDIR}/test
 hive     = ${OUTDIR}/hive
 
@@ -27,30 +27,20 @@ endef
 
 define make-lib
 $(call make-obj,$(1))
-# $$($(1)): $$($(1)OBJ) $$(LIB)
-# 	$$(CC) -g -O0 $$^ -o $$@
+$$($(1)): $$($(1)OBJ)
+	@mkdir -p ${OUTDIR}
+	ar rcs $$@ $$^
 endef
 
 define make-program
 $(call make-obj,$(1))
-$$($(1)): $$($(1)OBJ) $$(LIB)
+$$($(1)): $$($(1)OBJ) $$(lib)
 	$$(CC) -g -O0 $$^ -o $$@
 endef
 
-# $(eval $(call make-lib,lib))
+$(eval $(call make-lib,lib))
 $(eval $(call make-program,hive))
 $(eval $(call make-program,test))
-
-LIBC = $(wildcard lib/*.c)
-LIBOBJ = $(LIBC:%.c=${OBJDIR}/%.o)
-LIBDEP = $(LIBOBJ:.o=.d)
--include $(LIBDEP)
-
-${LIB}: ${LIBOBJ}
-	@mkdir -p ${OUTDIR}
-	ar rcs $@ $^
-
-#################################
 
 ALL = $(shell find . -name '*.c' -or -name '*.h')
  
@@ -59,7 +49,5 @@ tags: ${ALL}
 
 clean:
 	rm -rf ${OUTDIR} ${OBJDIR} *.pile
-
-
 
 

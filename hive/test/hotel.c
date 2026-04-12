@@ -21,8 +21,7 @@ bool init() {
 }
 
 bool testNoPop() {
-  TIME_VOID_PROC(rentCollector(killBlocks));
-  assertCond(ns, <5000)
+  TIME_VOID_PROC(rentCollector(killBlocks)); assertLongCond(ns, <5000)
   return true;
 }
 
@@ -41,8 +40,8 @@ void make(Index name, Cash cash) {
 bool test1() {
   make(3, 2000);
   TIME_VOID_PROC(rentCollector(killBlocks));
-  assertCond(ns, <2100000000ull)
-  assertCond(ns, >1900000000ull)
+  assertLongCond(ns, <2100000000ull)
+  assertLongCond(ns, >1900000000ull)
   return true;
 }
 
@@ -57,8 +56,8 @@ bool testEarn() {
   make(4, 2000);
   background(earn);
   TIME_VOID_PROC(rentCollector(killBlocks));
-  assertCond(ns, <4100000000ull)
-  assertCond(ns, >3900000000ull)
+  assertLongCond(ns, <4100000000ull)
+  assertLongCond(ns, >3900000000ull)
   return true;
 }
 

@@ -1,8 +1,10 @@
 #include "sleep.h"
 #include "meap.h"
 #include "globals.h"
+#include "assert.h"
 
-extern Tocks    wrapSubtractTocks(Tocks a, Tocks b);
+extern Tocks    wrapSubTocksU(Tocks a, Tocks b);
+extern TockDiff wrapSubTocksS(Tocks a, Tocks b);
 extern Tocks    wrapAddTocks(Tocks a, Tocks b);
 void updateTocks();
 typedef Tocks (*KILLER)(Score thresh);
@@ -47,8 +49,18 @@ bool rentCollector(KILLER killer);
     pMeap->who = iTyp; \
     pMeap->tocks = pRent->cash/pg->groatsPerTock + pg->lastKnownTock + 1; \
   } \
-  bool openRent##TYP##s() { open##TYP##Pile(); return open##TYP##MeapPile(); } \
-  void closeRent##TYP##s(int rm) { close##TYP##Pile(rm); close##TYP##MeapPile(rm); } \
+  bool charge##TYP##Rent(TYP##Index i) { \
+    TYP * pB = get##TYP(i); \
+    TYP##Rent * pRent = &pB->rent; \
+    TockDiff tcks = wrapSubTocksS(pg->lastKnownTock, pRent->lastPaidRent); \
+    assertCond(tcks, >0); \
+    Cash bill = pg->groatsPerTock*tcks; \
+    pRent->cash -= bill; \
+    pRent->lastPaidRent = pg->lastKnownTock; \
+    return true; \
+  } \
+  bool open##TYP##Hotel() { open##TYP##Pile(); return open##TYP##MeapPile(); } \
+  void close##TYP##Hotel(int rm) { close##TYP##Pile(rm); close##TYP##MeapPile(rm); } \
   Tocks kill##TYP##s(Score thresh) { \
     int c; \
     TYP##Meap meap; \

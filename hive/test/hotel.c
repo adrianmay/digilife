@@ -15,7 +15,7 @@ void mournBlockMeap(BlockMeap * pM) {
 
 bool init() {
   openGlobals();
-  openRentBlocks();
+  openBlockHotel();
   background(sweat_forever); // Got to do work to advance CPU time ...
   return true;
 }
@@ -69,6 +69,6 @@ bool testRent() {
     true;
 }
 
-void cleanupRent() { closeGlobals(1); closeRentBlocks(1); }
+void cleanupRent() { closeGlobals(1); closeBlockHotel(1); }
 bool rent() { return bkt(init, testRent, cleanupRent); }
 

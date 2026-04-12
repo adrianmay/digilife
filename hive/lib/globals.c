@@ -1,4 +1,4 @@
-#include "global.h"
+#include "globals.h"
 
 void initVirginPersistentGlobals() {
   pg->lastKnownTock = 0;

@@ -1,6 +1,6 @@
 #define _POSIX_C_SOURCE 199309L
 #include <stdio.h>
-#include "rent.h"
+#include "hotel.h"
 
 #define SEC_TO_NS(sec) ((sec)*1000000000)
 

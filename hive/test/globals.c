@@ -1,6 +1,6 @@
 #include "test.h"
 #include "pile.h"
-#include "global.h"
+#include "globals.h"
 
 MAKEGLOBALS
 

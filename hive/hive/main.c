@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "rent.h"
+#include "hotel.h"
 
 
 // Otherwise modules complain that pg is unresolved:

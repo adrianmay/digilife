@@ -7,14 +7,24 @@
 // 64 bits of nanoseconds is 584 years but CPU time multiplies by the number of CPUs, so make sure the procees gets rebooted sometimes.
 // Timing seems very accurate nowadays.
 
-Sleeper is realtime, not cpu time!
+LOOSE ENDS:
+  Back to 32 bit tocks that work!
+  Use the meap mutex
+  Hide module and library internals: first prune headers, then spare the linker.
+  Test meap with edge cases, check onNewLow called.
+  Test hitting lim of pile.
+  Test with thousands of worker threads.
+  Thread safety for pile: Protect free list ends. Name and necrophilia protection at higher level later.
 
-Thread safety for pile.
-Forget prodding rent collector and make it wake up every tock. So tocks are longish.
+ROADMAP:
+  Factor addCash and review out of birth code 
+  Will need lots of hotels so encapsulate all globals. Arrays of Pilehead pointers.
+  (Pile inspector app. "Show class".) 
 
-Test meap with edge cases, check onNewLow called.
 
-Optimisations: FIFO free list, minimal mutex
+OPTIMISATIONS: 
+  Sleep without starting a thread
+  Multiple meaps per hotel
 
 RCU for animals: 
   Must have a valid name, or BAD_INDEX when on death row or free.

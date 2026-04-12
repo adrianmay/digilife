@@ -9,7 +9,7 @@ ${OBJDIR}/%.o: %.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-lib      = ${OBJDIR}/hive.a
+lib      = ${OUTDIR}/hive.a
 test     = ${OUTDIR}/test
 hive     = ${OUTDIR}/hive
 

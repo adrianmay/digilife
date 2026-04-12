@@ -28,6 +28,7 @@
 // Ought to be using the FPU here
 typedef uint64_t Nanosecs;
 typedef uint32_t Tocks;  // A tock might be around a microsecond, but varies
+typedef int32_t  TockDiff;  // A tock might be around a microsecond, but varies
 typedef uint32_t Index;
 typedef uint32_t TockDuration; // In nanoseconds.
 typedef uint32_t Score;

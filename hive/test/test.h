@@ -12,13 +12,19 @@ typedef bool (*BV)();
 
 #define assertCond(VAR, COND) \
   if (!(VAR COND)) { \
-    fprintf(stderr, "%s:%d: Expected: " #COND "; Got: %'lld\n", __FILE__, __LINE__, VAR); \
+    fprintf(stderr, "%s:%d: Expected: " #COND "; Got: %'ld\n", __FILE__, __LINE__, VAR); \
     return false; \
   }
 
 #define assertInt(VAR, VAL) \
   if (VAR != VAL) { \
     fprintf(stderr, "%s:%d: Expected: " #VAL "=%d ; Got: %d\n", __FILE__, __LINE__, VAL, VAR); \
+    return false; \
+  }
+
+#define assertLong(VAR, VAL) \
+  if (VAR != VAL) { \
+    fprintf(stderr, "%s:%d: Expected: " #VAL "=%ld ; Got: %ld\n", __FILE__, __LINE__, VAL, VAR); \
     return false; \
   }
 

@@ -10,8 +10,9 @@ typedef struct {
   void (*onKill)(void * victim);
 } RentContext;
 
-Tocks    wrapSubtractTocks(Tocks a, Tocks b) { return wrapSub32(a, b); }
-Tocks    wrapAddTocks     (Tocks a, Tocks b) { return wrapAdd32     (a, b); }
+Tocks    wrapSubTocksU(Tocks a, Tocks b) { return wrapSub32U(a, b); }
+TockDiff wrapSubTocksS(Tocks a, Tocks b) { return wrapSub32U(a, b); }
+Tocks    wrapAddTocks (Tocks a, Tocks b) { return wrapAdd32     (a, b); }
 
 void updateTocks() {
   Nanosecs now = ageOfProcess();
@@ -33,7 +34,7 @@ void rentCollector(KILLER killer) {
     Tocks wakeat1 = killer(pg->lastKnownTock); 
     if (wakeat1==0) return;
     // Race: If right now, new low is reached by e.g. lowest making payment, then will oversleep.
-    Tocks tcks = wrapSubtractTocks(wakeat1,  pg->lastKnownTock);
+    TockDiff tcks = wrapSubTocksS(wakeat1,  pg->lastKnownTock);
     Nanosecs ns = pg->nsPerTock * tcks;
     vg.rentSleeperTid = sleepNs(ns);
     // But if now, it will have woken the sleeper, so OK

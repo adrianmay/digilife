@@ -13,7 +13,7 @@ MAKEPILE2(Thing, GIGA);
 bool virginity() {
   bool vir1 = openThingPile(); //Assume it doesn't exist
   assertInt(vir1,true);
-  ThingIndex i = allocThing(0);
+  allocThing(0);
   closeThingPile(0); //Don't delete the pile
   bool vir2 = openThingPile();
   assertInt(vir2,false);
@@ -94,7 +94,7 @@ bool with(ThingIndex i0) {
   total = sumThings(i0);
   assertInt(total,4994943);
   assertInt(i,6);
-  
+  return true;  
 }
 
 bool testThingPile() {

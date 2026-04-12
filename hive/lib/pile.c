@@ -138,7 +138,8 @@ void growPile(Pilehead * ph) {
   void * wholeMap = (void*)ph;
   void * newPh = mmap(wholeMap+oldLen, newLen-oldLen, PROT_READ|PROT_WRITE, MAP_SHARED_VALIDATE|MAP_FIXED, ph->fd, oldLen);
   if (newPh != wholeMap + oldLen) {
-    printf("Subsequent mmap failed returning %p instead of %p with wholeMap=%p changing length from %d to %d\n", newPh, ph, wholeMap, oldLen, newLen);
+    printf("Subsequent mmap failed returning %p instead of %p with wholeMap=%p changing length from %ld to %ld\n", 
+           newPh, ph, wholeMap, oldLen, newLen);
     quit(1);
   }
 }

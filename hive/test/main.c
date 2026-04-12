@@ -10,7 +10,7 @@ bool nowt() { return true; }
 
 bool bkt(B up, B along, V down) {
   bool suc;
-  if (suc=(*up)()) {
+  if ((suc=(*up)())) {
     suc = (*along)();
     (*down)();
   }
@@ -23,6 +23,7 @@ void * sweat(void *) {
     for (int a=0;a<99999999;a++)  
       z*=a;
   }
+  return 0;
 }
 
 void * sweat_forever(void *) { while(true) sweat(0); }

@@ -43,12 +43,14 @@ bool test1() {
   TIME_VOID_PROC(rentCollector(killBlocks));
   assertCond(ns, <2100000000ull)
   assertCond(ns, >1900000000ull)
+  return true;
 }
 
 void * earn(void *) {
   sleepS(1);
   pB->rent.cash += 2000;
   meapReviewBlockMeap(iBM);
+  return 0;
 }
 
 bool testEarn() {
@@ -57,6 +59,7 @@ bool testEarn() {
   TIME_VOID_PROC(rentCollector(killBlocks));
   assertCond(ns, <4100000000ull)
   assertCond(ns, >3900000000ull)
+  return true;
 }
 
 bool testRent() {

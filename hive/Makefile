@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -g -iquote h -MMD -MP
+CFLAGS = -g -iquote h -MMD -MP -Wsign-conversion -Werror
 
 BUILDDIR = .
 OBJDIR   = ${BUILDDIR}/obj

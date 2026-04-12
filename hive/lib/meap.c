@@ -84,9 +84,7 @@ bool meapRemove(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
 // Returns -1 if empty, 1 if it killed something, 0 just returned the champ without changes
 int chomp(Pilehead * ph, MeapCallbacks * mc, Score thresh, void * out, int outlen) {
   uint32_t u = getUsr(ph); 
-  if (u==0) {
-    return -1;
-  }
+  if (u==0) return -1; 
   void * p = findInPile(ph, 0);
   Score sZ = mc->getScore(p);
   if (sZ<thresh) {

@@ -10,7 +10,7 @@ typedef struct {
   void (*onKill)(void * victim);
 } RentContext;
 
-Tocks    wrapSubtractTocks(Tocks a, Tocks b) { return wrapSubtract32(a, b); }
+Tocks    wrapSubtractTocks(Tocks a, Tocks b) { return wrapSub32(a, b); }
 Tocks    wrapAddTocks     (Tocks a, Tocks b) { return wrapAdd32     (a, b); }
 
 void updateTocks() {
@@ -22,10 +22,8 @@ void updateTocks() {
   pg->nsNotTocked = qr.rem;
 } 
 
-
 void reviewTockDuration() { // Advanced stuff to keep the memory usage slightly below max
 }
-
 
 // This is the main sleepy rent killer and tock tracker.
 // It doesn't care if the sleep times out or is interrupted.

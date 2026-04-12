@@ -1,5 +1,7 @@
 #include "types.h"
 
+extern const double process_age_costs_in_pence_per_second;
+
 typedef struct {
   Nanosecs tocksReviewedAt; // Exact CPU uptime 
   bool shouldRun;                          

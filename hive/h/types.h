@@ -5,6 +5,15 @@
 #include <stdlib.h>         
 #include <stdatomic.h>
 
+#define NS_PER_SEC 1000000000.0
+#define SECS_PER_MIN 60.0
+#define MINS_PER_HOUR 60.0
+#define SECS_PER_HOUR (SECS_PER_MIN*MINS_PER_HOUR)
+#define HOURS_PER_DAY 24.0
+#define DAYS_PER_YEAR 365.25
+#define SECS_PER_YEAR (DAYS_PER_YEAR*HOURS_PER_DAY*MINS_PER_HOUR*SECS_PER_MIN)
+#define SECS_PER_MONTH (SECS_PER_YEAR/12.0)
+
 #define BAD_INDEX UINT32_MAX
 #define MAX_FILENAME 256
 #define PAGE 4096    
@@ -20,9 +29,10 @@
 typedef uint64_t Nanosecs;
 typedef uint32_t Tocks;  // A tock might be around a microsecond, but varies
 typedef uint32_t Index;
-typedef uint64_t TockDuration; // In nanoseconds.
-typedef uint64_t Score;
+typedef uint32_t TockDuration; // In nanoseconds.
+typedef uint32_t Score;
 typedef uint64_t Cash;  
-typedef uint32_t TockPrice; // The currency unit can be tiny.
+typedef double TockPrice; // The currency unit can be tiny.
 
 typedef void * (*F)(void * item, void * u);
+

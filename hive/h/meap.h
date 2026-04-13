@@ -4,8 +4,9 @@
 typedef void (*OnMove) (void *, Index);
 typedef Score (*OnScore) (void *);
 typedef void (*OnNew) (Index iMeap, uint32_t hint);
+typedef bool (*Appeal) (void *);
 // These callbacks customise the behaviour of a meap:
-typedef struct { pthread_mutex_t * mutex; void * tmp; OnScore getScore; OnNew onNew; OnMove onMove; } MeapCallbacks;
+typedef struct { pthread_mutex_t * mutex; void * tmp; OnScore getScore; OnNew onNew; OnMove onMove; Appeal appeal; } MeapCallbacks;
 
 Index parent(Index i);
 Index left  (Index i);
@@ -30,15 +31,20 @@ int chomp(Pilehead * ph, MeapCallbacks * mc, Score thresh, void * out, int outle
 
 #define MAKEMEAP2(TYP, LIM) \
   MAKEPILE2(TYP, LIM) \
+  TYP tmp##TYP; \
+  /**/ \
   extern Score getScore##TYP(TYP *); \
   extern void onMove##TYP(TYP *, TYP##Index to); \
   extern void onNew##TYP(TYP##Index i, uint32_t hint); \
+  extern bool meapAppeal##TYP(TYP *); \
+  /**/ \
+  Score getScore_##TYP(void * p) { return getScore##TYP((TYP*)p); } \
   void onMove_##TYP(void * p, Index to)     { onMove##TYP((TYP*)p, (TYP##Index) {to}); } \
   void onNew_##TYP (Index i, uint32_t hint) { onNew##TYP ((TYP##Index){i}, hint);} \
-  Score getScore_##TYP(void * p) { return getScore##TYP((TYP*)p); } \
-  TYP tmp##TYP; \
+  bool meapAppeal_##TYP(void * p) { return meapAppeal##TYP((TYP*)p); } \
+  /**/ \
   pthread_mutex_t mutex##TYP; \
-  MeapCallbacks MC##TYP = { &mutex##TYP, &tmp##TYP, getScore_##TYP, onNew_##TYP, onMove_##TYP } ; \
+  MeapCallbacks MC##TYP = { &mutex##TYP, &tmp##TYP, getScore_##TYP, onNew_##TYP, onMove_##TYP, meapAppeal_##TYP } ; \
   bool meapInsert##TYP(TYP##Index * pI, TYP ** pNew, uint32_t hint) { return meapInsert(headOf##TYP##s, &MC##TYP, (&pI->i), (void**)pNew, hint); } \
   void meapRemove##TYP(TYP##Index i) { meapRemove(headOf##TYP##s, &MC##TYP, i.i); } \
   void meapReview##TYP(TYP##Index i) { meapReview(headOf##TYP##s, &MC##TYP, i.i); } \

@@ -3,11 +3,11 @@
 
 Nanosecs ns;
 
-MAKERENT1(Block)
+MAKEHOTEL1(Block)
 
 typedef struct { Index name; BlockRent rent; } Block;
 
-MAKERENT2(Block, GIGA)
+MAKEHOTEL2(Block, GIGA)
 
 void mournBlockMeap(BlockMeap * pM) {
   printf("Alas poor BlockMeap %d, I knew him well.\n", getBlock(pM->who)->name);

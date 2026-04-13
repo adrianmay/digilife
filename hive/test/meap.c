@@ -36,6 +36,7 @@ void expectFullChomp(int n, Score * p) { fullChompN=n; memcpy(fullChompP, p, n*s
 Score getScoreMyMeap(MyMeap * p) {return p->tocks/0x10; }
 void onNewMyMeap(MyMeapIndex i, uint32_t hint) { getMyMeap(i)->tocks = hint; }  
 void onMoveMyMeap(MyMeap * p, MyMeapIndex i) {} //{ printf("Moving 0x%x to %d\n", p->tocks, i.i); fullChompP[i.i]=p->tocks; }  
+bool meapAppealMyMeap(MyMeap * p) {return false; }
 
 bool setupEmpty() { openMyMeapPile(); return true; }
 

@@ -10,7 +10,7 @@ void updateTocks();
 typedef Tocks (*KILLER)(Score thresh);
 bool rentCollector(KILLER killer);
 
-#define MAKERENT1(TYP) \
+#define MAKEHOTEL1(TYP) \
   MAKEPILE1(TYP) \
   MAKEMEAP1(TYP##Meap) \
   typedef struct { Tocks tocks; TYP##Index who; } TYP##Meap; \
@@ -32,10 +32,11 @@ bool rentCollector(KILLER killer);
 //   The calling code will make the animal first with some money, then call meapInsert with the animal index
 //     as the hint.
 
-#define MAKERENT2(TYP,LIM) \
+#define MAKEHOTEL2(TYP,LIM) \
   MAKEPILE2(TYP,LIM) \
   MAKEMEAP2(TYP##Meap,LIM) \
   Score getScore##TYP##Meap(TYP##Meap * pMeap) { return pMeap->tocks; } \
+  bool meapAppeal##TYP##Meap(TYP##Meap * pMeap) { return false; } \
   extern void mourn##TYP##Meap(TYP##Meap *); \
   void onMove##TYP##Meap(TYP##Meap * pMeap, TYP##MeapIndex i) { get##TYP(pMeap->who)->rent.meap = i; } \
   void onNew##TYP##Meap(TYP##MeapIndex iMeap, uint32_t hint) { \
@@ -55,6 +56,7 @@ bool rentCollector(KILLER killer);
     TockDiff tcks = wrapSubTocksS(pg->lastKnownTock, pRent->lastPaidRent); \
     assertCond(tcks, >0); \
     Cash bill = pg->groatsPerTock*tcks; \
+    if (bill >= pRent->cash) return false; \
     pRent->cash -= bill; \
     pRent->lastPaidRent = pg->lastKnownTock; \
     return true; \
@@ -69,6 +71,6 @@ bool rentCollector(KILLER killer);
     } \
     if (c==-1) return 0; \
     return meap.tocks; \
-  }
+  } 
   
 

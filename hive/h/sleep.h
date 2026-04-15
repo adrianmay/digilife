@@ -12,7 +12,7 @@ Nanosecs ageOfTime();
 Nanosecs ageOfProcess();
 Nanosecs ageOfThread();
 pthread_t initTiming();
-pthread_t sleepNs(Nanosecs ns);
+pthread_t sleepNs(Nanosecs * ns);
 pthread_t sleepS(int s);
 void wait(pthread_t);
 void wake(pthread_t);

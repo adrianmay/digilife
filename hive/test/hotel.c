@@ -60,9 +60,9 @@ bool testEarn() {
 
 bool testRent() {
   return 
-//    testNoPop() &&
+    testNoPop() &&
     test1() &&
-//    testEarn() &&
+    testEarn() &&
     true;
 }
 

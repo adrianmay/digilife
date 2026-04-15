@@ -32,7 +32,7 @@ void sleepS_(int s) {
 }
 
 void sleepNs_(Nanosecs ns) {
-  printf("sleepNs_: %'ld\n", ns);
+  //printf("sleepNs_: %'ld\n", ns);
   struct timespec ts;
   lldiv_t qr = lldiv(ns, 1000000000);
   ts.tv_sec = qr.quot;
@@ -54,21 +54,21 @@ void * sleeperS(void * p) {
 
 void * sleeperNs(void * p) {
   Nanosecs * ns = (Nanosecs *) p;
-  printf("sleeperNs: %'ld\n", *ns);
+  //printf("sleeperNs: %'ld\n", *ns);
   sleepNs_(*ns);
   return 0;
 }
 
 pthread_t sleepS(int s) {
   pthread_t tid;                                             
-  if (pthread_create(&tid, 0, sleeperS, (void*)&s)) return tid;
-  else return 0;
+  pthread_create(&tid, 0, sleeperS, (void*)&s); 
+  return tid;
 }
 
-pthread_t sleepNs(Nanosecs ns) {
-  printf("sleepNs: %'ld\n", ns);
+pthread_t sleepNs(Nanosecs * ns) {
+  //printf("sleepNs: %'ld\n", *ns);
   pthread_t tid;                                             
-  pthread_create(&tid, 0, sleeperNs, (void*)&ns);
+  pthread_create(&tid, 0, sleeperNs, (void*)ns);
   return tid;
 }
 

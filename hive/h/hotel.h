@@ -108,7 +108,8 @@ bool rentCollector(KILLER killer);
       else { /* Not expired */ \
         Nanosecs ns = pg->nsPerTock * nsd; \
         printf("Sleeping for %'ld\n", ns); \
-        TYP##HotelSleeperThread = sleepNs(ns); \
+        TYP##HotelSleeperThread = sleepNs(&ns); \
+        wait(TYP##HotelSleeperThread); \
       } \
     } \
   }

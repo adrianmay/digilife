@@ -26,7 +26,8 @@ void * interrupter(void * p) {
 
 bool trysleep() {
   printf("Starting sleep test at %'ld\n", ageOfTime());
-  pthread_t mtid, stid = sleepS(2); // stid will sleep for 2s process cpu time
+  Nanosecs ns = 2000000000;
+  pthread_t mtid, stid = sleepNs(&ns); // stid will sleep for 2s process cpu time
   pthread_create(&mtid, 0, interrupter, &stid); // mtic will kill it after 1s
   background(sweat_forever); // Got to do work to advance CPU time ...
   background(sweat_forever); // ... at 2s per second.

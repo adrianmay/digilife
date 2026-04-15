@@ -19,8 +19,9 @@ void updateTocks() {
   Nanosecs now = ageOfProcess();
   Nanosecs sleptFor = wrapSub64U(now, vg.tocksReviewedAt);
   Nanosecs toBill = sleptFor + pg->nsNotTocked;
+  vg.tocksReviewedAt = now;
   lldiv_t qr = lldiv(toBill, pg->nsPerTock);
-  pg->lastKnownTock = qr.quot;
+  pg->lastKnownTock += qr.quot;
   pg->nsNotTocked = qr.rem;
 } 
 

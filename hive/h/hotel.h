@@ -73,7 +73,7 @@ bool rentCollector(KILLER killer);
     TockDiff tcks = wrapSubTocksS(pg->lastKnownTock, pRent->lastPaidRent); \
     assertCond(tcks, >=0); \
     Cash bill = pg->groatsPerTock*tcks; \
-    if (bill >= pRent->cash) return false; \
+    if (bill >= pRent->cash) { printf("Bankrupt\n"); return false; } \
     pRent->cash -= bill; \
     pRent->lastPaidRent = pg->lastKnownTock; \
     TYP##Meap * pM = get##TYP##Meap(pRent->meap); \
@@ -91,12 +91,12 @@ bool rentCollector(KILLER killer);
       TYP##MeapIndex iM0 = (TYP##MeapIndex) {0}; \
       TYP##Meap * pM = get##TYP##Meap(iM0); \
       Score sZ = pM->tocks; \
-      TockDiff nsd = sZ - pg->lastKnownTock; \
+      printf("tocks: %d, now: %d\n", sZ, pg->lastKnownTock); \
+      TockDiff nsd = wrapSubTocksS(sZ, pg->lastKnownTock); \
       if (nsd <= 0) { \
         TYP##Index iB = pM->who; \
         TYP * pB = get##TYP(iB); \
-        charge##TYP##Rent(iB); \
-        if (pB->rent.cash <= 0) { \
+        if (!charge##TYP##Rent(iB)) { \
           TYP##Funeral(pB); \
           free##TYP(iB); \
           meapRemove##TYP##Meap(iM0); \
@@ -106,7 +106,9 @@ bool rentCollector(KILLER killer);
         } \
       } \
       else { /* Not expired */ \
-        TYP##HotelSleeperThread = sleepNs(pg->nsPerTock * nsd - pg->nsNotTocked); \
+        Nanosecs ns = pg->nsPerTock * nsd; \
+        printf("Sleeping for %'ld\n", ns); \
+        TYP##HotelSleeperThread = sleepNs(ns); \
       } \
     } \
   }

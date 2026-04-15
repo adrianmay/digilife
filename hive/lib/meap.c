@@ -51,17 +51,17 @@ void siftDown(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
 }
 
 // Returns whether or not the root changed.
-bool meapInsert(Pilehead * ph, MeapCallbacks * mc, Index * pI, void ** pNew, Score score) {
+bool meapInsert(Pilehead * ph, MeapCallbacks * mc, Index * pI, void ** ppNew, uint32_t hint) {
   Index meapTop = getUsr(ph); // We can't use the real free cos the meap must remain contiguous, so we have our own count of active meaps.
   if (meapTop < ph->top) { 
     *pI = meapTop;
-    *pNew = findInPile(ph, *pI);
+    *ppNew = findInPile(ph, *pI);
   }  
   else
-    *pI = allocInPile(ph, pNew, 0, 0);
-  pNew->score = score;
+    *pI = allocInPile(ph, ppNew, 0, 0);
+  mc->onNew(*pI, hint); // Expected to stuff *pI with things that depend on hint
   modUsr(ph, 1);
-  mc->onMove(*pNew, *pI); //Expected to keep track of where the meap is.
+  mc->onMove(*ppNew, *pI); //Expected to keep track of where the meap is.
   if (*pI>0) 
     return siftUp(ph, mc, *pI); // Will call onMove if it moves this meap.
   return false;

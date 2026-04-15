@@ -69,5 +69,5 @@ pthread_t sleepNs(Nanosecs ns) {
 }
 
 void wait(pthread_t tid) { pthread_join(tid, 0); }
-void wake(pthread_t tid) { pthread_cancel(tid); } _create
+void wake(pthread_t tid) { pthread_cancel(tid); }
 

@@ -27,8 +27,8 @@ void updateTocks() {
 void reviewTockDuration() { // Advanced stuff to keep the memory usage slightly below max
 }
 
-// This is the main sleepy rent killer and tock tracker.
-// It doesn't care if the sleep times out or is interrupted.
+// // This is the main sleepy rent killer and tock tracker.
+// // It doesn't care if the sleep times out or is interrupted.
 bool rentCollector(KILLER killer) {
   while (vg.shouldRun) {
     updateTocks();  

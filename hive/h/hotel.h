@@ -45,7 +45,7 @@ bool rentCollector(KILLER killer);
     pRent->lastPaidRent = pg->lastKnownTock; \
     TYP##MeapIndex iM; \
     TYP##Meap * pM; \
-    if (meapInsert##TYP##Meap(&iM, &pM, ((double)cash)/pg->groatsPerTock + pg->lastKnownTock)) \
+    if (meapInsert##TYP##Meap(&iM, &pM, iB.i)) \
       wake(TYP##HotelSleeperThread); \
     pM->who = iB; \
     return iB; \
@@ -55,12 +55,10 @@ bool rentCollector(KILLER killer);
   extern void mourn##TYP##Meap(TYP##Meap *); \
   void onMove##TYP##Meap(TYP##Meap * pMeap, TYP##MeapIndex i) { get##TYP(pMeap->who)->rent.meap = i; } \
   void onNew##TYP##Meap(TYP##MeapIndex iMeap, uint32_t hint) { \
-    updateTocks(); \
     TYP##Meap * pMeap = get##TYP##Meap(iMeap); \
     TYP##Index iTyp = (TYP##Index){hint}; \
     TYP * pTyp = get##TYP(iTyp); \
     TYP##Rent * pRent = &pTyp->rent; \
-    pRent->lastPaidRent = pg->lastKnownTock; \
     pRent->meap = iMeap; \
     pMeap->who = iTyp; \
     pMeap->tocks = pRent->cash/pg->groatsPerTock + pg->lastKnownTock + 1; \

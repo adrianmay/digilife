@@ -81,24 +81,3 @@ bool meapRemove(Pilehead * ph, MeapCallbacks * mc, Index iCur) {
   return meapReview(ph, mc, iCur);
 }
   
-// Returns -1 if empty, 1 if you should call again, 0 just returned the champ without changes
-int chomp(Pilehead * ph, MeapCallbacks * mc, Score thresh, void * out, int outlen) {
-  uint32_t u = getUsr(ph); 
-  if (u==0) return -1; 
-  void * p = findInPile(ph, 0);
-  Score sZ = mc->getScore(p);
-  if (sZ<thresh) {
-    if (mc->appeal(p)) { // Wraparound?
-      meapReview(ph, mc, 0);
-      memcpy(out, p, outlen);
-      return 1; // We didn't kill it but there might be one to kill coming next
-    } else {
-      memcpy(out, p, outlen);
-      meapRemove(ph, mc, 0);
-      return 1; // We don't care if the lowest score changed or not. 
-    }
-  }             // Just want to know if there's more to kill.
-  memcpy(out, p, outlen);
-  return 0;
-}
-

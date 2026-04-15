@@ -14,7 +14,6 @@ Index right (Index i);
 bool meapInsert(Pilehead * ph, MeapCallbacks * mc, Index * pI, void ** pNew, uint32_t hint);
 bool meapRemove(Pilehead * ph, MeapCallbacks * mc, Index iCur);
 bool meapReview(Pilehead * ph, MeapCallbacks * mc, Index iCur);
-int chomp(Pilehead * ph, MeapCallbacks * mc, Score thresh, void * out, int outlen); // Returns: 1: call again, 0: Done for now, -1: extinct
 
 #define MAKEMEAP1(TYP) \
   MAKEPILE1(TYP) \
@@ -36,17 +35,14 @@ int chomp(Pilehead * ph, MeapCallbacks * mc, Score thresh, void * out, int outle
   extern Score getScore##TYP(TYP *); \
   extern void onNew##TYP(TYP##Index i, uint32_t hint); \
   extern void onMove##TYP(TYP *, TYP##Index to); \
-  extern bool meapAppeal##TYP(TYP *); \
   /**/ \
   Score getScore_##TYP(void * p) { return getScore##TYP((TYP*)p); } \
   void onNew_##TYP (Index i, uint32_t hint) { onNew##TYP ((TYP##Index){i}, hint);} \
   void onMove_##TYP(void * p, Index to)     { onMove##TYP((TYP*)p, (TYP##Index) {to}); } \
-  bool meapAppeal_##TYP(void * p) { return meapAppeal##TYP((TYP*)p); } \
   /**/ \
   pthread_mutex_t mutex##TYP; \
-  MeapCallbacks MC##TYP = { &mutex##TYP, &tmp##TYP, getScore_##TYP, onNew_##TYP, onMove_##TYP, meapAppeal_##TYP } ; \
+  MeapCallbacks MC##TYP = { &mutex##TYP, &tmp##TYP, getScore_##TYP, onNew_##TYP, onMove_##TYP } ; \
   bool meapInsert##TYP(TYP##Index * pI, TYP ** pNew, uint32_t hint) { return meapInsert(headOf##TYP##s, &MC##TYP, (&pI->i), (void**)pNew, hint); } \
   void meapRemove##TYP(TYP##Index i) { meapRemove(headOf##TYP##s, &MC##TYP, i.i); } \
   void meapReview##TYP(TYP##Index i) { meapReview(headOf##TYP##s, &MC##TYP, i.i); } \
-  int chomp##TYP(Score thresh, TYP * p) {return chomp(headOf##TYP##s, &MC##TYP, thresh, (void*)p, sizeof(TYP));}
 

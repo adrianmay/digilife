@@ -51,6 +51,7 @@ bool rentCollector(KILLER killer);
     return iB; \
   } \
   Score getScore##TYP##Meap(TYP##Meap * pMeap) { return pMeap->tocks; } \
+  Tocks TYP##DeathDay(TYP * pB) { return pB->rent.cash/pg->groatsPerTock + pg->lastKnownTock + 1; } \
   bool meapAppeal##TYP##Meap(TYP##Meap * pMeap) { return false; } \
   extern void mourn##TYP##Meap(TYP##Meap *); \
   void onMove##TYP##Meap(TYP##Meap * pMeap, TYP##MeapIndex i) { get##TYP(pMeap->who)->rent.meap = i; } \
@@ -61,7 +62,7 @@ bool rentCollector(KILLER killer);
     TYP##Rent * pRent = &pTyp->rent; \
     pRent->meap = iMeap; \
     pMeap->who = iTyp; \
-    pMeap->tocks = pRent->cash/pg->groatsPerTock + pg->lastKnownTock + 1; \
+    pMeap->tocks = TYP##DeathDay(pTyp); \
   } \
   bool addCash##TYP(TYP##Index i, Cash c) { \
     return true; \
@@ -70,23 +71,44 @@ bool rentCollector(KILLER killer);
     TYP * pB = get##TYP(i); \
     TYP##Rent * pRent = &pB->rent; \
     TockDiff tcks = wrapSubTocksS(pg->lastKnownTock, pRent->lastPaidRent); \
-    assertCond(tcks, >0); \
+    assertCond(tcks, >=0); \
     Cash bill = pg->groatsPerTock*tcks; \
     if (bill >= pRent->cash) return false; \
     pRent->cash -= bill; \
     pRent->lastPaidRent = pg->lastKnownTock; \
+    TYP##Meap * pM = get##TYP##Meap(pRent->meap); \
+    pM->tocks = TYP##DeathDay(pB); \
     return true; \
   } \
   bool open##TYP##Hotel() { open##TYP##Pile(); return open##TYP##MeapPile(); } \
   void close##TYP##Hotel(int rm) { close##TYP##Pile(rm); close##TYP##MeapPile(rm); } \
-  Tocks kill##TYP##s(Score thresh) { \
-    int c; \
-    TYP##Meap meap; \
-    while ( (c=chomp##TYP##Meap(thresh, &meap))==1 ) { \
-      mourn##TYP##Meap(&meap); \
+  void TYP##RentCollector() { \
+    Pilehead * ph = headOf##TYP##Meaps; \
+    while (true) { \
+      updateTocks(); \
+      uint32_t u = getUsr(ph); \
+      if (u==0) return; \
+      TYP##MeapIndex iM0 = (TYP##MeapIndex) {0}; \
+      TYP##Meap * pM = get##TYP##Meap(iM0); \
+      Score sZ = pM->tocks; \
+      TockDiff nsd = sZ - pg->lastKnownTock; \
+      if (nsd <= 0) { \
+        TYP##Index iB = pM->who; \
+        TYP * pB = get##TYP(iB); \
+        charge##TYP##Rent(iB); \
+        if (pB->rent.cash <= 0) { \
+          TYP##Funeral(pB); \
+          free##TYP(iB); \
+          meapRemove##TYP##Meap(iM0); \
+        } \
+        else { \
+          meapReview##TYP##Meap(iM0); \
+        } \
+      } \
+      else { /* Not expired */ \
+        TYP##HotelSleeperThread = sleepNs(pg->nsPerTock * nsd - pg->nsNotTocked); \
+      } \
     } \
-    if (c==-1) return 0; \
-    return meap.tocks; \
-  } 
-  
+  }
+
 

@@ -132,35 +132,10 @@ bool count(int killed) {
   return true;
 }
 
-bool chompOk() {
-  MyMeap m;
-  int res = chompMyMeap(0x2, &m);
-  int exp = (setupNum==0)          ? -1 :
-            (doWhat&CHOMPNOTHING) ?  0 : 
-            1;
-  assertIntM(res, exp);
-  return true;
-}
-
-bool chompMore(int killed) {
-  MyMeap m;
-  for (int i=0;i<fullChompN-killed;i++) {
-    int res = chompMyMeap(100000, &m);
-    int exp = fullChompP[i];
-    //printf("chompMore: setup=%d, i=%d, res=%d, tocks=0x%x, exp=0x%x\n", setupNum, i, res, m.tocks, exp);
-    assertIntM(m.tocks, exp);
-    assertIntM(res, 1);
-  }
-  int res = chompMyMeap(100000, &m);
-  assertIntM(res, -1);
-  return true;
-}
-
 bool testMeap1() {
   return
     count(0) &&
     ordered() && 
-    chompOk() &&
     ordered() && 
     true;
 }
@@ -168,7 +143,6 @@ bool testMeap1() {
 bool testMeap2() {
   return
     count(0) &&
-    chompMore(0) &&
     true;
 }
 

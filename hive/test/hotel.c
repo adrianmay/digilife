@@ -29,12 +29,9 @@ Block * pB;
 BlockMeapIndex iBM;
 
 void make(Index name, Cash cash) {
-  BlockIndex iB; 
-  iB = allocBlock(&pB);
+  Block * pB; 
+  reserveBlock(cash, &pB);
   pB->name = name;
-  pB->rent.cash = cash;
-  BlockMeap * pM;
-  meapInsertBlockMeap(&iBM, &pM, iB.i);
 }
 
 bool test1() {

@@ -58,8 +58,8 @@ void * sleeperNs(void * p) {
 
 pthread_t sleepS(int s) {
   pthread_t tid;                                             
-  pthread_create(&tid, 0, sleeperS, (void*)s);
-  return tid;
+  if (pthread_create(&tid, 0, sleeperS, (void*)s)) return tid;
+  else return 0;
 }
 
 pthread_t sleepNs(Nanosecs ns) {
@@ -69,5 +69,5 @@ pthread_t sleepNs(Nanosecs ns) {
 }
 
 void wait(pthread_t tid) { pthread_join(tid, 0); }
-void wake(pthread_t tid) { pthread_cancel(tid); }
+void wake(pthread_t tid) { pthread_cancel(tid); } _create
 

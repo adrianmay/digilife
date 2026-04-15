@@ -36,7 +36,7 @@ bool rentCollector(KILLER killer) {
     if (wakeat1==0) return true;
     // Race: If right now, new low is reached by e.g. lowest making payment, then will oversleep.
     TockDiff tcks = wrapSubTocksS(wakeat1,  pg->lastKnownTock);
-    assertCond(tcks, >0);
+    assertCond(tcks, >=0);
     Nanosecs ns = pg->nsPerTock * tcks;
     vg.rentSleeperTid = sleepNs(ns);
     // But if now, it will have woken the sleeper, so OK

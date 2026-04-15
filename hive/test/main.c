@@ -35,11 +35,11 @@ int main() {
   printf("process_age_costs_in_pence_per_second: %f\n", process_age_costs_in_pence_per_second);
   bool suc = 
 //    sleep() && 
-    wrap() && 
+//    wrap() && 
 //    pile() && 
 //    meap() && 
 //    globals() && 
-//    rent() &&
+    rent() &&
     true;
   return suc?0:1;
 }

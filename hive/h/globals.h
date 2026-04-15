@@ -5,7 +5,7 @@ extern const double process_age_costs_in_pence_per_second;
 typedef struct {
   Nanosecs tocksReviewedAt; // Exact CPU uptime 
   bool shouldRun;                          
-  pthread_t rentSleeperTid;
+//  pthread_t rentSleeperTid;
 } VolatileGlobals;
 
 typedef struct __attribute__((aligned(KILO))) { 

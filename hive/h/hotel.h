@@ -31,10 +31,25 @@ bool rentCollector(KILLER killer);
 // onNew updates the current tock then sets up the animal's rent field and the meap's tocks and animal index.
 //   The calling code will make the animal first with some money, then call meapInsert with the animal index
 //     as the hint.
+// Appeal is needed because of tock wrapping.
 
 #define MAKEHOTEL2(TYP,LIM) \
+  pthread_t TYP##HotelSleeperThread; \
   MAKEPILE2(TYP,LIM) \
   MAKEMEAP2(TYP##Meap,LIM) \
+  TYP##Index reserve##TYP(Cash cash, TYP ** pB) { \
+    updateTocks(); \
+    TYP##Index iB = alloc##TYP(pB); \
+    TYP##Rent * pRent = &((*pB)->rent); \
+    pRent->cash = cash; \
+    pRent->lastPaidRent = pg->lastKnownTock; \
+    TYP##MeapIndex iM; \
+    TYP##Meap * pM; \
+    if (meapInsert##TYP##Meap(&iM, &pM, ((double)cash)/pg->groatsPerTock + pg->lastKnownTock)) \
+      wake(TYP##HotelSleeperThread); \
+    pM->who = iB; \
+    return iB; \
+  } \
   Score getScore##TYP##Meap(TYP##Meap * pMeap) { return pMeap->tocks; } \
   bool meapAppeal##TYP##Meap(TYP##Meap * pMeap) { return false; } \
   extern void mourn##TYP##Meap(TYP##Meap *); \
@@ -49,6 +64,9 @@ bool rentCollector(KILLER killer);
     pRent->meap = iMeap; \
     pMeap->who = iTyp; \
     pMeap->tocks = pRent->cash/pg->groatsPerTock + pg->lastKnownTock + 1; \
+  } \
+  bool addCash##TYP(TYP##Index i, Cash c) { \
+    return true; \
   } \
   bool charge##TYP##Rent(TYP##Index i) { \
     TYP * pB = get##TYP(i); \

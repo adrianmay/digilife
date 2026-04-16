@@ -1,22 +1,6 @@
 #include "test.h"
 #include "sleep.h"
 
-//int processAge() {
-//  printf("PROCESS AGE TEST\n");
-//  printf("Age before 1s sleep    : %'ld\n", ageOfProcess());
-//  sleepS(1);
-//  printf("Age after  1s sleep    : %'ld\n", ageOfProcess());
-//  sweat(0);
-//  printf("Age after sweat        : %'ld\n", ageOfProcess());
-//  pthread_t pid;
-//  pthread_create(&pid, 0, sweat, 0);
-//  pthread_create(&pid, 0, sweat, 0);
-//  pthread_create(&pid, 0, sweat, 0);
-//  sweat(0);
-//  printf("Age after 4 more sweats: %'ld\n", ageOfProcess());
-//  printf("\n");
-//}
-
 void * interrupter(void * p) {
   pthread_t * pTid = (pthread_t*) p;
   sleepS_(1);

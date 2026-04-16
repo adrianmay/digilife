@@ -29,7 +29,6 @@ Block * pB;
 BlockMeapIndex iBM;
 
 void make(Index name, Cash cash) {
-  Block * pB; 
   reserveBlock(cash, &pB);
   pB->name = name;
 }
@@ -43,7 +42,7 @@ bool test1() {
 }
 
 void * earn(void *) {
-  sleepS(1);
+  sleepS_(1);
   pB->rent.cash += 2000;
   meapReviewBlockMeap(iBM);
   return 0;

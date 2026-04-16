@@ -34,11 +34,11 @@ int main() {
   setlocale(LC_NUMERIC, "");
   printf("process_age_costs_in_pence_per_second: %f\n", process_age_costs_in_pence_per_second);
   bool suc = 
-//    sleep() && 
-//    wrap() && 
-//    pile() && 
-//    meap() && 
-//    globals() && 
+    sleep() && 
+    wrap() && 
+    pile() && 
+    meap() && 
+    globals() && 
     rent() &&
     true;
   return suc?0:1;

@@ -1,4 +1,13 @@
+#include <fcntl.h>                                   
+#include <stdio.h>
+#include <string.h>
+#include <sys/mman.h>                                
+#include <sys/stat.h>                                
+#include <unistd.h>
 #include "globals.h"
+
+#define GUESS_NS_PER_TOCK 1000000                                           
+#define GLOBALS_FILENAME "Globals.pile"
 
 typedef struct {
   Nanosecs tocksReviewedAt; // Exact CPU uptime 
@@ -28,8 +37,14 @@ static void initVolatileGlobals() {
   vg.shouldRun = true;
 }
 
-#define GLOBALS_FILENAME "Globals.pile"
-
+int quit(int i) {abort();} // { return *((int*)(0)); }                         
+    
+int fileSize(int fd) {                                                         
+  struct stat sb;                                                              
+  if (fstat(fd, &sb) == -1) { printf("Can't stat fd=%d\n", fd); quit(1); }
+  return sb.st_size;
+} 
+  
 static void * openGlobals_(uint64_t len, bool * virgin) {
   *virgin=false;
   int fd = open(GLOBALS_FILENAME, O_RDWR | O_APPEND);

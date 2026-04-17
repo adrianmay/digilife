@@ -14,7 +14,7 @@ gen/%: lit/%
 	mkdir -p $(dir $@)
 	cp $^ $@
 
-all: 
+all: tags
 	echo "Doing all"
 
 # all: $(gits)
@@ -31,7 +31,7 @@ $(1)C    = $$($(1)LITC:lit/%=gen/%)
 $(1)H    = $$($(1)LITH:lit/%=gen/%)
 $(1)OBJ  = $$($(1)C:gen/%.c=obj/%.o)
 $(1)HHD  = $(2) # Dunno why I need this step
-$(1)HDEP = $$($(1)H) $$($(1)HHD:%=gen/%)
+$(1)HDEP = $$($(1)H) $$($(1)HHD:%=gen/h/%.h)
 
 obj/$(1)/%.o: gen/$(1)/%.c | $$($(1)HDEP)
 	echo $(1) $$($(1)HDEP)
@@ -88,9 +88,11 @@ endef
 ###########################################################
 # $(eval $(call use-template,pile,foo,-v X=xxxx -v Y=yyyy))
 # $(eval $(call use-template,globals,globals))
-$(eval $(call make-obj,globals,h/types.h))
-$(eval $(call make-obj,test,h/globals.h))
-# $(eval $(call make-exe,test,globals))
+$(eval $(call make-obj,misc,types))
+$(eval $(call make-obj,globals,misc))
+$(eval $(call make-obj,ipile,misc))
+
+$(eval $(call make-obj,test,globals))
 
 -include .depend
 

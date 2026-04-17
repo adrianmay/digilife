@@ -1,10 +1,10 @@
 #include <fcntl.h>                                   
-#include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>                                
-#include <sys/stat.h>                                
 #include <unistd.h>
+#include "types.h"
 #include "globals.h"
+#include "misc.h"
 
 #define GUESS_NS_PER_TOCK 1000000                                           
 #define GLOBALS_FILENAME "Globals.pile"
@@ -37,14 +37,6 @@ static void initVolatileGlobals() {
   vg.shouldRun = true;
 }
 
-int quit(int i) {abort();} // { return *((int*)(0)); }                         
-    
-int fileSize(int fd) {                                                         
-  struct stat sb;                                                              
-  if (fstat(fd, &sb) == -1) { printf("Can't stat fd=%d\n", fd); quit(1); }
-  return sb.st_size;
-} 
-  
 static void * openGlobals_(uint64_t len, bool * virgin) {
   *virgin=false;
   int fd = open(GLOBALS_FILENAME, O_RDWR | O_APPEND);
@@ -64,7 +56,7 @@ static void * openGlobals_(uint64_t len, bool * virgin) {
 // Close and maybe delete the file
 static void closeGlobals_(int fd, bool rm) {
   if (fd == -1) return;
-  //munmap(ph);
+  //munmap(ph); //TODO: I thought I needed this
   close(fd);
   if (rm) unlink(GLOBALS_FILENAME);
 }
@@ -77,7 +69,7 @@ bool openGlobals() {
   return v;
 }
 
-void closeGlobals(bool rm) { 
+void closeGlobals(bool rm) {  // And that param should be enum
   closeGlobals_(pg->fd, rm); 
 } 
 

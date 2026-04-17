@@ -2,7 +2,7 @@
 #include <pthread.h>
 #include <stdint.h>         
 #include <stdbool.h>
-#include <stdlib.h>         
+#include <stdio.h>
 #include <stdatomic.h>
 
 #define NS_PER_SEC 1000000000.0

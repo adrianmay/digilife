@@ -6,42 +6,35 @@ CC = gcc $(CFLAGS)
 #
 #
 
+# lits   = $(shell find lit -type f)
+# dits   = $(lits:lit/%=gen/%)
+# 
+# gen/%: lit/%
+# 	mkdir -p $(dir $@)
+# 	cp $^ $@
 
-lits   = $(shell find lit -type f)
-dits   = $(lits:lit/%=gen/%)
+all: tags gensrc compile link # exes
+compile: gensrc
+link: compile
 
-gen/%: lit/%
-	mkdir -p $(dir $@)
-	cp $^ $@
-
-all: tags
-	echo "Doing all"
-
-# all: $(gits)
-# 	echo $(gits)
-
+PHONY: gensrc compile link
 ###########################################################
 # Build any .c under gen to the corresponding .o under obj
 
 define make-obj
 
-$(1)LITC = $$(wildcard lit/$(1)/*.c)
-$(1)LITH = $$(wildcard lit/$(1)/*.h)
-$(1)C    = $$($(1)LITC:lit/%=gen/%)
-$(1)H    = $$($(1)LITH:lit/%=gen/%)
-$(1)OBJ  = $$($(1)C:gen/%.c=obj/%.o)
+# $(1)C = $$(wildcard gen/$(1)/*.c)
+# $(1)H = $$(wildcard gen/$(1)/*.h)
+# $(1)OBJ  = $$($(1)C:gen/%.c=obj/%.o)
 $(1)HHD  = $(2) # Dunno why I need this step
 $(1)HDEP = $$($(1)H) $$($(1)HHD:%=gen/h/%.h)
 
-obj/$(1)/%.o: gen/$(1)/%.c | $$($(1)HDEP)
-	echo $(1) $$($(1)HDEP)
-	mkdir -p $$(dir $$@)
-	$$(CC) -c $$< -o $$@
+# obj/$(1)/%.o: gen/$(1)/%.c | $$($(1)HDEP)
+# 	mkdir -p $$(dir $$@)
+# 	$$(CC) -c $$< -o $$@
 
-obj/$(1).o: $$($(1)OBJ)
-	echo $$($(1)HDEP)
-	mkdir -p obj
-	ld --relocatable -o $$@ $$^
+obj/$(1).o: $$(wildcard gen/$(1)/*.c) gen/h/$(1).h $$($(1)HDEP)
+	./compile $(1) "$$(wildcard gen/$(1)/*.c)"
 
 gen/h/$(1).h: gen/$(1)/$(1).h # Export the main header
 	mkdir -p gen/h
@@ -57,13 +50,30 @@ endef
 
 define make-exe
 
+$(1)ODS = $(2)
+$(1)ODEP = $$($(1)ODS:%=obj/%.o)
 
-exe/$(1): obj/$(1).o obj/$(2).o | gen/h/$(2).h
-	mkdir -p exe
+bin/$(1): obj/$(1).o $$($(1)ODEP) # | gen/h/$(2).h
+	mkdir -p bin
 	$$(CC) $$^ -o $$@
 
-all: exe/$(1)
+link: bin/$(1)
 
+endef
+
+
+###########################################################
+
+define use-lit
+
+$(1)TS = $$(wildcard lit/$(1)/*) # All the files in the template - should be a find
+$(1)GS = $$($(1)TS:lit/%=gen/%) # Corresponding paths in the module
+
+gen/$(1)/%: lit/$(1)/%  # Copy and apply replacements
+	mkdir -p gen/$(1)
+	cp $$^ $$@
+
+gensrc: $$($(1)GS)
 
 endef
 
@@ -71,28 +81,37 @@ endef
 # Params are template name, generated module name, replacements
 define use-template
 
-$(2)ts = $$(wildcard tpt/$(1)/*) # All the files in the template - should be a find
-$(2)gs = $$($(2)ts:tpt/$(1)/%=gen/$(2)/%) # Corresponding paths in the module
+$(2)_$(1)TS = $$(wildcard tpt/$(1)/*) # All the files in the template - should be a find
+$(2)_$(1)GS = $$($(2)_$(1)TS:tpt/$(1)/%=gen/$(2)_$(1)/$(2)_%) # Corresponding paths in the module
 
-gen/$(2)/%: tpt/$(1)/%  # Copy and apply replacements
-	mkdir -p gen/$(2)
+gen/$(2)_$(1)/$(2)_%: tpt/$(1)/%  # Copy and apply replacements
+	mkdir -p gen/$(2)_$(1)
 	awk $(3) '{ gsub(/XX/,X); gsub(/YY/,Y); }1' $$^ > $$@
 
-gen/$(2)/%: Makefile # Dunno if this is working
+gensrc: $$($(2)_$(1)GS)
+# gen/$(2)/%: Makefile # Dunno if this is working
 
-# all: $$($(2)gs) gen/h/$(2)_$(1).h # Kick make into requiring the gen file. Should be obsolete if the gen file is required by something else
+# all: $$($(2)GS) gen/h/$(2)_$(1).h # Kick make into requiring the gen file. Should be obsolete if the gen file is required by something else
 
 # all: obj/$(2)_$(1).o # Kick make into making the public obj
 
 endef
 ###########################################################
-# $(eval $(call use-template,pile,foo,-v X=xxxx -v Y=yyyy))
-# $(eval $(call use-template,globals,globals))
+$(eval $(call use-lit,h))
+$(eval $(call use-lit,misc))
+$(eval $(call use-lit,globals))
+$(eval $(call use-lit,ipile))
+$(eval $(call use-lit,test))
+
 $(eval $(call make-obj,misc,types))
 $(eval $(call make-obj,globals,misc))
 $(eval $(call make-obj,ipile,misc))
 
-$(eval $(call make-obj,test,globals))
+$(eval $(call use-template,pile,thing,-v X=Thing -v Y=yyyy))
+$(eval $(call make-obj,thing_pile,ipile))
+
+$(eval $(call make-obj,test,globals misc thing_pile))
+$(eval $(call make-exe,test,globals misc thing_pile))
 
 -include .depend
 
@@ -100,11 +119,10 @@ ALLSRCSRC = $(shell find lit/* tpt/* -name '*.c' -or -name '*.h')
 ALLSRC    = $(ALLSRCSRC:%=gen/%)
  
 tags: ${ALLSRCSRC}
-	echo "ALLSRC=" $(ALLSRC)
 	ctags ${ALLSRCSRC}
 
 clean:
-	rm -rf gen obj exe .depend tags *.pile
+	rm -rf gen obj bin .depend tags *.pile
 
 #.depend: $(ALL)
 #	$(shell find gen -name "*.c" - | while read C; do grep -Po '^#include "\K[^"]*' $C | sed "s#^#$C: #"; done > .depend)

@@ -1,0 +1,12 @@
+#!/bin/bash
+M=$2
+MO=${M//\.c/\.o}
+MP=${MO//gen/obj}
+mkdir -p obj/$1
+for X in $2
+do 
+  XO=${X/\.c/\.o}
+  XP=${XO/gen/obj}
+  gcc -g -iquote gen/h -Wall -Werror -c $X -o $XP
+done
+ld --relocatable -o obj/$1.o $MP

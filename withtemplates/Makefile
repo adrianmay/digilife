@@ -1,3 +1,8 @@
+# ./compile is a hack
+# Test that it rebuilds what it should
+# What's going on with all the deps going to make-exe as well
+# Consolidate some functions
+
 CFLAGS = -g -iquote gen/h -Wall -Werror
 CC = gcc $(CFLAGS)
 
@@ -28,13 +33,15 @@ define make-obj
 # $(1)OBJ  = $$($(1)C:gen/%.c=obj/%.o)
 $(1)HHD  = $(2) # Dunno why I need this step
 $(1)HDEP = $$($(1)H) $$($(1)HHD:%=gen/h/%.h)
+$(1)OOD  = $(3) # Dunno why I need this step
+$(1)ODEP = $$($(1)OOD:%=obj/%.o)
 
 # obj/$(1)/%.o: gen/$(1)/%.c | $$($(1)HDEP)
 # 	mkdir -p $$(dir $$@)
 # 	$$(CC) -c $$< -o $$@
 
-obj/$(1).o: $$(wildcard gen/$(1)/*.c) gen/h/$(1).h $$($(1)HDEP)
-	./compile $(1) "$$(wildcard gen/$(1)/*.c)"
+obj/$(1).o: $$(wildcard gen/$(1)/*.c) gen/h/$(1).h $$($(1)HDEP) $$($(1)ODEP)
+	./compile $(1) "$$(wildcard gen/$(1)/*.c)" "$$($(1)ODEP)"
 
 gen/h/$(1).h: gen/$(1)/$(1).h # Export the main header
 	mkdir -p gen/h
@@ -50,10 +57,10 @@ endef
 
 define make-exe
 
-$(1)ODS = $(2)
-$(1)ODEP = $$($(1)ODS:%=obj/%.o)
+# $(1)ODS = $(2)
+# $(1)ODEP = $$($(1)ODS:%=obj/%.o)
 
-bin/$(1): obj/$(1).o $$($(1)ODEP) # | gen/h/$(2).h
+bin/$(1): obj/$(1).o # $$($(1)ODEP) # | gen/h/$(2).h
 	mkdir -p bin
 	$$(CC) $$^ -o $$@
 
@@ -107,11 +114,11 @@ $(eval $(call make-obj,misc,types))
 $(eval $(call make-obj,globals,misc))
 $(eval $(call make-obj,ipile,misc))
 
-$(eval $(call use-template,pile,thing,-v X=Thing -v Y=yyyy))
-$(eval $(call make-obj,thing_pile,ipile))
+$(eval $(call use-template,pile,Junk,-v X=Junk -v Y=GIGA))
+$(eval $(call make-obj,Junk_pile,ipile types,))
 
-$(eval $(call make-obj,test,globals misc thing_pile))
-$(eval $(call make-exe,test,globals misc thing_pile))
+$(eval $(call make-obj,test,globals misc Junk_pile, ipile misc globals Junk_pile))
+$(eval $(call make-exe,test))
 
 -include .depend
 

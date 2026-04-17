@@ -1,5 +1,7 @@
 #include "types.h"
 
+typedef void * (*F)(void * item, void * u);
+
 typedef struct Pilehead Pilehead; 
 Pilehead * openPile(const char * filename, Index rec, Index stp, Index lim, bool * virgin);
 void closePile(Pilehead * ph, int rm); // 1->delete, 2->hide

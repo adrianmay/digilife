@@ -1,4 +1,4 @@
-CFLAGS = -g -iquote gen/h -iquote gen -Wall -Werror
+CFLAGS = -g -iquote gen/h -Wall -Werror
 CC = gcc $(CFLAGS)
 
 ###########################################################
@@ -14,7 +14,7 @@ gen/%: lit/%
 	mkdir -p $(dir $@)
 	cp $^ $@
 
-all: $(dits) obj/test.o obj/globals.o
+all: 
 	echo "Doing all"
 
 # all: $(gits)
@@ -22,26 +22,34 @@ all: $(dits) obj/test.o obj/globals.o
 
 ###########################################################
 # Build any .c under gen to the corresponding .o under obj
-obj/%.o: gen/%.c 
-	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -c $< -o $@
 
 define make-obj
 
-$(1)LIT  = $$(wildcard lit/$(1)/*.c)
-$(1)C    = $$($(1)LIT:lit/%=gen/%)
+$(1)LITC = $$(wildcard lit/$(1)/*.c)
+$(1)LITH = $$(wildcard lit/$(1)/*.h)
+$(1)C    = $$($(1)LITC:lit/%=gen/%)
+$(1)H    = $$($(1)LITH:lit/%=gen/%)
 $(1)OBJ  = $$($(1)C:gen/%.c=obj/%.o)
+$(1)HHD  = $(2) # Dunno why I need this step
+$(1)HDEP = $$($(1)H) $$($(1)HHD:%=gen/%)
 
-obj/$(1).o: $$($(1)OBJ) # Provide a publicly visible version of the obj
-	echo $$($(1)LIT)
+obj/$(1)/%.o: gen/$(1)/%.c | $$($(1)HDEP)
+	echo $(1) $$($(1)HDEP)
+	mkdir -p $$(dir $$@)
+	$$(CC) -c $$< -o $$@
+
+obj/$(1).o: $$($(1)OBJ)
+	echo $$($(1)HDEP)
 	mkdir -p obj
 	ld --relocatable -o $$@ $$^
 
 gen/h/$(1).h: gen/$(1)/$(1).h # Export the main header
 	mkdir -p gen/h
-	ln -fs $$^ $$@
+	ln -fs ../../$$^ $$@
 
-obj/$(2)_$(1).o: gen/h/$(2)_$(1).h # Provide a publicly visible version of the obj
+# obj/$(2)_$(1).o: gen/h/$(2)_$(1).h # Provide a publicly visible version of the obj
+
+all: obj/$(1).o
 
 endef
 
@@ -50,10 +58,12 @@ endef
 define make-exe
 
 
-$(1): obj/$(1).o obj/$(2).o | gen/h/$(2).h
-	$$(CC) -g -O0 $$^ -o $$@
+exe/$(1): obj/$(1).o obj/$(2).o | gen/h/$(2).h
+	mkdir -p exe
+	$$(CC) $$^ -o $$@
 
-all: $(1)
+all: exe/$(1)
+
 
 endef
 
@@ -78,13 +88,24 @@ endef
 ###########################################################
 # $(eval $(call use-template,pile,foo,-v X=xxxx -v Y=yyyy))
 # $(eval $(call use-template,globals,globals))
-$(eval $(call make-obj,globals))
-$(eval $(call make-obj,test,globals))
-$(eval $(call make-exe,test,globals))
+$(eval $(call make-obj,globals,h/types.h))
+$(eval $(call make-obj,test,h/globals.h))
+# $(eval $(call make-exe,test,globals))
 
 -include .depend
 
-clean:
-	rm -rf gen obj
+ALLSRCSRC = $(shell find lit/* tpt/* -name '*.c' -or -name '*.h')
+ALLSRC    = $(ALLSRCSRC:%=gen/%)
+ 
+tags: ${ALLSRCSRC}
+	echo "ALLSRC=" $(ALLSRC)
+	ctags ${ALLSRCSRC}
 
+clean:
+	rm -rf gen obj exe .depend tags *.pile
+
+#.depend: $(ALL)
+#	$(shell find gen -name "*.c" - | while read C; do grep -Po '^#include "\K[^"]*' $C | sed "s#^#$C: #"; done > .depend)
+
+.SECONDARY: 
 

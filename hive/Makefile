@@ -42,12 +42,17 @@ $(eval $(call make-lib,lib))
 $(eval $(call make-program,hive))
 $(eval $(call make-program,test))
 
-ALL = $(shell find . -name '*.c' -or -name '*.h')
+ALLSRCSRC = $(shell find lit/* tpt/* -name '*.c' -or -name '*.h')
+ALLSRC    = $(ALLSRCSRC:%=gen/%)
  
-tags: ${ALL}
-	ctags ${ALL}
+tags: ${ALLSRCSRC}
+	echo "ALLSRC=" $(ALLSRC)
+	ctags ${ALLSRCSRC}
 
 clean:
-	rm -rf ${OUTDIR} ${OBJDIR} *.pile
+	rm -rf gen obj exe .depend tags *.pile
+
+.depend: $(ALL)
+	find gen -name "*.c" - | while read C; do grep -Po '^#include "\K[^"]*' $C | sed "s#^#$C: #"; done > .depend
 
 

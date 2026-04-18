@@ -87,13 +87,13 @@ Pilehead * openPile(const char * filename, uint32_t rec, uint32_t stp, Index lim
   return ph;
 }
 
-void closePile(Pilehead * ph, int rm) {
+void closePile(Pilehead * ph, FATE fate) {
   if (!ph) return;
   int fd = ph->fd;
   if (fd == -1) return;
   close(fd);
-  if (rm==1) unlink(ph->fn);
-  if (rm==2) {
+  if (fate==DELETE) unlink(ph->fn);
+  if (fate==HIDE) {
     char dest[MAX_FILENAME+1];
     *dest='.';
     strcpy(dest+1,ph->fn);

@@ -26,7 +26,7 @@ usetpt() {
   done
 }
 
-inst1=(pile Junk GIGA)
+inst1=(pile Link MEGA)
 insts=(inst1)
 
 for I in ${insts[@]}
@@ -54,4 +54,5 @@ gcc -o hive gen/o.o bin/hive.o
 
 find gen bin -name "*.h" -or -name "*.c" | xargs ctags
 tools/fixtags.sh
+
 

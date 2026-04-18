@@ -4,7 +4,7 @@ XX * getXX(XXIndex i) ;
 void * withXX(XXIndex i, F_XX f, void * u) ; 
 XXIndex allocXX(XX ** pNew) ; 
 void freeXX(XXIndex i) ;
-void closeXXPile(int rm) ;
+void closeXXPile(FATE fate) ;
 bool validXXIndex(XXIndex i) ;
 Index countXXs() ; 
 extern const XXIndex badXXIndex;

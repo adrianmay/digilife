@@ -2,25 +2,12 @@
 #include <string.h>
 #include <sys/mman.h>                                
 #include <unistd.h>
-#include "types.h"
+#include "structs.h"
 #include "h.h"
 #include "misc/h.h"
 
 #define GUESS_NS_PER_TOCK 1000000                                           
 #define GLOBALS_FILENAME "Globals.pile"
-
-typedef struct {
-  Nanosecs tocksReviewedAt; // Exact CPU uptime 
-  bool shouldRun;                          
-} VolatileGlobals;
-
-typedef struct __attribute__((aligned(KILO))) { 
-  int fd; // For globals
-  Tocks lastKnownTock; // 
-  Nanosecs nsNotTocked; // Tocks were rounded down, such that this much time was not charged
-  TockDuration nsPerTock; // Easy way to adjust price per ns, while keeping price per tock fixed.
-  TockPrice groatsPerTock;                       
-} PersistentGlobals;
 
 VolatileGlobals vg; 
 PersistentGlobals * pg; 

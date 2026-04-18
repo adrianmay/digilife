@@ -14,3 +14,4 @@ Index countPop(Pilehead * ph );
 Index getUsr(Pilehead * ph); // Misc number
 void setUsr(Pilehead * ph, Index u);
 void modUsr(Pilehead * ph, int32_t u);
+Index recLen(Pilehead * ph);

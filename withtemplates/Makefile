@@ -1,2 +1,2 @@
 all:
-	./run.sh
+	tools/run.sh

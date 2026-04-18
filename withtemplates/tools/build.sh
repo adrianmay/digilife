@@ -1,6 +1,6 @@
 #!/bin/bash
 
-./clean.sh
+tools/clean.sh
 rm -rf gen bin
 mkdir gen bin
 
@@ -27,7 +27,8 @@ usetpt() {
 }
 
 inst1=(pile Link MEGA)
-insts=(inst1)
+inst2=(pile Junk MEGA)
+insts=(inst1 inst2)
 
 for I in ${insts[@]}
 do

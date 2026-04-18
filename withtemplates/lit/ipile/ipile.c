@@ -6,8 +6,8 @@
 #include <sys/stat.h>                                
 #include <unistd.h>
 #include "types.h"
-#include "ipile.h"
-#include "misc.h"
+#include "h.h"
+#include "misc/h.h"
 
 // The header for a pile:
 struct __attribute__((aligned(KILO))) Pilehead { // This should be of a good size for alignment

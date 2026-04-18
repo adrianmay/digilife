@@ -1,10 +1,7 @@
-#include "ipile.h"
-#define STAGE 1
-#include "XX_pile.h"
+#include "ipile/h.h"
+#include "1.h"
 #include "XX.h"
-#undef STAGE
-#define STAGE 2
-#include "Junk_pile.h"
+#include "2.h"
 
 Pilehead * headOfXXs = 0; 
 

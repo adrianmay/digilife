@@ -1,7 +1,7 @@
-#include "types.h"         
 #include <sys/stat.h>                                
 #include <stdio.h>
 #include <stdlib.h>         
+#include "types.h"         
 
 int quit(int i) {abort();} // { return *((int*)(0)); }                         
     

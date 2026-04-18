@@ -3,8 +3,8 @@
 #include <sys/mman.h>                                
 #include <unistd.h>
 #include "types.h"
-#include "globals.h"
-#include "misc.h"
+#include "h.h"
+#include "misc/h.h"
 
 #define GUESS_NS_PER_TOCK 1000000                                           
 #define GLOBALS_FILENAME "Globals.pile"

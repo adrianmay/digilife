@@ -51,3 +51,7 @@ ld --relocatable -o gen/o.o gen/*.o
 
 gcc -o test gen/o.o bin/test.o
 gcc -o hive gen/o.o bin/hive.o
+
+find gen bin -name "*.h" -or -name "*.c" | xargs ctags
+tools/fixtags.sh
+

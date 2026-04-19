@@ -14,7 +14,9 @@ void      freeXX(XXIndex i)                   { freeInPile(headOfXXs, i.i, 0, 0)
 void      closeXXPile(FATE fate)              { closePile(headOfXXs, fate); headOfXXs = 0; } 
 bool      validXXIndex(XXIndex i)             { return i.i != BAD_INDEX; } 
 Index     countXXs()                          { return countPop(headOfXXs); } 
-Index     recLenXX()                          { return recLen(headOfXXs); }
+Index     getXXUsr()                          { return getUsr(headOfXXs); } 
+void      setXXUsr(Index u)                   { setUsr(headOfXXs, u); } 
+void      modXXUsr(IndexDiff u)               { modUsr(headOfXXs, u); } 
 
 XXPile pileOfXXs = 
   { openXXPile
@@ -25,5 +27,7 @@ XXPile pileOfXXs =
   , closeXXPile
   , validXXIndex
   , countXXs
-  , recLenXX
+  , getXXUsr
+  , setXXUsr
+  , modXXUsr
   };

@@ -1,6 +1,5 @@
 #include "types.h"
 
-typedef enum {NOWT=0, DELETE, HIDE} FATE;
 typedef void * (*F)(void * item, void * u);
 
 typedef struct Pilehead Pilehead; 
@@ -13,5 +12,4 @@ void freeInPile(Pilehead * ph, Index i, void * ghost, int ghostlen); // Ghost ge
 Index countPop(Pilehead * ph );
 Index getUsr(Pilehead * ph); // Misc number
 void setUsr(Pilehead * ph, Index u);
-void modUsr(Pilehead * ph, int32_t u);
-Index recLen(Pilehead * ph);
+void modUsr(Pilehead * ph, IndexDiff u);

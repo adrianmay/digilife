@@ -28,7 +28,8 @@ usetpt() {
 
 inst1=(pile Link MEGA)
 inst2=(pile Junk MEGA)
-insts=(inst1 inst2)
+inst3=(meap Junk MEGA)
+insts=(inst1 inst2 inst3)
 
 for I in ${insts[@]}
 do

@@ -11,7 +11,7 @@ struct __attribute__((aligned(KILO))) Pilehead { // This should be of a good siz
   Index fro; // Index of next free record to be used in alloc
   _Atomic Index frn; // Num free slots
   char fn[MAX_FILENAME]; // So we can offer to delete it upon closing           
-  uint32_t usr; // Misc persistent variable about this pile.
+  Index usr; // Misc persistent variable about this pile.
 };
                             
 

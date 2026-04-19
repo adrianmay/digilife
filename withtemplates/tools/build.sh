@@ -4,8 +4,8 @@ tools/clean.sh
 rm -rf gen bin
 mkdir gen bin
 
-cp -r src/lit/* gen
-cp -r src/exe/* bin
+cp -r lit/* gen
+cp -r exe/* bin
 
 usetpt() {
   TPT=$1
@@ -14,15 +14,15 @@ usetpt() {
   ZZ=$4
   MOD=${XX}_${TPT}
   VAR="-v XX=${XX} -v YY=${YY} -v ZZ=${ZZ}"
-  TD=`find src/tpt/$1 -type d`
-  ID=${TD//src\/tpt\/${TPT}/gen\/${MOD}}
+  TD=`find tpt/$1 -type d`
+  ID=${TD//tpt\/${TPT}/gen\/${MOD}}
   mkdir -p $ID
   X=`find ${TD} -name "*.h" -or -name "*.c" | paste -sd' '`
   declare -a TF=($X)
-  IF=${TF//src\/tpt\/${TPT}/gen\/${MOD}}
+  IF=${TF//tpt\/${TPT}/gen\/${MOD}}
   for I in ${TF[@]}
   do
-    awk ${VAR} '{ gsub(/XX/,XX); gsub(/YY/,YY); gsub(/ZZ/,ZZ); }1' $I > ${I//src\/tpt\/${TPT}/gen\/${MOD}}
+    awk ${VAR} '{ gsub(/XX/,XX); gsub(/YY/,YY); gsub(/ZZ/,ZZ); }1' $I > ${I//tpt\/${TPT}/gen\/${MOD}}
   done
 }
 

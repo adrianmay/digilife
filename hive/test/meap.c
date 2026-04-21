@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
-#include "Junk_meap/h.h"
+#include "Junk_meap/1.h"
+#include "Junk_meap/2.h"
 #include "test.h"
 
 Score getJunkScore(Junk * pJ) { return pJ->tocks; }

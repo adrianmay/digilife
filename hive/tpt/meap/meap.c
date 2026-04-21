@@ -1,5 +1,6 @@
 #include <string.h>
-#include "h.h"
+#include "1.h"
+#include "2.h"
 
 static XXIndex parent(XXIndex i) {return ( XXIndex ){ (i.i-1)/2 };}
 static XXIndex left  (XXIndex i) {return ( XXIndex ){ 2*i.i + 1 };}

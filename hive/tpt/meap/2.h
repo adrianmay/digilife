@@ -1,5 +1,3 @@
-#include "types.h"
-#include "XX_pile/1.h"
 #include "XX.h"
 #include "XX_pile/2.h"
 

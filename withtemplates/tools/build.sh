@@ -54,10 +54,10 @@ done
 echo "Building gen/o.o"
 ld --relocatable --allow-shlib-undefined -o gen/o.o gen/*.o || exit 1
 
-echo "Building test"
-gcc -o test gen/o.o bin/test.o || exit 1
-echo "Building hive"
-gcc -o hive gen/o.o bin/hive.o || exit 1
+echo "Building Test"
+gcc -o Test gen/o.o bin/test.o || exit 1
+echo "Building Hive"
+gcc -o Hive gen/o.o bin/hive.o || exit 1
 
 echo "Building tags"
 find gen bin -name "*.h" -or -name "*.c" | xargs ctags || exit 1

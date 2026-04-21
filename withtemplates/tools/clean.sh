@@ -1,3 +1,3 @@
 #!/bin/bash
 
-rm -rf gen bin test hive tags *.pile core.*
+rm -rf gen bin Test Hive tags *.pile core.*

@@ -1,6 +1,5 @@
 #include <string.h>
 #include "h.h"
-#include "XX_pile/2.h"
 
 static XXIndex parent(XXIndex i) {return ( XXIndex ){ (i.i-1)/2 };}
 static XXIndex left  (XXIndex i) {return ( XXIndex ){ 2*i.i + 1 };}
@@ -84,4 +83,18 @@ static bool erase(XXIndex iCur) {
   return review(iCur);
 }
 
-XXMeap meapOfXXs = { insert, review, erase };
+
+static bool checkOrdered() {
+  bool ok=true;
+  Index cnt = pileOfXXs.getUsr();
+  for (Index i=1;i<cnt;i++) {
+    XXIndex iCur = (XXIndex){i};
+    Score sCur = getXXScore(pileOfXXs.get(iCur));
+    XXIndex iPar = parent(iCur);
+    Score sPar = getXXScore(pileOfXXs.get(iPar));
+    ok &= sPar <= sCur;
+  }
+  return ok;
+}
+
+XXMeap meapOfXXs = { insert, review, erase, checkOrdered };

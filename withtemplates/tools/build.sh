@@ -41,20 +41,26 @@ CS=`find gen bin -name "*.c"`
 for C  in $CS
 do
   O=${C/.c/.o}
-  gcc -g -iquote gen -Wall -Werror -c $C -o $O
+  echo "Building $O"
+  gcc -g -iquote gen -Wall -Werror -c $C -o $O || exit 1
 done
 
 for M in `find gen bin -maxdepth 1 -type d | grep '/'`
 do
-  ld --relocatable -o $M.o `find $M -name *.o`
+  echo "Building $M.o"
+  ld --relocatable -o $M.o `find $M -name *.o` || exit 1
 done
 
-ld --relocatable -o gen/o.o gen/*.o
+echo "Building gen/o.o"
+ld --relocatable --allow-shlib-undefined -o gen/o.o gen/*.o || exit 1
 
-gcc -o test gen/o.o bin/test.o
-gcc -o hive gen/o.o bin/hive.o
+echo "Building test"
+gcc -o test gen/o.o bin/test.o || exit 1
+echo "Building hive"
+gcc -o hive gen/o.o bin/hive.o || exit 1
 
-find gen bin -name "*.h" -or -name "*.c" | xargs ctags
-tools/fixtags.sh
+echo "Building tags"
+find gen bin -name "*.h" -or -name "*.c" | xargs ctags || exit 1
+tools/fixtags.sh  || exit 1
 
 

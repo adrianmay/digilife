@@ -1,3 +1,2 @@
 #!/bin/bash
-tools/build.sh
-./test && ./hive
+tools/build.sh && ./test && ./hive

@@ -1,1 +1,1 @@
-typedef struct { int a; } Junk;
+typedef struct { int tocks; } Junk;

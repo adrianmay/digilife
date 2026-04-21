@@ -38,7 +38,7 @@ int main() {
     wrap() && 
     globals() && 
     pile() && 
-//    meap() && 
+    meap() && 
 //    hotel() &&
     true;
   return suc?0:1;

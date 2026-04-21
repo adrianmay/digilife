@@ -1,5 +1,0 @@
-Test that meapInsert returns whether or not lowest changed
-Non-pedantic build 
-Index overused
-Pile doesn't need recLen - use sizeof(XX)
-objcopy limiting exports

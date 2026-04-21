@@ -1,8 +1,7 @@
 #include "test.h"
-#include "pile.h"
-#include "globals.h"
+#include "globals/h.h"
+#include "globals/structs.h"
 
-MAKEGLOBALS
 
 bool testGlobals() {
   bool v = openGlobals();

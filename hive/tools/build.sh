@@ -5,7 +5,7 @@ rm -rf gen bin
 mkdir gen bin
 
 cp -r lit/* gen
-cp -r exe/* bin
+cp -r test hive bin
 
 usetpt() {
   TPT=$1

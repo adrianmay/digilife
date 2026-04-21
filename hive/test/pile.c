@@ -1,112 +1,106 @@
 #include "test.h"
-#include "pile.h"
-
-MAKEPILE1(Thing);
-
-typedef struct __attribute__((aligned(KILO))) { 
-  int x;
-  ThingIndex next;
-} Thing;
-
-MAKEPILE2(Thing, GIGA);
+#include "ipile/h.h"
+#include "Link_pile/1.h"
+#include "Link.h"
+#include "Link_pile/2.h"
 
 bool virginity() {
-  bool vir1 = openThingPile(); //Assume it doesn't exist
+  bool vir1 = pileOfLinks.open(); //Assume it doesn't exist
   assertInt(vir1,true);
-  allocThing(0);
-  closeThingPile(0); //Don't delete the pile
-  bool vir2 = openThingPile();
+  pileOfLinks.alloc(0);
+  pileOfLinks.close(NOWT); //Don't delete the pile
+  bool vir2 = pileOfLinks.open();
   assertInt(vir2,false);
-  closeThingPile(1); //Delete it for next time
+  pileOfLinks.close(DELETE); //Delete it for next time
   return true;
 }
 
-int sumThings(ThingIndex i0) {
-  Thing * pT;
+int sumLinks(LinkIndex i0) {
+  Link * pT;
   int total=0;
-  for (ThingIndex i=i0;validThingIndex(i);i=pT->next) { pT = getThing(i); total += pT->x;}
+  for (LinkIndex i=i0;pileOfLinks.indexValid(i);i=pT->next) { pT = pileOfLinks.get(i); total += pT->x;}
   return total;
 }
 
-bool sumitems(ThingIndex * i0) {
-  bool vir = openThingPile(); //Assume it doesn't exist
-  assertInt(vir,true);
-  ThingIndex i; Thing * pT;
-  *i0 = i = allocThing(&pT); // Must be index zero
+bool sumItems(LinkIndex * i0) {
+  bool vir1 = pileOfLinks.open(); //Assume it doesn't exist
+  assertInt(vir1,true);
+  LinkIndex i; Link * pT;
+  *i0 = i = pileOfLinks.alloc(&pT); // Must be index zero
   pT->x = 0; 
   for (int a=0;a<1000;a++) {
-    pT->next=allocThing(&pT);
-    pT->next = badThingIndex;                       
+    pT->next=pileOfLinks.alloc(&pT);
+    pT->next = badLinkIndex;                       
     pT->x = 10*a;
   }
-  int total = sumThings(*i0);
+  int total = sumLinks(*i0);
   assertInt(total,4995000);
   return true;
 }
 
-ThingIndex nextThing(ThingIndex i) { return getThing(i)->next; }
+LinkIndex nextLink(LinkIndex i) { return pileOfLinks.get(i)->next; }
 
-bool freeing(ThingIndex i0) {
-  int count = countThings();
+bool freeing(LinkIndex i0) {
+  int count = pileOfLinks.count();
   assertInt(count,1001);
-  ThingIndex i1 = nextThing(i0); //3
-  ThingIndex i2 = nextThing(i1); //4
-  ThingIndex i3 = nextThing(i2);
-  ThingIndex i4 = nextThing(i3);
-  ThingIndex i5 = nextThing(i4);
-  freeThing(i2);
-  freeThing(i4);
-  freeThing(i3);
-  getThing(i1)->next = i5;
-  int total = sumThings(i0);
+  LinkIndex i1 = nextLink(i0); //3
+  LinkIndex i2 = nextLink(i1); //4
+  LinkIndex i3 = nextLink(i2);
+  LinkIndex i4 = nextLink(i3);
+  LinkIndex i5 = nextLink(i4);
+  pileOfLinks.free(i2);
+  pileOfLinks.free(i4);
+  pileOfLinks.free(i3);
+  pileOfLinks.get(i1)->next = i5;
+  int total = sumLinks(i0);
   assertInt(total,4994940);
-  count = countThings();
+  count = pileOfLinks.count();
   assertInt(count,998);
   return true;
 }
 
 bool reallocing() { //Free list = 0, 1, 4, 5, 6
-  ThingIndex i = allocThing(0);
+  LinkIndex i = pileOfLinks.alloc(0);
   assertInt(i.i,0);
-  i = allocThing(0);
+  i = pileOfLinks.alloc(0);
   assertInt(i.i,1);
-  i = allocThing(0);
+  i = pileOfLinks.alloc(0);
   assertInt(i.i,4);
-  i = allocThing(0);
+  i = pileOfLinks.alloc(0);
   assertInt(i.i,1003); // Keeping the 5 and 6
-  int count = countThings();
+  int count = pileOfLinks.count();
   assertInt(count,1002);
   return true;
 }
 
-void * incrementBy(Thing * p, void * u) {
+void * incrementBy(Link * p, void * u) {
   int * pi = ((int*)u);
   p->x += *pi;
   (*pi)*=2;
   return 0;
 }
 
-bool with(ThingIndex i0) {
-  int total = sumThings(i0);
+bool with(LinkIndex i0) {
+  int total = sumLinks(i0);
   assertInt(total,4994940);
   int i = 3;
-  withThing(i0, incrementBy, ((void*)&i));
-  total = sumThings(i0);
+  pileOfLinks.with(i0, incrementBy, ((void*)&i));
+  total = sumLinks(i0);
   assertInt(total,4994943);
   assertInt(i,6);
   return true;  
 }
 
-bool testThingPile() {
-  ThingIndex i0;
-  return virginity()
-      && (sumitems(&i0), true)
-      && freeing(i0)
-      && reallocing()
-      && with(i0)
-      ;
-}
+bool testLinkPile() {
+  LinkIndex i0;
+  return true
+         && virginity()  // deletes the pilee
+         && (sumItems(&i0), true) // leaves it open
+         && freeing(i0) // ditto
+         && reallocing()
+         && with(i0)
+;}
 
-void cleanupThingPile() { closeThingPile(1); }
-bool pile() { return bkt(nowt,testThingPile,cleanupThingPile); }
+void cleanupLinkPile() { pileOfLinks.close(DELETE); }
+bool pile() { return bkt(nowt,testLinkPile,cleanupLinkPile); }
 

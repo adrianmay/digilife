@@ -1,5 +1,5 @@
 #include "test.h"
-#include "sleep/h.h"
+#include "sleep.h"
 
 void * interrupter(void * p) {
   pthread_t * pTid = (pthread_t*) p;

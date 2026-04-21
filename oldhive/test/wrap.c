@@ -1,6 +1,6 @@
 #include "test.h"
 
-#include "sleep/h.h"
+#include "sleep.h"
 
 bool wrap() {
   uint8_t z;

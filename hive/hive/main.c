@@ -1,18 +1,8 @@
-#include <stdio.h>
-#include "hotel.h"
+#include "stdio.h"
+#include "Junk_meap/h.h"
 
+int main() { printf("Hello from HIVE\n"); }
 
-// Otherwise modules complain that pg is unresolved:
-MAKEGLOBALS
-
-int init() {
-  //Open the piles, getting everything physically into RAM
-  //Set tocksReviewedAt to process cpu time
-  //Run animals
-  return 0;
-}
-
-int main() {
-  printf("HELLO FROM HIVE\n");
-  return 0;
-}
+Score getJunkScore(Junk * pJ) { return pJ->tocks; }
+void  onNewJunk(JunkIndex iJ, Index hint) { }
+void  onMoveJunk(Junk * pJ, JunkIndex to) { }

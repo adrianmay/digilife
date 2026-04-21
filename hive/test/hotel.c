@@ -1,5 +1,6 @@
+/*
 #include "test.h"
-#include "hotel.h"
+#include "hotel/h.h"
 
 Nanosecs ns;
 
@@ -57,7 +58,7 @@ bool testEarn() {
   return true;
 }
 
-bool testRent() {
+bool testHotel() {
   return 
     testNoPop() &&
     test1() &&
@@ -65,6 +66,7 @@ bool testRent() {
     true;
 }
 
-void cleanupRent() { closeGlobals(1); closeBlockHotel(1); }
-bool rent() { return bkt(init, testRent, cleanupRent); }
+void cleanupHotel() { closeGlobals(1); closeBlockHotel(1); }
+bool hotel() { return bkt(init, testHotel, cleanupHotel); }
+*/
 

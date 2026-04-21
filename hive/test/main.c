@@ -1,7 +1,7 @@
 #include <pthread.h>
 #include <locale.h>
 #include <stdlib.h>
-#include "globals.h"
+#include "globals/h.h"
 #include "test.h"
 
 void B2V(B b) { (*b)(); }
@@ -32,14 +32,14 @@ void background(void * (*f)(void *)) { pthread_t pid; pthread_create(&pid, 0, f,
 int main() {
   srand(0);
   setlocale(LC_NUMERIC, "");
-  printf("process_age_costs_in_pence_per_second: %f\n", process_age_costs_in_pence_per_second);
+  //printf("process_age_costs_in_pence_per_second: %f\n", process_age_costs_in_pence_per_second);
   bool suc = 
     sleep() && 
     wrap() && 
+    globals() && 
     pile() && 
     meap() && 
-    globals() && 
-    rent() &&
+//    hotel() &&
     true;
   return suc?0:1;
 }

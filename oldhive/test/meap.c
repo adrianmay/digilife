@@ -1,18 +1,19 @@
 #include <string.h>
-#include <stdlib.h>
-#include "Junk_meap/h.h"
 #include "test.h"
+#include "meap.h"
 
-Score getJunkScore(Junk * pJ) { return pJ->tocks; }
-void  onNewJunk(JunkIndex iJ, Index hint) { }
-void  onMoveJunk(Junk * pJ, JunkIndex to) { }
+MAKEMEAP1(MyMeap)
+typedef struct { Tocks tocks; } MyMeap;
+MyMeap prototypeMyMeap = { 0 };
+MAKEMEAP2(MyMeap, GIGA)
+
 
 #define assertWholeMeap(pExp, N) { \
   printf("Meap setup %d: ", setupNum); \
-  Index tot = pileOfJunks.getUsr(); \
+  Index tot = getUsr(headOfMyMeaps); \
   assertInt(tot, N); \
   for (uint32_t a = 0; a<N; a++) { \
-    Junk * v = getJunk((Junk) {a}); \
+    MyMeap * v = getMyMeap((MyMeapIndex) {a}); \
     assertIntHex(v->tocks,pExp[a]); \
   } \
 }
@@ -23,20 +24,25 @@ void  onMoveJunk(Junk * pJ, JunkIndex to) { }
   assertIntSufHex(A, B, s); \
 }
 
-Junk * pJunk;
-JunkIndex iJunk;
+MyMeap * pMeap;
+MyMeapIndex iMeap;
 
 #define CHOMPNOTHING 1
-int doWhat;
-void expect(int what) {doWhat |= what;}
+uint doWhat;
+void expect(uint what) {doWhat |= what;}
 int fullChompN; Score fullChompP[10];
 void expectFullChomp(int n, Score * p) { fullChompN=n; memcpy(fullChompP, p, n*sizeof(Score)); }
 
-bool setupEmpty() { pileOfJunks.open(); return true; }
+Score getScoreMyMeap(MyMeap * p) {return p->tocks/0x10; }
+void onNewMyMeap(MyMeapIndex i, uint32_t hint) { getMyMeap(i)->tocks = hint; }  
+void onMoveMyMeap(MyMeap * p, MyMeapIndex i) {} //{ printf("Moving 0x%x to %d\n", p->tocks, i.i); fullChompP[i.i]=p->tocks; }  
+bool meapAppealMyMeap(MyMeap * p) {return false; }
+
+bool setupEmpty() { openMyMeapPile(); return true; }
 
 bool setupSingleton() { 
   setupEmpty(); 
-  meapOfJunks.insert(&iJunk, &pJunk, 0x88);
+  meapInsertMyMeap(&iMeap, &pMeap, 0x88);
   expect(CHOMPNOTHING);
   expectFullChomp(1, (Score []){0x88});
   return true;
@@ -44,28 +50,28 @@ bool setupSingleton() {
 
 bool setup2Inc() { 
   setupSingleton(); 
-  meapOfJunks.insert(&iJunk, &pJunk, 0xc8);
+  meapInsertMyMeap(&iMeap, &pMeap, 0xc8);
   expect(CHOMPNOTHING);
   expectFullChomp(2, (Score []){0x88, 0xc8});
   return true;
 }
 bool setup2Dec() { 
   setupSingleton(); 
-  meapOfJunks.insert(&iJunk, &pJunk, 0x48);
+  meapInsertMyMeap(&iMeap, &pMeap, 0x48);
   expect(CHOMPNOTHING);
   expectFullChomp(2, (Score []){0x48, 0x88});
   return true;
 }
 bool setup2CloseInc() { 
   setupSingleton(); 
-  meapOfJunks.insert(&iJunk, &pJunk, 0x89);
+  meapInsertMyMeap(&iMeap, &pMeap, 0x89);
   expect(CHOMPNOTHING);
   expectFullChomp(2, (Score []){0x88, 0x89});
   return true;
 }
 bool setup2CloseDec() { 
   setupSingleton(); 
-  meapOfJunks.insert(&iJunk, &pJunk, 0x87);
+  meapInsertMyMeap(&iMeap, &pMeap, 0x87);
   expectFullChomp(2, (Score []){0x88, 0x87}); // Cos score (/16) is same
   expect(CHOMPNOTHING);
   return true;
@@ -73,9 +79,9 @@ bool setup2CloseDec() {
 
 bool setup3(Score a, Score b, Score c) {
   setupEmpty(); 
-  meapOfJunks.insert(&iJunk, &pJunk, a);
-  meapOfJunks.insert(&iJunk, &pJunk, b);
-  meapOfJunks.insert(&iJunk, &pJunk, c);
+  meapInsertMyMeap(&iMeap, &pMeap, a);
+  meapInsertMyMeap(&iMeap, &pMeap, b);
+  meapInsertMyMeap(&iMeap, &pMeap, c);
   expectFullChomp(3, (Score []){0x18, 0x28, 0x38});
   return true;
 }
@@ -104,23 +110,32 @@ BV setterUppers[] = {
 
 int setupNum, testNum;
 
+bool ordered() {
+  Pilehead * ph = headOfMyMeaps;
+  Index cnt = getUsr(ph);
+  for (Index iCur=1;iCur<cnt;iCur++) {
+    Score sCur = MCMyMeap.getScore(findInPile(ph, iCur));
+    Index iPar = parent(iCur);
+    Score sPar = MCMyMeap.getScore(findInPile(ph, iPar));
+    bool ok = sPar <= sCur;
+    assertIntM(ok, true);
+  }
+  return true;
+}
+
 int counts[numMeapSetups ] = {0,1,2,2,2,2,3,3,3,3,3,3,3};
 bool count(int killed) {
-  Index cnt = pileOfJunks.getUsr();
+  Pilehead * ph = headOfMyMeaps;
+  Index cnt = getUsr(ph);
   Index exp = counts[setupNum]-killed;
   assertIntM(cnt, exp);
   return true;
 }
 
-bool ordered() {
-  bool b = meapOfJunks.checkOrdered();
-  assertInt(b, true);
-  return b;
-}
-
 bool testMeap1() {
   return
     count(0) &&
+    ordered() && 
     ordered() && 
     true;
 }
@@ -133,7 +148,7 @@ bool testMeap2() {
 
 bool testMeap3() {
   return
-    (meapOfJunks.remove((JunkIndex){2})) &&
+    (meapRemoveMyMeap((MyMeapIndex){2}),true) &&
     count(setupNum>0 ? 1 : 0) &&
     ordered() &&
     true;
@@ -141,22 +156,23 @@ bool testMeap3() {
 
 
 bool testMeap4() {
-  Index cnt = pileOfJunks.getUsr();
+  Pilehead * ph = headOfMyMeaps;
+  Index cnt = getUsr(ph);
   if (cnt==0) return true;
   for (int a=0;a<500;a++) {
-    JunkIndex i = (JunkIndex) {a%cnt};
-    Junk * p = pileOfJunks.get(i);
+    MyMeapIndex i = (MyMeapIndex) {a%cnt};
+    MyMeap * p = getMyMeap(i);
     p->tocks = rand()%0x100;
-    meapOfJunks.review(i);
+    meapReviewMyMeap(i);
     ordered();
   }
   return true;
 }
 
-BV testers[] = {testMeap1};//, testMeap2, testMeap3, testMeap4};
+BV testers[] = {testMeap1, testMeap2, testMeap3, testMeap4};
 #define numMeapTesters (sizeof(testers)/sizeof(BV))
 
-void cleanupMeap() { pileOfJunks.close(DELETE); }
+void cleanupMeap() { closeMyMeapPile(1); }
 
 bool meap() { 
   for (testNum=0;testNum<numMeapTesters;testNum++) {
@@ -167,3 +183,4 @@ bool meap() {
   }
   return true;
 }
+

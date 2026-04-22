@@ -12,6 +12,8 @@ declare -a TF=($X)
 IF=${TF//tpt\/${TPT}/gen\/${MOD}}
 for I in ${TF[@]}
 do
-  awk ${VAR} '{ gsub(/XX/,XX); gsub(/YY/,YY); gsub(/ZZ/,ZZ); }1' $I > ${I//tpt\/${TPT}/gen\/${MOD}}
+  O=${I//tpt\/${TPT}/gen\/${MOD}}
+  awk ${VAR} '{ gsub(/XX/,XX); gsub(/YY/,YY); gsub(/ZZ/,ZZ); }1' $I > $O
+  chmod -w $O
 done
 

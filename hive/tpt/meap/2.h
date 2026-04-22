@@ -8,6 +8,7 @@ typedef bool (*XXMeapInsert)(XXIndex *pI, XX ** pNew, Index hint);
 typedef bool (*XXMeapReview)(XXIndex i);
 typedef bool (*XXMeapRemove)(XXIndex i);
 typedef bool (*XXCheckOrdered)();
+typedef Index (*XXMeapSize)();
 //
 // typedef enum {EXTINCT=-1, IDLE, } ChompResult;
 // typedef ChompResult (*XXMeapChomp)(Score score, XXIndex * i);
@@ -17,6 +18,7 @@ typedef struct {
   XXMeapReview review;
   XXMeapRemove remove;
   XXCheckOrdered checkOrdered;
+  XXMeapSize size;
 } XXMeap;
 
 

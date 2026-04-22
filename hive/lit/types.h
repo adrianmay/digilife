@@ -7,6 +7,7 @@
 #include <stdint.h>         
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdatomic.h>
 
 #define NS_PER_SEC 1000000000.0

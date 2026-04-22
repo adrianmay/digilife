@@ -60,3 +60,17 @@ void closeGlobals(bool rm) {  // And that param should be enum
   closeGlobals_(pg->fd, rm); 
 } 
 
+TockPrice tockPrice() {return pg->groatsPerTock;}
+
+void updateTocks() {
+  Nanosecs now = ageOfProcess();
+  Nanosecs sleptFor = wrapSub64U(now, vg.tocksReviewedAt);
+  Nanosecs toBill = sleptFor + pg->nsNotTocked;
+  vg.tocksReviewedAt = now;
+  lldiv_t qr = lldiv(toBill, pg->nsPerTock);
+  pg->lastKnownTock = pg->lastKnownTock + qr.quot;
+  pg->nsNotTocked = qr.rem;
+} 
+
+Tocks tocksNow() {return pg->lastKnownTock;}
+Tocks nsUntilTock(Tocks deadline) {return (deadline - pg->lastKnownTock)*pg->nsPerTock - pg->nsNotTocked;}

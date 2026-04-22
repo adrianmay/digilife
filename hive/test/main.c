@@ -17,16 +17,16 @@ bool bkt(B up, B along, V down) {
   return suc;
 }
 
-void * sweat(void *) {
+void * sweat(void * p) {
+  uint64_t z=1;
   for (int b=0;b<10;b++) {
-    uint64_t z=1;
     for (int a=0;a<99999999;a++)  
       z*=a;
   }
-  return 0;
+  return (void*)z;
 }
 
-void * sweat_forever(void *) { while(true) sweat(0); }
+void * sweat_forever(void * p) { while(true) sweat(0); }
 void background(void * (*f)(void *)) { pthread_t pid; pthread_create(&pid, 0, f, 0); }
 
 int main() {

@@ -4,7 +4,7 @@
 #include "2.h"
 
 Pilehead * headOfXXs = 0; 
-const XXIndex badXXIndex = (XXIndex) {BAD_INDEX}; 
+const XXIndex  badXXIndex = (XXIndex) {BAD_INDEX}; 
 
 bool      openXXPile()                        { bool v; headOfXXs = openPile("XXs.pile", sizeof(XX), 10, YY, &v); return v; } 
 XXIndex   allocXX(XX ** pNew)                 { return (XXIndex) {.i=allocInPile(headOfXXs, (void**)pNew, 0, 0)}; } 

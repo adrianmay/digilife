@@ -31,7 +31,7 @@ static bool siftUp(XXIndex iCur) {
     swap(iCur, iPar);
     iCur.i = iPar.i;
   }
-  return true;
+  return true; //We changed the zeroth member
 }
 
 // We can't use free cos meaps must be contiguous, so we use the heap's usr for the "meapish" size
@@ -98,4 +98,6 @@ static bool checkOrdered() {
   return ok;
 }
 
-XXMeap meapOfXXs = { insert, review, erase, checkOrdered };
+static Index size() {  return pileOfXXs.getUsr(); } 
+
+XXMeap meapOfXXs = { insert, review, erase, checkOrdered, size };

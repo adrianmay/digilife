@@ -102,5 +102,5 @@ bool testLinkPile() {
 ;}
 
 void cleanupLinkPile() { pileOfLinks.close(DELETE); }
-bool pile() { return bkt(nowt,testLinkPile,cleanupLinkPile); }
+bool pile() { return bkt("pile", nowt,testLinkPile,cleanupLinkPile); }
 

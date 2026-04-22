@@ -12,7 +12,7 @@ typedef bool  (*B)();
 typedef bool (*BV)();
 
 
-bool bkt(B up, B along, V down);
+bool bkt(const char * name, B up, B along, V down);
 bool nowt();
 void * sweat(void *);
 void * sweat_forever(void *);

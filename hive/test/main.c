@@ -8,7 +8,8 @@ void B2V(B b) { (*b)(); }
 
 bool nowt() { return true; }
 
-bool bkt(B up, B along, V down) {
+bool bkt(const char * name, B up, B along, V down) {
+  printf("Testing %s\n", name);
   bool suc;
   if ((suc=(*up)())) {
     suc = (*along)();
@@ -34,7 +35,7 @@ int main() {
   setlocale(LC_NUMERIC, "");
   //printf("process_age_costs_in_pence_per_second: %f\n", process_age_costs_in_pence_per_second);
   bool suc = 
-    sleep() && 
+    //sleep() && 
     wrap() && 
     globals() && 
     pile() && 

@@ -20,5 +20,5 @@ bool testGlobals() {
 }
 
 void cleanupGlobals() { closeGlobals(1); }
-bool globals() { return bkt(nowt,testGlobals,cleanupGlobals); }
+bool globals() { return bkt("globals", nowt,testGlobals,cleanupGlobals); }
 

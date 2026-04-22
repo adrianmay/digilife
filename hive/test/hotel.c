@@ -67,6 +67,6 @@ bool testHotel() {
 }
 
 void cleanupHotel() { closeGlobals(1); closeBlockHotel(1); }
-bool hotel() { return bkt(init, testHotel, cleanupHotel); }
+bool hotel() { return bkt("hotel", init, testHotel, cleanupHotel); }
 */
 

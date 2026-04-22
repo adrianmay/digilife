@@ -163,7 +163,9 @@ bool meap() {
   for (testNum=0;testNum<numMeapTesters;testNum++) {
     for (setupNum=0;setupNum<numMeapSetups; setupNum++) {
       doWhat=0; fullChompN=0;
-      bkt(setterUppers[setupNum], testers[testNum], cleanupMeap);
+      char blah[20];
+      sprintf(blah, "meap[t=%d,s=%d]", testNum, setupNum);
+      bkt(blah,setterUppers[setupNum], testers[testNum], cleanupMeap);
     }
   }
   return true;

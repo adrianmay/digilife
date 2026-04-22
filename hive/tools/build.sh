@@ -26,16 +26,25 @@ usetpt() {
   done
 }
 
-inst1=(pile Link MEGA)
-inst2=(pile Junk MEGA)
-inst3=(meap Junk MEGA)
-insts=(inst1 inst2 inst3)
+tools/make_pile.sh Link MEGA
+tools/make_meap.sh Junk MEGA
+tools/make_hotel.sh Mob MEGA
 
-for I in ${insts[@]}
-do
-  declare -n Fs=$I
-  usetpt ${Fs[@]}
-done
+
+# inst1=(pile Link MEGA)
+# inst2=(pile Junk MEGA)
+# inst3=(meap Junk MEGA)
+# insts=(inst1 inst2 inst3)
+# 
+# for I in ${insts[@]}
+# do
+#   declare -n Fs=$I
+#   usetpt ${Fs[@]}
+# done
+
+echo "Building tags"
+find gen bin -name "*.h" -or -name "*.c" | xargs ctags || exit 1
+tools/fixtags.sh  || exit 1
 
 CS=`find gen bin -name "*.c"`
 for C  in $CS
@@ -58,9 +67,5 @@ echo "Building Test"
 gcc -o Test gen/o.o bin/test.o || exit 1
 echo "Building Hive"
 gcc -o Hive gen/o.o bin/hive.o || exit 1
-
-echo "Building tags"
-find gen bin -name "*.h" -or -name "*.c" | xargs ctags || exit 1
-tools/fixtags.sh  || exit 1
 
 

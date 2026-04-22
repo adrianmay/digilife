@@ -28,19 +28,8 @@ usetpt() {
 
 tools/make_pile.sh Link MEGA
 tools/make_meap.sh Junk MEGA
-tools/make_hotel.sh Mob MEGA
-
-
-# inst1=(pile Link MEGA)
-# inst2=(pile Junk MEGA)
-# inst3=(meap Junk MEGA)
-# insts=(inst1 inst2 inst3)
-# 
-# for I in ${insts[@]}
-# do
-#   declare -n Fs=$I
-#   usetpt ${Fs[@]}
-# done
+tools/make_hotel.sh Mob GIGA
+tools/make_hotel.sh Msg GIGA
 
 echo "Building tags"
 find gen bin -name "*.h" -or -name "*.c" | xargs ctags || exit 1

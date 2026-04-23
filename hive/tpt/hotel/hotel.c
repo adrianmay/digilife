@@ -17,6 +17,7 @@ void initXXHotel() {
   pthread_cond_init (&condXXHotel, 0);
 }
 
+
 Score getXXBombScore(XXBomb * pBomb) { 
   return pBomb->when; 
 }
@@ -66,6 +67,10 @@ void reviewXXInHotel(XXBulkIndex i) {
   updateXXDeathWithBulkIndex(i); 
 }
 
+XXBulkIndex allocInXXHotel(XXBulk ** ppBulk) {
+  return (XXBulkIndex){0};
+}
+
 static void timedwait(Tocks deadline) {
   Nanosecs ns = nsUntilTock(deadline);
   struct timespec ts;
@@ -97,4 +102,5 @@ void * collectXXRent(void * p) {
   pthread_mutex_unlock(&mutexXXHotel);
   return 0;
 }
+
 

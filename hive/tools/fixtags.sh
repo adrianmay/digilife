@@ -1,10 +1,8 @@
-awk -F'\t' '{
-  cmd = "tools/fixloc.sh \"" $2 "\""
-  cmd | getline newval
-  close(cmd)
-  $2 = newval
+awk -F'\t' '{ 
+  if ($2 ~ /^gen\/[^_/]*\//)          gsub(/^gen/,         "lit", $2);
+  if ($2 ~ /^gen\/[^_/.]*\..$/)       gsub(/^gen/,         "lit", $2);
+  if ($2 ~ /^gen\/[^./_]*_[^./_]*\//) gsub(/^gen\/[^_]*_/, "tpt/", $2);
+  gsub(/^bin\/test\//, "test/", $2);
+  gsub(/^bin\/hive\//, "hive/", $2);
   print
 }' OFS='\t' tags > newtags
-rm tags
-mv newtags tags
-

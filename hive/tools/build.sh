@@ -35,6 +35,7 @@ tools/make_hotel.sh Msg GIGA
 
 echo "Building tags"
 find gen bin -name "*.h" -or -name "*.c" | xargs ctags || exit 1
+echo "Doctoring tags"
 tools/fixtags.sh  || exit 1
 
 CS=`find gen bin -name "*.c"`

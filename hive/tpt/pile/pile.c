@@ -6,7 +6,7 @@
 Pilehead * headOfXXs = 0; 
 const XXIndex  badXXIndex = (XXIndex) {BAD_INDEX}; 
 
-bool      openXXPile()                        { bool v; headOfXXs = openPile("XXs.pile", sizeof(XX), 10, YY, &v); return v; } 
+bool      openXXPile()                        { bool v; headOfXXs = openPile("XXs.pile", sizeof(XX), 10, YY, &v, XX_PILE_HAS_FREE); return v; } 
 XXIndex   allocXX(XX ** pNew)                 { return (XXIndex) {.i=allocInPile(headOfXXs, (void**)pNew, 0, 0)}; } 
 XX *      getXX(XXIndex i)                    { return (XX*)findInPile(headOfXXs, i.i); } 
 void *    withXX(XXIndex i, F_XX f, void * u) { return withInPile(headOfXXs, i.i, (F)f, u); } 
@@ -18,6 +18,7 @@ Index     getXXUsr()                          { return getUsr(headOfXXs); }
 void      setXXUsr(Index u)                   { setUsr(headOfXXs, u); } 
 void      modXXUsr(IndexDiff u)               { modUsr(headOfXXs, u); } 
 
+#if XX_PILE_HAS_FREE
 XXPile pileOfXXs = 
   { openXXPile
   , allocXX
@@ -31,3 +32,17 @@ XXPile pileOfXXs =
   , setXXUsr
   , modXXUsr
   };
+#else
+XXPile pileOfXXs = 
+  { openXXPile
+  , allocXX
+  , getXX
+  , withXX
+  , closeXXPile
+  , validXXIndex
+  , countXXs
+  , getXXUsr
+  , setXXUsr
+  , modXXUsr
+  };
+#endif

@@ -3,7 +3,7 @@
 typedef void * (*F)(void * item, void * u);
 
 typedef struct Pilehead Pilehead; 
-Pilehead * openPile(const char * filename, Index rec, Index stp, Index lim, bool * virgin);
+Pilehead * openPile(const char * filename, Index rec, Index stp, Index lim, bool * virgin, bool dummyfrees);
 void closePile(Pilehead * ph, FATE fate); 
 Index allocInPile(Pilehead * ph, void ** pNew, void * ghost, int ghostlen); // Free block contents get copied to ghost
 void * findInPile(Pilehead * ph, Index i); // Just deref the index

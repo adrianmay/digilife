@@ -27,7 +27,7 @@ uint32_t capacity(Pilehead * ph, size_t filelen) {
   return (filelen-sizeof(Pilehead)) / ph->rec;
 }
 
-Pilehead * openPile(const char * filename, uint32_t rec, uint32_t stp, Index lim, bool * virgin) { // returns array address
+Pilehead * openPile(const char * filename, uint32_t rec, uint32_t stp, Index lim, bool * virgin, bool dummyfrees) { // returns array address
   if (rec<4) { printf("Record size too small for free indices.\n"); quit(1); }
   // Could this ^ be at compile time?
   int fd;
@@ -68,8 +68,9 @@ Pilehead * openPile(const char * filename, uint32_t rec, uint32_t stp, Index lim
     ph->frn = 0;
     ph->usr = 0;
     strncpy(ph->fn, filename, MAX_FILENAME-1);
-    for (int a=0;a<LIKE_FREE;a++) 
-      freeInPile(ph, allocInPile(ph, 0, 0, 0), 0, 0);
+    if (dummyfrees)
+      for (int a=0;a<LIKE_FREE;a++) 
+        freeInPile(ph, allocInPile(ph, 0, 0, 0), 0, 0);
   }
   return ph;
 }

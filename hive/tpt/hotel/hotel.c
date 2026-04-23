@@ -67,8 +67,15 @@ void reviewXXInHotel(XXBulkIndex i) {
   updateXXDeathWithBulkIndex(i); 
 }
 
-XXBulkIndex allocInXXHotel(XXBulk ** ppBulk) {
-  return (XXBulkIndex){0};
+XXBulkIndex allocXXInHotel(XXBulk ** ppBulk, Cash cash) {
+  XXBulkIndex iBulk = pileOfXXBulks.alloc(ppBulk);
+  (*ppBulk)->rent.cash = cash;
+  updateTocks();
+  (*ppBulk)->rent.lastPaidRent = tocksNow();
+  XXBombIndex iBomb;
+  XXBomb * pBomb;
+  meapOfXXBombs.insert(&iBomb, &pBomb, iBulk.i); // onNew should do the rest
+  return iBulk;
 }
 
 static void timedwait(Tocks deadline) {

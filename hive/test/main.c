@@ -40,7 +40,7 @@ int main() {
     globals() && 
     pile() && 
     meap() && 
-//    hotel() &&
+    hotel() &&
     true;
   return suc?0:1;
 }

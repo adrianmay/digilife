@@ -8,23 +8,21 @@
 #include "XXBomb_meap/2.h"
 #include "XXBulk_pile/2.h"
 #include <pthread.h>
+#include "h.h"
 
 pthread_mutex_t mutexXXHotel;
 pthread_cond_t condXXHotel;
 
-void initXXHotel() {
+static void open() {
   pthread_mutex_init(&mutexXXHotel, 0);
   pthread_cond_init (&condXXHotel, 0);
+  pileOfXXBulks.open();
+  pileOfXXBombs.open();
 }
 
-
-Score getXXBombScore(XXBomb * pBomb) { 
-  return pBomb->when; 
-}
-
-void onMoveXXBomb(XXBomb * pBomb, XXBombIndex to) { 
-  XXBulk * pBulk = pileOfXXBulks.get(pBomb->who);
-  pBulk->rent.bomb = to;
+static void close(FATE fate) {
+  pileOfXXBulks.close(fate);
+  pileOfXXBombs.close(fate);
 }
 
 static void updateXXDeath(XXBulk* pBulk, XXBomb * pBomb) {
@@ -57,17 +55,11 @@ static void updateXXDeathWithBulkIndexAndBombPointer(XXBulkIndex iBulk, XXBomb *
   updateXXDeath(pBulk, pBomb);
 }
   
-void  onNewXXBomb(XXBombIndex iBomb, Index hint) { 
-  XXBomb * pBomb = pileOfXXBombs.get(iBomb);
-  pBomb->who = (XXBulkIndex){hint};
-  updateXXDeathWithBulkIndexAndBombPointer(pBomb->who, pBomb);
-}
-
-void reviewXXInHotel(XXBulkIndex i) { 
+static void review(XXBulkIndex i) { 
   updateXXDeathWithBulkIndex(i); 
 }
 
-XXBulkIndex allocXXInHotel(XXBulk ** ppBulk, Cash cash) {
+static XXBulkIndex alloc(Cash cash, XXBulk ** ppBulk) {
   XXBulkIndex iBulk = pileOfXXBulks.alloc(ppBulk);
   (*ppBulk)->rent.cash = cash;
   updateTocks();
@@ -79,7 +71,9 @@ XXBulkIndex allocXXInHotel(XXBulk ** ppBulk, Cash cash) {
 }
 
 static void timedwait(Tocks deadline) {
+  printf("timedwait: deadline: %'d\n", deadline);
   Nanosecs ns = nsUntilTock(deadline);
+  printf("timedwait: ns %'ld\n", ns);
   struct timespec ts;
   lldiv_t qr = lldiv(ns, 1000000000);
   ts.tv_sec = qr.quot;
@@ -87,7 +81,8 @@ static void timedwait(Tocks deadline) {
   pthread_cond_timedwait(&condXXHotel, &mutexXXHotel, &ts);
 }
 
-void * collectXXRent(void * p) {
+static void * collectRent(void * p) {
+  printf("HERE\n");
   pthread_mutex_lock(&mutexXXHotel);
   Tocks deadline;
   while (true) {
@@ -99,6 +94,7 @@ void * collectXXRent(void * p) {
     deadline = pBomb->when;
     if (deadline <= now) {
       pthread_mutex_unlock(&mutexXXHotel);
+      printf("Freeing stuff: iBomb: %d, who: %d\n", iBomb.i, pBomb->who.i);
       pileOfXXBulks.free(pBomb->who);
       pthread_mutex_lock(&mutexXXHotel);
       meapOfXXBombs.remove(iBomb);
@@ -110,4 +106,21 @@ void * collectXXRent(void * p) {
   return 0;
 }
 
+XXHotel hotelOfXXs = {open, alloc, review, collectRent, close};
+
+Score getXXBombScore(XXBomb * pBomb) { 
+  return pBomb->when; 
+}
+
+void onNewXXBomb(XXBombIndex iBomb, Index hint) { 
+  printf("OnNew: iBomb: %d hint: %d\n", iBomb.i, hint);
+  XXBomb * pBomb = pileOfXXBombs.get(iBomb);
+  pBomb->who = (XXBulkIndex){hint};
+  updateXXDeathWithBulkIndexAndBombPointer(pBomb->who, pBomb);
+}
+
+void onMoveXXBomb(XXBomb * pBomb, XXBombIndex to) { 
+  XXBulk * pBulk = pileOfXXBulks.get(pBomb->who);
+  pBulk->rent.bomb = to;
+}
 

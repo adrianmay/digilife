@@ -1,5 +1,17 @@
 
-void initXXHotel();
-XXBulkIndex allocXXInHotel(XXBulk ** ppBulk, Cash cash);
-void reviewXXInHotel(XXBulkIndex i);
-void * collectXXRent(void * p);
+typedef void (*XXHotelOpen)();
+typedef XXBulkIndex (*XXHotelAlloc)(Cash cash, XXBulk ** ppBulk);
+typedef void (*XXHotelReview)(XXBulkIndex i);
+typedef void * (*XXHotelCollectRent)(void * p);
+typedef void (*XXHotelClose)(FATE fate);
+
+typedef struct {
+  XXHotelOpen open;
+  XXHotelAlloc alloc;
+  XXHotelReview review;
+  XXHotelCollectRent collectRent;
+  XXHotelClose close;
+} XXHotel;
+
+extern XXHotel hotelOfXXs;
+

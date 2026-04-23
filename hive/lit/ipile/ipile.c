@@ -39,21 +39,21 @@ Pilehead * openPile(const char * filename, uint32_t rec, uint32_t stp, Index lim
       fd = open(filename, O_RDWR | O_CREAT | O_APPEND, S_IRUSR|S_IWUSR);
       ftruncate(fd, PAGE*stp);
     }
-    if (fd<0) { fprintf(stderr, "Can't open file %s cos of %d\n", filename, fd); quit(1); }
+    if (fd<0) { fprintf(stdout, "Can't open file %s cos of %d\n", filename, fd); quit(1); }
   } else { // allowing memory-only piles for test and forget
     fd = -1;
     *virgin = true;
   }
   void * reserve;
   reserve = mmap(0, ((uint64_t)lim)*PAGE, PROT_NONE, MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
-  if (reserve == (void*)-1) { fprintf(stderr, "Can't make reserve mapping\n"); quit(1);  }
+  if (reserve == (void*)-1) { fprintf(stdout, "Can't make reserve mapping\n"); quit(1);  }
   void * filemap;
   if (fd!=-1) {
     filemap = mmap(reserve, fileSize(fd), PROT_READ|PROT_WRITE, MAP_SHARED_VALIDATE|MAP_FIXED, fd, 0);
   } else {
     filemap = mmap(reserve, PAGE*stp, PROT_READ|PROT_WRITE, MAP_ANONYMOUS|MAP_PRIVATE|MAP_FIXED, fd, 0);
   }
-  if (filemap == (void*)-1) { fprintf(stderr, "Can't make file mapping\n"); quit(1);  }
+  if (filemap == (void*)-1) { fprintf(stdout, "Can't make file mapping\n"); quit(1);  }
   Pilehead * ph = (Pilehead*) filemap;
   ph->fd = fd;
   if (*virgin) {

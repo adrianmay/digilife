@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CC=clang
+CC=gcc
 
 tools/clean.sh
 rm -rf gen bin
@@ -8,12 +8,13 @@ mkdir gen bin
 
 cp -r lit/* gen
 cp -r test hive bin
-find lit bin -type f | xargs chmod -w
+find gen bin -type f | xargs chmod -w
 
 tools/make_pile.sh Link MEGA
 tools/make_meap.sh Junk MEGA
-tools/make_hotel.sh Mob GIGA
-tools/make_hotel.sh Msg GIGA
+tools/make_hotel.sh Thing GIGA
+##tools/make_hotel.sh Mob GIGA
+##tools/make_hotel.sh Msg GIGA
 
 echo "Building tags"
 find gen bin -name "*.h" -or -name "*.c" | xargs ctags || exit 1

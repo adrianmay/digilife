@@ -32,11 +32,11 @@ static void * openGlobals_(uint64_t len, bool * virgin) {
     fd = open(GLOBALS_FILENAME, O_RDWR | O_CREAT | O_APPEND, S_IRUSR|S_IWUSR);
     ftruncate(fd, len);
   }
-  if (fd<0) { fprintf(stderr, "Can't open file %s cos of %d\n", GLOBALS_FILENAME, fd); quit(1); }
+  if (fd<0) { fprintf(stdout, "Can't open file %s cos of %d\n", GLOBALS_FILENAME, fd); quit(1); }
   void * reserve = mmap(0, len, PROT_NONE, MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
-  if (reserve == (void*)-1) { fprintf(stderr, "Can't make reserve mapping\n"); quit(1); }
+  if (reserve == (void*)-1) { fprintf(stdout, "Can't make reserve mapping\n"); quit(1); }
   void * filemap = mmap(reserve, fileSize(fd), PROT_READ|PROT_WRITE, MAP_SHARED_VALIDATE|MAP_FIXED, fd, 0);
-  if (filemap == (void*)-1) { fprintf(stderr, "Can't make file mapping\n"); quit(1);  }
+  if (filemap == (void*)-1) { fprintf(stdout, "Can't make file mapping\n"); quit(1);  }
   return filemap;
 }
 

@@ -1,6 +1,8 @@
 #include <sys/stat.h>                                
 #include <stdio.h>
 #include <stdlib.h>         
+#include <string.h>         
+#include <time.h>         
 #include "types.h"         
 
 ////////////////////////////////////////////////////////////////
@@ -35,3 +37,15 @@ int fileSize(int fd) {
   return sb.st_size;
 } 
   
+void nsToTs(Nanosecs ns, struct timespec * pTs) {
+  memset(pTs, 0, sizeof(*pTs));
+  lldiv_t qr = lldiv(ns, 1000000000);
+  pTs->tv_sec = qr.quot;
+  pTs->tv_nsec= qr.rem;
+}
+
+void sleepNs(Nanosecs ns) {
+  struct timespec ts;
+  nsToTs(ns, &ts);
+  clock_nanosleep(CLOCK_PROCESS_CPUTIME_ID, 0, &ts, 0);
+}

@@ -3,13 +3,15 @@
 #include <time.h>
 #include <unistd.h>
 #include <sys/syscall.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "h.h"
-#define TIMER_SIG (SIGRTMIN)
+#include "misc/h.h"
+#define TIMER_SIG (SIGUSR1)
 
-static pthread_mutex_t bomb_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static timer_t timer;
 static sigset_t set;
 static struct sigevent sev;
@@ -17,25 +19,32 @@ static struct sigevent sev;
 static pid_t gettid_linux(void) { return (pid_t)syscall(SYS_gettid); }
 
 static void lock(bool lock) {
-  if (lock) pthread_mutex_lock  (&bomb_mutex);
-  else      pthread_mutex_unlock(&bomb_mutex);
+  if (lock) pthread_mutex_lock  (&mutex);
+  else      pthread_mutex_unlock(&mutex);
 }
+
 
 static void arm(Nanosecs nsRel) {
   struct itimerspec its;
-  memset(&its, 0, sizeof(its));
-  if (nsRel) {
-    lldiv_t qr = lldiv(nsRel, 1000000000);
-    its.it_value.tv_sec = qr.quot;
-    its.it_value.tv_nsec= qr.rem;
-  } else its.it_value.tv_sec = its.it_value.tv_nsec = 0;
+  nsToTs(nsRel, &its.it_value);
   timer_settime(timer, 0, &its, 0);
 }
 
 static void wait() {
-  lock(false);
   siginfo_t info;
+  lock(false);
   while(TIMER_SIG != sigwaitinfo(&set, &info)) ;
+  lock(true);
+}
+
+static void waitMax(Nanosecs max) {
+  struct timespec ts;
+  nsToTs(max, &ts);
+  siginfo_t info;
+  lock(false);
+  int res;
+  do {res = sigtimedwait(&set, &info, &ts);} 
+  while (!( res == TIMER_SIG || (res==-1 && errno==EAGAIN)));
   lock(true);
 }
 
@@ -54,25 +63,28 @@ void initXXTimer() {
 }
 
 void unitXXTimer() {  
-  // Do something
+  timer_delete(timer);
 }
 
 void workOnXXTimer(Worker worker) {
   Nanosecs nsRel;
   lock(true);
-  bool changeTimer = worker(&nsRel);
-  if (changeTimer) arm(nsRel);
+  int flags = worker(&nsRel);
+  if (flags & SET) arm(nsRel);
   lock(false);
 }
 
-void loopOnXXTimer(Worker worker) {
+void loopOnXXTimer(Worker worker, Nanosecs max) {
   Nanosecs nsRel;
+  lock(true);
   while (1) {
-    lock(true);
-    bool cont = worker(&nsRel);
-    if (!cont) { lock(false); return; }
-    arm(nsRel); 
-    wait();
+    int flags = worker(&nsRel);
+    if (flags & QUIT) { lock(false); return; }
+    if (flags & SET) arm(nsRel); 
+    if (flags & WAIT) {
+      if (max) waitMax(max);
+      else wait();
+    }
   }
 }
 

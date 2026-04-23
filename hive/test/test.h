@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdint.h>
-//#include <pthread.h>
+#include <pthread.h>
 //#include <stdlib.h>
 //#include <locale.h>
 //#include <signal.h>
@@ -16,7 +16,7 @@ bool bkt(const char * name, B up, B along, V down);
 bool nowt();
 void * sweat(void *);
 void * sweat_forever(void *);
-void background(void * (*f)(void *));
+pthread_t background(void * (*f)(void *));
 
 bool timer();
 bool wrap();

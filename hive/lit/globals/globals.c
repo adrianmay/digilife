@@ -74,3 +74,5 @@ void updateTocks() {
 
 Tocks tocksNow() {return pg->lastKnownTock;}
 Tocks nsUntilTock(Tocks deadline) {return (deadline - pg->lastKnownTock)*pg->nsPerTock - pg->nsNotTocked;}
+Tocks nsAtTock(Tocks deadline) {return nsUntilTock(deadline)+ageOfProcess();}
+

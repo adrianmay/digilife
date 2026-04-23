@@ -18,7 +18,7 @@ void * sweat(void *);
 void * sweat_forever(void *);
 void background(void * (*f)(void *));
 
-bool sleep();
+bool timer();
 bool wrap();
 bool pile();
 bool meap();

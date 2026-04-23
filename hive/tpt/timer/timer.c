@@ -53,6 +53,10 @@ void initXXTimer() {
   }
 }
 
+void unitXXTimer() {  
+  // Do something
+}
+
 void workOnXXTimer(Worker worker) {
   Nanosecs nsRel;
   lock(true);

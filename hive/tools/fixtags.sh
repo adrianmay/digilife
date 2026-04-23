@@ -6,3 +6,4 @@ awk -F'\t' '{
   gsub(/^bin\/hive\//, "hive/", $2);
   print
 }' OFS='\t' tags > newtags
+mv newtags tags

@@ -7,8 +7,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "h.h"
+#include "YY_pile/1.h"
 #include "misc/h.h"
+#include "h.h"
 #define TIMER_SIG (SIGUSR1)
 
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -18,11 +19,12 @@ static struct sigevent sev;
 
 static pid_t gettid_linux(void) { return (pid_t)syscall(SYS_gettid); }
 
-static void lock(bool lock) {
+void lockXXTimer(bool lock) {
   if (lock) pthread_mutex_lock  (&mutex);
   else      pthread_mutex_unlock(&mutex);
 }
 
+static void lock(bool lock) { lockXXTimer(lock); }
 
 static void arm(Nanosecs nsRel) {
   struct itimerspec its;
@@ -66,19 +68,20 @@ void unitXXTimer() {
   timer_delete(timer);
 }
 
-void workOnXXTimer(Worker worker) {
+void workOnXXTimer(Worker worker, YYIndex iYY) {
   Nanosecs nsRel;
   lock(true);
-  int flags = worker(&nsRel);
-  if (flags & SET) arm(nsRel);
+  bool set = worker(iYY, &nsRel);
+  if (set) arm(nsRel);
   lock(false);
 }
 
-void loopOnXXTimer(Worker worker, Nanosecs max) {
+
+void loopOnXXTimer(Looper looper, Nanosecs max) {
   Nanosecs nsRel;
   lock(true);
   while (1) {
-    int flags = worker(&nsRel);
+    int flags = looper(&nsRel);
     if (flags & QUIT) { lock(false); return; }
     if (flags & SET) arm(nsRel); 
     if (flags & WAIT) {

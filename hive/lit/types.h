@@ -42,6 +42,7 @@ typedef int64_t Cash;
 typedef double TockPrice; // The currency unit can be tiny.
 
 typedef void * (*F)(void * item, void * u);
+typedef void (*V)();
 
 typedef enum {NOWT, DELETE, HIDE} FATE;
 

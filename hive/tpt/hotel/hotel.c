@@ -10,49 +10,45 @@
 #include <pthread.h>
 #include <signal.h>
 #include "h.h"
-
-typedef Generation uint64_t;
-static pthread_mutex_t mutex;
-static Generation generation=0;
-static pthread_t killerThread;
+#include "Mob_timer/h.h"
 
 static void open() {
-  pthread_mutex_init(&mutex, 0);
   pileOfXXBulks.open();
   pileOfXXBombs.open();
-
+  initXXTimer();
 }
 
 static void close(FATE fate) {
+  unitXXTimer();
   pileOfXXBulks.close(fate);
   pileOfXXBombs.close(fate);
 }
 
-static void updateXXDeath(XXBulk* pBulk, XXBomb * pBomb) {
+
+static bool updateXXDeath(XXBulk* pBulk, XXBomb * pBomb, Nanosecs * pNsRel) {
   Cash cash = pBulk->rent.cash;
   Tocks ttl = cash/tockPrice();
   Tocks death = tocksNow() + ttl;
-  pthread_mutex_lock(&mutex);
   pBomb->when = death;
-  if (meapOfXXBombs.review(pBulk->rent.bomb))
-    pthread_kill(killerThread, SIGUSR1);
-  pthread_mutex_unlock(&mutex);
+  if (pNsRel) *pNsRel = nsUntilTock(death);
+  return meapOfXXBombs.review(pBulk->rent.bomb);
 }
 
-static void updateXXDeathWithBulkIndex(XXBulkIndex iBulk) {
+static bool updateXXDeathWithBulkIndex(XXBulkIndex iBulk, Nanosecs * pNsRel) {
   XXBulk * pBulk = pileOfXXBulks.get(iBulk);
   XXBombIndex iBomb = pBulk->rent.bomb;
   XXBomb * pBomb = pileOfXXBombs.get(iBomb);
-  updateXXDeath(pBulk, pBomb);
+  return updateXXDeath(pBulk, pBomb, pNsRel);
 }
   
-static void updateXXDeathWithBulkIndexAndBombPointer(XXBulkIndex iBulk, XXBomb * pBomb) {
+static bool updateXXDeathWithBulkIndexAndBombPointer(XXBulkIndex iBulk, XXBomb * pBomb) {
   XXBulk * pBulk = pileOfXXBulks.get(iBulk);
-  updateXXDeath(pBulk, pBomb);
+  return updateXXDeath(pBulk, pBomb, 0);
 }
   
+
 static void review(XXBulkIndex i) { 
-  updateXXDeathWithBulkIndex(i); 
+  workOnMobTimer(updateXXDeathWithBulkIndex, i); 
 }
 
 static XXBulkIndex alloc(Cash cash, XXBulk ** ppBulk) {
@@ -66,39 +62,31 @@ static XXBulkIndex alloc(Cash cash, XXBulk ** ppBulk) {
   return iBulk;
 }
 
-static void timedwait(Tocks deadline) {
-  printf("timedwait: deadline: %'d\n", deadline);
-  Nanosecs ns = nsAtTock(deadline);
-  printf("timedwait: ns %'ld\n", ns);
-  struct timespec ts;
-  lldiv_t qr = lldiv(ns, 1000000000);
-  ts.tv_sec = qr.quot;
-  ts.tv_nsec= qr.rem;
-}
-
-static void * killer(void * p) {
+static int killerLooper(Nanosecs * pNsRel) {
   Tocks deadline;
-  killerThread = pthread_self();
-  while (true) {
-    pthread_mutex_lock(&mutex);
-    Generation my_gen = generation;
-    if (meapOfXXBombs.size()==0) { pthread_mutex_unlock(&mutex); return 0; } //Extinct
+  while (true) { // This loop is a mess
+    if (meapOfXXBombs.size()==0) { return QUIT; } //Extinct
     updateTocks(); // Maybe overkill if the lock below is always fast
     XXBombIndex iBomb = (XXBombIndex) {0};
     XXBomb * pBomb = pileOfXXBombs.get(iBomb);
     Tocks now = tocksNow();
     deadline = pBomb->when;
     if (deadline <= now) {
-      pthread_mutex_unlock(&mutex);
+      lockXXTimer(false);
       printf("Freeing stuff: iBomb: %d, who: %d\n", iBomb.i, pBomb->who.i);
       pileOfXXBulks.free(pBomb->who);
-      pthread_mutex_lock(&mutex);
+      lockXXTimer(true);
       meapOfXXBombs.remove(iBomb);
       continue;
     }
-    timedwait(deadline);
+    *pNsRel = nsUntilTock(deadline);
+    return SET|WAIT;
   }
-  pthread_mutex_unlock(&mutex);
+
+}
+
+static void * killer(void * p) {
+  loopOnMobTimer(killerLooper, 5000000000);
   return 0;
 }
 

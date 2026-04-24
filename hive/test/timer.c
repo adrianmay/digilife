@@ -1,5 +1,6 @@
 #include "test.h"
 #include "misc/h.h"
+#include "MobBulk_pile/1.h"
 #include "Mob_timer/h.h"
 
 // Mobs:
@@ -46,10 +47,10 @@ static bool quitsInABit() {
   return true;
 }
 
-int pokeWorker(Nanosecs * pNs) { *pNs = 500000000; return SET; }
+bool pokeWorker(MobBulkIndex i, Nanosecs * pNs) { *pNs = 500000000; return SET; }
 void * pokeLater(void * p) { (void)p;
   sleepNs(1000000000);
-  workOnMobTimer(pokeWorker);
+  workOnMobTimer(pokeWorker, (MobBulkIndex) {0});
   return 0;
 }
 static bool quitsSooner() {

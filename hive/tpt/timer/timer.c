@@ -1,3 +1,6 @@
+/////////////////////////////////////////////
+////// lib/timer.c
+
 #include <pthread.h>
 #include <signal.h>
 #include <time.h>
@@ -10,7 +13,7 @@
 #include "YY_pile/1.h"
 #include "misc/h.h"
 #include "h.h"
-#define TIMER_SIG (SIGRTMIN)
+#define TIMER_SIG (SIGRTMIN+4)
 
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static timer_t timer;
@@ -75,7 +78,8 @@ void unblockXXTimerSignal() {
 void initXXTimer() {
   blockXXTimerSignal();
   memset(&sev, 0, sizeof(sev));
-  sev.sigev_notify = SIGEV_THREAD_ID;
+  //sev.sigev_notify = SIGEV_THREAD_ID;
+  sev.sigev_notify = SIGEV_SIGNAL;
   sev.sigev_signo  = TIMER_SIG;
   sev._sigev_un._tid = gettid_linux();
   if (timer_create(CLOCK_PROCESS_CPUTIME_ID, &sev, &timer) != 0) {

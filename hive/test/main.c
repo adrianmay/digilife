@@ -23,8 +23,10 @@ bool bkt(const char * name, B up, B along, V down) {
 void * sweat(void * p) {
   uint64_t z=1;
   for (int b=0;b<10;b++) {
-    for (int a=0;a<99999999;a++)  
+    for (int a=0;a<99999999;a++) {
+      sched_yield();
       z*=a;
+    }
   }
   return (void*)z;
 }

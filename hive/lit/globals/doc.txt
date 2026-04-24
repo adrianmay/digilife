@@ -1,0 +1,7 @@
+globals
+=======
+
+This is where the global variables of the app live, whether
+  persistent or volatile. The persistence code and the actual
+  data are mixed up, which is a bit naff.
+

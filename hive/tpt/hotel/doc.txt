@@ -1,0 +1,21 @@
+hotel
+=====
+
+Read pile then meap first.
+
+This keeps bombs in a meap to kill animals in a pile when they can't
+  afford the rent they owe. The bombs store the absolute time at
+  which their balance will no longer be enough if no other transactions
+  happen by then.
+
+Each hotel needs its own thread running killer. It'll exit if the population
+  falls to zero. A worker thread should call review after it does a transaction.
+  
+You no longer kill animals. They get killed by this mechanism.
+
+Tocks are the unit of time billing and all the code stores deadlines in tocks.
+  We can vary the duration of a tock in nanoseconds to adjust memory prices.
+
+hotel.c is currently gibberish but will be re-written with the new timer.
+
+

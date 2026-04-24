@@ -1,0 +1,16 @@
+meap
+====
+
+Read pile first.
+
+This is a min heap living in a pile. 
+The zeroth element is always the smallest by getXXScore.
+A node is no bigger than any of its descendents.
+Left-right direction is not ordered.
+
+It could do with an imeap lit module like ipile.
+
+Maybe implement a chomp in here.
+
+
+

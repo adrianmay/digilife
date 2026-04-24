@@ -1,0 +1,26 @@
+This is the template for making piles. It just does lots
+  of casting and fills in the record size before calling ipile.
+
+The user can find the functions to call in pileOfXXs where
+  XX is the first template parameter passed.
+
+The caller would include 1.h, then define the struct that'll
+  live in here, then include 2.h. The reason is so that
+  two structs can refer to each other by their index.
+
+The second parameter YY is the maximum number of records,
+  or maybe pages? 
+
+The third parameter ZZ is whether to allow freeing. If you 
+  do, it'll alloc and free 3 records at the outset and keep
+  at least 3 free blocks thereafter, raising the high water
+  mark in preference to using them. This is to isolate the
+  two ends of the free list multithreading-wise. (The free
+  list is FIFO.)
+
+This is no good for meap (hence the parameter) cos it assumes
+  the minimum element is at index 0. But it doesn't want
+  to use free anyway.
+
+
+

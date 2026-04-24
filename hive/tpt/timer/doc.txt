@@ -1,0 +1,18 @@
+timer
+=====
+
+This was the hardest bit so far. The timing is about total CPU time consumed
+  by any hive instance since the genesis of the culture.
+
+That's CLOCK_PROCESS_CPUTIME_ID but lots of stuff doesn't work with that
+  clock including pthread_cond_timedwait which would otherwise by exactly
+  what I need. 
+
+The bodge is to use linux's peculiar ability to send a signal to a 
+  particular thread, do that from a timer that always exists (and 
+  is usually armed) and re-arm the timer from either the killer 
+  thread after killing stuff or a worker thread that makes a payment 
+  causing meap[0] to become earlier.
+
+
+

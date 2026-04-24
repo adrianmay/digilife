@@ -1,0 +1,17 @@
+Everything in here is "literal" i.e. it doesn't need any template processing.
+
+types.h and assert.h are general stuff. 
+The capitalised things are specific structs used by templates. 
+The lower-case directories are modules.
+
+Modules usually have a public header called h.h and included as "module/h.h"
+They might have more headers like struct.h which is kinda private to the module.
+There may be any number of .c files and they'll all be glued together into
+  gen/module.o
+
+All the module.o files from lit or tpt get joined into gen/o.o  
+test and hive dump their object files under bin instead of gen so
+  they don't end up in gen/o.o
+
+
+

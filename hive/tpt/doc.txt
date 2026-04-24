@@ -1,0 +1,5 @@
+These get called by build.sh or any of the make_xxx.sh files it calls.
+There's just a search-replace for XX etc to whatever the caller says.
+The result gets dumped in gen/XX_NN/ where NN is the name of the template
+  and XX is the XX parameter. Sometimes (e.g. in hotel) the make_ adds
+  glue.

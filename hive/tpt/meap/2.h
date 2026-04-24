@@ -14,11 +14,11 @@ typedef Index (*XXMeapSize)();
 // typedef ChompResult (*XXMeapChomp)(Score score, XXIndex * i);
 
 typedef struct {
-  XXMeapInsert insert;
-  XXMeapReview review;
-  XXMeapRemove remove;
-  XXCheckOrdered checkOrdered;
-  XXMeapSize size;
+  XXMeapInsert insert; // New member.
+  XXMeapReview review; // Member's score might have changed.
+  XXMeapRemove remove; // Delete it.
+  XXCheckOrdered checkOrdered; //Just for testing.
+  XXMeapSize size; // How many members.
 } XXMeap;
 
 
@@ -27,6 +27,6 @@ extern XXMeap meapOfXXs;
 // The caller should define these:
 
 extern Score getXXScore(XX *);
-extern void  onNewXX(XXIndex i, Index hint);
-extern void  onMoveXX(XX * p, XXIndex to);
+extern void  onNewXX(XXIndex i, Index hint); // Hint is probably the index of a corresponding other thing.
+extern void  onMoveXX(XX * p, XXIndex to); // Update records of where p's meap is.
 

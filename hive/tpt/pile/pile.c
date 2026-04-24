@@ -18,31 +18,18 @@ Index     getXXUsr()                          { return getUsr(headOfXXs); }
 void      setXXUsr(Index u)                   { setUsr(headOfXXs, u); } 
 void      modXXUsr(IndexDiff u)               { modUsr(headOfXXs, u); } 
 
+XXPile pileOfXXs = 
+  { openXXPile
+  , allocXX
+  , getXX
+  , withXX
 #if XX_PILE_HAS_FREE
-XXPile pileOfXXs = 
-  { openXXPile
-  , allocXX
-  , getXX
-  , withXX
   , freeXX
-  , closeXXPile
-  , validXXIndex
-  , countXXs
-  , getXXUsr
-  , setXXUsr
-  , modXXUsr
-  };
-#else
-XXPile pileOfXXs = 
-  { openXXPile
-  , allocXX
-  , getXX
-  , withXX
-  , closeXXPile
-  , validXXIndex
-  , countXXs
-  , getXXUsr
-  , setXXUsr
-  , modXXUsr
-  };
 #endif
+  , closeXXPile
+  , validXXIndex
+  , countXXs
+  , getXXUsr
+  , setXXUsr
+  , modXXUsr
+  };

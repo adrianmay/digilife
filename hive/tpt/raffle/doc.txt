@@ -1,0 +1,38 @@
+raffle
+======
+
+In a real-world raffle a.k.a. tombola, participants buy a block of any number of tickets, 
+tickets are selected at random and the winner gets a prize. This is the same but:
+
+1.  If your ticket wins, all the tickets in that block are removed from the pot.
+    To put that another way, you buy one ticket but its probability of being
+      chosen depends on what you pay for it.
+1a. You can have multiple blocks at a time, and a win in one doesn't result in 
+      another being removed.
+2.  All the prizes are the same and the supply is inexhaustible. 
+3.  People can buy blocks in between draws.
+
+So the game continues forever.
+
+This is for selecting messages in digital life. The probability is a monotonically
+  increasing function of the CPU price per unit time offered in the message.
+
+Implementation:
+
+The messages live in a hotel, but we already knew that.
+In the bulk of that hotel, we organise messages in a serialised binary tree
+  similar to the meap, but not quite the same. 
+"Weight" means probability of being chosen, but it's not normalised.  
+A message stores the total weights of the left and right subtrees (L/RSW)
+  and the tree including this message (TSW). Subtract those and you get 
+  the local weight (LW).
+  Divide any local weight by the total weight of the entire tree to get the
+    probability of that message being chosen.
+To choose, roll a random number X between 0 and the weight of the whole tree
+  minus 1. Then from the root, if X < LSW, recurse into the left subtree. 
+  Subtract the LSW from X. If that's less than LW, return this node. Else 
+  subtract LW from X and recurse into right subtree.
+The ordering of the tree is of no consequence (unlike meap). So we can use
+  pile's free and view a free block as a message with weight 0. Changes to 
+  the tree cause weight changes to propogate upwards.
+  

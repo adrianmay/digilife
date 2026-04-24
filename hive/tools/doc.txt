@@ -1,0 +1,15 @@
+tools
+=====
+
+Contains:
+
+run.sh:        Build, run Test and Hive.
+build.sh:      Copy lit code into place, run templates, make and doctor tags, compile and link.
+clean.sh:      Delete all generated or copied code and build outputs.
+fixtags.sh:    Overwrite file names in tags to point to source-controlled origins.
+usetpt.sh:     Run a template
+make_pile.sh:  Run the pile template
+make_meap.sh:  Run the meap template
+make_hotel.sh: Run the hotel template and make glue so the underlying piles can find the generated structs.
+
+

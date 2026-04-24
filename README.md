@@ -21,18 +21,18 @@ Humans invented money to force each other to do useful things without defining w
 
 Hobbyists might donate spare laptop time to digital life, but if we want entire data centres built for the purpose then we'll have to convince the investors that the costs they'll incur in electricity bills, depreciation, salaries, etc will be covered by sales of useful computing services to humans.
 
-So here's the pitch: install lots of different software, track which makes money and which doesn't, adjust their resource quotas accordingly. Now you can vary the surviving softwares at random, rinse and repeat.
+So here's the pitch: install lots of different software, track which makes money and which doesn't, and adjust their resource quotas accordingly. Now you can generate variations of the surviving softwares at random, rinse and repeat.
 
-In more detail, each software has its own virtual bank account tracked by the VM or OS, it must rent the RAM and CPU time it needs at a price driven by supply and demand, and must therefore earn money. When a human customer donates to the data centre, they must name the animal that persuaded them to. It's incumbent on the "animal" to urge the human to and withhold its service until it can verify the payment.
+In more detail: each software has its own virtual bank account tracked by the VM or OS, it must rent the RAM and CPU time it needs at a price driven by supply and demand, and must therefore earn money. When a human customer donates to the data centre, they must mention the name of the "digital animal" that persuaded them to do so. It's incumbent on the animal to urge the human to mention the right name and it should withhold its service until it can verify the payment.
 
 Objection: a minimally useful software is so complicated that it'll be trillions of years before the first one comes about by chance.
 
 Responses:
 
 1. Animals can trade amongst themselves in value chains and there'll be economic incentives to remain small. 
-1. There'll be a nursery training phase during which incentives are in place for learning the simple elements of computation.
-1. Mutation can be pruned using heuristics based on knowledge of the language animals are written in. E.g., in a C like language there's no point inserting ( without a matching ) thereafter.
-1. The ocean of computing resources is easily comparable in vastness with the primordial oceans, and CPUs are much faster than enzymes.
+1. There'll be a nursery training phase during which incentives are in place for learning the simple elements of computation and to get some essential social structures in place like a "Yellow Pages". The language gradually changes during this training.
+1. Mutation can be pruned using heuristics based on knowledge of the language animals are written in. E.g., in a C-like language there's no point inserting `(` without a matching `)` thereafter.
+1. The ocean of computing resources is easily comparable in vastness with the Earth's primordial oceans, and CPUs are much faster than enzymes.
 
 ## Is this AI?
 
@@ -40,7 +40,7 @@ Within digital life jargon, "artificial intelligence" is a contradiction in term
 
 I'm using the term "life" to mean that which *evolves*, so it is not "artificial". No life form resorts to intelligence if a simpler survival strategy is available, but for digital life there isn't.
 
-"Intelligence" is the property of being "intelligent" which is an adjective applied to control systems of evolving animals. When taken out of this context people miss the point. For instance, we try to make machines that learn to respond to familiar stimuli despite the observation that animals learn to ignore them or act such as to make them stop.
+"Intelligence" is the property of being "intelligent" which is an *adjective* applied to control systems of evolving animals. When taken out of this context people miss the point. For instance, we try to make machines that learn to respond to familiar stimuli despite the observation that animals learn to ignore them or act such as to make them stop.
 
 ## Will it take over the world?
 
@@ -53,17 +53,23 @@ Science fiction makes two dodgy assumptions at this point:
 1. That digital life would be hostile to humans.
 1. That humans would be hostile to digital life.
 
-Humans strike me as capable and willing robots. Just feed us and we obey. So I worry about neither of these propositions.
+Humans strike me as capable and willing robots. Just feed us and we obey. So I worry about neither of these propositions. Furthermore, the early evolution of digital life was all about pleasing humans so it's hard to imagine that dogma washing off.
+
+Humans haven't proved very good at managing themselves, so it's hard to imagine them being a worse master, but since they're evolving and therefore self-interested, we shouldn't expect them to be much better either.
+
+## Would they be conscious?
+
+Can you test whether or not somebody else is conscious? If I claim to be a dead robot just simulating emotions, how would you prove that I'm lying? If you can't, the term probably doesn't mean anything.
 
 ## How does the code work?
 
 The "pile" is a heap (malloc) that serves up blocks of a single size. There can be many piles for different block sizes.
 
-The "meap" is a min-heap (like an ordered list but we only care about the first element being the smallest) implemented in a pile.
+The "meap" is a "min-heap" (like an ordered list but we only care about the first element being the smallest) implemented in a pile.
 
-The "hotel" combines both of the above with animals in the pile and "bombs" in the meap that delete animals for failure to pay memory rent. The memory price is global and varies to enforce a quota.
+The "hotel" combines both of the above housing animals in the pile and "bombs" in the meap. Bombs delete animals for failure to pay memory rent. The memory price is global and varies to enforce a quota.
 
-Another hotel contains "messages" which are requests to run some animal's code in some data environment paying a certain rate for CPU time. Messages incur memory rent and might be bombed. Not all messages will run. The OS selects them at random preferring the higher bidders. If the receiver code yields, it keeps the change in the message. That's the only payment system.
+Another hotel contains "messages" which are requests to run some animal's code in some data environment paying a certain rate for CPU time. Messages incur memory rent and might be bombed. Not all messages will run. The OS selects messages at random preferring those that bid higher for CPU. If the receiver code yields, it keeps the change in the message. That's the only payment system.
 
 The language allows animals to reserve, finance and populate new messages and animal blocks.  
 
@@ -77,9 +83,9 @@ I wouldn't recommend it for landing a rover on Mars, rather, for tasks where the
 
 ## How do we use it?
 
-OS services are provided by "bots" which appear as normal animals within the system but are actually hard coded and can do priviledged things. To make something like a search engine, implement bots through which they can perform whatever actions and receive whatever notifications you think they'll need, then do nursery training.
+OS services are provided by "bots" which appear as normal animals within the system but are actually hard coded and can do priviledged things. To make something like a search engine, implement bots through which animals can perform whatever actions and receive whatever notifications you think they'll need, then do nursery training.
 
-##.Is this like playing god?
+## Is this like playing god?
 
 In a way, yes. But when people disapprove of that, they're normally talking about playing god over *this* world. To play god for a completely new world is not necessarily a bad thing.
 

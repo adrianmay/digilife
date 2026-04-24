@@ -19,8 +19,10 @@ tools/make_meap.sh Junk MEGA || exit 1
 
 echo "Building tags"
 find gen bin -name "*.h" -or -name "*.c" | xargs ctags || exit 1
+
 echo "Doctoring tags"
-tools/fixtags.sh  || exit 1
+awk -F'\t' -f tools/doctor.awk OFS='\t' tags > newtags
+mv newtags tags
 
 CS=`find gen bin -name "*.c"`
 for C  in $CS

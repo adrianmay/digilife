@@ -1,0 +1,22 @@
+
+How to read this code.
+
+tools/build.sh copies a lot of code from lit to a new directory 'gen':
+  types.h is types and system headers used everywhere.
+  assert.h is for the test program.
+  misc is low level functions.
+  globals are both persistent and volatile global variables for the main logic.
+  ipile is the persistent, fixed-size heap.
+  XxxBody.h and Xxx_pile/ are specific structs.
+
+Then build.sh runs some templates (which are under tpt) putting the result under gen as well.
+The sensible order in which to read the templates is: pile, meap, timer, hotel.
+
+The template invocations of build.sh make some test stuff and hotels Mob and Msg.
+Then a raffle will be generated in Msg, but that's yet to be written. 
+
+test and hive are executables and they are built into bin/ rather than gen/.
+
+build.sh then builds everything and doctors the tags file to point to lit or tpt instead of gen.
+
+

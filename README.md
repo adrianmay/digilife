@@ -1,6 +1,6 @@
 (The long but out of date version: index.html on gh-pages branch or go to http://adrianmay.github.io/digilife)
 
-##TLDR
+## TLDR
 
 Why doesn't software evolve like animals do? Why do we have to write the stuff?
 
@@ -34,7 +34,7 @@ Responses:
 1. Mutation can be pruned using heuristics based on knowledge of the language animals are written in. E.g., in a C like language there's no point inserting ( without a matching ) thereafter.
 1. The ocean of computing resources is easily comparable in vastness with the primordial oceans, and CPUs are much faster than enzymes.
 
-##Is this AI?
+## Is this AI?
 
 Within digital life jargon, "artificial intelligence" is a contradiction in terms. 
 
@@ -42,7 +42,7 @@ I'm using the term "life" to mean that which *evolves*, so it is not "artificial
 
 "Intelligence" is the property of being "intelligent" which is an adjective applied to control systems of evolving animals. When taken out of this context people miss the point. For instance, we try to make machines that learn to respond to familiar stimuli despite the observation that animals learn to ignore them or act such as to make them stop.
 
-##Will it take over the world?
+## Will it take over the world?
 
 Digital species will compete on the basis of providing the most useful services for the least computing expense. This depends primarily on complex behaviour and modelling of human needs.
 
@@ -55,7 +55,7 @@ Science fiction makes two dodgy assumptions at this point:
 
 Humans strike me as capable and willing robots. Just feed us and we obey. So I worry about neither of these propositions.
 
-##How does the code work?
+## How does the code work?
 
 The "pile" is a heap (malloc) that serves up blocks of a single size. There can be many piles for different block sizes.
 
@@ -71,15 +71,15 @@ All data copying and calculations are subject to occasional random error.
 
 There's a "serial killer" that just robs animals at random resulting in their immediate bombing. This is to force everything to reproduce. This mechanism might become age-biased, but doesn't need to.
 
-##What's it good for?
+##  What's it good for?
 
 I wouldn't recommend it for landing a rover on Mars, rather, for tasks where there are millions of attempts every day and it's not too tragic if mistakes are made. E.g, text completion/correction, web search, ad placement, social media, game NPCs, etc.
 
-##How do we use it?
+## How do we use it?
 
 OS services are provided by "bots" which appear as normal animals within the system but are actually hard coded and can do priviledged things. To make something like a search engine, implement bots through which they can perform whatever actions and receive whatever notifications you think they'll need, then do nursery training.
 
-##Is this like playing god?
+##.Is this like playing god?
 
 In a way, yes. But when people disapprove of that, they're normally talking about playing god over *this* world. To play god for a completely new world is not necessarily a bad thing.
 

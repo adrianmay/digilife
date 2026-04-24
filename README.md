@@ -32,15 +32,17 @@ Responses:
 1. Animals can trade amongst themselves in value chains and there'll be economic incentives to remain small. 
 1. There'll be a nursery training phase during which incentives are in place for learning the simple elements of computation and to get some essential social structures in place like a "Yellow Pages". The language gradually changes during this training.
 1. Mutation can be pruned using heuristics based on knowledge of the language animals are written in. E.g., in a C-like language there's no point inserting `(` without a matching `)` thereafter.
-1. The ocean of computing resources is easily comparable in vastness with the Earth's primordial oceans, and CPUs are much faster than enzymes.
+1. Today's ocean of computing resources is easily comparable in vastness with the Earth's primordial oceans, memcpy is simpler than DNA, and CPUs are much faster than enzymes.
 
 ## Is this AI?
 
 Within digital life jargon, "artificial intelligence" is a contradiction in terms. 
 
-I'm using the term "life" to mean that which *evolves*, so it is not "artificial". No life form resorts to intelligence if a simpler survival strategy is available, but for digital life there isn't.
+I'm using the term "life" to mean that which *evolves*, so it is not "artificial".
 
-"Intelligence" is the property of being "intelligent" which is an *adjective* applied to control systems of evolving animals. When taken out of this context people miss the point. For instance, we try to make machines that learn to respond to familiar stimuli despite the observation that animals learn to ignore them or act such as to make them stop.
+"Intelligence" is the property of being "intelligent" which is an *adjective* applied to control systems of evolving animals, i.e., "life" as just defined. When taken out of this context people miss the point. For instance, we try to make machines that learn to respond to familiar stimuli despite the observation that animals learn to ignore them or act such as to make them stop. 
+
+Intelligence is expensive and no life form resorts to it if a simpler survival strategy is available, but for digital life there isn't.
 
 ## Will it take over the world?
 
@@ -53,9 +55,9 @@ Science fiction makes two dodgy assumptions at this point:
 1. That digital life would be hostile to humans.
 1. That humans would be hostile to digital life.
 
-Humans strike me as capable and willing robots. Just feed us and we obey. So I worry about neither of these propositions. Furthermore, the early evolution of digital life was all about pleasing humans so it's hard to imagine that dogma washing off.
+Viewed as mechanical robots, humans seem cheap, capable, willing, and low on maintainance. Just feed us and we obey. So I worry about neither of these propositions. Furthermore, the early evolution of digital life will be all about pleasing humans and I'd expect that dogma to persist.
 
-Humans haven't proved very good at managing themselves, so it's hard to imagine them being a worse master, but since they're evolving and therefore self-interested, we shouldn't expect them to be much better either.
+Humans haven't proved very good at managing themselves, so it's hard to imagine digital life being a worse master, but since they're evolving and therefore self-interested, we shouldn't expect them to be much better either. The strategies that work in a given game depend on the rules, not on the players.
 
 ## Would they be conscious?
 
@@ -67,7 +69,7 @@ The "pile" is a heap (malloc) that serves up blocks of a single size. There can 
 
 The "meap" is a "min-heap" (like an ordered list but we only care about the first element being the smallest) implemented in a pile.
 
-The "hotel" combines both of the above housing animals in the pile and "bombs" in the meap. Bombs delete animals for failure to pay memory rent. The memory price is global and varies to enforce a quota.
+The "hotel" combines both of the above, housing animals in the pile and "bombs" in the meap. Bombs delete animals for failure to pay memory rent. The memory price is global and varies to enforce a quota.
 
 Another hotel contains "messages" which are requests to run some animal's code in some data environment paying a certain rate for CPU time. Messages incur memory rent and might be bombed. Not all messages will run. The OS selects messages at random preferring those that bid higher for CPU. If the receiver code yields, it keeps the change in the message. That's the only payment system.
 

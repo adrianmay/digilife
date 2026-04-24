@@ -47,3 +47,4 @@ typedef void (*V)();
 typedef enum {NOWT, DELETE, HIDE} FATE;
 
 #endif
+

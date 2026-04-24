@@ -10,7 +10,7 @@
 #include "YY_pile/1.h"
 #include "misc/h.h"
 #include "h.h"
-#define TIMER_SIG (SIGUSR1)
+#define TIMER_SIG (SIGRTMIN)
 
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static timer_t timer;
@@ -29,6 +29,7 @@ static void lock(bool lock) { lockXXTimer(lock); }
 static void arm(Nanosecs nsRel) {
   struct itimerspec its;
   nsToTs(nsRel, &its.it_value);
+  printf("arming to %'lds,  %'ldns\n", its.it_value.tv_sec, its.it_value.tv_nsec);
   timer_settime(timer, 0, &its, 0);
 }
 
@@ -45,15 +46,34 @@ static void waitMax(Nanosecs max) {
   siginfo_t info;
   lock(false);
   int res;
-  do {res = sigtimedwait(&set, &info, &ts);} 
+  do {
+    printf("waitMax before sigtimedwait at %'ld\n", ageOfProcess());
+    res = sigtimedwait(&set, &info, &ts);
+    sigset_t pending;
+    sigpending(&pending);
+    if (sigismember(&pending, TIMER_SIG)) {
+        printf("Signal is pending but not caught\n");
+    }
+    printf("waitMax after sigtimedwait at %'ld\n", ageOfProcess());
+  } 
   while (!( res == TIMER_SIG || (res==-1 && errno==EAGAIN)));
   lock(true);
 }
 
-void initXXTimer() {
+void blockXXTimerSignal() { 
+  sigemptyset(&set);
+  sigaddset(&set, TIMER_SIG);
+  pthread_sigmask(SIG_BLOCK, &set, 0); 
+}
+
+void unblockXXTimerSignal() { 
   sigemptyset(&set);
   sigaddset(&set, TIMER_SIG);
   pthread_sigmask(SIG_UNBLOCK, &set, 0); 
+}
+
+void initXXTimer() {
+  blockXXTimerSignal();
   memset(&sev, 0, sizeof(sev));
   sev.sigev_notify = SIGEV_THREAD_ID;
   sev.sigev_signo  = TIMER_SIG;
@@ -61,7 +81,7 @@ void initXXTimer() {
   if (timer_create(CLOCK_PROCESS_CPUTIME_ID, &sev, &timer) != 0) {
       perror("timer_create");
       exit(1);
-  }
+  } else printf("Timer created\n");
 }
 
 void unitXXTimer() {  
@@ -79,14 +99,18 @@ void workOnXXTimer(Worker worker, YYIndex iYY) {
 
 void loopOnXXTimer(Looper looper, Nanosecs max) {
   Nanosecs nsRel;
+  printf("loopOnXXTmer before lock at %'ld\n", ageOfProcess());
   lock(true);
+  printf("loopOnXXTmer after lock at %'ld\n", ageOfProcess());
   while (1) {
     int flags = looper(&nsRel);
     if (flags & QUIT) { lock(false); return; }
     if (flags & SET) arm(nsRel); 
     if (flags & WAIT) {
+      printf("loopOnXXTmer before wait at %'ld\n", ageOfProcess());
       if (max) waitMax(max);
       else wait();
+      printf("loopOnXXTmer after wait at %'ld\n", ageOfProcess());
     }
   }
 }

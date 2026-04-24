@@ -33,17 +33,17 @@ void * sweat_forever(void * p) { while(true) sweat(0); }
 pthread_t background(void * (*f)(void *)) { pthread_t pid; pthread_create(&pid, 0, f, 0); return pid; }
 
 ///////  Move this to library:
-static void handler(int sig){ (void)sig; }
-static void handleSigusr1() {
-  struct sigaction sa;
-  memset(&sa, 0, sizeof(sa));
-  sa.sa_handler = handler;
-  sa.sa_flags = 0;
-  sigemptyset(&sa.sa_mask);
-  if (sigaction(SIGUSR1, &sa, NULL) == -1) perror("sigaction");
-}
+//static void handler(int sig){ (void)sig; }
+//static void handleSigusr1() {
+//  struct sigaction sa;
+//  memset(&sa, 0, sizeof(sa));
+//  sa.sa_handler = handler;
+//  sa.sa_flags = 0;
+//  sigemptyset(&sa.sa_mask);
+//  if (sigaction(SIGUSR1, &sa, NULL) == -1) perror("sigaction");
+//}
 void initEverything() {
-  handleSigusr1();
+//  handleSigusr1();
   srand(0);
   setlocale(LC_NUMERIC, "");
 }

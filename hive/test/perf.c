@@ -18,19 +18,20 @@
 int fd1;
 int fd2;
 
-long periods[] = {1000000000, 2000000000, 500000000};
-int idx = 0;
+#define CLOCK_SPEED 4000000000
+long periods[] = {1, 2, 5};
+int idx[10] = {0};
 
 void handler(int signo, siginfo_t *info, void *ucontext)
 {
-  printf("Iteration %d. told fd=%d pid=%d\n", idx, info->si_fd, info->si_value.sival_int);
-
-  //    idx = (idx + 1) % 3;
-  //    ioctl(fd, PERF_EVENT_IOC_DISABLE, 0);
-  //    long next = periods[idx];
-  //    ioctl(fd, PERF_EVENT_IOC_PERIOD, &next);
-  //    ioctl(fd, PERF_EVENT_IOC_RESET, 0);
-  //    ioctl(fd, PERF_EVENT_IOC_ENABLE, 0);
+  printf("Iteration %d. told fd=%d pid=%d\n", idx[info->si_fd], info->si_fd, info->si_value.sival_int);
+  int fd = info->si_fd;
+  idx[fd] = (idx[fd] + 1) % 3;
+  ioctl(fd, PERF_EVENT_IOC_DISABLE, 0);
+  long next = periods[idx[fd]]*CLOCK_SPEED;
+  ioctl(fd, PERF_EVENT_IOC_PERIOD, &next);
+  ioctl(fd, PERF_EVENT_IOC_RESET, 0);
+  ioctl(fd, PERF_EVENT_IOC_ENABLE, 0);
 }
 
 bool init() {
@@ -54,7 +55,7 @@ void * monitor(void * p)
   pe.size = sizeof(pe);
   pe.config = PERF_COUNT_HW_CPU_CYCLES;
 
-  pe.sample_period = 4000000000 * pGo->secs; // threshold
+  pe.sample_period = CLOCK_SPEED * pGo->secs; // threshold
   pe.disabled = 1;
   pe.exclude_kernel = 0;
   pe.exclude_hv = 1;
@@ -74,7 +75,7 @@ void * monitor(void * p)
 
 
   ioctl(pGo->fd, PERF_EVENT_IOC_RESET, 0);
-  ioctl(pGo->fd, PERF_EVENT_IOC_REFRESH, 1);
+  //ioctl(pGo->fd, PERF_EVENT_IOC_REFRESH, 1);
   ioctl(pGo->fd, PERF_EVENT_IOC_ENABLE, 0);
 
   while (1) {
@@ -82,8 +83,8 @@ void * monitor(void * p)
   }
 }
 
-go go1 = {2, 0};
-go go2 = {4, 0};
+go go1 = {3, 0};
+go go2 = {3, 0};
 
 bool perf() {
   init();

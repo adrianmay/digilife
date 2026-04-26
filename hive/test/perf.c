@@ -15,12 +15,13 @@
 #include "types.h"
 #include "misc/h.h"
 
-int fd1;
-int fd2;
 
 #define CLOCK_SPEED 4000000000
+#define MAX_FD 10
 long periods[] = {1, 2, 4};
-int idx[10] = {0};
+
+int state[MAX_FD] = {0};
+pthread_t pidsByFd[MAX_FD]={0};
 
 void armMonitor(int fd, long * cycles) {
   ioctl(fd, PERF_EVENT_IOC_PERIOD, cycles);
@@ -28,18 +29,14 @@ void armMonitor(int fd, long * cycles) {
   ioctl(fd, PERF_EVENT_IOC_ENABLE, 0);
 }
 
-void handler(int signo, siginfo_t *info, void *ucontext)
-{
-  printf("Iteration %d. told fd=%d pid=%d\n", idx[info->si_fd], info->si_fd, info->si_value.sival_int);
-  int fd = info->si_fd;
-  idx[fd] = (idx[fd] + 1) % 3;
-  //ioctl(fd, PERF_EVENT_IOC_DISABLE, 0);
-  long next = periods[idx[fd]]*CLOCK_SPEED;
+void testArm(int fd) {
+  state[fd] = (state[fd] + 1) % 3;
+  printf("State=%d fd=%d pid=%ld\n", state[fd], fd, pidsByFd[fd]);
+  long next = periods[state[fd]]*CLOCK_SPEED;
   armMonitor(fd, &next);
-  ioctl(fd, PERF_EVENT_IOC_PERIOD, &next);
-  ioctl(fd, PERF_EVENT_IOC_RESET, 0);
-  ioctl(fd, PERF_EVENT_IOC_ENABLE, 0);
 }
+
+void handler(int signo, siginfo_t *info, void *ucontext) { testArm(info->si_fd); }
 
 bool init() {
   struct sigaction sa = {0};
@@ -48,8 +45,6 @@ bool init() {
   sigaction(SIGIO, &sa, NULL);
   return true;
 }
-
-typedef struct {int secs; int fd;} go;
 
 int makeMonitor()
 {
@@ -80,38 +75,30 @@ int makeMonitor()
   return fd;
 }
 
-//  ioctl(pGo->fd, PERF_EVENT_IOC_RESET, 0);
-//  long next = CLOCK_SPEED*1;
-//  ioctl(pGo->fd, PERF_EVENT_IOC_PERIOD, &next);
-//  //ioctl(pGo->fd, PERF_EVENT_IOC_REFRESH, 1);
-//  ioctl(pGo->fd, PERF_EVENT_IOC_ENABLE, 0);
-//
 void burn() {
   while (1) {
     asm volatile("" ::: "memory");
   }
 }
 
-go go1 = {10, 0};
-go go2 = {10, 0};
-
 void * testThread(void * p) {
-  //go * pGo = (go *) p;
+  //long which = (long) p;
   int fd = makeMonitor();
-  long t = CLOCK_SPEED>>1;
-  armMonitor(fd, &t);
+  pidsByFd[fd]=pthread_self();
+  testArm(fd);
   burn();
   return 0;
 }
 
 bool perf() {
   init();
-  pthread_t pid;
-  pthread_create(&pid, 0, testThread, &go1);
-  printf("Started thread: %ld\n", pid);
-  pthread_create(&pid, 0, testThread, &go2);
-  printf("Started thread: %ld\n", pid);
-  pthread_join(pid, 0);
+  pthread_t pid1, pid2;
+  pthread_create(&pid1, 0, testThread, (void*)0);
+  printf("Started thread: %ld\n", pid1);
+  pthread_create(&pid2, 0, testThread, (void*)1);
+  printf("Started thread: %ld\n", pid2);
+  pthread_join(pid1, 0);
+  pthread_join(pid2, 0);
   return true;
 }
 

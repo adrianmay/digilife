@@ -19,16 +19,23 @@ int fd1;
 int fd2;
 
 #define CLOCK_SPEED 4000000000
-long periods[] = {1, 2, 5};
+long periods[] = {1, 2, 4};
 int idx[10] = {0};
+
+void armMonitor(int fd, long * cycles) {
+  ioctl(fd, PERF_EVENT_IOC_PERIOD, cycles);
+  ioctl(fd, PERF_EVENT_IOC_RESET, 0);
+  ioctl(fd, PERF_EVENT_IOC_ENABLE, 0);
+}
 
 void handler(int signo, siginfo_t *info, void *ucontext)
 {
   printf("Iteration %d. told fd=%d pid=%d\n", idx[info->si_fd], info->si_fd, info->si_value.sival_int);
   int fd = info->si_fd;
   idx[fd] = (idx[fd] + 1) % 3;
-  ioctl(fd, PERF_EVENT_IOC_DISABLE, 0);
+  //ioctl(fd, PERF_EVENT_IOC_DISABLE, 0);
   long next = periods[idx[fd]]*CLOCK_SPEED;
+  armMonitor(fd, &next);
   ioctl(fd, PERF_EVENT_IOC_PERIOD, &next);
   ioctl(fd, PERF_EVENT_IOC_RESET, 0);
   ioctl(fd, PERF_EVENT_IOC_ENABLE, 0);
@@ -44,10 +51,8 @@ bool init() {
 
 typedef struct {int secs; int fd;} go;
 
-void * monitor(void * p)
+int makeMonitor()
 {
-  go * pGo = (go *) p;
-
   struct perf_event_attr pe;
   memset(&pe, 0, sizeof(pe));
 
@@ -55,43 +60,56 @@ void * monitor(void * p)
   pe.size = sizeof(pe);
   pe.config = PERF_COUNT_HW_CPU_CYCLES;
 
-  pe.sample_period = CLOCK_SPEED * pGo->secs; // threshold
   pe.disabled = 1;
   pe.exclude_kernel = 0;
   pe.exclude_hv = 1;
   pe.pinned = 1;
+  pe.sample_period = CLOCK_SPEED/10.0; // dummy threshold
 
   pid_t pid = true ? 0 : getpid(); //this thread (0) or cpu
 
-  pGo->fd = syscall(__NR_perf_event_open, &pe, pid, -1, -1, 0);
-  if (pGo->fd == -1) {
+  int fd = syscall(__NR_perf_event_open, &pe, pid, -1, -1, 0);
+  if (fd == -1) {
     perror("perf_event_open");
     exit(EXIT_FAILURE);
   }
 
-  fcntl(pGo->fd, F_SETFL, O_RDWR | O_NONBLOCK | O_ASYNC);
-  fcntl(pGo->fd, F_SETSIG, SIGIO);
-  fcntl(pGo->fd, F_SETOWN, getpid());
+  fcntl(fd, F_SETFL, O_RDWR | O_NONBLOCK | O_ASYNC);
+  fcntl(fd, F_SETSIG, SIGIO);
+  fcntl(fd, F_SETOWN, getpid());
+  return fd;
+}
 
-
-  ioctl(pGo->fd, PERF_EVENT_IOC_RESET, 0);
-  //ioctl(pGo->fd, PERF_EVENT_IOC_REFRESH, 1);
-  ioctl(pGo->fd, PERF_EVENT_IOC_ENABLE, 0);
-
+//  ioctl(pGo->fd, PERF_EVENT_IOC_RESET, 0);
+//  long next = CLOCK_SPEED*1;
+//  ioctl(pGo->fd, PERF_EVENT_IOC_PERIOD, &next);
+//  //ioctl(pGo->fd, PERF_EVENT_IOC_REFRESH, 1);
+//  ioctl(pGo->fd, PERF_EVENT_IOC_ENABLE, 0);
+//
+void burn() {
   while (1) {
     asm volatile("" ::: "memory");
   }
 }
 
-go go1 = {3, 0};
-go go2 = {3, 0};
+go go1 = {10, 0};
+go go2 = {10, 0};
+
+void * testThread(void * p) {
+  //go * pGo = (go *) p;
+  int fd = makeMonitor();
+  long t = CLOCK_SPEED>>1;
+  armMonitor(fd, &t);
+  burn();
+  return 0;
+}
 
 bool perf() {
   init();
   pthread_t pid;
-  pthread_create(&pid, 0, monitor, &go1);
+  pthread_create(&pid, 0, testThread, &go1);
   printf("Started thread: %ld\n", pid);
-  pthread_create(&pid, 0, monitor, &go2);
+  pthread_create(&pid, 0, testThread, &go2);
   printf("Started thread: %ld\n", pid);
   pthread_join(pid, 0);
   return true;

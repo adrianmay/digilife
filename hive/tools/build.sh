@@ -28,7 +28,7 @@ for C  in $CS
 do
   O=${C/.c/.o}
   echo "Building $O"
-  $CC -g -iquote gen -Wall -Werror -c $C -o $O || exit 1
+  $CC -pthread -g -iquote gen -Wall -Werror -c $C -o $O || exit 1
 done
 
 for M in `find gen bin -maxdepth 1 -type d | grep '/'`
@@ -41,8 +41,7 @@ echo "Building gen/o.o"
 ld --relocatable --allow-shlib-undefined -o gen/o.o gen/*.o || exit 1
 
 echo "Building Test"
-$CC -o Test gen/o.o bin/test.o || exit 1
+$CC -pthread -o Test gen/o.o bin/test.o || exit 1
 echo "Building Hive"
-$CC -o Hive gen/o.o bin/hive.o || exit 1
-
+$CC -pthread -o Hive gen/o.o bin/hive.o || exit 1
 

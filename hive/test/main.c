@@ -54,7 +54,7 @@ void initEverything() {
 int main() {
   initEverything();
   bool suc = 
-    timer() && 
+    perf() && 
 //    wrap() && 
 //    globals() && 
 //    pile() && 

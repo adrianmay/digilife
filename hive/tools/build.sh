@@ -12,7 +12,7 @@ find gen bin -type f | xargs chmod -w
 
 tools/make_pile.sh Link MEGA 1 || exit 1
 tools/make_meap.sh Junk MEGA || exit 1
-tools/make_hotel.sh Mob GIGA
+# tools/make_hotel.sh Mob GIGA
 ##tools/make_hotel.sh Msg GIGA
 # tools/make_hotel.sh Thing GIGA
 
@@ -44,4 +44,13 @@ echo "Building Test"
 $CC -pthread -o Test gen/o.o bin/test.o || exit 1
 echo "Building Hive"
 $CC -pthread -o Hive gen/o.o bin/hive.o || exit 1
+
+PARA=`cat /proc/sys/kernel/perf_event_paranoid`
+if [ "$PARA" -ne "1" ]
+then
+  sudo sysctl kernel.perf_event_paranoid=1
+else 
+  echo "Permissions OK"
+fi
+
 

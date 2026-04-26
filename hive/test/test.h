@@ -18,7 +18,7 @@ void * sweat(void *);
 void * sweat_forever(void *);
 pthread_t background(void * (*f)(void *));
 
-bool timer();
+bool perf();
 bool wrap();
 bool pile();
 bool meap();

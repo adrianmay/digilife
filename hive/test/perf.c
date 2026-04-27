@@ -15,12 +15,16 @@
 #include "types.h"
 #include "misc/h.h"
 
+//This can monitor threads irrespective of CPU, but not the whole process.
+//So memory killing will have to be done by worker threads before
+// an animal tries to allocate memory, or whenever.
+
 
 #define CLOCK_SPEED 4000000000
 #define MAX_FD 10
 long periods[] = {1, 2, 4};
 
-int state[MAX_FD] = {0};
+int state[MAX_FD] = {0,0,0,0,1,0};
 pthread_t pidsByFd[MAX_FD]={0};
 
 void armMonitor(int fd, long * cycles) {
@@ -55,15 +59,15 @@ int makeMonitor()
   pe.size = sizeof(pe);
   pe.config = PERF_COUNT_HW_CPU_CYCLES;
 
+  pe.inherit = 1;
   pe.disabled = 1;
   pe.exclude_kernel = 0;
   pe.exclude_hv = 1;
-  pe.pinned = 1;
+  pe.sample_type = PERF_SAMPLE_IP;
+  pe.wakeup_events = 1;
   pe.sample_period = CLOCK_SPEED/10.0; // dummy threshold
 
-  pid_t pid = true ? 0 : getpid(); //this thread (0) or cpu
-
-  int fd = syscall(__NR_perf_event_open, &pe, pid, -1, -1, 0);
+  int fd = syscall(__NR_perf_event_open, &pe, 0, -1, -1, 0);
   if (fd == -1) {
     perror("perf_event_open");
     exit(EXIT_FAILURE);
@@ -102,19 +106,3 @@ bool perf() {
   return true;
 }
 
-// void * waitAndTalk(void * p) {
-//   long i = (long) p;
-//   Nanosecs ns = 1000000000 * i;
-//   struct timespec ts;
-//   nsToTs(ns, &ts);
-//   printf("Should wait %ld s and %'ld ns\n", ts.tv_sec, ts.tv_nsec);
-//   clock_nanosleep(CLOCK_THREAD_CPUTIME_ID, 0, &ts, 0);
-//   printf("waited %lds\n", i);
-//   return 0;
-// }
-// 
-// bool perf1() {
-//   pthread_t pid;
-//   for (long a=0;a<10;a++) {pthread_create(&pid, 0, waitAndTalk, (void *)a);}
-//   return true;
-// }

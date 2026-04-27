@@ -134,7 +134,7 @@ bool testMeap2() {
 
 bool testMeap3() {
   return
-    (meapOfJunks.remove((JunkIndex){2})) &&
+    (meapOfJunks.erase((JunkIndex){2})) &&
     count(setupNum>0 ? 1 : 0) &&
     ordered() &&
     true;

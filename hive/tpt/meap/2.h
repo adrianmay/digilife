@@ -6,7 +6,7 @@
 
 typedef bool (*XXMeapInsert)(XXIndex *pI, XX ** pNew, Index hint); 
 typedef bool (*XXMeapReview)(XXIndex i);
-typedef bool (*XXMeapRemove)(XXIndex i);
+typedef bool (*XXMeapErase)(XXIndex i);
 typedef bool (*XXCheckOrdered)();
 typedef Index (*XXMeapSize)();
 //
@@ -16,7 +16,7 @@ typedef Index (*XXMeapSize)();
 typedef struct {
   XXMeapInsert insert; // New member.
   XXMeapReview review; // Member's score might have changed.
-  XXMeapRemove remove; // Delete it.
+  XXMeapErase  erase; // Delete it.
   XXCheckOrdered checkOrdered; //Just for testing.
   XXMeapSize size; // How many members.
 } XXMeap;

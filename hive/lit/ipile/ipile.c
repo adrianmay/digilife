@@ -118,16 +118,13 @@ void * withInPile(Pilehead * ph, Index i, F f, void * u) {
 }
                                                 //
 // Allocate a new slot by trying the free list, or incrementing top, or growing
-// Should be in a mutex
 Index allocInPile(Pilehead * ph, void ** pNew, void * ghost, int ghostlen) {
   Index ret;
   if (ph->fro != BAD_INDEX && ph->frn > LIKE_FREE) {
     atomic_fetch_sub(&ph->frn, 1);           
-    // Take mutex
     ret = ph->fro;
     Index * pFree = findFreeInPile(ph,ret);
     ph->fro = *pFree;
-    // Release mutex
     if (ghost) { 
       Index * pGhost = pFree+1;
       memcpy(ghost, (void*) pGhost, ghostlen);

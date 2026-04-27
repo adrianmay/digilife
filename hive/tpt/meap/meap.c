@@ -2,6 +2,12 @@
 #include "1.h"
 #include "2.h"
 
+pthread_mutex_t XXMeapMutex = PTHREAD_MUTEX_INITIALIZER;
+static void lock(bool b) {
+  if (b) pthread_mutex_lock(&XXMeapMutex);
+  else   pthread_mutex_unlock(&XXMeapMutex);
+}
+
 static XXIndex parent(XXIndex i) {return ( XXIndex ){ (i.i-1)/2 };}
 static XXIndex left  (XXIndex i) {return ( XXIndex ){ 2*i.i + 1 };}
 static XXIndex right (XXIndex i) {return ( XXIndex ){ 2*i.i + 2 };}
@@ -55,6 +61,7 @@ static void siftDown(XXIndex iCur) {
 
 // Returns whether or not the lowest changed.
 static bool insert(XXIndex * pI, XX ** ppNew, Index hint) {
+  lock(true);
   Index meapTop = pileOfXXs.getUsr(); //meapish size
   if (meapTop < pileOfXXs.count()) { // That's pile's top minus pile's free count. But we'll never use free in this pile anyway.
     pI->i = meapTop;                   // Got meapish spares so just return one
@@ -68,24 +75,40 @@ static bool insert(XXIndex * pI, XX ** ppNew, Index hint) {
   if (pI->i > 0) {                          // No point sorting a singleton.
     bool res = siftUp(*pI);             // Calls siftUp if it returns true;
     if (!res) onMoveXX(*ppNew, *pI);    // Something else might want to keep track of where the meap member is.
+    lock(false);
     return res;
   }
+  lock(false);
   return false;
 }
 
-static bool review(XXIndex iCur) { siftDown(iCur); return siftUp(iCur); }
+static bool review(XXIndex iCur) { 
+  lock(true);
+  siftDown(iCur); 
+  bool res = siftUp(iCur); 
+  lock(false);
+  return res;
+}
 
 static bool erase(XXIndex iCur) {
+  lock(true);
   Index cnt = pileOfXXs.getUsr();
-  if (!cnt) return false;
+  if (!cnt) {
+    lock(false);
+    return false;
+  }
   Index iLast = cnt-1;
   swap((XXIndex){iLast}, iCur);
   pileOfXXs.modUsr(-1);
-  return review(iCur);
+  siftDown(iCur); //Not calling review cos I'd need a recursive mutex
+  bool res = siftUp(iCur);
+  lock(false);
+  return res;
 }
 
 
 static bool checkOrdered() {
+  lock(true);
   bool ok=true;
   Index cnt = pileOfXXs.getUsr();
   for (Index i=1;i<cnt;i++) {
@@ -95,6 +118,7 @@ static bool checkOrdered() {
     Score sPar = getXXScore(pileOfXXs.get(iPar));
     ok &= sPar <= sCur;
   }
+  lock(false);
   return ok;
 }
 

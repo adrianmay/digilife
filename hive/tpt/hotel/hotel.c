@@ -26,9 +26,8 @@ static bool updateXXDeath(XXBulk* pBulk, XXBomb * pBomb, Nanosecs * pNsRel) {
   Cash cash = pBulk->rent.cash;
   Tocks ttl = cash/tockPrice();
   Tocks death = tocksNow() + ttl;
-  pBomb->when = death;
   if (pNsRel) *pNsRel = nsUntilTock(death);
-  return meapOfXXBombs.review(pBulk->rent.bomb);
+  return meapOfXXBombs.editWhen(pBulk->rent.bomb, death);
 }
 
 static bool updateXXDeathWithBulkIndex(XXBulkIndex iBulk, Nanosecs * pNsRel) {
@@ -44,7 +43,7 @@ static bool updateXXDeathWithBulkIndexAndBombPointer(XXBulkIndex iBulk, XXBomb *
 }
   
 static void review(XXBulkIndex i) { 
-  workOnMobTimer(updateXXDeathWithBulkIndex, i); 
+  updateXXDeathWithBulkIndex(i); 
 }
 
 static XXBulkIndex alloc(Cash cash, XXBulk ** ppBulk) {
@@ -63,9 +62,9 @@ static int killerLooper(Nanosecs * pNsRel) {
   while (true) { // This loop is a mess
     if (meapOfXXBombs.size()==0) { return QUIT; } //Extinct
     updateTocks(); // Maybe overkill if the lock below is always fast
+    Tocks now = tocksNow();
     XXBombIndex iBomb = (XXBombIndex) {0};
     XXBomb * pBomb = pileOfXXBombs.get(iBomb);
-    Tocks now = tocksNow();
     deadline = pBomb->when;
     if (deadline <= now) {
       lockXXTimer(false);
@@ -87,10 +86,6 @@ static void * killer(void * p) {
 }
 
 XXHotel hotelOfXXs = {open, alloc, review, killer, close};
-
-Score getXXBombScore(XXBomb * pBomb) { 
-  return pBomb->when; 
-}
 
 void onNewXXBomb(XXBombIndex iBomb, Index hint) { 
   printf("OnNew: iBomb: %d hint: %d\n", iBomb.i, hint);

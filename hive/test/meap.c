@@ -4,8 +4,7 @@
 #include "Junk_meap/2.h"
 #include "test.h"
 
-Score getJunkScore(Junk * pJ) { return pJ->tocks; }
-void  onNewJunk(JunkIndex iJ, Index hint) { }
+void  onNewJunk(JunkIndex iJ, Index hint) { pileOfJunks.get(iJ)->tocks=hint;}
 void  onMoveJunk(Junk * pJ, JunkIndex to) { }
 
 #define assertWholeMeap(pExp, N) { \
@@ -146,20 +145,48 @@ bool testMeap4() {
   if (cnt==0) return true;
   for (int a=0;a<500;a++) {
     JunkIndex i = (JunkIndex) {a%cnt};
-    Junk * p = pileOfJunks.get(i);
-    p->tocks = rand()%0x100;
-    meapOfJunks.review(i);
+    meapOfJunks.editWhen(i,rand()%0x100);
     ordered();
   }
   return true;
 }
 
-BV testers[] = {testMeap1};//, testMeap2, testMeap3, testMeap4};
-#define numMeapTesters (sizeof(testers)/sizeof(BV))
-
 void cleanupMeap() { pileOfJunks.close(DELETE); }
 
+bool chompT() {
+  Junk j;
+  Chomped res;
+  setupEmpty();
+  j = (Junk){0}; res = meapOfJunks.chomp(8, &j);
+  assertIntM(res, Extinct);
+  cleanupMeap();
+  setup123();
+  j = (Junk){0}; res = meapOfJunks.chomp(8, &j);
+  assertIntM(res, Idle); assertIntM(j.tocks, 0x18);
+  j = (Junk){0}; res = meapOfJunks.chomp(0x18, &j);
+  assertIntM(res, Killed); assertIntM(j.tocks, 0x18);
+  j = (Junk){0}; res = meapOfJunks.chomp(0x18, &j);
+  assertIntM(res, Idle); assertIntM(j.tocks, 0x28);
+  j = (Junk){0}; res = meapOfJunks.chomp(0x98, &j);
+  assertIntM(res, Killed); assertIntM(j.tocks, 0x28);
+  j = (Junk){0}; res = meapOfJunks.chomp(0x98, &j);
+  assertIntM(res, Killed); assertIntM(j.tocks, 0x38);
+  j = (Junk){0}; res = meapOfJunks.chomp(0x98, &j);
+  assertIntM(res, Extinct); assertIntM(j.tocks, 0);
+  return true;
+}
+
+
+bool chompTest() {
+  return bkt("chompTest",nowt, chompT, cleanupMeap);
+}
+
+BV testers[] = {testMeap1, testMeap2}; //, testMeap3, testMeap4};
+#define numMeapTesters (sizeof(testers)/sizeof(BV))
+
+
 bool meap() { 
+  return chompTest();
   for (testNum=0;testNum<numMeapTesters;testNum++) {
     for (setupNum=0;setupNum<numMeapSetups; setupNum++) {
       doWhat=0; fullChompN=0;
@@ -168,5 +195,4 @@ bool meap() {
       bkt(blah,setterUppers[setupNum], testers[testNum], cleanupMeap);
     }
   }
-  return true;
 }

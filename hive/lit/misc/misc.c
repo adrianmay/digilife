@@ -7,13 +7,17 @@
 
 ////////////////////////////////////////////////////////////////
 
-uint8_t  wrapSub8U  (uint8_t  a, uint8_t  b) { return a - b; }
-uint32_t wrapSub32U (uint32_t a, uint32_t b) { return a - b; }
-uint64_t wrapSub64U (uint64_t a, uint64_t b) { return a - b; }
 uint8_t  wrapAdd8  (uint8_t  a,  uint8_t b) { return a + b; }
 uint32_t wrapAdd32 (uint32_t a, uint32_t b) { return a + b; }
 uint64_t wrapAdd64 (uint64_t a, uint64_t b) { return a + b; }
-int8_t   wrapSub8S (uint8_t  a, uint8_t  b) { return a - b; }
+
+uint8_t  wrapSub8U  (uint8_t  a, uint8_t  b) { return a - b; }
+uint32_t wrapSub32U (uint32_t a, uint32_t b) { return a - b; }
+uint64_t wrapSub64U (uint64_t a, uint64_t b) { return a - b; }
+
+int8_t   wrapSub8S  (uint8_t  a, uint8_t  b) { return a - b; }
+int32_t  wrapSub32S (uint32_t a, uint32_t b) { return a - b; }
+int64_t  wrapSub64S (uint64_t a, uint64_t b) { return a - b; }
 
 ////////////////////////////////////////////////////////////////
 

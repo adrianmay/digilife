@@ -1,4 +1,5 @@
 
+
 typedef void (*XXHotelOpen)();
 typedef XXBulkIndex (*XXHotelAlloc)(Cash cash, XXBulk ** ppBulk);
 typedef void (*XXHotelReview)(XXBulkIndex i);

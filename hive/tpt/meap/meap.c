@@ -1,9 +1,11 @@
 #include <string.h>
 #include "1.h"
 #include "2.h"
+#include "misc/h.h"
 
 pthread_mutex_t XXMeapMutex = PTHREAD_MUTEX_INITIALIZER;
-static void lock(bool b) {
+static void lock(bool b, int line) {
+  printf(b ? "Locking %d\n" : "Unlocking %d\n", line);
   if (b) pthread_mutex_lock(&XXMeapMutex);
   else   pthread_mutex_unlock(&XXMeapMutex);
 }
@@ -29,10 +31,10 @@ static bool siftUp(XXIndex iCur) {
   if (iCur.i == 0) return false;
   Score sCur;
   while (iCur.i > 0) {
-    sCur = getXXScore(pileOfXXs.get(iCur));
+    sCur = pileOfXXs.get(iCur)->YY;
     XXIndex iPar = parent(iCur);
     XX * pPar = pileOfXXs.get(iPar);
-    Score sPar = getXXScore(pPar);
+    Score sPar = pPar->YY;
     if (sPar <= sCur) return false;
     swap(iCur, iPar);
     iCur.i = iPar.i;
@@ -47,9 +49,9 @@ static void siftDown(XXIndex iCur) {
     XXIndex iL = left(iCur);
     XXIndex iR = right(iCur);
     XXIndex iSmallest = iCur;
-    XX * pCur = pileOfXXs.get(iCur); Score sCur = getXXScore(pCur);
-    XX * pL   = pileOfXXs.get(iL  ); Score sL   = getXXScore(pL  );
-    XX * pR   = pileOfXXs.get(iR  ); Score sR   = getXXScore(pR  );
+    XX * pCur = pileOfXXs.get(iCur); Score sCur = pCur->YY;
+    XX * pL   = pileOfXXs.get(iL  ); Score sL   =   pL->YY;
+    XX * pR   = pileOfXXs.get(iR  ); Score sR   =   pR->YY;
     Score sSmallest = sCur;
     if (iL.i < cnt && sL < sSmallest) { iSmallest.i = iL.i; sSmallest = sL; }
     if (iR.i < cnt && sR < sSmallest) iSmallest.i = iR.i;
@@ -61,7 +63,7 @@ static void siftDown(XXIndex iCur) {
 
 // Returns whether or not the lowest changed.
 static bool insert(XXIndex * pI, XX ** ppNew, Index hint) {
-  lock(true);
+  lock(true, __LINE__);
   Index meapTop = pileOfXXs.getUsr(); //meapish size
   if (meapTop < pileOfXXs.count()) { // That's pile's top minus pile's free count. But we'll never use free in this pile anyway.
     pI->i = meapTop;                   // Got meapish spares so just return one
@@ -75,53 +77,79 @@ static bool insert(XXIndex * pI, XX ** ppNew, Index hint) {
   if (pI->i > 0) {                          // No point sorting a singleton.
     bool res = siftUp(*pI);             // Calls siftUp if it returns true;
     if (!res) onMoveXX(*ppNew, *pI);    // Something else might want to keep track of where the meap member is.
-    lock(false);
+    lock(false, __LINE__);
     return res;
   }
-  lock(false);
+  lock(false, __LINE__);
   return false;
 }
 
-static bool review(XXIndex iCur) { 
-  lock(true);
+static bool editWhen(XXIndex iCur, Score when) { 
+  lock(true, __LINE__);
+  pileOfXXs.get(iCur)->YY = when;
   siftDown(iCur); 
   bool res = siftUp(iCur); 
-  lock(false);
+  lock(false, __LINE__);
   return res;
 }
 
-static bool erase(XXIndex iCur) {
-  lock(true);
+static bool erase_(XXIndex iCur) {
   Index cnt = pileOfXXs.getUsr();
   if (!cnt) {
-    lock(false);
+    lock(false, __LINE__);
     return false;
   }
   Index iLast = cnt-1;
   swap((XXIndex){iLast}, iCur);
   pileOfXXs.modUsr(-1);
   siftDown(iCur); //Not calling review cos I'd need a recursive mutex
-  bool res = siftUp(iCur);
-  lock(false);
+  return siftUp(iCur);
+}
+
+static bool erase(XXIndex iCur) {
+  lock(true, __LINE__);
+  int res = erase_(iCur);
+  lock(false, __LINE__);
   return res;
 }
 
+static Chomped chomp(Score thresh, XX * pCopyOut) {
+  Chomped res;
+  lock(true, __LINE__);
+  Index x = meapOfXXs.size();
+  if (x==0) { res = Extinct; }
+  else {
+    XXIndex i = (XXIndex) {0};
+    XX * p = pileOfXXs.get(i);
+    memcpy(pCopyOut, p, sizeof(XX));
+    Score lowestScoreInMeap = p->YY;
+    ScoreDiff sd = wrapSub32S(lowestScoreInMeap, thresh);
+    if (sd <= 0) {
+      erase_(i);
+      res = Killed;
+    } else {
+      res = Idle;
+    }
+  }
+  lock(false, __LINE__);
+  return res;
+}
 
 static bool checkOrdered() {
-  lock(true);
+  lock(true, __LINE__);
   bool ok=true;
   Index cnt = pileOfXXs.getUsr();
   for (Index i=1;i<cnt;i++) {
     XXIndex iCur = (XXIndex){i};
-    Score sCur = getXXScore(pileOfXXs.get(iCur));
+    Score sCur = pileOfXXs.get(iCur)->YY;
     XXIndex iPar = parent(iCur);
-    Score sPar = getXXScore(pileOfXXs.get(iPar));
+    Score sPar = pileOfXXs.get(iPar)->YY;
     ok &= sPar <= sCur;
   }
-  lock(false);
+  lock(false, __LINE__);
   return ok;
 }
 
 static Index size() {  return pileOfXXs.getUsr(); } 
 
-XXMeap meapOfXXs = { insert, review, erase, checkOrdered, size };
+XXMeap meapOfXXs = { insert, editWhen, erase, chomp, checkOrdered, size };

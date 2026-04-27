@@ -14,5 +14,6 @@ typedef struct {
   XXHotelClose close;
 } XXHotel;
 
+extern void onXXsExtinct(); // Provide this.
 extern XXHotel hotelOfXXs;
 

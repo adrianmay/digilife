@@ -22,24 +22,23 @@ static void close(FATE fate) {
   pileOfXXBombs.close(fate);
 }
 
-static bool updateXXDeath(XXBulk* pBulk, XXBomb * pBomb, Nanosecs * pNsRel) {
+static bool updateXXDeath(XXBulk* pBulk, XXBomb * pBomb) {
   Cash cash = pBulk->rent.cash;
   Tocks ttl = cash/tockPrice();
   Tocks death = tocksNow() + ttl;
-  if (pNsRel) *pNsRel = nsUntilTock(death);
   return meapOfXXBombs.editWhen(pBulk->rent.bomb, death);
 }
 
-static bool updateXXDeathWithBulkIndex(XXBulkIndex iBulk, Nanosecs * pNsRel) {
+static bool updateXXDeathWithBulkIndex(XXBulkIndex iBulk) {
   XXBulk * pBulk = pileOfXXBulks.get(iBulk);
   XXBombIndex iBomb = pBulk->rent.bomb;
   XXBomb * pBomb = pileOfXXBombs.get(iBomb);
-  return updateXXDeath(pBulk, pBomb, pNsRel);
+  return updateXXDeath(pBulk, pBomb);
 }
   
 static bool updateXXDeathWithBulkIndexAndBombPointer(XXBulkIndex iBulk, XXBomb * pBomb) {
   XXBulk * pBulk = pileOfXXBulks.get(iBulk);
-  return updateXXDeath(pBulk, pBomb, 0);
+  return updateXXDeath(pBulk, pBomb);
 }
   
 static void review(XXBulkIndex i) { 
@@ -57,32 +56,17 @@ static XXBulkIndex alloc(Cash cash, XXBulk ** ppBulk) {
   return iBulk;
 }
 
-static int killerLooper(Nanosecs * pNsRel) {
-  Tocks deadline;
+// This has to get called at strategic times from worker threads
+static void killer(Tocks now) {
+  XXBomb bomb;
   while (true) { // This loop is a mess
-    if (meapOfXXBombs.size()==0) { return QUIT; } //Extinct
-    updateTocks(); // Maybe overkill if the lock below is always fast
-    Tocks now = tocksNow();
-    XXBombIndex iBomb = (XXBombIndex) {0};
-    XXBomb * pBomb = pileOfXXBombs.get(iBomb);
-    deadline = pBomb->when;
-    if (deadline <= now) {
-      lockXXTimer(false);
-      printf("Freeing stuff: iBomb: %d, who: %d\n", iBomb.i, pBomb->who.i);
-      pileOfXXBulks.free(pBomb->who);
-      lockXXTimer(true);
-      meapOfXXBombs.remove(iBomb);
-      continue;
-    }
-    *pNsRel = nsUntilTock(deadline);
-    return SET|WAIT;
+    bomb.who = badXXBulkIndex;
+    Chomped ch = meapOfXXBombs.chomp(now, &bomb);
+    if (ch == Killed ) { pileOfXXBulks.free(bomb.who); continue; }
+    if (ch == Extinct) { onXXsExtinct(); return; }
+    /* Must be Idle */
+    return;
   }
-
-}
-
-static void * killer(void * p) {
-  loopOnMobTimer(killerLooper, 5000000000);
-  return 0;
 }
 
 XXHotel hotelOfXXs = {open, alloc, review, killer, close};

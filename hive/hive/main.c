@@ -7,3 +7,4 @@ int main() { printf("Hello from HIVE\n"); return 0; }
 Score getJunkScore(Junk * pJ) { return pJ->tocks; }
 void  onNewJunk(JunkIndex iJ, Index hint) { }
 void  onMoveJunk(Junk * pJ, JunkIndex to) { }
+void onMobsExtinct() {}

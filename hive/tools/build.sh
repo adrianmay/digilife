@@ -12,7 +12,7 @@ find gen bin -type f | xargs chmod -w
 
 tools/make_pile.sh Link MEGA 1 || exit 1
 tools/make_meap.sh Junk tocks MEGA || exit 1
-#tools/make_hotel.sh Mob GIGA
+tools/make_hotel.sh Mob GIGA
 ##tools/make_hotel.sh Msg GIGA
 # tools/make_hotel.sh Thing GIGA
 

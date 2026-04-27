@@ -1,5 +1,8 @@
 #include "types.h"
 bool hotel() { return true; }
+
+void onMobsExtinct() {}
+
 //#include "test.h"
 //#include "misc/h.h"
 //#include "ThingBulk_pile/1.h"
@@ -121,5 +124,5 @@ bool testHotel() {
 
 void cleanupHotel() { closeGlobals(1); closeBlockHotel(1); }
 bool hotel() { return bkt("hotel", init, testHotel, cleanupHotel); }
-*/
 
+*/

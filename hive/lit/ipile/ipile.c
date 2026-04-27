@@ -118,7 +118,7 @@ void * withInPile(Pilehead * ph, Index i, F f, void * u) {
 }
                                                 //
 // Allocate a new slot by trying the free list, or incrementing top, or growing
-Index allocInPile(Pilehead * ph, void ** pNew, void * ghost, int ghostlen) {
+Index allocInPile(Pilehead * ph, void ** ppNew, void * ghost, int ghostlen) {
   Index ret;
   if (ph->fro != BAD_INDEX && ph->frn > LIKE_FREE) {
     atomic_fetch_sub(&ph->frn, 1);           
@@ -134,7 +134,9 @@ Index allocInPile(Pilehead * ph, void ** pNew, void * ghost, int ghostlen) {
     ph->top++; 
     ret = ph->top-1;
   } 
-  if (pNew) *pNew = findInPile(ph, ret);
+  void * pNew = findInPile(ph, ret);
+  *((Index*)pNew) = ret;
+  if (ppNew) *ppNew = pNew;
   return ret;
 }   
   

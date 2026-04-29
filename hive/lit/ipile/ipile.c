@@ -135,7 +135,7 @@ Index allocInPile(Pilehead * ph, void ** ppNew, void * ghost, int ghostlen) {
     ret = ph->top-1;
   } 
   void * pNew = findInPile(ph, ret);
-  *((Index*)pNew) = ret;
+  *((Index*)pNew) = ret; // In Rent, the name is declared there.
   if (ppNew) *ppNew = pNew;
   return ret;
 }   

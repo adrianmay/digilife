@@ -1,4 +1,4 @@
-#include <pthread.h>
+ #include <pthread.h>
 #include <locale.h>
 #include <stdlib.h>
 #include <string.h>
@@ -54,7 +54,7 @@ void initEverything() {
 int main() {
   initEverything();
   bool suc = 
-//    perf() && 
+//  perf() && 
     wrap() && 
     globals() && 
     pile() && 

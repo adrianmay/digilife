@@ -2,6 +2,8 @@
 bool hotel() { return true; }
 
 void onMobsExtinct() {}
+void onMsgsExtinct() {}
+void onThingsExtinct() {}
 
 //#include "test.h"
 //#include "misc/h.h"

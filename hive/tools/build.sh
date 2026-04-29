@@ -12,9 +12,9 @@ find gen bin -type f | xargs chmod -w
 
 tools/make_pile.sh Link MEGA 1 || exit 1
 tools/make_meap.sh Junk tocks MEGA || exit 1
+tools/make_hotel.sh Thing GIGA
 tools/make_hotel.sh Mob GIGA
-##tools/make_hotel.sh Msg GIGA
-# tools/make_hotel.sh Thing GIGA
+tools/make_raffle.sh Msg GIGA
 
 echo "Building tags"
 find gen bin -name "*.h" -or -name "*.c" | xargs ctags || exit 1

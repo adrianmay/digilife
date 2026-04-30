@@ -9,6 +9,7 @@ typedef void *  (*XXPileWith)(XXIndex i, F_XX f, void * u);
 #if XX_PILE_HAS_FREE
 typedef void    (*XXPileFree)(XXIndex i);
 #endif
+typedef Cash    (*XXPileRob)(XXIndex i);
 typedef void    (*XXPileClose)(FATE fate);
 typedef bool    (*XXPileIndexValid)(XXIndex i);
 typedef Index   (*XXPileCount)(); 
@@ -25,6 +26,7 @@ typedef struct {
 #if XX_PILE_HAS_FREE 
   XXPileFree free;
 #endif
+  XXPileRob rob;
   XXPileClose close;
   XXPileIndexValid indexValid;
   XXPileCount count;

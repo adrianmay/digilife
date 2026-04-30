@@ -42,7 +42,7 @@ typedef uint32_t Name;
 typedef uint32_t TockDuration; // In nanoseconds.
 typedef int64_t Cash;  
 typedef double TockPrice; // The currency unit can be tiny.
-typedef uint64_t Weight;
+typedef int64_t Weight; // We use negative ones when removing stuff
 typedef double CpuBid; // Float or int?
 
 typedef void * (*F)(void * item, void * u);

@@ -45,6 +45,10 @@ static void review(XXBulkIndex i) {
   updateXXDeathWithBulkIndex(i); 
 }
 
+static Cash rob(XXBulkIndex i) { 
+  return 0; //TODO: writeme
+}
+
 static XXBulkIndex alloc(Cash cash, XXBulk ** ppBulk) {
   XXBulkIndex iBulk = pileOfXXBulks.alloc(ppBulk);
   (*ppBulk)->rent.cash = cash;
@@ -69,7 +73,7 @@ static void killer(Tocks now) {
   }
 }
 
-XXHotel hotelOfXXs = {open, alloc, review, killer, close};
+XXHotel hotelOfXXs = {open, alloc, review, rob, killer, close};
 
 void onNewXXBomb(XXBombIndex iBomb, Index hint) { 
   printf("OnNew: iBomb: %d hint: %d\n", iBomb.i, hint);

@@ -36,7 +36,7 @@ Cash cancel(XXBulkIndex i) {
   XXRaffle * pR = &pB->body.raffle;
   Weight w = pR->t - pR->l - pR->r;
   pR->t -= w;
-  Cash c = pileOfXXBulks.rob(i); //Take all money so it soon gets freed...
+  Cash c = hotelOfXXs.rob(i); //Take all money so it soon gets freed...
   //When drawing, we'll treat a free slot like a proper node with a self-weight of zero and descend through it.
   propagateWeightUp(i, -w);
   return c;

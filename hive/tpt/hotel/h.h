@@ -3,6 +3,7 @@
 typedef void (*XXHotelOpen)();
 typedef XXBulkIndex (*XXHotelAlloc)(Cash cash, XXBulk ** ppBulk);
 typedef void (*XXHotelReview)(XXBulkIndex i);
+typedef Cash (*XXHotelRobber)(XXBulkIndex i);
 typedef void (*XXHotelKiller)();
 typedef void (*XXHotelClose)(FATE fate);
 
@@ -10,6 +11,7 @@ typedef struct {
   XXHotelOpen open;
   XXHotelAlloc alloc;
   XXHotelReview review;
+  XXHotelRobber rob;
   XXHotelKiller kill;
   XXHotelClose close;
 } XXHotel;

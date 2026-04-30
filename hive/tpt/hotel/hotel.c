@@ -46,11 +46,15 @@ static void review(XXBulkIndex i) {
 }
 
 static Cash rob(XXBulkIndex i) { 
-  return 0; //TODO: writeme
+  XXBulk * p = pileOfXXBulks.get(i);
+  Cash c = p->rent.cash;
+  p->rent.cash = 0;
+  review(i);
+  return c; // DON'T DO THIS - MAKE A REAL ACCOUNTING SYSTEM
 }
 
-static XXBulkIndex alloc(Cash cash, XXBulk ** ppBulk) {
-  XXBulkIndex iBulk = pileOfXXBulks.alloc(ppBulk);
+static XXBulkIndex alloc(Cash cash, XXBulk ** ppBulk, bool * pRecycled) {
+  XXBulkIndex iBulk = pileOfXXBulks.alloc(ppBulk, pRecycled);
   (*ppBulk)->rent.cash = cash;
   updateTocks();
   (*ppBulk)->rent.lastPaidRent = tocksNow();

@@ -70,7 +70,7 @@ Pilehead * openPile(const char * filename, uint32_t rec, uint32_t stp, Index lim
     strncpy(ph->fn, filename, MAX_FILENAME-1);
     if (dummyfrees)
       for (int a=0;a<LIKE_FREE;a++) 
-        freeInPile(ph, allocInPile(ph, 0, 0, 0), 0, 0);
+        freeInPile(ph, allocInPile(ph, 0, 0, 0, 0), 0, 0);
   }
   return ph;
 }
@@ -108,6 +108,8 @@ void growPile(Pilehead * ph) {
 
 // The main way to dereference an index:
 void  * findInPile(Pilehead * ph, Index i) { return (((void*)(ph+1)) + i*ph->rec); }                                         
+// Might return free blocks but not over the top ones:
+void  * findInPileSafe(Pilehead * ph, Index i) { return i<ph->top ? findInPile(ph, i) : 0; }                                         
 // If it's free, we know we're pointing at an index of another free block or BAD_INDEX, so cast it:
 Index * findFreeInPile(Pilehead * ph, Index i) { return (Index*) findInPile(ph,i); }
 
@@ -118,18 +120,20 @@ void * withInPile(Pilehead * ph, Index i, F f, void * u) {
 }
                                                 //
 // Allocate a new slot by trying the free list, or incrementing top, or growing
-Index allocInPile(Pilehead * ph, void ** ppNew, void * ghost, int ghostlen) {
+Index allocInPile(Pilehead * ph, void ** ppNew, bool * pRecycled, void * ghost, int ghostlen) {
   Index ret;
   if (ph->fro != BAD_INDEX && ph->frn > LIKE_FREE) {
+    if (pRecycled) *pRecycled = true;
     atomic_fetch_sub(&ph->frn, 1);           
     ret = ph->fro;
     Index * pFree = findFreeInPile(ph,ret);
-    ph->fro = *pFree;
+    ph->fro = *(pFree+1);
     if (ghost) { 
       Index * pGhost = pFree+1;
       memcpy(ghost, (void*) pGhost, ghostlen);
     }
   } else {
+    if (pRecycled) *pRecycled = false;
     growPile(ph);                                                                                                             
     ph->top++; 
     ret = ph->top-1;
@@ -144,11 +148,11 @@ Index allocInPile(Pilehead * ph, void ** ppNew, void * ghost, int ghostlen) {
 // Only the rent collector thread does this?
 void freeInPile(Pilehead * ph, Index i, void * ghost, int ghostlen) {
   Index * pFree = findFreeInPile(ph,i); // Get the block
-  memset((void*)pFree,0xaa,ph->rec); // Erase for privacy
+  //memset((void*)pFree,0xaa,ph->rec); // Erase for privacy, not for raffle
   *pFree = BAD_INDEX;
   if (ph->fri != BAD_INDEX) {
     Index * pOldInEnd = findFreeInPile(ph,ph->fri); // Get the block
-    *pOldInEnd = i; // Point old in end at newly freed block                                                 
+    *(pOldInEnd+1) = i; // Point old in end at newly freed block                                                 
   }
   ph->fri = i; //Set free in end to that block
   memcpy((Index*)(pFree+1), ghost, ghostlen); //Stuff the ghost into the rest

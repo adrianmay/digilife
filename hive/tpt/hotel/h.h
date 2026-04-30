@@ -1,7 +1,7 @@
 
 
 typedef void (*XXHotelOpen)();
-typedef XXBulkIndex (*XXHotelAlloc)(Cash cash, XXBulk ** ppBulk);
+typedef XXBulkIndex (*XXHotelAlloc)(Cash cash, XXBulk ** ppBulk, bool * pRecycled);
 typedef void (*XXHotelReview)(XXBulkIndex i);
 typedef Cash (*XXHotelRobber)(XXBulkIndex i);
 typedef void (*XXHotelKiller)();

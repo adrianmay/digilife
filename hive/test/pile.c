@@ -7,7 +7,7 @@
 bool virginity() {
   bool vir1 = pileOfLinks.open(); //Assume it doesn't exist
   assertInt(vir1,true);
-  pileOfLinks.alloc(0);
+  pileOfLinks.alloc(0, 0);
   pileOfLinks.close(NOWT); //Don't delete the pile
   bool vir2 = pileOfLinks.open();
   assertInt(vir2,false);
@@ -26,10 +26,10 @@ bool sumItems(LinkIndex * i0) {
   bool vir1 = pileOfLinks.open(); //Assume it doesn't exist
   assertInt(vir1,true);
   LinkIndex i; Link * pT;
-  *i0 = i = pileOfLinks.alloc(&pT); // Must be index zero
+  *i0 = i = pileOfLinks.alloc(&pT, 0); // Must be index zero
   pT->x = 0; 
   for (int a=0;a<1000;a++) {
-    pT->next=pileOfLinks.alloc(&pT);
+    pT->next=pileOfLinks.alloc(&pT, 0);
     pT->next = badLinkIndex;                       
     pT->x = 10*a;
   }
@@ -60,13 +60,13 @@ bool freeing(LinkIndex i0) {
 }
 
 bool reallocing() { //Free list = 0, 1, 4, 5, 6
-  LinkIndex i = pileOfLinks.alloc(0);
+  LinkIndex i = pileOfLinks.alloc(0, 0);
   assertInt(i.i,0);
-  i = pileOfLinks.alloc(0);
+  i = pileOfLinks.alloc(0, 0);
   assertInt(i.i,1);
-  i = pileOfLinks.alloc(0);
+  i = pileOfLinks.alloc(0, 0);
   assertInt(i.i,4);
-  i = pileOfLinks.alloc(0);
+  i = pileOfLinks.alloc(0, 0);
   assertInt(i.i,1003); // Keeping the 5 and 6
   int count = pileOfLinks.count();
   assertInt(count,1002);

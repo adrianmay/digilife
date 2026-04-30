@@ -3,8 +3,9 @@
 typedef void * (*F_XX)(XX * p, void * u); 
 
 typedef bool    (*XXPileOpen)(); 
-typedef XXIndex (*XXPileAlloc)(XX ** pNew); 
+typedef XXIndex (*XXPileAlloc)(XX ** pNew, bool * pRecycled); 
 typedef XX *    (*XXPileGet)(XXIndex i); 
+typedef XX *    (*XXPileSafeGet)(XXIndex i); 
 typedef void *  (*XXPileWith)(XXIndex i, F_XX f, void * u); 
 #if XX_PILE_HAS_FREE
 typedef void    (*XXPileFree)(XXIndex i);
@@ -21,6 +22,7 @@ typedef struct {
   XXPileOpen open;
   XXPileAlloc alloc;
   XXPileGet get;
+  XXPileSafeGet safeGet;
   XXPileWith with;
 #if XX_PILE_HAS_FREE 
   XXPileFree free;

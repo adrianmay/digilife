@@ -70,7 +70,7 @@ static bool insert(XXIndex * pI, XX ** ppNew, Index hint) {
     *ppNew = pileOfXXs.get(*pI);    
   }  
   else
-    *pI = pileOfXXs.alloc(ppNew); 
+    *pI = pileOfXXs.alloc(ppNew, 0); 
   // ppNew is now correct either way.
   onNewXX(*pI, hint);                   // Expected to stuff *pI with things that depend on hint. Needed after allocing the meap member but before sorting.
   pileOfXXs.modUsr(1);                        // Not sure if this should be before the above, but certainly it's before siftUp. 

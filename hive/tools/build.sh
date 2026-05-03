@@ -10,8 +10,8 @@ cp -r lit/* gen
 cp -r test hive bin
 find gen bin -type f | xargs chmod -w
 
-tools/make_pile.sh Link MEGA 1 || exit 1
-tools/make_meap.sh Junk tocks MEGA || exit 1
+tools/make_pile.sh Link MEGA || exit 1
+tools/make_meap.sh Junk MEGA tocks || exit 1
 tools/make_hotel.sh Thing GIGA
 tools/make_hotel.sh Mob GIGA
 tools/make_raffle.sh Msg GIGA

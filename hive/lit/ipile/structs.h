@@ -9,9 +9,9 @@ struct __attribute__((aligned(KILO))) Pilehead { // This should be of a good siz
   Index top; // Index of first untouched record, i.e., high watermark
   Index fri; // Index of recently freed record
   Index fro; // Index of next free record to be used in alloc
-  _Atomic Index frn; // Num free slots
+  Index frn; // Num free slots
   char fn[MAX_FILENAME]; // So we can offer to delete it upon closing           
-  Index usr; // Misc persistent variable about this pile.
+  Index usr; // Misc persistent variable about this pile.TODO: make it atomic
 };
                             
 

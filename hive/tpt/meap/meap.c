@@ -31,10 +31,10 @@ static bool siftUp(XXIndex iCur) {
   if (iCur.i == 0) return false;
   Score sCur;
   while (iCur.i > 0) {
-    sCur = pileOfXXs.get(iCur)->YY;
+    sCur = pileOfXXs.get(iCur)->ZZ;
     XXIndex iPar = parent(iCur);
     XX * pPar = pileOfXXs.get(iPar);
-    Score sPar = pPar->YY;
+    Score sPar = pPar->ZZ;
     if (sPar <= sCur) return false;
     swap(iCur, iPar);
     iCur.i = iPar.i;
@@ -49,9 +49,9 @@ static void siftDown(XXIndex iCur) {
     XXIndex iL = left(iCur);
     XXIndex iR = right(iCur);
     XXIndex iSmallest = iCur;
-    XX * pCur = pileOfXXs.get(iCur); Score sCur = pCur->YY;
-    XX * pL   = pileOfXXs.get(iL  ); Score sL   =   pL->YY;
-    XX * pR   = pileOfXXs.get(iR  ); Score sR   =   pR->YY;
+    XX * pCur = pileOfXXs.get(iCur); Score sCur = pCur->ZZ;
+    XX * pL   = pileOfXXs.get(iL  ); Score sL   =   pL->ZZ;
+    XX * pR   = pileOfXXs.get(iR  ); Score sR   =   pR->ZZ;
     Score sSmallest = sCur;
     if (iL.i < cnt && sL < sSmallest) { iSmallest.i = iL.i; sSmallest = sL; }
     if (iR.i < cnt && sR < sSmallest) iSmallest.i = iR.i;
@@ -86,7 +86,7 @@ static bool insert(XXIndex * pI, XX ** ppNew, Index hint) {
 
 static bool editWhen(XXIndex iCur, Score when) { 
   lock(true, __LINE__);
-  pileOfXXs.get(iCur)->YY = when;
+  pileOfXXs.get(iCur)->ZZ = when;
   siftDown(iCur); 
   bool res = siftUp(iCur); 
   lock(false, __LINE__);
@@ -122,7 +122,7 @@ static Chomped chomp(Score thresh, XX * pCopyOut) {
     XXIndex i = (XXIndex) {0};
     XX * p = pileOfXXs.get(i);
     memcpy(pCopyOut, p, sizeof(XX));
-    Score lowestScoreInMeap = p->YY;
+    Score lowestScoreInMeap = p->ZZ;
     ScoreDiff sd = wrapSub32S(lowestScoreInMeap, thresh);
     if (sd <= 0) {
       erase_(i);
@@ -141,9 +141,9 @@ static bool checkOrdered() {
   Index cnt = pileOfXXs.getUsr();
   for (Index i=1;i<cnt;i++) {
     XXIndex iCur = (XXIndex){i};
-    Score sCur = pileOfXXs.get(iCur)->YY;
+    Score sCur = pileOfXXs.get(iCur)->ZZ;
     XXIndex iPar = parent(iCur);
-    Score sPar = pileOfXXs.get(iPar)->YY;
+    Score sPar = pileOfXXs.get(iPar)->ZZ;
     ok &= sPar <= sCur;
   }
   lock(false, __LINE__);

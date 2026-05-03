@@ -10,7 +10,6 @@
 #include "h.h"
 #include "structs.h"
 
-
 Index recLen(Pilehead * ph) { return ph->rec; }
 
 // The minimum stretch of virtual memory that can accomodate a pile with
@@ -27,7 +26,7 @@ uint32_t capacity(Pilehead * ph, size_t filelen) {
   return (filelen-sizeof(Pilehead)) / ph->rec;
 }
 
-Pilehead * openPile(const char * filename, uint32_t rec, uint32_t stp, Index lim, bool * virgin, bool dummyfrees) { // returns array address
+Pilehead * openPile(const char * filename, uint32_t rec, uint32_t stp, Index lim, bool * virgin) { // returns array address
   if (rec<4) { printf("Record size too small for free indices.\n"); quit(1); }
   // Could this ^ be at compile time?
   int fd;
@@ -68,9 +67,6 @@ Pilehead * openPile(const char * filename, uint32_t rec, uint32_t stp, Index lim
     ph->frn = 0;
     ph->usr = 0;
     strncpy(ph->fn, filename, MAX_FILENAME-1);
-    if (dummyfrees)
-      for (int a=0;a<LIKE_FREE;a++) 
-        freeInPile(ph, allocInPile(ph, 0, 0, 0), 0, 0);
   }
   return ph;
 }
@@ -120,8 +116,8 @@ void * withInPile(Pilehead * ph, Index i, F f, void * u) {
 // Allocate a new slot by trying the free list, or incrementing top, or growing
 Index allocInPile(Pilehead * ph, void ** ppNew, void * ghost, int ghostlen) {
   Index ret;
-  if (ph->fro != BAD_INDEX && ph->frn > LIKE_FREE) {
-    atomic_fetch_sub(&ph->frn, 1);           
+  if (ph->fro != BAD_INDEX) {
+    ph->frn -= 1;           
     ret = ph->fro;
     Index * pFree = findFreeInPile(ph,ret);
     ph->fro = *pFree;
@@ -153,7 +149,7 @@ void freeInPile(Pilehead * ph, Index i, void * ghost, int ghostlen) {
   ph->fri = i; //Set free in end to that block
   memcpy((Index*)(pFree+1), ghost, ghostlen); //Stuff the ghost into the rest
   if (ph->fro==BAD_INDEX) ph->fro = i; // Only if this is the first do we mess with the out end
-  atomic_fetch_add(&ph->frn, 1);           
+  ph->frn += 1;           
   // Should assert that fri and fro have same badness
 } 
   

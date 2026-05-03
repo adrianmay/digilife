@@ -1,3 +1,4 @@
+#include <pthread.h> 
 #include "ipile/h.h"
 #include "1.h"
 #include "XX.h"
@@ -5,12 +6,22 @@
 
 Pilehead * headOfXXs = 0; 
 const XXIndex  badXXIndex = (XXIndex) {BAD_INDEX}; 
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-bool      openXXPile()                        { bool v; headOfXXs = openPile("XXs.pile", sizeof(XX), 10, YY, &v, XX_PILE_HAS_FREE); return v; } 
-XXIndex   allocXX(XX ** pNew)                 { return (XXIndex) {.i=allocInPile(headOfXXs, (void**)pNew, 0, 0)}; } 
+bool      openXXPile()                        { bool v; headOfXXs = openPile("XXs.pile", sizeof(XX), 10, YY, &v); return v; } 
+XXIndex   allocXX(XX ** pNew)                 { 
+  pthread_mutex_lock(&mutex);
+  Index i = allocInPile(headOfXXs, (void**)pNew, 0, 0); 
+  pthread_mutex_unlock(&mutex);
+  return (XXIndex) {i};
+} 
 XX *      getXX(XXIndex i)                    { return (XX*)findInPile(headOfXXs, i.i); } 
 void *    withXX(XXIndex i, F_XX f, void * u) { return withInPile(headOfXXs, i.i, (F)f, u); } 
-void      freeXX(XXIndex i)                   { freeInPile(headOfXXs, i.i, 0, 0); } 
+void      freeXX(XXIndex i)                   { 
+  pthread_mutex_lock(&mutex);
+  freeInPile(headOfXXs, i.i, 0, 0); 
+  pthread_mutex_unlock(&mutex);
+} 
 void      closeXXPile(FATE fate)              { closePile(headOfXXs, fate); headOfXXs = 0; } 
 bool      validXXIndex(XXIndex i)             { return i.i != BAD_INDEX; } 
 Index     countXXs()                          { return countPop(headOfXXs); } 
@@ -23,9 +34,7 @@ XXPile pileOfXXs =
   , allocXX
   , getXX
   , withXX
-#if XX_PILE_HAS_FREE
   , freeXX
-#endif
   , closeXXPile
   , validXXIndex
   , countXXs

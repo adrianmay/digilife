@@ -28,10 +28,12 @@ bool sumItems(LinkIndex * i0) {
   LinkIndex i; Link * pT;
   *i0 = i = pileOfLinks.alloc(&pT); // Must be index zero
   pT->x = 0; 
+  Link * pNew;
   for (int a=0;a<1000;a++) {
-    pT->next=pileOfLinks.alloc(&pT);
-    pT->next = badLinkIndex;                       
-    pT->x = 10*a;
+    pT->next=pileOfLinks.alloc(&pNew);
+    pNew->next = badLinkIndex;                       
+    pNew->x = 10*a;
+    pT=pNew;
   }
   int total = sumLinks(*i0);
   assertInt(total,4995000);
@@ -43,15 +45,15 @@ LinkIndex nextLink(LinkIndex i) { return pileOfLinks.get(i)->next; }
 bool freeing(LinkIndex i0) {
   int count = pileOfLinks.count();
   assertInt(count,1001);
-  LinkIndex i1 = nextLink(i0); //3
-  LinkIndex i2 = nextLink(i1); //4
+  LinkIndex i1 = nextLink(i0); //1
+  LinkIndex i2 = nextLink(i1); //2
   LinkIndex i3 = nextLink(i2);
   LinkIndex i4 = nextLink(i3);
   LinkIndex i5 = nextLink(i4);
-  pileOfLinks.free(i2);
-  pileOfLinks.free(i4);
-  pileOfLinks.free(i3);
-  pileOfLinks.get(i1)->next = i5;
+  pileOfLinks.free(i2); 
+  pileOfLinks.free(i4); 
+  pileOfLinks.free(i3); 
+  pileOfLinks.get(i1)->next = i5; // 6
   int total = sumLinks(i0);
   assertInt(total,4994940);
   count = pileOfLinks.count();
@@ -59,15 +61,15 @@ bool freeing(LinkIndex i0) {
   return true;
 }
 
-bool reallocing() { //Free list = 0, 1, 4, 5, 6
+bool reallocing() { //Free list = 2,3,4
   LinkIndex i = pileOfLinks.alloc(0);
-  assertInt(i.i,0);
-  i = pileOfLinks.alloc(0);
-  assertInt(i.i,1);
+  assertInt(i.i,2);
   i = pileOfLinks.alloc(0);
   assertInt(i.i,4);
   i = pileOfLinks.alloc(0);
-  assertInt(i.i,1003); // Keeping the 5 and 6
+  assertInt(i.i,3);
+  i = pileOfLinks.alloc(0);
+  assertInt(i.i,1001); // Keeping the 5 and 6
   int count = pileOfLinks.count();
   assertInt(count,1002);
   return true;

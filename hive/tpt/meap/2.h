@@ -12,17 +12,20 @@ typedef bool    (*XXMeapErase)    (XXIndex i);
 typedef Chomped (*XXMeapChomp)    (Score thresh, XX * p);
 typedef bool    (*XXCheckOrdered) ();
 typedef Index   (*XXMeapSize)     ();
+typedef void    (*XXMeapShow)     ();
 //
 // typedef enum {EXTINCT=-1, IDLE, } ChompResult;
 // typedef ChompResult (*XXMeapChomp)(Score score, XXIndex * i);
 
 typedef struct {
   XXMeapInsert insert; // New member.
-  XXMeapEditWhen editWhen; // Member's score might have changed.
+  XXMeapEditWhen editWhenWhenLocked; // Member's score might have changed.
+  XXMeapEditWhen editWhenTakingLock; // Member's score might have changed.
   XXMeapErase  erase; // Delete it.
   XXMeapChomp chomp; //Check and eat 0-1 things
   XXCheckOrdered checkOrdered; //Just for testing.
   XXMeapSize size; // How many members.
+  XXMeapShow show;
 } XXMeap;
 
 

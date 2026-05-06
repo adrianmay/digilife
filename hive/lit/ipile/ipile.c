@@ -164,7 +164,8 @@ void setUsr(Pilehead * ph, Index u) { ph->usr = u; }
 void modUsr(Pilehead * ph, int32_t u)  { ph->usr += u; } 
 
 void showPile(Pilehead * ph, VP showSlot) {
-  printf("\nPILE: %s\n", ph->fn);
+  printf("\nPILE: %s\n", ph?ph->fn:"closed.");
+  if (!ph) return;
   printf("  REC |   TOP |   USR |   FRN |   FRI |   FRO \n");
   printf("%5d | %5d | %5d | %5d | %5d | %5d\n\n", ph->rec, ph->top, ph->usr, ph->frn, ph->fri, ph->fro);
   for (Index a=0;a<ph->top;a++) {

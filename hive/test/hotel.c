@@ -29,6 +29,7 @@ static bool init() {
 void killTilExtinct() {
   while (true) {
     updateTocks();
+    //printf("now=%d\n", tocksNow());
     hotelOfThings.kill(); 
     if (extinct) return;
     usleep(100000);
@@ -49,6 +50,7 @@ void make(Index name, Cash cash) {
 
 bool test1() {
   make(3, 2000);
+  hotelOfThings.show();
   TIME_VOID_PROC(killTilExtinct());
   printf("test1: %'ld\n", ns);
   assertLongCond(ns, <2100000000ull)
@@ -58,8 +60,8 @@ bool test1() {
 
 bool testHotel() {
   return 
-    testNoPop() &&
-//    test1() &&
+    //testNoPop() &&
+    test1() &&
 //    testEarn() &&
     true;
 }

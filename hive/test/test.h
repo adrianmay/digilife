@@ -25,6 +25,7 @@ bool meap();
 bool globals();
 bool rent();
 bool hotel();
+bool raffle();
 
 bool openGlobals();
 void closeGlobals(bool);

@@ -54,12 +54,13 @@ void initEverything() {
 int main() {
   initEverything();
   bool suc = 
-//  perf() && 
-//    wrap() && 
-//    globals() && 
-   pile() && 
-//    meap() && 
-//    hotel() &&
+//    perf() && 
+    wrap() && 
+    globals() && 
+    pile() && 
+    meap() && 
+    hotel() &&
+    raffle() &&
     true;
   return suc?0:1;
 }

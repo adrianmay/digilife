@@ -7,6 +7,7 @@ typedef void (*XXHotelReview)(XXBulkIndex i);
 typedef Cash (*XXHotelRobber)(XXBulkIndex i);
 typedef void (*XXHotelKiller)();
 typedef void (*XXHotelClose)(FATE fate);
+typedef void (*XXHotelShow)();
 
 typedef struct {
   XXHotelOpen open;
@@ -15,6 +16,7 @@ typedef struct {
   XXHotelRobber rob;
   XXHotelKiller kill;
   XXHotelClose close;
+  XXHotelShow show;
 } XXHotel;
 
 extern void onXXsExtinct(); // Provide this.

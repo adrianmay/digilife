@@ -26,7 +26,7 @@ static bool updateXXDeath(XXBulk* pBulk, XXBomb * pBomb) {
   Cash cash = pBulk->rent.cash;
   Tocks ttl = cash/tockPrice();
   Tocks death = tocksNow() + ttl;
-  return meapOfXXBombs.editWhen(pBulk->rent.bomb, death);
+  return meapOfXXBombs.editWhenWhenLocked(pBulk->rent.bomb, death);
 }
 
 static bool updateXXDeathWithBulkIndex(XXBulkIndex iBulk) {
@@ -73,7 +73,10 @@ static void killer() {
   }
 }
 
-XXHotel hotelOfXXs = {open, alloc, review, rob, killer, close};
+static void show() {
+  meapOfXXBombs.show();
+  pileOfXXBulks.show();
+}
 
 void onNewXXBomb(XXBombIndex iBomb, Index hint) { 
   printf("OnNew: iBomb: %d hint: %d\n", iBomb.i, hint);
@@ -95,3 +98,5 @@ void showXXBulk(XXBulk * p) {
   printf("cash=%'ld,lastPaidRent=%d,bomb=%d,", p->rent.cash, p->rent.lastPaidRent, p->rent.bomb.i);
   showXXBody(&p->body);
 }
+
+XXHotel hotelOfXXs = {open, alloc, review, rob, killer, close, show};

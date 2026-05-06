@@ -5,7 +5,7 @@
 
 pthread_mutex_t XXMeapMutex = PTHREAD_MUTEX_INITIALIZER;
 static void lock(bool b, int line) {
-  printf(b ? "Locking %d\n" : "Unlocking %d\n", line);
+//  printf(b ? "Locking %d\n" : "Unlocking %d\n", line);
   if (b) pthread_mutex_lock(&XXMeapMutex);
   else   pthread_mutex_unlock(&XXMeapMutex);
 }
@@ -84,11 +84,16 @@ static bool insert(XXIndex * pI, XX ** ppNew, Index hint) {
   return false;
 }
 
-static bool editWhen(XXIndex iCur, Score when) { 
-  lock(true, __LINE__);
+static bool editWhenWhenLocked(XXIndex iCur, Score when) { 
   pileOfXXs.get(iCur)->ZZ = when;
   siftDown(iCur); 
   bool res = siftUp(iCur); 
+  return res;
+}
+
+static bool editWhenTakingLock(XXIndex iCur, Score when) { 
+  lock(true, __LINE__);
+  bool res = editWhenWhenLocked(iCur, when);
   lock(false, __LINE__);
   return res;
 }
@@ -152,4 +157,8 @@ static bool checkOrdered() {
 
 static Index size() {  return pileOfXXs.getUsr(); } 
 
-XXMeap meapOfXXs = { insert, editWhen, erase, chomp, checkOrdered, size };
+static void show() {
+  pileOfXXs.show();
+}
+
+XXMeap meapOfXXs = { insert, editWhenWhenLocked, editWhenTakingLock, erase, chomp, checkOrdered, size, show };

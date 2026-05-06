@@ -14,6 +14,7 @@ tools/make_pile.sh Link MEGA || exit 1
 tools/make_meap.sh Junk MEGA tocks || exit 1
 tools/make_hotel.sh Thing GIGA
 tools/make_hotel.sh Mob GIGA
+tools/make_raffle.sh Mess GIGA
 tools/make_raffle.sh Msg GIGA
 
 echo "Building tags"
@@ -33,7 +34,6 @@ done
 
 for M in `find gen bin -maxdepth 1 -type d | grep '/'`
 do
-  echo "Might build module object $M.o"
   OS=`find $M -name *.o` 
   if [[ -n $OS ]]
   then
@@ -47,7 +47,7 @@ echo "Main objects:  ${X[@]}"
 # ld --relocatable --allow-shlib-undefined -o gen/o.o gen/*.o || exit 1
 
 echo "Building Test"
-$CC -pthread -o Test bin/test.o gen/Junk_meap.o gen/Junk_pile.o gen/Link_pile.o gen/ThingBomb_meap.o gen/ThingBomb_pile.o gen/ThingBulk_pile.o gen/Thing_hotel.o gen/globals.o gen/ipile.o gen/misc.o gen/perf.o || exit 1
+$CC -pthread -o Test bin/test.o gen/MessBomb_meap.o gen/MessBomb_pile.o gen/MessBulk_pile.o gen/Mess_hotel.o gen/Mess_raffle.o gen/Junk_meap.o gen/Junk_pile.o gen/Link_pile.o gen/ThingBomb_meap.o gen/ThingBomb_pile.o gen/ThingBulk_pile.o gen/Thing_hotel.o gen/globals.o gen/ipile.o gen/misc.o gen/perf.o || exit 1
 echo "Building Hive"
 $CC -pthread -o Hive bin/hive.o gen/MobBomb_meap.o gen/MobBomb_pile.o gen/MobBulk_pile.o gen/Mob_hotel.o gen/globals.o gen/ipile.o gen/misc.o gen/perf.o || exit 1
 

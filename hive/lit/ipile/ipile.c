@@ -102,10 +102,11 @@ void growPile(Pilehead * ph) {
   }
 }
 
+typedef struct {Index bad; Index nextFree; } Free;
 // The main way to dereference an index:
 void  * findInPile(Pilehead * ph, Index i) { return (((void*)(ph+1)) + i*ph->rec); }                                         
 // If it's free, we know we're pointing at an index of another free block or BAD_INDEX, so cast it:
-Index * findFreeInPile(Pilehead * ph, Index i) { return (Index*) findInPile(ph,i); }
+Free * findFreeInPile(Pilehead * ph, Index i) { return (Free*) findInPile(ph,i); }
 
 void * withInPile(Pilehead * ph, Index i, F f, void * u) {
   void * p = findInPile(ph, i);
@@ -119,10 +120,11 @@ Index allocInPile(Pilehead * ph, void ** ppNew, void * ghost, int ghostlen) {
   if (ph->fro != BAD_INDEX) {
     ph->frn -= 1;           
     ret = ph->fro;
-    Index * pFree = findFreeInPile(ph,ret);
-    ph->fro = *pFree;
+    Free * pFree = findFreeInPile(ph,ret);
+    ph->fro = pFree->nextFree;
+    if (ph->fro == BAD_INDEX) ph->fri = BAD_INDEX;
     if (ghost) { 
-      Index * pGhost = pFree+1;
+      Index * pGhost = (Index*) &pFree->nextFree;
       memcpy(ghost, (void*) pGhost, ghostlen);
     }
   } else {
@@ -131,7 +133,7 @@ Index allocInPile(Pilehead * ph, void ** ppNew, void * ghost, int ghostlen) {
     ret = ph->top-1;
   } 
   void * pNew = findInPile(ph, ret);
-  *((Index*)pNew) = ret; // In Rent, the name is declared there.
+  *((Index*)pNew) = ret; // Anything but BAD_INDEX. In Rent, the name is declared there.
   if (ppNew) *ppNew = pNew;
   return ret;
 }   
@@ -139,15 +141,16 @@ Index allocInPile(Pilehead * ph, void ** ppNew, void * ghost, int ghostlen) {
 // Free a block to the free list
 // Only the rent collector thread does this?
 void freeInPile(Pilehead * ph, Index i, void * ghost, int ghostlen) {
-  Index * pFree = findFreeInPile(ph,i); // Get the block
+  Free * pFree = findFreeInPile(ph,i); // Get the block
   //memset((void*)pFree,0xaa,ph->rec); // Erase for privacy
-  *pFree = BAD_INDEX;
+  pFree->bad = BAD_INDEX;
+  pFree->nextFree = BAD_INDEX;
   if (ph->fri != BAD_INDEX) {
-    Index * pOldInEnd = findFreeInPile(ph,ph->fri); // Get the block
-    *pOldInEnd = i; // Point old in end at newly freed block                                                 
+    Free * pOldInEnd = findFreeInPile(ph,ph->fri); // Get the block
+    pOldInEnd->nextFree = i; // Point old in end at newly freed block                                                 
   }
   ph->fri = i; //Set free in end to that block
-  if (ghost) memcpy((Index*)(pFree+1), ghost, ghostlen); //Stuff the ghost into the rest
+  if (ghost) memcpy((void*)(&pFree->nextFree), ghost, ghostlen); //Stuff the ghost into the rest
   if (ph->fro==BAD_INDEX) ph->fro = i; // Only if this is the first do we mess with the out end
   ph->frn += 1;           
   // Should assert that fri and fro have same badness
@@ -162,11 +165,12 @@ void modUsr(Pilehead * ph, int32_t u)  { ph->usr += u; }
 
 void showPile(Pilehead * ph, VP showSlot) {
   printf("\nPILE: %s\n", ph->fn);
-  printf("    REC |     TOP |     FRN |     USR\n");
-  printf("%7d | %7d | %7d | %7d\n\n", ph->rec, ph->top, ph->frn, ph->usr);
+  printf("  REC |   TOP |   USR |   FRN |   FRI |   FRO \n");
+  printf("%5d | %5d | %5d | %5d | %5d | %5d\n\n", ph->rec, ph->top, ph->usr, ph->frn, ph->fri, ph->fro);
   for (Index a=0;a<ph->top;a++) {
-    Index * p = findFreeInPile(ph, a);
-    if (*p == BAD_INDEX) printf("Free: next=%d\n", *(p+1));
-    else showSlot(p);
+    Free * p = findFreeInPile(ph, a);
+    printf("%5d | ",a);
+    if (p->bad == BAD_INDEX) printf("Free: nextFree=%4d | ", p->nextFree);
+    showSlot(p);
   }
 }

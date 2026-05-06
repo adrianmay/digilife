@@ -8,13 +8,6 @@
 #include "Mess_hotel/Bulk.h"
 #include "Mess_hotel/Bomb.h"
 #include "Mess_hotel/h.h"
-// #include <stdbool.h>
-// #include "globals/h.h"
-// #include "MessBulk_pile/1.h"
-// #include "MessBomb_pile/1.h"
-// #include "MessBulk.h"
-// #include "MessBulk_pile/2.h"
-// #include "Mess_hotel/h.h"
 
 static bool extinct = false;
 void onMesssExtinct() { extinct = true; } 
@@ -25,7 +18,9 @@ static bool init() {
   background(sweat_forever); // Got to do work to advance CPU time ...
   return true;
 }
+
 bool testRaffle() { return true; }
 void cleanupRaffle() { closeGlobals(1); hotelOfMesss.close(1); }
 bool raffle() { return bkt("raffle", init, testRaffle, cleanupRaffle); }
+
 

@@ -1,20 +1,71 @@
+#include <unistd.h>
 #include "types.h"
-bool hotel() { return true; }
+#include "test.h"
+#include "misc/h.h"
+#include "globals/h.h"
+#include "ThingBulk_pile/1.h"
+#include "ThingBomb_pile/1.h"
+#include "Thing_hotel/Bulk.h"
+#include "Thing_hotel/h.h"
 
 void onMobsExtinct() {}
 void onMsgsExtinct() {}
-void onThingsExtinct() {}
 
-//#include "test.h"
-//#include "misc/h.h"
-//#include "ThingBulk_pile/1.h"
-//#include "ThingBomb_pile/1.h"
-//#include "Thing_hotel/Bulk.h"
-//#include "Thing_hotel/h.h"
-//
-//Nanosecs ns;
-//ThingBulk * pThing;
-//ThingBulkIndex iThing;
+Nanosecs ns;
+ThingBulk * pThing;
+ThingBulkIndex iThing;
+
+static bool extinct = false;
+void onThingsExtinct() { extinct = true; } 
+
+static bool init() {
+  openGlobals();
+  hotelOfThings.open();
+  background(sweat_forever); // Got to do work to advance CPU time ...
+  return true;
+}
+
+void killTilExtinct() {
+  while (true) {
+    updateTocks();
+    hotelOfThings.kill(); 
+    if (extinct) return;
+    usleep(100000);
+  }
+}
+
+bool testNoPop() {
+  TIME_VOID_PROC(killTilExtinct()); 
+  printf("testNoPop: %'ld\n", ns);
+  assertLongCond(ns, <20000);
+  return true;
+}
+
+void make(Index name, Cash cash) {
+  hotelOfThings.alloc(cash, &pThing);
+  pThing->body.name = name;
+}
+
+bool test1() {
+  make(3, 2000);
+  TIME_VOID_PROC(killTilExtinct());
+  printf("test1: %'ld\n", ns);
+  assertLongCond(ns, <2100000000ull)
+  assertLongCond(ns, >1900000000ull)
+  return true;
+}
+
+bool testHotel() {
+  return 
+    testNoPop() &&
+//    test1() &&
+//    testEarn() &&
+    true;
+}
+
+void cleanupHotel() { closeGlobals(1); hotelOfThings.close(DELETE); }
+bool hotel() { return bkt("hotel", init, testHotel, cleanupHotel); }
+
 //
 //static bool init() {
 //  openGlobals();
@@ -23,12 +74,6 @@ void onThingsExtinct() {}
 //  return true;
 //}
 //
-//bool testNoPop() {
-//  TIME_VOID_PROC(hotelOfThings.collectRent(0)); 
-//  printf("testNoPop: %'ld\n", ns);
-//  assertLongCond(ns, <4000);
-//  return true;
-//}
 //
 //
 //void make(Index name, Cash cash) {
@@ -76,13 +121,12 @@ void BlockFuneral(Block * pB) {
 MAKEHOTEL2(Block, GIGA)
 
 
-bool init() {
-  openGlobals();
-  openBlockHotel();
-  background(sweat_forever); // Got to do work to advance CPU time ...
-  return true;
-}
-
+//bool testNoPop() {
+//  TIME_VOID_PROC(hotelOfThings.collectRent(0)); 
+//  printf("testNoPop: %'ld\n", ns);
+//  assertLongCond(ns, <4000);
+//  return true;
+//}
 
 Block * pB; 
 BlockMeapIndex iBM;
@@ -116,15 +160,5 @@ bool testEarn() {
   return true;
 }
 
-bool testHotel() {
-  return 
-    testNoPop() &&
-    test1() &&
-    testEarn() &&
-    true;
-}
-
-void cleanupHotel() { closeGlobals(1); closeBlockHotel(1); }
-bool hotel() { return bkt("hotel", init, testHotel, cleanupHotel); }
-
 */
+

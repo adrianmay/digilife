@@ -61,15 +61,15 @@ static XXBulkIndex alloc(Cash cash, XXBulk ** ppBulk) {
 }
 
 // This has to get called at strategic times from worker threads
-static void killer(Tocks now) {
-  XXBomb bomb;
-  while (true) { // This loop is a mess
-    bomb.who = badXXBulkIndex;
+static void killer() {
+  XXBomb bomb; // Bomb copied out to here
+  Tocks now = tocksNow();            
+  while (true) { // Returns when nothing to kill for now
+    bomb.who = badXXBulkIndex; // Prevent false alarms
     Chomped ch = meapOfXXBombs.chomp(now, &bomb);
     if (ch == Killed ) { pileOfXXBulks.free(bomb.who); continue; }
     if (ch == Extinct) { onXXsExtinct(); return; }
-    /* Must be Idle */
-    return;
+    return; // Must be Idle
   }
 }
 

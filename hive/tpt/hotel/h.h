@@ -1,4 +1,5 @@
-
+#ifndef XX_hotel_h
+#define XX_hotel_h
 
 typedef void (*XXHotelOpen)();
 typedef XXBulkIndex (*XXHotelAlloc)(Cash cash, XXBulk ** ppBulk);
@@ -19,3 +20,4 @@ typedef struct {
 extern void onXXsExtinct(); // Provide this.
 extern XXHotel hotelOfXXs;
 
+#endif

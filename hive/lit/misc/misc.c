@@ -1,4 +1,5 @@
 #include <sys/stat.h>                                
+#include <sys/random.h>
 #include <stdio.h>
 #include <stdlib.h>         
 #include <string.h>         
@@ -52,4 +53,14 @@ void sleepNs(Nanosecs ns) {
   struct timespec ts;
   nsToTs(ns, &ts);
   clock_nanosleep(CLOCK_PROCESS_CPUTIME_ID, 0, &ts, 0);
+}
+
+uint64_t randIntBelow(uint64_t lim) {
+  uint64_t threshold = - lim % lim;
+  uint64_t res;
+  getrandom(&res, sizeof(res), 0);
+  if (res > threshold) 
+    return randIntBelow(lim); // Try again.
+  else return res%lim;
+  return res;
 }

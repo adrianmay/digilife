@@ -140,14 +140,14 @@ Index allocInPile(Pilehead * ph, void ** ppNew, void * ghost, int ghostlen) {
 // Only the rent collector thread does this?
 void freeInPile(Pilehead * ph, Index i, void * ghost, int ghostlen) {
   Index * pFree = findFreeInPile(ph,i); // Get the block
-  memset((void*)pFree,0xaa,ph->rec); // Erase for privacy
+  //memset((void*)pFree,0xaa,ph->rec); // Erase for privacy
   *pFree = BAD_INDEX;
   if (ph->fri != BAD_INDEX) {
     Index * pOldInEnd = findFreeInPile(ph,ph->fri); // Get the block
     *pOldInEnd = i; // Point old in end at newly freed block                                                 
   }
   ph->fri = i; //Set free in end to that block
-  memcpy((Index*)(pFree+1), ghost, ghostlen); //Stuff the ghost into the rest
+  if (ghost) memcpy((Index*)(pFree+1), ghost, ghostlen); //Stuff the ghost into the rest
   if (ph->fro==BAD_INDEX) ph->fro = i; // Only if this is the first do we mess with the out end
   ph->frn += 1;           
   // Should assert that fri and fro have same badness

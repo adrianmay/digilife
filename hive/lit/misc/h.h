@@ -22,3 +22,6 @@ int fileSize(int fd);
 
 void nsToTs(Nanosecs ns, struct timespec * pTs);
 int sleepNs(Nanosecs ns);
+
+uint64_t randIntBelow(uint64_t lim);
+

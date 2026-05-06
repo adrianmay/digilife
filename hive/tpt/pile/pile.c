@@ -27,7 +27,7 @@ bool      validXXIndex(XXIndex i)             { return i.i != BAD_INDEX; }
 Index     countXXs()                          { return countPop(headOfXXs); } 
 Index     getXXUsr()                          { return getUsr(headOfXXs); } 
 void      setXXUsr(Index u)                   { setUsr(headOfXXs, u); } 
-void      modXXUsr(IndexDiff u)               { modUsr(headOfXXs, u); } 
+void      modXXUsr(IndexDiff u)               { modUsr(headOfXXs, u); }  // Make this atomic sometime
 
 XXPile pileOfXXs = 
   { openXXPile

@@ -42,7 +42,7 @@ void testArm(int fd) {
 
 void handler(int signo, siginfo_t *info, void *ucontext) { testArm(info->si_fd); }
 
-bool init() {
+static bool init() {
   struct sigaction sa = {0};
   sa.sa_sigaction = handler;
   sa.sa_flags = SA_SIGINFO;

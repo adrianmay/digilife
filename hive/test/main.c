@@ -57,9 +57,10 @@ int main() {
 //  perf() && 
 //    wrap() && 
 //    globals() && 
-//    pile() && 
+   pile() && 
 //    meap() && 
-    hotel() &&
+//    hotel() &&
     true;
   return suc?0:1;
 }
+

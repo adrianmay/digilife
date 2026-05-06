@@ -87,3 +87,11 @@ void onMoveXXBomb(XXBomb * pBomb, XXBombIndex to) {
   pBulk->rent.bomb = to;
 }
 
+void showXXBomb(XXBomb * p) {
+  printf("when=%d,who=%d\n", p->when, p->who.i);
+}
+
+void showXXBulk(XXBulk * p) {
+  printf("cash=%'ld,lastPaidRent=%d,bomb=%d,", p->rent.cash, p->rent.lastPaidRent, p->rent.bomb.i);
+  showXXBody(&p->body);
+}

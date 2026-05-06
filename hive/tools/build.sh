@@ -27,23 +27,29 @@ CS=`find gen bin -name "*.c"`
 for C  in $CS
 do
   O=${C/.c/.o}
-  echo "Building $O"
+  echo "Compiling C to $O"
   $CC -pthread -g -iquote gen -Wall -Werror -c $C -o $O || exit 1
 done
 
 for M in `find gen bin -maxdepth 1 -type d | grep '/'`
 do
-  echo "Building $M.o"
-  ld --relocatable -o $M.o `find $M -name *.o` || exit 1
+  echo "Might build module object $M.o"
+  OS=`find $M -name *.o` 
+  if [[ -n $OS ]]
+  then
+    echo "Building module object $M.o"
+    ld --relocatable -o $M.o $OS || exit 1
+  fi
 done
 
-echo "Building gen/o.o"
-ld --relocatable --allow-shlib-undefined -o gen/o.o gen/*.o || exit 1
+X=(gen/*.o)
+echo "Main objects:  ${X[@]}"
+# ld --relocatable --allow-shlib-undefined -o gen/o.o gen/*.o || exit 1
 
 echo "Building Test"
-$CC -pthread -o Test gen/o.o bin/test.o || exit 1
+$CC -pthread -o Test bin/test.o gen/Junk_meap.o gen/Junk_pile.o gen/Link_pile.o gen/ThingBomb_meap.o gen/ThingBomb_pile.o gen/ThingBulk_pile.o gen/Thing_hotel.o gen/globals.o gen/ipile.o gen/misc.o gen/perf.o || exit 1
 echo "Building Hive"
-$CC -pthread -o Hive gen/o.o bin/hive.o || exit 1
+$CC -pthread -o Hive bin/hive.o gen/MobBomb_meap.o gen/MobBomb_pile.o gen/MobBulk_pile.o gen/Mob_hotel.o gen/globals.o gen/ipile.o gen/misc.o gen/perf.o || exit 1
 
 PARA=`cat /proc/sys/kernel/perf_event_paranoid`
 if [ "$PARA" -ne "1" ]

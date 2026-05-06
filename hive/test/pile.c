@@ -93,12 +93,17 @@ bool with(LinkIndex i0) {
   return true;  
 }
 
+bool showIt() {
+  pileOfLinks.show();
+  return false;
+}
 bool testLinkPile() {
   LinkIndex i0;
   return true
          && virginity()  // deletes the pilee
          && (sumItems(&i0), true) // leaves it open
          && freeing(i0) // ditto
+         && showIt()
          && reallocing()
          && with(i0)
 ;}
@@ -106,3 +111,6 @@ bool testLinkPile() {
 void cleanupLinkPile() { pileOfLinks.close(DELETE); }
 bool pile() { return bkt("pile", nowt,testLinkPile,cleanupLinkPile); }
 
+void showLink(Link * pLink) {
+  printf("x=%d,next=%d\n", pLink->x, pLink->next.i);
+}

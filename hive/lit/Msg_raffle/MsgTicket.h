@@ -7,8 +7,10 @@ typedef struct {
   MobBulkIndex iRcvr; Name nRcvr;
   MobBulkIndex iSndr; Name nSndr; 
   MobBulkIndex iCtnt; Name nCtnt; 
-  uint16_t ctntStart; uint16_t ctntEnded;}
-  MsgTicket;
+  uint16_t ctntStart; uint16_t ctntEnded;
+} MsgTicket;
+
+void showMsgTicket(MsgTicket * p);
 
 #endif  
 

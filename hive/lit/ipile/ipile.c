@@ -160,4 +160,13 @@ Index getUsr(Pilehead * ph) { return ph->usr; }
 void setUsr(Pilehead * ph, Index u) { ph->usr = u; } 
 void modUsr(Pilehead * ph, int32_t u)  { ph->usr += u; } 
 
-
+void showPile(Pilehead * ph, VP showSlot) {
+  printf("\nPILE: %s\n", ph->fn);
+  printf("    REC |     TOP |     FRN |     USR\n");
+  printf("%7d | %7d | %7d | %7d\n\n", ph->rec, ph->top, ph->frn, ph->usr);
+  for (Index a=0;a<ph->top;a++) {
+    Index * p = findFreeInPile(ph, a);
+    if (*p == BAD_INDEX) printf("Free: next=%d\n", *(p+1));
+    else showSlot(p);
+  }
+}

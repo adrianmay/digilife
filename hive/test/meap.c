@@ -197,3 +197,6 @@ bool meap() {
   }
 }
 
+void showJunk(Junk * pJunk) {
+  printf("tocks=%d\n", pJunk->tocks);
+}

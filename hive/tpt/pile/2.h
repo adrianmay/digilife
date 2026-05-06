@@ -13,6 +13,7 @@ typedef Index   (*XXPileCount)();
 typedef Index   (*XXGetUsr)(); // Misc number
 typedef void    (*XXSetUsr)(Index u);
 typedef void    (*XXModUsr)(IndexDiff u);
+typedef void    (*XXPileShow)();
 
 typedef struct {
   XXPileOpen open;
@@ -26,6 +27,7 @@ typedef struct {
   XXGetUsr getUsr;
   XXSetUsr setUsr;
   XXModUsr modUsr;
+  XXPileShow show;
 } XXPile;
 
 extern XXPile pileOfXXs;

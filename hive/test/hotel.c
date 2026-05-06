@@ -6,6 +6,7 @@
 #include "ThingBulk_pile/1.h"
 #include "ThingBomb_pile/1.h"
 #include "Thing_hotel/Bulk.h"
+#include "Thing_hotel/Bomb.h"
 #include "Thing_hotel/h.h"
 
 void onMobsExtinct() {}

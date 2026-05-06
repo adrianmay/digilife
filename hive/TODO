@@ -1,6 +1,10 @@
 SHOW PILE 
 FIX HOTEL TESTS
 
+Split hive and test, esp templates.
+More statics in templates, fewer XX names
+
+
 Test that meapInsert returns whether or not lowest changed
 Non-pedantic build 
 Index overused

@@ -2,6 +2,6 @@
 #include "bit/MessTicket.h"
 
 void showMessTicket(MessTicket * p) {
-  printf("name=%s\n", p->name);
+  printf("type=%c\n", p->type);
 
 }

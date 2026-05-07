@@ -51,6 +51,7 @@ static Cash cancel(XXBulkIndex i) {
   return c;
 }
 
+// Assumes there are tickets. Look out of onXXsExtinct
 static Cash drawBelow(XXBulkIndex i, Weight w, XXTicket * pTicket) {
   XXBulk * pB = pileOfXXBulks.get(i);
   XXRafle * pR = &pB->body.raffle;

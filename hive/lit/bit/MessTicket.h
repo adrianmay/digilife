@@ -1,7 +1,8 @@
 #pragma once
 
 typedef struct {
-  char name[2];
+  char type;
+  int serial;
 } MessTicket;
 
 void showMessTicket(MessTicket * p);

@@ -3,7 +3,7 @@
 #include "test.h"
 #include "misc/h.h"
 #include "globals/h.h"
-#include "ThingBulk_pile/ThingBulk.h"
+#include "Thing_hotel/Bulk.h"
 #include "Thing_hotel/h.h"
 
 static bool extinct = false;

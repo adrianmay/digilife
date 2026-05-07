@@ -6,7 +6,7 @@
 
 #include "XXBulk_pile/1.h"
 
-typedef void (*XXHotelOpen)();
+typedef bool (*XXHotelOpen)();
 typedef XXBulkIndex (*XXHotelAlloc)(Cash cash, XXBulk ** ppBulk);
 typedef XXBulk *    (*XXHotelGet)(XXBulkIndex i); 
 typedef void (*XXHotelReview)(XXBulkIndex i);

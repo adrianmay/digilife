@@ -1,5 +1,5 @@
 // #pragma once
 
 #include "XXBulk_pile/1.h"
-typedef struct {Tocks when; XXBulkIndex who;} XXBomb;
+typedef struct {Tocks tocks; XXBulkIndex who;} XXBomb;
 

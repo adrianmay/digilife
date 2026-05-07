@@ -7,7 +7,7 @@ const XXIndex  badXXIndex = (XXIndex) {BAD_INDEX};
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 extern void showXX(XX * pXX); //Provide this;
-bool      openXXPile()                        { bool v; headOfXXs = openPile("XXs.pile", sizeof(XX), 10, YY, &v); return v; } 
+bool      openXXPile()                        { bool v; headOfXXs = openPile("XXs.pile", sizeof(XX), 10, ZZ, &v); return v; } 
 XXIndex   allocXX(XX ** pNew)                 { 
   pthread_mutex_lock(&mutex);
   Index i = allocInPile(headOfXXs, (void**)pNew, 0, 0); 

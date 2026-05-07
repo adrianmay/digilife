@@ -1,4 +1,4 @@
-#include "XX_pile/2.h"
+#include "XX_pile/2.h" //TODO: Do we need this?
 
 // The X param is the type of the MEAP element, cos we aren't yet suggesting any relationship to some animal pile.
 // The underlying pile where this lives should be instantiated already.
@@ -8,7 +8,7 @@ typedef enum {Extinct, Idle, Killed} Chomped;
 typedef bool    (*XXMeapOpen)(); 
 typedef void    (*XXMeapClose)(FATE fate);
 typedef bool    (*XXMeapInsert)   (XXIndex *pI, XX ** pNew, Index hint); 
-typedef bool    (*XXMeapEditWhen) (XXIndex i, Score when);
+typedef bool    (*XXMeapEditTocks) (XXIndex i, Score when);
 typedef bool    (*XXMeapErase)    (XXIndex i);
 typedef Chomped (*XXMeapChomp)    (Score thresh, XX * p);
 typedef bool    (*XXCheckOrdered) ();
@@ -22,8 +22,8 @@ typedef struct {
   XXMeapOpen open;
   XXMeapClose close;
   XXMeapInsert insert; // New member.
-  XXMeapEditWhen editWhenWhenLocked; // Member's score might have changed.
-  XXMeapEditWhen editWhenTakingLock; // Member's score might have changed.
+  XXMeapEditTocks editTocksWhenLocked; // Member's score might have changed.
+  XXMeapEditTocks editTocksTakingLock; // Member's score might have changed.
   XXMeapErase  erase; // Delete it.
   XXMeapChomp chomp; //Check and eat 0-1 things
   XXCheckOrdered checkOrdered; //Just for testing.

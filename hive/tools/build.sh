@@ -11,10 +11,10 @@ cp -r test hive bin
 find gen bin -type f | xargs chmod -w
 
 export TARGET=test
-tools/make_pile.sh Link MEGA || exit 1
-tools/make_meap.sh Junk MEGA tocks || exit 1
-tools/make_hotel.sh Thing GIGA
-tools/make_raffle.sh Mess GIGA
+tools/make_pile.sh   Link  bit/Link.h       MEGA || exit 1
+tools/make_meap.sh   Junk  bit/Junk.h       MEGA || exit 1
+tools/make_hotel.sh  Thing bit/ThingBody.h  GIGA || exit 1
+tools/make_raffle.sh Mess  bit/MessTicket.h GIGA || exit 1
 
 export TARGET=hive
 # tools/make_hotel.sh Mob GIGA

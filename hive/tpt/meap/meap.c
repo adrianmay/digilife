@@ -1,6 +1,6 @@
 #include <string.h>
-#include "2.h"
 #include "misc/h.h"
+#include "2.h"
 
 pthread_mutex_t XXMeapMutex = PTHREAD_MUTEX_INITIALIZER;
 static void lock(bool b, int line) {
@@ -30,10 +30,10 @@ static bool siftUp(XXIndex iCur) {
   if (iCur.i == 0) return false;
   Score sCur;
   while (iCur.i > 0) {
-    sCur = pileOfXXs.get(iCur)->ZZ;
+    sCur = pileOfXXs.get(iCur)->tocks;
     XXIndex iPar = parent(iCur);
     XX * pPar = pileOfXXs.get(iPar);
-    Score sPar = pPar->ZZ;
+    Score sPar = pPar->tocks;
     if (sPar <= sCur) return false;
     swap(iCur, iPar);
     iCur.i = iPar.i;
@@ -48,9 +48,9 @@ static void siftDown(XXIndex iCur) {
     XXIndex iL = left(iCur);
     XXIndex iR = right(iCur);
     XXIndex iSmallest = iCur;
-    XX * pCur = pileOfXXs.get(iCur); Score sCur = pCur->ZZ;
-    XX * pL   = pileOfXXs.get(iL  ); Score sL   =   pL->ZZ;
-    XX * pR   = pileOfXXs.get(iR  ); Score sR   =   pR->ZZ;
+    XX * pCur = pileOfXXs.get(iCur); Score sCur = pCur->tocks;
+    XX * pL   = pileOfXXs.get(iL  ); Score sL   =   pL->tocks;
+    XX * pR   = pileOfXXs.get(iR  ); Score sR   =   pR->tocks;
     Score sSmallest = sCur;
     if (iL.i < cnt && sL < sSmallest) { iSmallest.i = iL.i; sSmallest = sL; }
     if (iR.i < cnt && sR < sSmallest) iSmallest.i = iR.i;
@@ -83,16 +83,16 @@ static bool insert(XXIndex * pI, XX ** ppNew, Index hint) {
   return false;
 }
 
-static bool editWhenWhenLocked(XXIndex iCur, Score when) { 
-  pileOfXXs.get(iCur)->ZZ = when;
+static bool editTocksWhenLocked(XXIndex iCur, Score when) { 
+  pileOfXXs.get(iCur)->tocks = when;
   siftDown(iCur); 
   bool res = siftUp(iCur); 
   return res;
 }
 
-static bool editWhenTakingLock(XXIndex iCur, Score when) { 
+static bool editTocksTakingLock(XXIndex iCur, Score when) { 
   lock(true, __LINE__);
-  bool res = editWhenWhenLocked(iCur, when);
+  bool res = editTocksWhenLocked(iCur, when);
   lock(false, __LINE__);
   return res;
 }
@@ -126,7 +126,7 @@ static Chomped chomp(Score thresh, XX * pCopyOut) {
     XXIndex i = (XXIndex) {0};
     XX * p = pileOfXXs.get(i);
     memcpy(pCopyOut, p, sizeof(XX));
-    Score lowestScoreInMeap = p->ZZ;
+    Score lowestScoreInMeap = p->tocks;
     ScoreDiff sd = wrapSub32S(lowestScoreInMeap, thresh);
     if (sd <= 0) {
       erase_(i);
@@ -145,9 +145,9 @@ static bool checkOrdered() {
   Index cnt = pileOfXXs.getUsr();
   for (Index i=1;i<cnt;i++) {
     XXIndex iCur = (XXIndex){i};
-    Score sCur = pileOfXXs.get(iCur)->ZZ;
+    Score sCur = pileOfXXs.get(iCur)->tocks;
     XXIndex iPar = parent(iCur);
-    Score sPar = pileOfXXs.get(iPar)->ZZ;
+    Score sPar = pileOfXXs.get(iPar)->tocks;
     ok &= sPar <= sCur;
   }
   lock(false, __LINE__);
@@ -163,4 +163,4 @@ static void show() {
 static bool open() { return pileOfXXs.open(); }
 static void close(FATE f) { pileOfXXs.close(f); }
 
-XXMeap meapOfXXs = { open, close, insert, editWhenWhenLocked, editWhenTakingLock, erase, chomp, checkOrdered, size, show };
+XXMeap meapOfXXs = { open, close, insert, editTocksWhenLocked, editTocksTakingLock, erase, chomp, checkOrdered, size, show };

@@ -1,7 +1,7 @@
 #include "XXBulk_pile/1.h"
-#include "XX_raffle/structs.h"
+#include "YY"
 
-typedef void        (*XXRaffleOpen)   ();
+typedef bool        (*XXRaffleOpen)   ();
 typedef void        (*XXRaffleClose)  (FATE fate);
 typedef XXBulkIndex (*XXRaffleEnter)  (Cash cash, Weight w, XXTicket * pTicket);
 typedef Cash        (*XXRaffleCancel) (XXBulkIndex i);
@@ -17,8 +17,5 @@ typedef struct {
 
 extern XXRaffle raffleOfXXs;
 
-//XXBulkIndex enter(Cash cash, Weight w, XXTicket * pTicket);
-//Cash cancel(XXBulkIndex i);
-//Cash draw(XXTicket * pTicket);
 
 

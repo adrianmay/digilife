@@ -1,11 +1,8 @@
 #include <string.h>
 #include "misc/h.h"
-//#include "XX_raffle/structs.h"
 #include "XX_raffle/h.h"
-//#include "XX_hotel/Bulk.h"
-//#include "XX_hotel/h.h"
-//#include "XX_raffle/h.h"
-//#include "XXBulk_pile/2.h"
+#include "XXBulk_pile/2.h"
+#include "XX_hotel/h.h"
 
 static XXBulkIndex left  (XXBulkIndex i) {return ( XXBulkIndex ){ 2*i.i + 1 };}
 static XXBulkIndex right (XXBulkIndex i) {return ( XXBulkIndex ){ 2*i.i + 2 };}
@@ -35,7 +32,7 @@ static void propagateWeightUp(XXBulkIndex i, Weight w) {
 static XXBulkIndex enter(Cash cash, Weight w, XXTicket * pTicket) {
   XXBulk * pBulk;
   XXBulkIndex iBulk = hotelOfXXs.alloc(cash, &pBulk);
-  XXRaffle * pR = &pBulk->body.raffle;
+  XXRafle * pR = &pBulk->body.raffle;
   pR->s = w;
   pR->l = totWeight(left (iBulk));
   pR->r = totWeight(right(iBulk));
@@ -45,7 +42,7 @@ static XXBulkIndex enter(Cash cash, Weight w, XXTicket * pTicket) {
 
 static Cash cancel(XXBulkIndex i) {
   XXBulk * pB = pileOfXXBulks.get(i);
-  XXRaffle * pR = &pB->body.raffle;
+  XXRafle * pR = &pB->body.raffle;
   Weight w = pR->s;
   pR->s = 0;
   //When drawing, we'll treat a free slot like a proper node with a self-weight of zero and descend through it.
@@ -56,7 +53,7 @@ static Cash cancel(XXBulkIndex i) {
 
 static Cash drawBelow(XXBulkIndex i, Weight w, XXTicket * pTicket) {
   XXBulk * pB = pileOfXXBulks.get(i);
-  XXRaffle * pR = &pB->body.raffle;
+  XXRafle * pR = &pB->body.raffle;
   if (w < pR->l)
     return drawBelow(left(i), w, pTicket);
   w -= pR->l;
@@ -80,4 +77,9 @@ static bool open() { return hotelOfXXs.open(); }
 static void close(FATE f) { hotelOfXXs.close(f); }
 
 XXRaffle raffleOfXXs = { open, enter, cancel, draw, close};
+
+void showXXBody(XXBody * p) {
+  printf("l=%'ld,s=%'ld,r=%'ld,", p->raffle.l, p->raffle.s, p->raffle.r);
+  showXXTicket(&p->ticket);
+}
 

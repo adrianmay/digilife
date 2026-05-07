@@ -8,9 +8,9 @@
 #include "h.h"
 
 
-static void open() {
-  pileOfXXBulks.open();
+static bool open() {
   meapOfXXBombs.open();
+  return pileOfXXBulks.open();
 }
 
 static void close(FATE fate) {
@@ -24,7 +24,7 @@ static bool updateXXDeath(XXBulk* pBulk, XXBomb * pBomb) {
   Cash cash = pBulk->rent.cash;
   Tocks ttl = cash/tockPrice();
   Tocks death = tocksNow() + ttl;
-  return meapOfXXBombs.editWhenWhenLocked(pBulk->rent.bomb, death);
+  return meapOfXXBombs.editTocksWhenLocked(pBulk->rent.bomb, death);
 }
 
 static bool updateXXDeathWithBulkIndex(XXBulkIndex iBulk) {
@@ -89,7 +89,7 @@ void onMoveXXBomb(XXBomb * pBomb, XXBombIndex to) {
 }
 
 void showXXBomb(XXBomb * p) {
-  printf("when=%d,who=%d\n", p->when, p->who.i);
+  printf("tocks=%d,who=%d\n", p->tocks, p->who.i);
 }
 
 void showXXBulk(XXBulk * p) {

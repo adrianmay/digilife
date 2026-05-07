@@ -6,7 +6,7 @@
 #include "XXBomb_pile/XXBomb.h"
 #include "XXBulk_pile/XXBulk.h"
 #include "XXBomb_meap/2.h"
-#include "XXBulk_pile/2.h"
+//#include "XXBulk_pile/2.h"
 #include <pthread.h>
 #include <signal.h>
 #include "h.h"

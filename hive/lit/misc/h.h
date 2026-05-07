@@ -1,5 +1,5 @@
-#include "types.h"
 #include <time.h>
+#include "types.h"
 
 uint8_t  wrapAdd8   (uint8_t  a, uint8_t  b);
 uint32_t wrapAdd32  (uint32_t a, uint32_t b);

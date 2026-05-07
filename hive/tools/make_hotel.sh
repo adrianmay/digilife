@@ -2,6 +2,7 @@ echo "Making hotel $1 $2"
 tools/make_pile.sh "$1Bulk" $2
 tools/make_meap.sh "$1Bomb" $2 when
 tools/usetpt.sh hotel $1
+echo $1_hotel >> gen/${TARGET}.objs
 
 echo "
 #include \"${1}Bulk_pile/1.h\"

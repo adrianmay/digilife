@@ -1,5 +1,4 @@
-#ifndef MsgTicket_h
-#define MsgTicket_h
+#pragma once
 
 #include "MobBulk_pile/1.h"
 typedef struct {
@@ -12,5 +11,4 @@ typedef struct {
 
 void showMsgTicket(MsgTicket * p);
 
-#endif  
 

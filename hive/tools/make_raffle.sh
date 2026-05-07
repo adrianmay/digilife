@@ -1,6 +1,7 @@
 echo "Making raffle $1 $2"
 tools/make_hotel.sh $1 $2
 tools/usetpt.sh raffle $1
+echo $1_raffle >> gen/${TARGET}.objs
 
 echo "
 #include \"${1}_raffle/structs.h\"

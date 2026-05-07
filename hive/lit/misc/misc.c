@@ -34,7 +34,9 @@ Nanosecs ageOfThread()  { return age(CLOCK_THREAD_CPUTIME_ID); }
 
 ////////////////////////////////////////////////////////////////
 
-int quit(int i) {abort();} // { return *((int*)(0)); }                         
+int quit(int i) {
+  abort();
+} // { return *((int*)(0)); }                         
     
 int fileSize(int fd) {                                                         
   struct stat sb;                                                              

@@ -1,7 +1,5 @@
-#ifndef XXPile_1_h
-#define XXPile_1_h
+#pragma once
 
 #include "types.h"
 typedef struct { Index i; } XXIndex; 
 
-#endif

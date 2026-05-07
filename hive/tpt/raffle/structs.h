@@ -1,5 +1,4 @@
-#ifndef XXRaffle_h
-#define XXRaffle_h
+#pragma once
 
 #include "types.h"
 #include "XXTicket.h"
@@ -7,4 +6,3 @@
 typedef struct {Weight s; Weight l; Weight r;} XXRaffle;
 typedef struct {XXRaffle raffle; XXTicket ticket;} XXBody;
 
-#endif

@@ -1,6 +1,4 @@
-#ifndef XXHotelBomb_h
-#define XXHotelBomb_h
+#pragma once
 
 typedef struct {Tocks when; XXBulkIndex who;} XXBomb;
 
-#endif

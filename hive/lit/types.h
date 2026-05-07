@@ -1,7 +1,4 @@
-//This is types.h
-
-#ifndef TYPES_H
-#define TYPES_H
+#pragma once
 
 #include <pthread.h>
 #include <stdint.h>         
@@ -49,6 +46,4 @@ typedef void (*VV)();
 typedef void (*VP)(void *);
 
 typedef enum {NOWT, DELETE, HIDE} FATE;
-
-#endif
 

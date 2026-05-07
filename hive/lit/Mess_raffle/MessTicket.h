@@ -1,5 +1,4 @@
-#ifndef MessTicket_h
-#define MessTicket_h
+#pragma once
 
 typedef struct {
   char name[2];
@@ -7,4 +6,3 @@ typedef struct {
 
 void showMessTicket(MessTicket * p);
 
-#endif  

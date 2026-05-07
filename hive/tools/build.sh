@@ -17,8 +17,8 @@ tools/make_hotel.sh Thing GIGA
 tools/make_raffle.sh Mess GIGA
 
 export TARGET=hive
-tools/make_hotel.sh Mob GIGA
-tools/make_raffle.sh Msg GIGA
+# tools/make_hotel.sh Mob GIGA
+# tools/make_raffle.sh Msg GIGA
 
 echo "Building tags"
 find gen bin -name "*.h" -or -name "*.c" | xargs ctags || exit 1
@@ -45,12 +45,11 @@ do
   fi
 done
 
-X=(gen/*.o)
-echo "Main objects:  ${X[@]}"
+# X=(gen/*.o)
+# echo "Main objects:  ${X[@]}"
 # ld --relocatable --allow-shlib-undefined -o gen/o.o gen/*.o || exit 1
 
 echo "Building Test"
-# $CC -pthread -o Test bin/test.o gen/MessBomb_meap.o gen/MessBomb_pile.o gen/MessBulk_pile.o gen/Mess_hotel.o gen/Mess_raffle.o gen/Junk_meap.o gen/Junk_pile.o gen/Link_pile.o gen/ThingBomb_meap.o gen/ThingBomb_pile.o gen/ThingBulk_pile.o gen/Thing_hotel.o gen/globals.o gen/ipile.o gen/misc.o gen/perf.o || exit 1
 $CC -pthread -o Test bin/test.o $(cat gen/all.objs gen/test.objs | sed 's#^#gen/#; s#$#.o#') || exit 1
 echo "Building Hive"
 $CC -pthread -o Hive bin/hive.o $(cat gen/all.objs gen/hive.objs | sed 's#^#gen/#; s#$#.o#') || exit 1

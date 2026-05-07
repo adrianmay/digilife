@@ -10,7 +10,7 @@ void show${1}Body(${1}Body * p);
 " > gen/$1_hotel/$1Body.h
 
 echo "
-#include \"${1}_raffle/${1}Ticket.h\"
+// #include \"${1}_raffle/${1}Ticket.h\"
 #include \"$1_hotel/$1Body.h\"
 
 void show${1}Body(${1}Body * p) { 

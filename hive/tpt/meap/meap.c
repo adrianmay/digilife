@@ -1,5 +1,4 @@
 #include <string.h>
-#include "1.h"
 #include "2.h"
 #include "misc/h.h"
 
@@ -161,4 +160,7 @@ static void show() {
   pileOfXXs.show();
 }
 
-XXMeap meapOfXXs = { insert, editWhenWhenLocked, editWhenTakingLock, erase, chomp, checkOrdered, size, show };
+static bool open() { return pileOfXXs.open(); }
+static void close(FATE f) { pileOfXXs.close(f); }
+
+XXMeap meapOfXXs = { open, close, insert, editWhenWhenLocked, editWhenTakingLock, erase, chomp, checkOrdered, size, show };

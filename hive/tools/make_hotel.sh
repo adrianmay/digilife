@@ -4,13 +4,12 @@ tools/make_meap.sh "$1Bomb" $2 when
 tools/usetpt.sh hotel $1
 echo $1_hotel >> gen/${TARGET}.objs
 
+# Tell the piles to get their struct from the hotel.
 echo "
-#include \"${1}Bulk_pile/1.h\"
 #include \"${1}_hotel/Bomb.h\"
 " > gen/$1Bomb_pile/$1Bomb.h
 
 echo "
-#include \"${1}Bomb_pile/1.h\"
 #include \"${1}_hotel/Bulk.h\"
 " > gen/$1Bulk_pile/$1Bulk.h
 

@@ -1,23 +1,21 @@
-#include <unistd.h>
 #include "types.h"
+#include <unistd.h>
 #include "test.h"
 #include "misc/h.h"
 #include "globals/h.h"
-#include "ThingBulk_pile/1.h"
-#include "ThingBomb_pile/1.h"
-#include "Thing_hotel/Bulk.h"
-#include "Thing_hotel/Bomb.h"
+#include "ThingBulk_pile/ThingBulk.h"
 #include "Thing_hotel/h.h"
 
-void onMobsExtinct() {}
-void onMsgsExtinct() {}
+static bool extinct = false;
+void onThingsExtinct() { extinct = true; } 
+
+// void onMobsExtinct() {}
+// void onMsgsExtinct() {}
 
 Nanosecs ns;
 ThingBulk * pThing;
 ThingBulkIndex iThing;
 
-static bool extinct = false;
-void onThingsExtinct() { extinct = true; } 
 
 static bool init() {
   openGlobals();

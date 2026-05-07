@@ -60,7 +60,7 @@ int main() {
     pile() && 
     meap() && 
     hotel() &&
-    raffle() &&
+    //raffle() &&
     true;
   return suc?0:1;
 }

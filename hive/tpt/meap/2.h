@@ -1,4 +1,3 @@
-#include "XX_pile/XX.h"
 #include "XX_pile/2.h"
 
 // The X param is the type of the MEAP element, cos we aren't yet suggesting any relationship to some animal pile.
@@ -6,6 +5,8 @@
 
 typedef enum {Extinct, Idle, Killed} Chomped;
 
+typedef bool    (*XXMeapOpen)(); 
+typedef void    (*XXMeapClose)(FATE fate);
 typedef bool    (*XXMeapInsert)   (XXIndex *pI, XX ** pNew, Index hint); 
 typedef bool    (*XXMeapEditWhen) (XXIndex i, Score when);
 typedef bool    (*XXMeapErase)    (XXIndex i);
@@ -18,6 +19,8 @@ typedef void    (*XXMeapShow)     ();
 // typedef ChompResult (*XXMeapChomp)(Score score, XXIndex * i);
 
 typedef struct {
+  XXMeapOpen open;
+  XXMeapClose close;
   XXMeapInsert insert; // New member.
   XXMeapEditWhen editWhenWhenLocked; // Member's score might have changed.
   XXMeapEditWhen editWhenTakingLock; // Member's score might have changed.

@@ -1,7 +1,5 @@
 #include <pthread.h> 
 #include "ipile/h.h"
-#include "1.h"
-#include "XX_pile/XX.h"
 #include "2.h"
 
 Pilehead * headOfXXs = 0; 

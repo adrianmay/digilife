@@ -1,26 +1,24 @@
+#include <pthread.h>
+#include <signal.h>
 #include "types.h"
 #include "misc/h.h"
 #include "globals/h.h"
-#include "XXBulk_pile/1.h"
-#include "XXBomb_pile/1.h"
-#include "XXBomb_pile/XXBomb.h"
-#include "XXBulk_pile/XXBulk.h"
 #include "XXBomb_meap/2.h"
-//#include "XXBulk_pile/2.h"
-#include <pthread.h>
-#include <signal.h>
+#include "XXBulk_pile/2.h"
 #include "h.h"
 
 
 static void open() {
   pileOfXXBulks.open();
-  pileOfXXBombs.open();
+  meapOfXXBombs.open();
 }
 
 static void close(FATE fate) {
   pileOfXXBulks.close(fate);
-  pileOfXXBombs.close(fate);
+  meapOfXXBombs.close(fate);
 }
+
+static XXBulk * get(XXBulkIndex i) { return pileOfXXBulks.get(i);}
 
 static bool updateXXDeath(XXBulk* pBulk, XXBomb * pBomb) {
   Cash cash = pBulk->rent.cash;
@@ -99,4 +97,4 @@ void showXXBulk(XXBulk * p) {
   showXXBody(&p->body);
 }
 
-XXHotel hotelOfXXs = {open, alloc, review, rob, killer, close, show};
+XXHotel hotelOfXXs = {open, alloc, get, review, rob, killer, close, show};

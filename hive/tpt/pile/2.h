@@ -1,3 +1,5 @@
+#include "1.h"
+#include "XX.h"
 
 typedef void * (*F_XX)(XX * p, void * u); 
 

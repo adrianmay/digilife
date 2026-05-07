@@ -1,9 +1,11 @@
 #include <string.h>
+#include "misc/h.h"
+//#include "XX_raffle/structs.h"
 #include "XX_raffle/h.h"
 //#include "XX_hotel/Bulk.h"
+//#include "XX_hotel/h.h"
+//#include "XX_raffle/h.h"
 //#include "XXBulk_pile/2.h"
-#include "XX_hotel/h.h"
-#include "misc/h.h"
 
 static XXBulkIndex left  (XXBulkIndex i) {return ( XXBulkIndex ){ 2*i.i + 1 };}
 static XXBulkIndex right (XXBulkIndex i) {return ( XXBulkIndex ){ 2*i.i + 2 };}
@@ -13,13 +15,13 @@ static bool isChildRightChild(XXBulkIndex i) {return i.i%2==0; } //Whole approac
 
 //openXXRaffle() {openXXHotel();}
 
-Weight totWeight(XXBulkIndex i) {
-  XXBulk * pB = pileOfXXBulks.get(i);
-  XXRaffle * pR = &pB->body.raffle;
+static Weight totWeight(XXBulkIndex i) {
+  XXBulk * pB = hotelOfXXs.get(i);
+  XXRafle * pR = &pB->body.raffle;
   return pR->s + pR->l + pR->r;
 }
 
-void propagateWeightUp(XXBulkIndex i, Weight w) {
+static void propagateWeightUp(XXBulkIndex i, Weight w) {
   // i's weight is already correct, this adjusts the ancestors
   if (!isChild(i)) return;
   XXBulkIndex iP = parent(i);
@@ -30,7 +32,7 @@ void propagateWeightUp(XXBulkIndex i, Weight w) {
   propagateWeightUp(iP, w);
 }
 
-XXBulkIndex enter(Cash cash, Weight w, XXTicket * pTicket) {
+static XXBulkIndex enter(Cash cash, Weight w, XXTicket * pTicket) {
   XXBulk * pBulk;
   XXBulkIndex iBulk = hotelOfXXs.alloc(cash, &pBulk);
   XXRaffle * pR = &pBulk->body.raffle;
@@ -41,7 +43,7 @@ XXBulkIndex enter(Cash cash, Weight w, XXTicket * pTicket) {
   return iBulk;
 }
 
-Cash cancel(XXBulkIndex i) {
+static Cash cancel(XXBulkIndex i) {
   XXBulk * pB = pileOfXXBulks.get(i);
   XXRaffle * pR = &pB->body.raffle;
   Weight w = pR->s;
@@ -52,7 +54,7 @@ Cash cancel(XXBulkIndex i) {
   return c;
 }
 
-Cash drawBelow(XXBulkIndex i, Weight w, XXTicket * pTicket) {
+static Cash drawBelow(XXBulkIndex i, Weight w, XXTicket * pTicket) {
   XXBulk * pB = pileOfXXBulks.get(i);
   XXRaffle * pR = &pB->body.raffle;
   if (w < pR->l)
@@ -66,11 +68,16 @@ Cash drawBelow(XXBulkIndex i, Weight w, XXTicket * pTicket) {
   return drawBelow(right(i), w, pTicket);
 }
 
-Cash draw(XXTicket * pTicket) {
+static Cash draw(XXTicket * pTicket) {
   XXBulkIndex i0 = (XXBulkIndex){0};
   Weight tw = totWeight(i0);
   uint64_t w = randIntBelow(tw);
   return drawBelow(i0, w, pTicket);
 }
 
+
+static bool open() { return hotelOfXXs.open(); }
+static void close(FATE f) { hotelOfXXs.close(f); }
+
+XXRaffle raffleOfXXs = { open, enter, cancel, draw, close};
 

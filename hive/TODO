@@ -1,10 +1,7 @@
 Non-unique bombs bug seen in raffle test
 
-
-Virgin record bool* for alloc
-Access to pile.top
+rob() non existent. Need accounting.
 Thread protection in raffle
-Fix bug in raffle
 Free/alloc only write ghost and free *. Preserve most stuff
 Get rid of name for now (later make flame (flags+name) at mob level (2 flag bits for interpreter inc system animal in C) )
 

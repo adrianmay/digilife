@@ -61,9 +61,10 @@ static Cash drawBelow(XXBulkIndex i, Weight w, XXTicket * pTicket) {
   w -= pR->l;
   if (w < pR->s) {
     memcpy(pTicket, &pB->body.ticket, sizeof(XXTicket));
+    hotelOfXXs.rob(i);
     return 0; //TODO: cash
   } 
-  if (pR->r == 0) return 0; //ShouldnT happen
+  if (pR->r == 0) exit(10); //ShouldnT happen
   w -= pR->s;
   return drawBelow(right(i), w, pTicket);
 }

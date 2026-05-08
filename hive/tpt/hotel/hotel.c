@@ -81,7 +81,7 @@ static void show() {
 }
 
 void onNewXXBomb(XXBombIndex iBomb, Index hint) { 
-  printf("OnNew: iBomb: %d hint: %d\n", iBomb.i, hint);
+  //printf("OnNew: iBomb: %d hint: %d\n", iBomb.i, hint);
   XXBomb * pBomb = pileOfXXBombs.get(iBomb);
   pBomb->who = (XXBulkIndex){hint};
   updateXXDeathWithBulkIndexAndBombPointer(pBomb->who, pBomb);
@@ -89,6 +89,7 @@ void onNewXXBomb(XXBombIndex iBomb, Index hint) {
 
 void onMoveXXBomb(XXBomb * pBomb, XXBombIndex to) { 
   XXBulk * pBulk = pileOfXXBulks.get(pBomb->who);
+  //printf("Moving bomb for bulk %d from %d to %d\n", pBomb->who.i, pBulk->rent.bomb.i, to.i);
   pBulk->rent.bomb = to;
 }
 

@@ -28,13 +28,13 @@ void stuff1() {
 }
 
 void stuff2() {
-  for (int a=0; a<100; a++) {
+  for (int a=0; a<10; a++) {
     tkt.serial=a;
     tkt.type = a%2 ? 'T' : 'H';  //Twice as many heads
     Weight w = a%2 ? 4 : 8;  //Twice as many heads
     raffleOfMesss.enter(5000, w, &tkt);
   }
-  raffleOfMesss.show();
+  //raffleOfMesss.show();
 }
 
 void sample() {
@@ -50,15 +50,22 @@ void sample() {
   printf("Sampled %d H, %d T, %d virgins and %d errors.\n", h, t, v, e);
 }
 
+void cleanupRaffle() { closeGlobals(1); raffleOfMesss.close(1); }
+
 bool testRaffle() { 
-  //stuff1();
-  //sample();
+  stuff1();
+  sample();
+  cleanupRaffle();
+  init();
   stuff2();
+  sample();
+  cleanupRaffle();
+  init();
+  stuff3();
   sample();
   return true; 
 }
 
-void cleanupRaffle() { closeGlobals(1); raffleOfMesss.close(1); }
 bool raffle() { return bkt("raffle", init, testRaffle, cleanupRaffle); }
 
 

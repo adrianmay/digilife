@@ -22,8 +22,8 @@ static void swap(XXIndex i1, XXIndex i2) {
   memcpy(&tmp, p1, len);
   memcpy(p1, p2, len);
   memcpy(p2, &tmp, len);
-  onMoveXX(p1, i2);
-  onMoveXX(p2, i1);
+  onMoveXX(p1, i1);
+  onMoveXX(p2, i2);
 }
 
 static bool siftUp(XXIndex iCur) {

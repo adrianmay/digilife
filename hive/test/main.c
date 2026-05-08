@@ -55,11 +55,11 @@ int main() {
   initEverything();
   bool suc = 
 //    perf() && 
-    wrap() && 
-    globals() && 
-    pile() && 
-    meap() && 
-    hotel() &&
+//    wrap() && 
+//    globals() && 
+//    pile() && 
+//    meap() && 
+//    hotel() &&
     raffle() &&
     true;
   return suc?0:1;

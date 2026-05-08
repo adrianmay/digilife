@@ -58,10 +58,12 @@ void sleepNs(Nanosecs ns) {
 }
 
 uint64_t randIntBelow(uint64_t lim) {
-  uint64_t threshold = - lim % lim;
+  uint64_t thresh = -1;
+  thresh = -(thresh % lim + 1); 
   uint64_t res;
   getrandom(&res, sizeof(res), 0);
-  if (res > threshold) 
+//  printf("randIntBelow: lim=%lu, thresh=%lu, res=%lu\n", lim, thresh, res);
+  if (res > thresh) 
     return randIntBelow(lim); // Try again.
   else return res%lim;
   return res;

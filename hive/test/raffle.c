@@ -15,29 +15,46 @@ static bool init() {
   return true;
 }
 
-MessTicket tkt;
+MessTicket tkt = {'V' };
+Cash cash;
 
 // Equal weight, unequal types, loads of cash
 void stuff1() {
-  for (int a=0; a<10000; a++) {
+  for (int a=0; a<100; a++) {
     tkt.serial=a;
     tkt.type = a%3 ? 'T' : 'H';  //Twice as many heads
     raffleOfMesss.enter(5000, 10, &tkt);
   }
 }
 
-void sample1() {
-  int h=0, t=0;
-  for (int a=0; a<1000; a++) {
-    raffleOfMesss.draw(&tkt);
-    if (tkt.type=='H') h++; else t++;
+void stuff2() {
+  for (int a=0; a<100; a++) {
+    tkt.serial=a;
+    tkt.type = a%2 ? 'T' : 'H';  //Twice as many heads
+    Weight w = a%2 ? 4 : 8;  //Twice as many heads
+    raffleOfMesss.enter(5000, w, &tkt);
   }
-  printf("Sampled %d H and %d T\n", h, t);
+  raffleOfMesss.show();
+}
+
+void sample() {
+  int h=0, t=0, v=0, e=0;
+  for (int a=0; a<1000; a++) {
+    bool res = raffleOfMesss.draw(&tkt, &cash);
+    if (!res) return;
+    if (tkt.type=='H') h++; 
+    else if (tkt.type=='T') t++;
+    else if (tkt.type=='V') v++;
+    else e++;
+  }
+  printf("Sampled %d H, %d T, %d virgins and %d errors.\n", h, t, v, e);
 }
 
 bool testRaffle() { 
-  stuff1();
-  sample1();
+  //stuff1();
+  //sample();
+  stuff2();
+  sample();
   return true; 
 }
 

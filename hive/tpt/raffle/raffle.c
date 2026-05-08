@@ -31,11 +31,12 @@ static void propagateWeightUp(XXBulkIndex i, Weight w) {
 
 static XXBulkIndex enter(Cash cash, Weight w, XXTicket * pTicket) {
   XXBulk * pBulk;
-  XXBulkIndex iBulk = hotelOfXXs.alloc(cash, &pBulk);
+  bool recycled;
+  XXBulkIndex iBulk = hotelOfXXs.alloc(cash, &pBulk, &recycled);
+  memcpy(&pBulk->body.ticket, pTicket, sizeof(XXTicket));
   XXRafle * pR = &pBulk->body.raffle;
+  if (!recycled)  pR->l = pR->r = 0; 
   pR->s = w;
-  pR->l = totWeight(left (iBulk));
-  pR->r = totWeight(right(iBulk));
   propagateWeightUp(iBulk, w);
   return iBulk;
 }
@@ -55,29 +56,40 @@ static Cash cancel(XXBulkIndex i) {
 static Cash drawBelow(XXBulkIndex i, Weight w, XXTicket * pTicket) {
   XXBulk * pB = pileOfXXBulks.get(i);
   XXRafle * pR = &pB->body.raffle;
-  if (w < pR->l)
+  if (pR->l > 0 && w < pR->l)
     return drawBelow(left(i), w, pTicket);
   w -= pR->l;
   if (w < pR->s) {
     memcpy(pTicket, &pB->body.ticket, sizeof(XXTicket));
     return 0; //TODO: cash
   } 
+  if (pR->r == 0) return 0; //ShouldnT happen
   w -= pR->s;
   return drawBelow(right(i), w, pTicket);
 }
 
-static Cash draw(XXTicket * pTicket) {
+static Cash drawAssumeNotEmpty(XXTicket * pTicket) {
   XXBulkIndex i0 = (XXBulkIndex){0};
   Weight tw = totWeight(i0);
   uint64_t w = randIntBelow(tw);
   return drawBelow(i0, w, pTicket);
 }
 
+static bool draw(XXTicket * pTicket, Cash * pCash) {
+  if (hotelOfXXs.count() == 0) 
+    return false;
+  *pCash = drawAssumeNotEmpty(pTicket);
+  return true;
+}
 
 static bool open() { return hotelOfXXs.open(); }
 static void close(FATE f) { hotelOfXXs.close(f); }
 
-XXRaffle raffleOfXXs = { open, enter, cancel, draw, close};
+static void  show() {
+  hotelOfXXs.show();
+}
+
+XXRaffle raffleOfXXs = { open, enter, cancel, draw, close, show };
 
 void showXXBody(XXBody * p) {
   printf("l=%'ld,s=%'ld,r=%'ld,", p->raffle.l, p->raffle.s, p->raffle.r);

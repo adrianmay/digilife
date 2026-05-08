@@ -4,7 +4,7 @@
 typedef void * (*F_XX)(XX * p, void * u); 
 
 typedef bool    (*XXPileOpen)(); 
-typedef XXIndex (*XXPileAlloc)(XX ** pNew); 
+typedef XXIndex (*XXPileAlloc)(XX ** pNew, bool * pRecycled); 
 typedef XX *    (*XXPileGet)(XXIndex i); 
 typedef void *  (*XXPileWith)(XXIndex i, F_XX f, void * u); 
 typedef void    (*XXPileFree)(XXIndex i);

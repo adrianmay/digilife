@@ -6,14 +6,15 @@
 
 #include "XXBulk_pile/1.h"
 
-typedef bool (*XXHotelOpen)();
-typedef XXBulkIndex (*XXHotelAlloc)(Cash cash, XXBulk ** ppBulk);
+typedef bool        (*XXHotelOpen)();
+typedef XXBulkIndex (*XXHotelAlloc)(Cash cash, XXBulk ** ppBulk, bool * pRecycled);
 typedef XXBulk *    (*XXHotelGet)(XXBulkIndex i); 
-typedef void (*XXHotelReview)(XXBulkIndex i);
-typedef Cash (*XXHotelRobber)(XXBulkIndex i);
-typedef void (*XXHotelKiller)();
-typedef void (*XXHotelClose)(FATE fate);
-typedef void (*XXHotelShow)();
+typedef void        (*XXHotelReview)(XXBulkIndex i);
+typedef Cash        (*XXHotelRobber)(XXBulkIndex i);
+typedef void        (*XXHotelKiller)();
+typedef Index       (*XXHotelCount)(); 
+typedef void        (*XXHotelClose)(FATE fate);
+typedef void        (*XXHotelShow)();
 
 typedef struct {
   XXHotelOpen open;
@@ -22,6 +23,7 @@ typedef struct {
   XXHotelReview review;
   XXHotelRobber rob;
   XXHotelKiller kill;
+  XXHotelCount count;
   XXHotelClose close;
   XXHotelShow show;
 } XXHotel;

@@ -18,6 +18,10 @@ static void close(FATE fate) {
   meapOfXXBombs.close(fate);
 }
 
+static Index count(FATE fate) {
+  return pileOfXXBulks.count();
+}
+
 static XXBulk * get(XXBulkIndex i) { return pileOfXXBulks.get(i);}
 
 static bool updateXXDeath(XXBulk* pBulk, XXBomb * pBomb) {
@@ -47,8 +51,8 @@ static Cash rob(XXBulkIndex i) {
   return 0; //TODO: writeme
 }
 
-static XXBulkIndex alloc(Cash cash, XXBulk ** ppBulk) {
-  XXBulkIndex iBulk = pileOfXXBulks.alloc(ppBulk);
+static XXBulkIndex alloc(Cash cash, XXBulk ** ppBulk, bool * pRecycled) {
+  XXBulkIndex iBulk = pileOfXXBulks.alloc(ppBulk, pRecycled);
   (*ppBulk)->rent.cash = cash;
   updateTocks();
   (*ppBulk)->rent.lastPaidRent = tocksNow();
@@ -97,4 +101,4 @@ void showXXBulk(XXBulk * p) {
   showXXBody(&p->body);
 }
 
-XXHotel hotelOfXXs = {open, alloc, get, review, rob, killer, close, show};
+XXHotel hotelOfXXs = {open, alloc, get, review, rob, killer, count, close, show};

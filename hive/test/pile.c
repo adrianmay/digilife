@@ -1,10 +1,12 @@
 #include "test.h"
 #include "Link_pile/2.h"
 
-bool virginity() {
+bool recycledSlot;
+
+bool recycledity() {
   bool vir1 = pileOfLinks.open(); //Assume it doesn't exist
   assertInt(vir1,true);
-  pileOfLinks.alloc(0);
+  pileOfLinks.alloc(0, &recycledSlot);
   pileOfLinks.close(NOWT); //Don't delete the pile
   bool vir2 = pileOfLinks.open();
   assertInt(vir2,false);
@@ -23,11 +25,11 @@ bool sumItems(LinkIndex * i0) {
   bool vir1 = pileOfLinks.open(); //Assume it doesn't exist
   assertInt(vir1,true);
   LinkIndex i; Link * pT;
-  *i0 = i = pileOfLinks.alloc(&pT); // Must be index zero
+  *i0 = i = pileOfLinks.alloc(&pT, &recycledSlot); // Must be index zero
   pT->x = 0; 
   Link * pNew;
   for (int a=0;a<40;a++) {
-    pT->next=pileOfLinks.alloc(&pNew);
+    pT->next=pileOfLinks.alloc(&pNew, &recycledSlot);
     pNew->next = badLinkIndex;                       
     pNew->x = 10*a;
     pT=pNew;
@@ -59,13 +61,13 @@ bool freeing(LinkIndex i0) {
 }
 
 bool reallocing() { //Free list = 2,3,4
-  LinkIndex i = pileOfLinks.alloc(0);
+  LinkIndex i = pileOfLinks.alloc(0, &recycledSlot);
   assertInt(i.i,2);
-  i = pileOfLinks.alloc(0);
+  i = pileOfLinks.alloc(0, &recycledSlot);
   assertInt(i.i,4);
-  i = pileOfLinks.alloc(0);
+  i = pileOfLinks.alloc(0, &recycledSlot);
   assertInt(i.i,3);
-  i = pileOfLinks.alloc(0);
+  i = pileOfLinks.alloc(0, &recycledSlot);
   assertInt(i.i,41); // Keeping the 5 and 6
   int count = pileOfLinks.count();
   assertInt(count,42);
@@ -97,7 +99,7 @@ bool showIt() {
 bool testLinkPile() {
   LinkIndex i0;
   return true
-         && virginity()  // deletes the pilee
+         && recycledity()  // deletes the pilee
          && (sumItems(&i0), true) // leaves it open
          && freeing(i0) // ditto
          //&& showIt()

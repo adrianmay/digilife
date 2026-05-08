@@ -45,15 +45,21 @@ static bool siftUp(XXIndex iCur) {
 static void siftDown(XXIndex iCur) {
   Index cnt = pileOfXXs.getUsr();
   while (1) {
-    XXIndex iL = left(iCur);
-    XXIndex iR = right(iCur);
     XXIndex iSmallest = iCur;
     XX * pCur = pileOfXXs.get(iCur); Score sCur = pCur->tocks;
-    XX * pL   = pileOfXXs.get(iL  ); Score sL   =   pL->tocks;
-    XX * pR   = pileOfXXs.get(iR  ); Score sR   =   pR->tocks;
     Score sSmallest = sCur;
-    if (iL.i < cnt && sL < sSmallest) { iSmallest.i = iL.i; sSmallest = sL; }
-    if (iR.i < cnt && sR < sSmallest) iSmallest.i = iR.i;
+
+    XXIndex iL = left(iCur);
+    if (iL.i<cnt) {
+      XX * pL   = pileOfXXs.get(iL  ); Score sL   =   pL->tocks;
+      if (iL.i < cnt && sL < sSmallest) { iSmallest.i = iL.i; sSmallest = sL; }
+      XXIndex iR = right(iCur);
+      if (iR.i<cnt) {
+        XX * pR   = pileOfXXs.get(iR  ); Score sR   =   pR->tocks;
+        if (iR.i < cnt && sR < sSmallest) iSmallest.i = iR.i;
+      }
+    }  
+
     if (iSmallest.i == iCur.i) break;
     swap(iCur, iSmallest);
     iCur = iSmallest;
@@ -69,7 +75,7 @@ static bool insert(XXIndex * pI, XX ** ppNew, Index hint) {
     *ppNew = pileOfXXs.get(*pI);    
   }  
   else
-    *pI = pileOfXXs.alloc(ppNew); 
+    *pI = pileOfXXs.alloc(ppNew, 0); 
   // ppNew is now correct either way.
   onNewXX(*pI, hint);                   // Expected to stuff *pI with things that depend on hint. Needed after allocing the meap member but before sorting.
   pileOfXXs.modUsr(1);                        // Not sure if this should be before the above, but certainly it's before siftUp. 

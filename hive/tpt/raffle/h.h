@@ -5,7 +5,8 @@ typedef bool        (*XXRaffleOpen)   ();
 typedef void        (*XXRaffleClose)  (FATE fate);
 typedef XXBulkIndex (*XXRaffleEnter)  (Cash cash, Weight w, XXTicket * pTicket);
 typedef Cash        (*XXRaffleCancel) (XXBulkIndex i);
-typedef Cash        (*XXRaffleDraw)   (XXTicket * pTicket);
+typedef bool        (*XXRaffleDraw)   (XXTicket * pTicket, Cash * pCash);
+typedef void        (*XXRaffleShow)   ();
 
 typedef struct {
   XXRaffleOpen open;
@@ -13,6 +14,7 @@ typedef struct {
   XXRaffleCancel cancel;
   XXRaffleDraw draw;
   XXRaffleClose close;
+  XXRaffleShow show;
 } XXRaffle;
 
 extern XXRaffle raffleOfXXs;

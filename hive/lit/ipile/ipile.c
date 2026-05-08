@@ -115,9 +115,10 @@ void * withInPile(Pilehead * ph, Index i, F f, void * u) {
 }
                                                 //
 // Allocate a new slot by trying the free list, or incrementing top, or growing
-Index allocInPile(Pilehead * ph, void ** ppNew, void * ghost, int ghostlen) {
+Index allocInPile(Pilehead * ph, void ** ppNew, bool * pRecycled, void * ghost, int ghostlen) {
   Index ret;
   if (ph->fro != BAD_INDEX) {
+    if (pRecycled) *pRecycled = true;
     ph->frn -= 1;           
     ret = ph->fro;
     Free * pFree = findFreeInPile(ph,ret);
@@ -128,6 +129,7 @@ Index allocInPile(Pilehead * ph, void ** ppNew, void * ghost, int ghostlen) {
       memcpy(ghost, (void*) pGhost, ghostlen);
     }
   } else {
+    if (pRecycled) *pRecycled = false;
     growPile(ph);                                                                                                             
     ph->top++; 
     ret = ph->top-1;

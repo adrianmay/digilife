@@ -8,9 +8,9 @@ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 extern void showXX(XX * pXX); //Provide this;
 bool      openXXPile()                        { bool v; headOfXXs = openPile("XXs.pile", sizeof(XX), 10, ZZ, &v); return v; } 
-XXIndex   allocXX(XX ** pNew)                 { 
+XXIndex   allocXX(XX ** pNew, bool * pRecycled) { 
   pthread_mutex_lock(&mutex);
-  Index i = allocInPile(headOfXXs, (void**)pNew, 0, 0); 
+  Index i = allocInPile(headOfXXs, (void**)pNew, pRecycled, 0, 0); 
   pthread_mutex_unlock(&mutex);
   return (XXIndex) {i};
 } 

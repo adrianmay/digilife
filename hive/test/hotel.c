@@ -42,7 +42,8 @@ bool testNoPop() {
 }
 
 void make(Index name, Cash cash) {
-  hotelOfThings.alloc(cash, &pThing);
+  bool recycledSlot;
+  hotelOfThings.alloc(cash, &pThing, &recycledSlot);
   pThing->body.name = name;
 }
 

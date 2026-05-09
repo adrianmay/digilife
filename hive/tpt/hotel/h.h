@@ -9,6 +9,7 @@
 typedef bool        (*XXHotelOpen)();
 typedef XXBulkIndex (*XXHotelAlloc)(Cash cash, XXBulk ** ppBulk, bool * pRecycled);
 typedef XXBulk *    (*XXHotelGet)(XXBulkIndex i); 
+typedef void        (*XXHotelTransfer)(Cash amt, XXBulkIndex iFrom, XXBulkIndex iTo);
 typedef void        (*XXHotelReview)(XXBulkIndex i);
 typedef Cash        (*XXHotelRobber)(XXBulkIndex i);
 typedef void        (*XXHotelKiller)();
@@ -20,6 +21,7 @@ typedef struct {
   XXHotelOpen open;
   XXHotelAlloc alloc;
   XXHotelGet get;
+  XXHotelTransfer transfer;
   XXHotelReview review;
   XXHotelRobber rob;
   XXHotelKiller kill;

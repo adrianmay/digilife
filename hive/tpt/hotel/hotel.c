@@ -7,6 +7,7 @@
 #include "XXBulk_pile/2.h"
 #include "h.h"
 
+XXBulkIndex rentCollectorIndexXX = (XXBulkIndex) {0};
 
 static bool open() {
   meapOfXXBombs.open();
@@ -37,28 +38,49 @@ static bool updateXXDeathWithBulkIndex(XXBulkIndex iBulk) {
   XXBomb * pBomb = pileOfXXBombs.get(iBomb);
   return updateXXDeath(pBulk, pBomb);
 }
-  
+
 static bool updateXXDeathWithBulkIndexAndBombPointer(XXBulkIndex iBulk, XXBomb * pBomb) {
   XXBulk * pBulk = pileOfXXBulks.get(iBulk);
   return updateXXDeath(pBulk, pBomb);
 }
-  
+
 static void review(XXBulkIndex i) { 
   updateXXDeathWithBulkIndex(i); 
 }
 
-static Cash rob(XXBulkIndex i) { 
-  return 0; //TODO: writeme
+static void collectRent(XXBulkIndex i) {
+  updateTocks();
+  XXBulk * pBulk = pileOfXXBulks.get(i);
+  XXRent * pRent = &pBulk->rent;
+  Tocks time = tocksNow() - pRent->lastPaidRent;
+  Cash bill = tockPrice() * time;
+  pRent->cash -= bill;
+  pRent->lastPaidRent = tocksNow();
+}
+
+static void transfer(Cash amt, XXBulkIndex iFrom, XXBulkIndex iTo) {
+  collectRent(iFrom);
+  XXBulk * pFrom = pileOfXXBulks.get(iFrom);
+  XXRent * pFromRent = &pFrom->rent;
+  XXBulk * pTo = pileOfXXBulks.get(iTo);
+  XXRent * pToRent = &pTo->rent;
+  pFromRent->cash -= amt;
+  pToRent->cash += amt;
+  collectRent(iTo);
+  review(iFrom);
+  review(iTo);
 }
 
 static XXBulkIndex alloc(Cash cash, XXBulk ** ppBulk, bool * pRecycled) {
-  XXBulkIndex iBulk = pileOfXXBulks.alloc(ppBulk, pRecycled);
-  (*ppBulk)->rent.cash = cash;
+  XXBulk * pBulk;
+  XXBulkIndex iBulk = pileOfXXBulks.alloc(&pBulk, pRecycled);
+  pBulk->rent.cash = cash;
   updateTocks();
-  (*ppBulk)->rent.lastPaidRent = tocksNow();
+  pBulk->rent.lastPaidRent = tocksNow();
   XXBombIndex iBomb;
   XXBomb * pBomb;
   meapOfXXBombs.insert(&iBomb, &pBomb, iBulk.i); // onNew should do the rest
+  if (ppBulk) *ppBulk = pBulk;
   return iBulk;
 }
 
@@ -73,6 +95,14 @@ static void killer() {
     if (ch == Extinct) { onXXsExtinct(); return; }
     return; // Must be Idle
   }
+}
+
+static Cash rob(XXBulkIndex i) { 
+  XXBulk * pBulk = pileOfXXBulks.get(i);
+  XXRent * pRent = &pBulk->rent;
+  transfer(pRent->cash, i, rentCollectorIndexXX);
+  killer();
+  return 0; //TODO: proper accounts
 }
 
 static void show() {
@@ -102,4 +132,4 @@ void showXXBulk(XXBulk * p) {
   showXXBody(&p->body);
 }
 
-XXHotel hotelOfXXs = {open, alloc, get, review, rob, killer, count, close, show};
+XXHotel hotelOfXXs = {open, alloc, get, transfer, review, rob, killer, count, close, show};

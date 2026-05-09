@@ -59,8 +59,8 @@ int main() {
 //    globals() && 
 //    pile() && 
 //    meap() && 
-//    hotel() &&
-    raffle() &&
+    hotel() &&
+//    raffle() &&
     true;
   return suc?0:1;
 }

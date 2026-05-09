@@ -60,9 +60,9 @@ bool testRaffle() {
   stuff2();
   sample();
   cleanupRaffle();
-  init();
-  stuff3();
-  sample();
+  //init();
+  //stuff3();
+  //sample();
   return true; 
 }
 

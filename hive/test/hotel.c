@@ -15,11 +15,13 @@ void onThingsExtinct() { extinct = true; }
 Nanosecs ns;
 ThingBulk * pThing;
 ThingBulkIndex iThing;
+ThingBulkIndex iRentCollector = {0};
 
 
 static bool init() {
   openGlobals();
   hotelOfThings.open();
+  hotelOfThings.alloc(1000000000, 0, 0);
   background(sweat_forever); // Got to do work to advance CPU time ...
   return true;
 }
@@ -43,7 +45,7 @@ bool testNoPop() {
 
 void make(Index name, Cash cash) {
   bool recycledSlot;
-  hotelOfThings.alloc(cash, &pThing, &recycledSlot);
+  iThing = hotelOfThings.alloc(cash, &pThing, &recycledSlot);
   pThing->body.name = name;
 }
 
@@ -57,11 +59,29 @@ bool test1() {
   return true;
 }
 
+void * earn(void *) {
+  sleepNs(1000000000);
+  hotelOfThings.transfer(2000, iRentCollector, iThing);
+  pThing->rent.cash += 2000;
+  hotelOfThings.review(iThing);
+  return 0;
+}
+
+bool testEarn() {
+  make(4, 2000);
+  background(earn);
+  TIME_VOID_PROC(killTilExtinct());
+  assertLongCond(ns, <4100000000ull)
+  assertLongCond(ns, >3900000000ull)
+  return true;
+}
+
 bool testHotel() {
   return 
     //testNoPop() &&
-    test1() &&
-//    testEarn() &&
+    //test1() &&
+    testEarn() &&
+    //testRob() &&
     true;
 }
 
@@ -143,22 +163,6 @@ bool test1() {
   TIME_VOID_PROC(BlockRentCollector());
   assertLongCond(ns, <2100000000ull)
   assertLongCond(ns, >1900000000ull)
-  return true;
-}
-
-void * earn(void *) {
-  sleepS_(1);
-  pB->rent.cash += 2000;
-  meapReviewBlockMeap(iBM);
-  return 0;
-}
-
-bool testEarn() {
-  make(4, 2000);
-  background(earn);
-  TIME_VOID_PROC(BlockRentCollector());
-  assertLongCond(ns, <4100000000ull)
-  assertLongCond(ns, >3900000000ull)
   return true;
 }
 

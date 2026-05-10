@@ -18,29 +18,8 @@ static Index count(void) {
   return pileOfXXBulks.count();
 }
 
-static XXBulk * get(XXBulkIndex i) { return pileOfXXBulks.get(i);}
-
-static bool updateXXDeath(XXBulk* pBulk, XXBomb * pBomb) {
-  Cash cash = pBulk->rent.cash;
-  Tocks ttl = cash/tockPrice();
-  Tocks death = tocksNow() + ttl;
-  return meapOfXXBombs.editTocksWhenLocked(pBulk->rent.bomb, death);
-}
-
-static bool updateXXDeathWithBulkIndex(XXBulkIndex iBulk) {
-  XXBulk * pBulk = pileOfXXBulks.get(iBulk);
-  XXBombIndex iBomb = pBulk->rent.bomb;
-  XXBomb * pBomb = pileOfXXBombs.get(iBomb);
-  return updateXXDeath(pBulk, pBomb);
-}
-
-static bool updateXXDeathWithBulkIndexAndBombPointer(XXBulkIndex iBulk, XXBomb * pBomb) {
-  XXBulk * pBulk = pileOfXXBulks.get(iBulk);
-  return updateXXDeath(pBulk, pBomb);
-}
-
-static void review(XXBulkIndex i) { 
-  updateXXDeathWithBulkIndex(i); 
+static XXBulk * get(XXBulkIndex i) { 
+  return pileOfXXBulks.get(i);
 }
 
 static void collectRent(XXBulkIndex i) {
@@ -53,30 +32,59 @@ static void collectRent(XXBulkIndex i) {
   pRent->lastPaidRent = tocksNow();
 }
 
+static bool updateXXDeath(XXBulk* pBulk, XXBomb * pBomb) {
+  Cash cash = pBulk->rent.cash;
+  Tocks ttl = cash/tockPrice();
+  printf("UpdateXXDeath: ttl=%d\n", ttl);
+  Tocks death = tocksNow() + ttl;
+  return meapOfXXBombs.editTocksWhenLocked(pBulk->rent.bomb, death);
+}
+
+static bool updateXXDeathWithBulkIndex(XXBulkIndex iBulk) {
+  XXBulk * pBulk = pileOfXXBulks.get(iBulk);
+  XXBombIndex iBomb = pBulk->rent.bomb;
+  XXBomb * pBomb = pileOfXXBombs.get(iBomb);
+  return updateXXDeath(pBulk, pBomb);
+}
+
+//static bool updateXXDeathWithBulkIndexAndBombPointer(XXBulkIndex iBulk, XXBomb * pBomb) {
+//  XXBulk * pBulk = pileOfXXBulks.get(iBulk);
+//  return updateXXDeath(pBulk, pBomb);
+//}
+
+static void review(XXBulkIndex i) { 
+  collectRent(i);
+  printf("Reviewing i=%d... ", i.i);
+  updateXXDeathWithBulkIndex(i); 
+}
+
 static void transfer(Cash amt, XXBulkIndex iFrom, XXBulkIndex iTo) {
   collectRent(iFrom);
   XXBulk * pFrom = pileOfXXBulks.get(iFrom);
   XXRent * pFromRent = &pFrom->rent;
   XXBulk * pTo = pileOfXXBulks.get(iTo);
   XXRent * pToRent = &pTo->rent;
+  printf("Transfer before: cash: from: %'ld, to: %'ld\n", pFromRent->cash, pToRent->cash);
   pFromRent->cash -= amt;
   pToRent->cash += amt;
-  collectRent(iTo);
-  review(iFrom);
-  review(iTo);
+  printf("Transfer after:  cash: from: %'ld, to: %'ld\n", pFromRent->cash, pToRent->cash);
+//  collectRent(iTo);
+//  review(iFrom);
+//  review(iTo);
+  printf("Transfer end:    cash: from: %'ld, to: %'ld\n", pFromRent->cash, pToRent->cash);
 }
 
 static XXBulkIndex alloc_(Cash cash, XXBulkIndex iDonor, XXBulk ** ppBulk, bool * pRecycled) {
+  updateTocks();
   XXBulk * pBulk;
   XXBulkIndex iBulk = pileOfXXBulks.alloc(&pBulk, pRecycled);
+  pBulk->rent.lastPaidRent = tocksNow();
   if (!pileOfXXBulks.indexValid(iDonor)) 
     pBulk->rent.cash = cash; // Genesis only
   else {
     pBulk->rent.cash = 0;
     transfer(cash, iDonor, iBulk);
   }
-  updateTocks();
-  pBulk->rent.lastPaidRent = tocksNow();
   XXBombIndex iBomb;
   XXBomb * pBomb;
   meapOfXXBombs.insert(&iBomb, &pBomb, iBulk.i); // onNew should do the rest
@@ -109,7 +117,11 @@ static void killer(void) {
   while (true) { // Returns when nothing to kill for now
     bomb.who = badXXBulkIndex; // Prevent false alarms
     Chomped ch = meapOfXXBombs.chomp(now, &bomb);
-    if (ch == Killed ) { pileOfXXBulks.free(bomb.who); continue; }
+    if (ch == Killed ) { 
+      printf("Killing %i\n", bomb.who.i);
+      pileOfXXBulks.free(bomb.who); 
+      continue; 
+    }
     if (ch == Extinct) { onXXsExtinct(); return; }
     return; // Must be Idle
   }
@@ -132,7 +144,7 @@ void onNewXXBomb(XXBombIndex iBomb, Index hint) {
   //printf("OnNew: iBomb: %d hint: %d\n", iBomb.i, hint);
   XXBomb * pBomb = pileOfXXBombs.get(iBomb);
   pBomb->who = (XXBulkIndex){hint};
-  updateXXDeathWithBulkIndexAndBombPointer(pBomb->who, pBomb);
+  //updateXXDeathWithBulkIndexAndBombPointer(pBomb->who, pBomb);
 }
 
 void onMoveXXBomb(XXBomb * pBomb, XXBombIndex to) { 
@@ -151,3 +163,4 @@ void showXXBulk(XXBulk * p) {
 }
 
 XXHotel hotelOfXXs = {open, alloc, get, transfer, review, rob, killer, count, close, show};
+

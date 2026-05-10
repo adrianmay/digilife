@@ -90,6 +90,7 @@ static bool insert(XXIndex * pI, XX ** ppNew, Index hint) {
 }
 
 static bool editTocksWhenLocked(XXIndex iCur, Score when) { 
+  printf("editTocksWhenLocked: i=%d, when=%d\n", iCur.i, when);
   pileOfXXs.get(iCur)->tocks = when;
   siftDown(iCur); 
   bool res = siftUp(iCur); 

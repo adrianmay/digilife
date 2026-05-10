@@ -70,9 +70,9 @@ static void transfer(Cash amt, XXBulkIndex iFrom, XXBulkIndex iTo) {
   pFromRent->cash -= amt;
   pToRent->cash += amt;
   printf("Transfer after:  cash: from: %'ld, to: %'ld\n", pFromRent->cash, pToRent->cash);
-//  collectRent(iTo);
-//  review(iFrom);
-//  review(iTo);
+  collectRent(iTo);
+  review(iFrom);
+  review(iTo);
   printf("Transfer end:    cash: from: %'ld, to: %'ld\n", pFromRent->cash, pToRent->cash);
 }
 
@@ -125,13 +125,13 @@ static void killer(void) {
   while (true) { // Returns when nothing to kill for now
     bomb.who = badXXBulkIndex; // Prevent false alarms
     Chomped ch = meapOfXXBombs.chomp(now, &bomb, 1);
+    if (ch == Extinct) { onXXsExtinct(); return; }
     if (ch == Killed ) { 
       pileOfXXBulks.free(bomb.who); //TODO: funeral and recover cash
       printf("Killing %i\n", bomb.who.i);
       show();
       continue; 
     }
-    if (ch == Extinct) { onXXsExtinct(); return; }
     return; // Must be Idle
   }
 }

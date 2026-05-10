@@ -32,9 +32,9 @@
  int fullChompN; Score fullChompP[10];
  void expectFullChomp(int n, Score * p) { fullChompN=n; memcpy(fullChompP, p, n*sizeof(Score)); }
  
- bool setupEmpty() { pileOfJunks.open(); return true; }
+ bool setupEmpty(void) { pileOfJunks.open(); return true; }
  
- bool setupSingleton() { 
+ bool setupSingleton(void) { 
    setupEmpty(); 
    meapOfJunks.insert(&iJunk, &pJunk, 0x88);
    expect(CHOMPNOTHING);
@@ -42,28 +42,28 @@
    return true;
  }
  
- bool setup2Inc() { 
+ bool setup2Inc(void) { 
    setupSingleton(); 
    meapOfJunks.insert(&iJunk, &pJunk, 0xc8);
    expect(CHOMPNOTHING);
    expectFullChomp(2, (Score []){0x88, 0xc8});
    return true;
  }
- bool setup2Dec() { 
+ bool setup2Dec(void) { 
    setupSingleton(); 
    meapOfJunks.insert(&iJunk, &pJunk, 0x48);
    expect(CHOMPNOTHING);
    expectFullChomp(2, (Score []){0x48, 0x88});
    return true;
  }
- bool setup2CloseInc() { 
+ bool setup2CloseInc(void) { 
    setupSingleton(); 
    meapOfJunks.insert(&iJunk, &pJunk, 0x89);
    expect(CHOMPNOTHING);
    expectFullChomp(2, (Score []){0x88, 0x89});
    return true;
  }
- bool setup2CloseDec() { 
+ bool setup2CloseDec(void) { 
    setupSingleton(); 
    meapOfJunks.insert(&iJunk, &pJunk, 0x87);
    expectFullChomp(2, (Score []){0x88, 0x87}); // Cos score (/16) is same
@@ -80,13 +80,13 @@
    return true;
  }
  
- bool setup123()   { return setup3(0x18,0x28,0x38) || true; }
- bool setup132()   { return setup3(0x18,0x38,0x28) || true; }
- bool setup213()   { return setup3(0x28,0x18,0x38) || true; }
- bool setup231()   { return setup3(0x28,0x38,0x18) || true; }
- bool setup312()   { return setup3(0x38,0x18,0x28) || true; }
- bool setup321()   { return setup3(0x38,0x28,0x18) || true; }
- bool setup3Same() { 
+ bool setup123(void)   { return setup3(0x18,0x28,0x38) || true; }
+ bool setup132(void)   { return setup3(0x18,0x38,0x28) || true; }
+ bool setup213(void)   { return setup3(0x28,0x18,0x38) || true; }
+ bool setup231(void)   { return setup3(0x28,0x38,0x18) || true; }
+ bool setup312(void)   { return setup3(0x38,0x18,0x28) || true; }
+ bool setup321(void)   { return setup3(0x38,0x28,0x18) || true; }
+ bool setup3Same(void) { 
    setup3(0x37,0x38,0x39); 
    expect(CHOMPNOTHING);
    expectFullChomp(3, (Score []){0x37,0x39,0x38}); // Shouldn't be fussy about the order
@@ -112,26 +112,26 @@
    return true;
  }
  
- bool ordered() {
+ bool ordered(void) {
    bool b = meapOfJunks.checkOrdered();
    assertInt(b, true);
    return b;
  }
  
- bool testMeap1() {
+ bool testMeap1(void) {
    return
      count(0) &&
      ordered() && 
      true;
  }
  
- bool testMeap2() {
+ bool testMeap2(void) {
    return
      count(0) &&
      true;
  }
  
- bool testMeap3() {
+ bool testMeap3(void) {
    return
      (meapOfJunks.erase((JunkIndex){2})) &&
      count(setupNum>0 ? 1 : 0) &&
@@ -140,7 +140,7 @@
  }
  
  
- bool testMeap4() {
+ bool testMeap4(void) {
    Index cnt = pileOfJunks.getUsr();
    if (cnt==0) return true;
    for (int a=0;a<500;a++) {
@@ -151,9 +151,9 @@
    return true;
  }
  
- void cleanupMeap() { pileOfJunks.close(DELETE); }
+ void cleanupMeap(void) { pileOfJunks.close(DELETE); }
  
- bool chompT() {
+ bool chompT(void) {
    Junk j;
    Chomped res;
    setupEmpty();
@@ -178,7 +178,7 @@
  }
  
  
- bool chompTest() {
+ bool chompTest(void) {
    return bkt("chompTest",nowt, chompT, cleanupMeap);
  }
  
@@ -186,7 +186,7 @@
  #define numMeapTesters (sizeof(testers)/sizeof(BV))
  
  
- bool meap() { 
+ bool meap(void) { 
    if (! chompTest()) return false;
    for (testNum=0;testNum<numMeapTesters;testNum++) {
      for (setupNum=0;setupNum<numMeapSetups; setupNum++) {

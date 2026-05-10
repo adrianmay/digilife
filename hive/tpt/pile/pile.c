@@ -7,7 +7,7 @@ const XXIndex  badXXIndex = (XXIndex) {BAD_INDEX};
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 extern void showXX(XX * pXX); //Provide this;
-bool      openXXPile()                        { bool v; headOfXXs = openPile("XXs.pile", sizeof(XX), 10, ZZ, &v); return v; } 
+bool      openXXPile(void)                        { bool v; headOfXXs = openPile("XXs.pile", sizeof(XX), 10, ZZ, &v); return v; } 
 XXIndex   allocXX(XX ** pNew, bool * pRecycled) { 
   pthread_mutex_lock(&mutex);
   Index i = allocInPile(headOfXXs, (void**)pNew, pRecycled, 0, 0); 
@@ -23,11 +23,11 @@ void      freeXX(XXIndex i)                   {
 } 
 void      closeXXPile(FATE fate)              { closePile(headOfXXs, fate); headOfXXs = 0; } 
 bool      validXXIndex(XXIndex i)             { return i.i != BAD_INDEX; } 
-Index     countXXs()                          { return countPop(headOfXXs); } 
-Index     getXXUsr()                          { return getUsr(headOfXXs); } 
+Index     countXXs(void)                          { return countPop(headOfXXs); } 
+Index     getXXUsr(void)                          { return getUsr(headOfXXs); } 
 void      setXXUsr(Index u)                   { setUsr(headOfXXs, u); } 
 void      modXXUsr(IndexDiff u)               { modUsr(headOfXXs, u); }  // Make this atomic sometime
-void      showXXPile()                        { showPile(headOfXXs, (VP)showXX); }
+void      showXXPile(void)                        { showPile(headOfXXs, (VP)showXX); }
 
 XXPile pileOfXXs = 
   { openXXPile

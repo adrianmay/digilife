@@ -8,7 +8,7 @@
 //   return 0;
 // }
 // 
-// bool trysleep() {
+// bool trysleep(void) {
 //   printf("Starting sleep test at %'ld\n", ageOfTime());
 //   Nanosecs ns = 2000000000;
 //   pthread_t mtid, stid = sleepNs(&ns); // stid will sleep for 2s process cpu time
@@ -20,5 +20,5 @@
 //   return true;
 // }
 // 
-// bool sleep() { return trysleep(); }
+// bool sleep(void) { return trysleep(); }
 // 

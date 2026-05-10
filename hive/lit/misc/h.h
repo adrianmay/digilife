@@ -13,9 +13,9 @@ int8_t   wrapSub8S  (uint8_t  a, uint8_t  b);
 int32_t  wrapSub32S (uint32_t a, uint32_t b);
 int64_t  wrapSub64S (uint64_t a, uint64_t b);
 
-Nanosecs ageOfTime();
-Nanosecs ageOfProcess();
-Nanosecs ageOfThread();
+Nanosecs ageOfTime(void);
+Nanosecs ageOfProcess(void);
+Nanosecs ageOfThread(void);
 
 int quit(int i);
 int fileSize(int fd);                                                         

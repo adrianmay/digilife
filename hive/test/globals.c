@@ -3,7 +3,7 @@
 #include "globals/structs.h"
 
 
-bool testGlobals() {
+bool testGlobals(void) {
   bool v = openGlobals();
   assertInt(v, true);
   uint64_t i = pg->lastKnownTock + vg.tocksReviewedAt + pg->nsPerTock;
@@ -19,6 +19,6 @@ bool testGlobals() {
   return true;
 }
 
-void cleanupGlobals() { closeGlobals(1); }
-bool globals() { return bkt("globals", nowt,testGlobals,cleanupGlobals); }
+void cleanupGlobals(void) { closeGlobals(1); }
+bool globals(void) { return bkt("globals", nowt,testGlobals,cleanupGlobals); }
 

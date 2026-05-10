@@ -7,7 +7,7 @@
 #include "Thing_hotel/h.h"
 
 static bool extinct = false;
-void onThingsExtinct() { extinct = true; } 
+void onThingsExtinct(void) { extinct = true; } 
 
 // void onMobsExtinct() {}
 // void onMsgsExtinct() {}
@@ -18,15 +18,14 @@ ThingBulkIndex iThing;
 ThingBulkIndex iRentCollector = {0};
 
 
-static bool init() {
+static bool init(void) {
   openGlobals();
-  hotelOfThings.open();
-  hotelOfThings.alloc(1000000000, 0, 0);
+  hotelOfThings.open(1000000000, &iRentCollector);
   background(sweat_forever); // Got to do work to advance CPU time ...
   return true;
 }
 
-void killTilExtinct() {
+void killTilExtinct(void) {
   while (true) {
     updateTocks();
     //printf("now=%d\n", tocksNow());
@@ -36,7 +35,7 @@ void killTilExtinct() {
   }
 }
 
-bool testNoPop() {
+bool testNoPop(void) {
   TIME_VOID_PROC(killTilExtinct()); 
   printf("testNoPop: %'ld\n", ns);
   assertLongCond(ns, <20000);
@@ -49,7 +48,7 @@ void make(Index name, Cash cash) {
   pThing->body.name = name;
 }
 
-bool test1() {
+bool test1(void) {
   make(3, 2000);
   hotelOfThings.show();
   TIME_VOID_PROC(killTilExtinct());
@@ -67,7 +66,7 @@ void * earn(void *) {
   return 0;
 }
 
-bool testEarn() {
+bool testEarn(void) {
   make(4, 2000);
   background(earn);
   TIME_VOID_PROC(killTilExtinct());
@@ -76,7 +75,7 @@ bool testEarn() {
   return true;
 }
 
-bool testHotel() {
+bool testHotel(void) {
   return 
     //testNoPop() &&
     //test1() &&
@@ -85,8 +84,8 @@ bool testHotel() {
     true;
 }
 
-void cleanupHotel() { closeGlobals(1); hotelOfThings.close(DELETE); }
-bool hotel() { return bkt("hotel", init, testHotel, cleanupHotel); }
+void cleanupHotel(void) { closeGlobals(1); hotelOfThings.close(DELETE); }
+bool hotel(void) { return bkt("hotel", init, testHotel, cleanupHotel); }
 
 //
 //static bool init() {

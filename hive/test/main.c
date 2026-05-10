@@ -8,7 +8,7 @@
 
 void B2V(B b) { (*b)(); }
 
-bool nowt() { return true; }
+bool nowt(void) { return true; }
 
 bool bkt(const char * name, B up, B along, V down) {
   printf("Testing %s\n", name);
@@ -44,14 +44,14 @@ pthread_t background(void * (*f)(void *)) { pthread_t pid; pthread_create(&pid, 
 //  sigemptyset(&sa.sa_mask);
 //  if (sigaction(SIGUSR1, &sa, NULL) == -1) perror("sigaction");
 //}
-void initEverything() {
+void initEverything(void) {
 //  handleSigusr1();
   srand(0);
   setlocale(LC_NUMERIC, "");
 }
 /////////////////////
 
-int main() {
+int main(void) {
   initEverything();
   bool suc = 
 //    perf() && 

@@ -1,10 +1,10 @@
 #include "types.h"
 
-bool openGlobals();
+bool openGlobals(void);
 void closeGlobals(bool rm);
 
-TockPrice tockPrice();
-void updateTocks();
-Tocks tocksNow();
+TockPrice tockPrice(void);
+void updateTocks(void);
+Tocks tocksNow(void);
 Tocks nsUntilTock(Tocks deadline); 
 Tocks nsAtTock(Tocks deadline); 

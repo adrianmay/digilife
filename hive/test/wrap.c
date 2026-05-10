@@ -2,7 +2,7 @@
 
 #include "misc/h.h"
 
-bool wrap() {
+bool wrap(void) {
   uint8_t z;
   z = wrapSub8U(3,1);     assertInt(z,2);
   z = wrapSub8U(10,250);  assertInt(z,16);

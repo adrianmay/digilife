@@ -6,16 +6,16 @@
 
 #include "XXBulk_pile/1.h"
 
-typedef bool        (*XXHotelOpen)();
+typedef bool        (*XXHotelOpen)(Cash cash, XXBulkIndex * pI); // Creates animal with this much cash when virgin pile
 typedef XXBulkIndex (*XXHotelAlloc)(Cash cash, XXBulk ** ppBulk, bool * pRecycled);
 typedef XXBulk *    (*XXHotelGet)(XXBulkIndex i); 
 typedef void        (*XXHotelTransfer)(Cash amt, XXBulkIndex iFrom, XXBulkIndex iTo);
 typedef void        (*XXHotelReview)(XXBulkIndex i);
 typedef Cash        (*XXHotelRobber)(XXBulkIndex i);
-typedef void        (*XXHotelKiller)();
-typedef Index       (*XXHotelCount)(); 
+typedef void        (*XXHotelKiller)(void);
+typedef Index       (*XXHotelCount)(void); 
 typedef void        (*XXHotelClose)(FATE fate);
-typedef void        (*XXHotelShow)();
+typedef void        (*XXHotelShow)(void);
 
 typedef struct {
   XXHotelOpen open;
@@ -30,6 +30,6 @@ typedef struct {
   XXHotelShow show;
 } XXHotel;
 
-extern void onXXsExtinct(); // Provide this.
+extern void onXXsExtinct(void); // Provide this.
 extern XXHotel hotelOfXXs;
 

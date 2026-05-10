@@ -7,19 +7,14 @@
 #include "XXBulk_pile/2.h"
 #include "h.h"
 
-XXBulkIndex rentCollectorIndexXX = (XXBulkIndex) {0};
-
-static bool open() {
-  meapOfXXBombs.open();
-  return pileOfXXBulks.open();
-}
+XXBulkIndex rentCollectorIndexXX = (XXBulkIndex) {0}; // This is crap
 
 static void close(FATE fate) {
   pileOfXXBulks.close(fate);
   meapOfXXBombs.close(fate);
 }
 
-static Index count(FATE fate) {
+static Index count(void) {
   return pileOfXXBulks.count();
 }
 
@@ -84,8 +79,16 @@ static XXBulkIndex alloc(Cash cash, XXBulk ** ppBulk, bool * pRecycled) {
   return iBulk;
 }
 
+static bool open(Cash cash, XXBulkIndex * pI) {
+  meapOfXXBombs.open();
+  bool virgin = pileOfXXBulks.open();
+  XXBulkIndex i = alloc(cash, 0, 0);
+  if (pI) *pI = i;
+  return virgin;
+}
+
 // This has to get called at strategic times from worker threads
-static void killer() {
+static void killer(void) {
   XXBomb bomb; // Bomb copied out to here
   Tocks now = tocksNow();            
   while (true) { // Returns when nothing to kill for now
@@ -105,7 +108,7 @@ static Cash rob(XXBulkIndex i) {
   return 0; //TODO: proper accounts
 }
 
-static void show() {
+static void show(void) {
   meapOfXXBombs.show();
   pileOfXXBulks.show();
 }

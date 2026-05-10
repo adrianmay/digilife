@@ -42,7 +42,7 @@ typedef int64_t Weight; // We use negative ones when removing stuff. TODO: 32 bi
 typedef double CpuBid; // Float or int?
 
 typedef void * (*F)(void * item, void * u);
-typedef void (*VV)();
+typedef void (*VV)(void);
 typedef void (*VP)(void *);
 
 typedef enum {NOWT, DELETE, HIDE} FATE;

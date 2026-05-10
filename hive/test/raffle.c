@@ -6,11 +6,11 @@
 #include "Mess_raffle/h.h"
 
 static bool extinct = false;
-void onMesssExtinct() { extinct = true; } 
+void onMesssExtinct(void) { extinct = true; } 
 
-static bool init() {
+static bool init(void) {
   openGlobals();
-  raffleOfMesss.open();
+  raffleOfMesss.open(1000000000, 0);
   background(sweat_forever); // Got to do work to advance CPU time ...
   return true;
 }
@@ -19,7 +19,7 @@ MessTicket tkt = {'V' };
 Cash cash;
 
 // Equal weight, unequal types, loads of cash
-void stuff1() {
+void stuff1(void) {
   for (int a=0; a<100; a++) {
     tkt.serial=a;
     tkt.type = a%3 ? 'T' : 'H';  //Twice as many heads
@@ -27,7 +27,7 @@ void stuff1() {
   }
 }
 
-void stuff2() {
+void stuff2(void) {
   for (int a=0; a<10; a++) {
     tkt.serial=a;
     tkt.type = a%2 ? 'T' : 'H';  //Twice as many heads
@@ -37,7 +37,7 @@ void stuff2() {
   //raffleOfMesss.show();
 }
 
-void sample() {
+void sample(void) {
   int h=0, t=0, v=0, e=0;
   for (int a=0; a<1000; a++) {
     bool res = raffleOfMesss.draw(&tkt, &cash);
@@ -50,7 +50,7 @@ void sample() {
   printf("Sampled %d H, %d T, %d virgins and %d errors.\n", h, t, v, e);
 }
 
-void cleanupRaffle() { closeGlobals(1); raffleOfMesss.close(1); }
+void cleanupRaffle(void) { closeGlobals(1); raffleOfMesss.close(1); }
 
 bool testRaffle() { 
   stuff1();
@@ -66,6 +66,6 @@ bool testRaffle() {
   return true; 
 }
 
-bool raffle() { return bkt("raffle", init, testRaffle, cleanupRaffle); }
+bool raffle(void) { return bkt("raffle", init, testRaffle, cleanupRaffle); }
 
 

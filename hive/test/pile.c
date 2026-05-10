@@ -3,7 +3,7 @@
 
 bool recycledSlot;
 
-bool recycledity() {
+bool recycledity(void) {
   bool vir1 = pileOfLinks.open(); //Assume it doesn't exist
   assertInt(vir1,true);
   pileOfLinks.alloc(0, &recycledSlot);
@@ -60,7 +60,7 @@ bool freeing(LinkIndex i0) {
   return true;
 }
 
-bool reallocing() { //Free list = 2,3,4
+bool reallocing(void) { //Free list = 2,3,4
   LinkIndex i = pileOfLinks.alloc(0, &recycledSlot);
   assertInt(i.i,2);
   i = pileOfLinks.alloc(0, &recycledSlot);
@@ -92,11 +92,11 @@ bool with(LinkIndex i0) {
   return true;  
 }
 
-bool showIt() {
+bool showIt(void) {
   pileOfLinks.show();
   return false;
 }
-bool testLinkPile() {
+bool testLinkPile(void) {
   LinkIndex i0;
   return true
          && recycledity()  // deletes the pilee
@@ -108,8 +108,8 @@ bool testLinkPile() {
          && with(i0)
 ;}
 
-void cleanupLinkPile() { pileOfLinks.close(DELETE); }
-bool pile() { return bkt("pile", nowt,testLinkPile,cleanupLinkPile); }
+void cleanupLinkPile(void) { pileOfLinks.close(DELETE); }
+bool pile(void) { return bkt("pile", nowt,testLinkPile,cleanupLinkPile); }
 
 void showLink(Link * pLink) {
   printf("x=%d,next=%d\n", pLink->x, pLink->next.i);

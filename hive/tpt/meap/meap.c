@@ -145,7 +145,7 @@ static Chomped chomp(Score thresh, XX * pCopyOut) {
   return res;
 }
 
-static bool checkOrdered() {
+static bool checkOrdered(void) {
   lock(true, __LINE__);
   bool ok=true;
   Index cnt = pileOfXXs.getUsr();
@@ -160,13 +160,13 @@ static bool checkOrdered() {
   return ok;
 }
 
-static Index size() {  return pileOfXXs.getUsr(); } 
+static Index size(void) {  return pileOfXXs.getUsr(); } 
 
-static void show() {
+static void show(void) {
   pileOfXXs.show();
 }
 
-static bool open() { return pileOfXXs.open(); }
+static bool open(void) { return pileOfXXs.open(); }
 static void close(FATE f) { pileOfXXs.close(f); }
 
 XXMeap meapOfXXs = { open, close, insert, editTocksWhenLocked, editTocksTakingLock, erase, chomp, checkOrdered, size, show };

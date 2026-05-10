@@ -5,15 +5,15 @@
 
 typedef enum {Extinct, Idle, Killed} Chomped;
 
-typedef bool    (*XXMeapOpen)(); 
+typedef bool    (*XXMeapOpen)(void); 
 typedef void    (*XXMeapClose)(FATE fate);
 typedef bool    (*XXMeapInsert)   (XXIndex *pI, XX ** pNew, Index hint); 
 typedef bool    (*XXMeapEditTocks) (XXIndex i, Score when);
 typedef bool    (*XXMeapErase)    (XXIndex i);
 typedef Chomped (*XXMeapChomp)    (Score thresh, XX * p);
-typedef bool    (*XXCheckOrdered) ();
-typedef Index   (*XXMeapSize)     ();
-typedef void    (*XXMeapShow)     ();
+typedef bool    (*XXCheckOrdered) (void);
+typedef Index   (*XXMeapSize)     (void);
+typedef void    (*XXMeapShow)     (void);
 //
 // typedef enum {EXTINCT=-1, IDLE, } ChompResult;
 // typedef ChompResult (*XXMeapChomp)(Score score, XXIndex * i);

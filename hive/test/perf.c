@@ -42,7 +42,7 @@ void testArm(int fd) {
 
 void handler(int signo, siginfo_t *info, void *ucontext) { testArm(info->si_fd); }
 
-static bool init() {
+static bool init(void) {
   struct sigaction sa = {0};
   sa.sa_sigaction = handler;
   sa.sa_flags = SA_SIGINFO;
@@ -50,7 +50,7 @@ static bool init() {
   return true;
 }
 
-int makeMonitor()
+int makeMonitor(void)
 {
   struct perf_event_attr pe;
   memset(&pe, 0, sizeof(pe));
@@ -79,7 +79,7 @@ int makeMonitor()
   return fd;
 }
 
-void burn() {
+void burn(void) {
   while (1) {
     asm volatile("" ::: "memory");
   }
@@ -94,7 +94,7 @@ void * testThread(void * p) {
   return 0;
 }
 
-bool perf() {
+bool perf(void) {
   init();
   pthread_t pid1, pid2;
   pthread_create(&pid1, 0, testThread, (void*)0);

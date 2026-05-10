@@ -12,14 +12,14 @@
 VolatileGlobals vg; 
 PersistentGlobals * pg; 
 
-static void initVirginPersistentGlobals() {
+static void initVirginPersistentGlobals(void) {
   pg->lastKnownTock = 0;
   pg->nsNotTocked = 0;
   pg->nsPerTock = GUESS_NS_PER_TOCK; //Don't ignore animal for more than 2**32/nsPerTock
   pg->groatsPerTock = 1; //min_groats_per_nanosecond * GUESS_NS_PER_TOCK;
 }
 
-static void initVolatileGlobals() {
+static void initVolatileGlobals(void) {
   vg.tocksReviewedAt = 0;
   vg.shouldRun = true;
 }
@@ -48,7 +48,7 @@ static void closeGlobals_(int fd, bool rm) {
   if (rm) unlink(GLOBALS_FILENAME);
 }
 
-bool openGlobals() {
+bool openGlobals(void) {
   bool v;
   pg = (PersistentGlobals *) openGlobals_(sizeof(PersistentGlobals), &v);
   if (v) initVirginPersistentGlobals();
@@ -60,9 +60,9 @@ void closeGlobals(bool rm) {  // And that param should be enum
   closeGlobals_(pg->fd, rm); 
 } 
 
-TockPrice tockPrice() {return pg->groatsPerTock;}
+TockPrice tockPrice(void) {return pg->groatsPerTock;}
 
-void updateTocks() {
+void updateTocks(void) {
   Nanosecs now = ageOfProcess();
   Nanosecs sleptFor = wrapSub64U(now, vg.tocksReviewedAt);
   Nanosecs toBill = sleptFor + pg->nsNotTocked;
@@ -72,7 +72,7 @@ void updateTocks() {
   pg->nsNotTocked = qr.rem;
 } 
 
-Tocks tocksNow() {return pg->lastKnownTock;}
+Tocks tocksNow(void) {return pg->lastKnownTock;}
 Tocks nsUntilTock(Tocks deadline) {return (deadline - pg->lastKnownTock)*pg->nsPerTock - pg->nsNotTocked;}
 Tocks nsAtTock(Tocks deadline) {return nsUntilTock(deadline)+ageOfProcess();}
 

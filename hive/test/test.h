@@ -7,26 +7,26 @@
 //#include <signal.h>
 #include "assert.h"
 
-typedef void (*V)();
-typedef bool  (*B)();
-typedef bool (*BV)();
+typedef void (*V)(void);
+typedef bool  (*B)(void);
+typedef bool (*BV)(void);
 
 
 bool bkt(const char * name, B up, B along, V down);
-bool nowt();
+bool nowt(void);
 void * sweat(void *);
 void * sweat_forever(void *);
 pthread_t background(void * (*f)(void *));
 
-bool perf();
-bool wrap();
-bool pile();
-bool meap();
-bool globals();
-bool rent();
-bool hotel();
-bool raffle();
+bool perf(void);
+bool wrap(void);
+bool pile(void);
+bool meap(void);
+bool globals(void);
+bool rent(void);
+bool hotel(void);
+bool raffle(void);
 
-bool openGlobals();
+bool openGlobals(void);
 void closeGlobals(bool);
 

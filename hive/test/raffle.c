@@ -8,6 +8,8 @@
 static bool extinct = false;
 void onMesssExtinct(void) { extinct = true; } 
 
+static MessBulkIndex iDonor = {0};
+
 static bool init(void) {
   openGlobals();
   raffleOfMesss.open(1000000000, 0);
@@ -23,7 +25,7 @@ void stuff1(void) {
   for (int a=0; a<100; a++) {
     tkt.serial=a;
     tkt.type = a%3 ? 'T' : 'H';  //Twice as many heads
-    raffleOfMesss.enter(5000, 10, &tkt);
+    raffleOfMesss.enter(5000, iDonor, 10, &tkt);
   }
 }
 
@@ -32,7 +34,7 @@ void stuff2(void) {
     tkt.serial=a;
     tkt.type = a%2 ? 'T' : 'H';  //Twice as many heads
     Weight w = a%2 ? 4 : 8;  //Twice as many heads
-    raffleOfMesss.enter(5000, w, &tkt);
+    raffleOfMesss.enter(5000, iDonor, w, &tkt);
   }
   //raffleOfMesss.show();
 }

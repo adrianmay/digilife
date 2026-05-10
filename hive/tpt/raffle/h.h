@@ -3,7 +3,7 @@
 
 typedef bool        (*XXRaffleOpen)   (Cash cash, XXBulkIndex * pI);
 typedef void        (*XXRaffleClose)  (FATE fate);
-typedef XXBulkIndex (*XXRaffleEnter)  (Cash cash, Weight w, XXTicket * pTicket);
+typedef XXBulkIndex (*XXRaffleEnter)  (Cash cash, XXBulkIndex iDonor, Weight w, XXTicket * pTicket);
 typedef Cash        (*XXRaffleCancel) (XXBulkIndex i);
 typedef bool        (*XXRaffleDraw)   (XXTicket * pTicket, Cash * pCash);
 typedef void        (*XXRaffleShow)   (void);

@@ -15,12 +15,12 @@ void onThingsExtinct(void) { extinct = true; }
 Nanosecs ns;
 ThingBulk * pThing;
 ThingBulkIndex iThing;
-ThingBulkIndex iRentCollector = {0};
+static ThingBulkIndex iDonor = {0};
 
 
 static bool init(void) {
   openGlobals();
-  hotelOfThings.open(1000000000, &iRentCollector);
+  hotelOfThings.open(1000000000, &iDonor);
   background(sweat_forever); // Got to do work to advance CPU time ...
   return true;
 }
@@ -44,7 +44,7 @@ bool testNoPop(void) {
 
 void make(Index name, Cash cash) {
   bool recycledSlot;
-  iThing = hotelOfThings.alloc(cash, &pThing, &recycledSlot);
+  iThing = hotelOfThings.alloc(cash, iDonor, &pThing, &recycledSlot);
   pThing->body.name = name;
 }
 
@@ -60,7 +60,7 @@ bool test1(void) {
 
 void * earn(void *) {
   sleepNs(1000000000);
-  hotelOfThings.transfer(2000, iRentCollector, iThing);
+  hotelOfThings.transfer(2000, iDonor, iThing);
   pThing->rent.cash += 2000;
   hotelOfThings.review(iThing);
   return 0;

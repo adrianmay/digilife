@@ -29,10 +29,10 @@ static void propagateWeightUp(XXBulkIndex i, Weight w) {
   propagateWeightUp(iP, w);
 }
 
-static XXBulkIndex enter(Cash cash, Weight w, XXTicket * pTicket) {
+static XXBulkIndex enter(Cash cash, XXBulkIndex iDonor, Weight w, XXTicket * pTicket) {
   XXBulk * pBulk;
   bool recycled;
-  XXBulkIndex iBulk = hotelOfXXs.alloc(cash, &pBulk, &recycled);
+  XXBulkIndex iBulk = hotelOfXXs.alloc(cash, iDonor, &pBulk, &recycled);
   memcpy(&pBulk->body.ticket, pTicket, sizeof(XXTicket));
   XXRafle * pR = &pBulk->body.raffle;
   if (!recycled)  pR->l = pR->r = 0; 

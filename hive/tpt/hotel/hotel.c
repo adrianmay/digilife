@@ -66,10 +66,15 @@ static void transfer(Cash amt, XXBulkIndex iFrom, XXBulkIndex iTo) {
   review(iTo);
 }
 
-static XXBulkIndex alloc(Cash cash, XXBulk ** ppBulk, bool * pRecycled) {
+static XXBulkIndex alloc_(Cash cash, XXBulkIndex iDonor, XXBulk ** ppBulk, bool * pRecycled) {
   XXBulk * pBulk;
   XXBulkIndex iBulk = pileOfXXBulks.alloc(&pBulk, pRecycled);
-  pBulk->rent.cash = cash;
+  if (!pileOfXXBulks.indexValid(iDonor)) 
+    pBulk->rent.cash = cash; // Genesis only
+  else {
+    pBulk->rent.cash = 0;
+    transfer(cash, iDonor, iBulk);
+  }
   updateTocks();
   pBulk->rent.lastPaidRent = tocksNow();
   XXBombIndex iBomb;
@@ -79,11 +84,21 @@ static XXBulkIndex alloc(Cash cash, XXBulk ** ppBulk, bool * pRecycled) {
   return iBulk;
 }
 
+static XXBulkIndex alloc(Cash cash, XXBulkIndex iDonor, XXBulk ** ppBulk, bool * pRecycled) {
+  if (!pileOfXXBulks.indexValid(iDonor)) {
+    printf("Don't disregard double entry\n");
+    exit(1);
+  }
+  return alloc_(cash, iDonor, ppBulk, pRecycled);
+}
+
 static bool open(Cash cash, XXBulkIndex * pI) {
   meapOfXXBombs.open();
   bool virgin = pileOfXXBulks.open();
-  XXBulkIndex i = alloc(cash, 0, 0);
-  if (pI) *pI = i;
+  if (virgin) {
+    XXBulkIndex i = alloc_(cash, (XXBulkIndex){BAD_INDEX}, 0, 0);
+    if (pI) *pI = i;
+  }
   return virgin;
 }
 

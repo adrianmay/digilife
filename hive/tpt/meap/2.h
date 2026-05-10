@@ -10,7 +10,7 @@ typedef void    (*XXMeapClose)(FATE fate);
 typedef bool    (*XXMeapInsert)   (XXIndex *pI, XX ** pNew, Index hint); 
 typedef bool    (*XXMeapEditTocks) (XXIndex i, Score when);
 typedef bool    (*XXMeapErase)    (XXIndex i);
-typedef Chomped (*XXMeapChomp)    (Score thresh, XX * p);
+typedef Chomped (*XXMeapChomp)    (Score thresh, XX * p, int pseudoAnimals);
 typedef bool    (*XXCheckOrdered) (void);
 typedef Index   (*XXMeapSize)     (void);
 typedef void    (*XXMeapShow)     (void);

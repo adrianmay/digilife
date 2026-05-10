@@ -13,4 +13,4 @@ Index countPop(Pilehead * ph );
 Index getUsr(Pilehead * ph); // Misc number
 void setUsr(Pilehead * ph, Index u);
 void modUsr(Pilehead * ph, IndexDiff u);
-void showPile(Pilehead * ph, VP showSlot);
+void showPile(Pilehead * ph, VP showSlot, bool onlyToUsr);

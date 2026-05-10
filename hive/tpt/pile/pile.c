@@ -27,7 +27,7 @@ Index     countXXs(void)                          { return countPop(headOfXXs); 
 Index     getXXUsr(void)                          { return getUsr(headOfXXs); } 
 void      setXXUsr(Index u)                   { setUsr(headOfXXs, u); } 
 void      modXXUsr(IndexDiff u)               { modUsr(headOfXXs, u); }  // Make this atomic sometime
-void      showXXPile(void)                        { showPile(headOfXXs, (VP)showXX); }
+void      showXXPile(bool u)                  { showPile(headOfXXs, (VP)showXX, u); }
 
 XXPile pileOfXXs = 
   { openXXPile

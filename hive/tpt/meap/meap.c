@@ -90,7 +90,7 @@ static bool insert(XXIndex * pI, XX ** ppNew, Index hint) {
 }
 
 static bool editTocksWhenLocked(XXIndex iCur, Score when) { 
-  printf("editTocksWhenLocked: i=%d, when=%d\n", iCur.i, when);
+  //printf("editTocksWhenLocked: i=%d, when=%d\n", iCur.i, when);
   pileOfXXs.get(iCur)->tocks = when;
   siftDown(iCur); 
   bool res = siftUp(iCur); 
@@ -124,19 +124,26 @@ static bool erase(XXIndex iCur) {
   return res;
 }
 
-static Chomped chomp(Score thresh, XX * pCopyOut) {
+static void show(void) {
+  printf("MEAP:\n");
+  pileOfXXs.show(true);
+}
+
+static Chomped chomp(Score thresh, XX * pCopyOut, int pseudoAnimals) {
   Chomped res;
   lock(true, __LINE__);
   Index x = meapOfXXs.size();
-  if (x==0) { res = Extinct; }
+  if (x<=pseudoAnimals) { res = Extinct; }
   else {
     XXIndex i = (XXIndex) {0};
     XX * p = pileOfXXs.get(i);
     memcpy(pCopyOut, p, sizeof(XX));
     Score lowestScoreInMeap = p->tocks;
     ScoreDiff sd = wrapSub32S(lowestScoreInMeap, thresh);
+    printf("chomped: lowest=%d, thresh=%d, sd=%d\n", lowestScoreInMeap, thresh, sd);
     if (sd <= 0) {
       erase_(i);
+      show();
       res = Killed;
     } else {
       res = Idle;
@@ -162,10 +169,6 @@ static bool checkOrdered(void) {
 }
 
 static Index size(void) {  return pileOfXXs.getUsr(); } 
-
-static void show(void) {
-  pileOfXXs.show();
-}
 
 static bool open(void) { return pileOfXXs.open(); }
 static void close(FATE f) { pileOfXXs.close(f); }

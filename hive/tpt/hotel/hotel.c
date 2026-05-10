@@ -26,18 +26,20 @@ static void collectRent(XXBulkIndex i) {
   updateTocks();
   XXBulk * pBulk = pileOfXXBulks.get(i);
   XXRent * pRent = &pBulk->rent;
-  Tocks time = tocksNow() - pRent->lastPaidRent;
+  Tocks now = tocksNow();
+  Tocks time = now - pRent->lastPaidRent;
   Cash bill = tockPrice() * time;
   pRent->cash -= bill;
-  pRent->lastPaidRent = tocksNow();
+  pRent->lastPaidRent = now;
 }
 
 static bool updateXXDeath(XXBulk* pBulk, XXBomb * pBomb) {
   Cash cash = pBulk->rent.cash;
   Tocks ttl = cash/tockPrice();
-  printf("UpdateXXDeath: ttl=%d\n", ttl);
+  //printf("UpdateXXDeath: ttl=%d\n", ttl);
   Tocks death = tocksNow() + ttl;
   return meapOfXXBombs.editTocksWhenLocked(pBulk->rent.bomb, death);
+  // The meap is properly reordered but nobody called kill
 }
 
 static bool updateXXDeathWithBulkIndex(XXBulkIndex iBulk) {
@@ -47,14 +49,14 @@ static bool updateXXDeathWithBulkIndex(XXBulkIndex iBulk) {
   return updateXXDeath(pBulk, pBomb);
 }
 
-//static bool updateXXDeathWithBulkIndexAndBombPointer(XXBulkIndex iBulk, XXBomb * pBomb) {
-//  XXBulk * pBulk = pileOfXXBulks.get(iBulk);
-//  return updateXXDeath(pBulk, pBomb);
-//}
+static bool updateXXDeathWithBulkIndexAndBombPointer(XXBulkIndex iBulk, XXBomb * pBomb) {
+  XXBulk * pBulk = pileOfXXBulks.get(iBulk);
+  return updateXXDeath(pBulk, pBomb);
+}
 
 static void review(XXBulkIndex i) { 
   collectRent(i);
-  printf("Reviewing i=%d... ", i.i);
+  //printf("Reviewing i=%d... ", i.i);
   updateXXDeathWithBulkIndex(i); 
 }
 
@@ -110,16 +112,23 @@ static bool open(Cash cash, XXBulkIndex * pI) {
   return virgin;
 }
 
+static void show(void) {
+  meapOfXXBombs.show();
+  pileOfXXBulks.show(false);
+}
+
 // This has to get called at strategic times from worker threads
 static void killer(void) {
   XXBomb bomb; // Bomb copied out to here
+  updateTocks();
   Tocks now = tocksNow();            
   while (true) { // Returns when nothing to kill for now
     bomb.who = badXXBulkIndex; // Prevent false alarms
-    Chomped ch = meapOfXXBombs.chomp(now, &bomb);
+    Chomped ch = meapOfXXBombs.chomp(now, &bomb, 1);
     if (ch == Killed ) { 
+      pileOfXXBulks.free(bomb.who); //TODO: funeral and recover cash
       printf("Killing %i\n", bomb.who.i);
-      pileOfXXBulks.free(bomb.who); 
+      show();
       continue; 
     }
     if (ch == Extinct) { onXXsExtinct(); return; }
@@ -135,16 +144,13 @@ static Cash rob(XXBulkIndex i) {
   return 0; //TODO: proper accounts
 }
 
-static void show(void) {
-  meapOfXXBombs.show();
-  pileOfXXBulks.show();
-}
-
 void onNewXXBomb(XXBombIndex iBomb, Index hint) { 
   //printf("OnNew: iBomb: %d hint: %d\n", iBomb.i, hint);
   XXBomb * pBomb = pileOfXXBombs.get(iBomb);
   pBomb->who = (XXBulkIndex){hint};
-  //updateXXDeathWithBulkIndexAndBombPointer(pBomb->who, pBomb);
+  XXBulk * pBulk = pileOfXXBulks.get(pBomb->who);
+  pBulk->rent.bomb = iBomb;
+  updateXXDeathWithBulkIndexAndBombPointer(pBomb->who, pBomb);
 }
 
 void onMoveXXBomb(XXBomb * pBomb, XXBombIndex to) { 

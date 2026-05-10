@@ -6,7 +6,7 @@
 #include "Thing_hotel/Bulk.h"
 #include "Thing_hotel/h.h"
 
-static bool extinct = false;
+static bool extinct;
 void onThingsExtinct(void) { extinct = true; } 
 
 // void onMobsExtinct() {}
@@ -20,19 +20,17 @@ static ThingBulkIndex iDonor = {0};
 
 static bool init(void) {
   openGlobals();
-  hotelOfThings.open(1000000000, &iDonor);
-  background(sweat_forever); // Got to do work to advance CPU time ...
+  hotelOfThings.open(1000000, &iDonor);
   return true;
 }
 
 void killTilExtinct(void) {
   while (true) {
     updateTocks();
-    hotelOfThings.review(iThing);
-    //printf("now=%d\n", tocksNow());
+    printf("killTilExtinct: now=%d\n", tocksNow());
     hotelOfThings.kill(); 
     if (extinct) return;
-    usleep(100000);
+    usleep(50000);
   }
 }
 
@@ -51,7 +49,7 @@ void make(Index name, Cash cash) {
 }
 
 bool test1(void) {
-  hotelOfThings.show();
+  extinct = false;
   make(3, 2000);
   hotelOfThings.show();
   TIME_VOID_PROC(killTilExtinct());
@@ -77,16 +75,17 @@ bool testEarn(void) {
   return true;
 }
 
-void cleanupHotel(void) { closeGlobals(1); hotelOfThings.close(DELETE); }
+void cleanupHotel(void) { hotelOfThings.close(DELETE); closeGlobals(DELETE); }
 
 bool testHotel(void) {
+  background(sweat_forever); // Got to do work to advance CPU time ...
   return 
     //testNoPop() &&
-    test1() &&
-    (cleanupHotel(), init()) &&
-    test1() &&
+    //test1() &&
     //(cleanupHotel(), init()) &&
-    //testEarn() &&
+    //test1() &&
+    //(cleanupHotel(), init()) &&
+    testEarn() &&
     //testRob() &&
     true;
 }

@@ -93,7 +93,7 @@ bool with(LinkIndex i0) {
 }
 
 bool showIt(void) {
-  pileOfLinks.show();
+  pileOfLinks.show(false);
   return false;
 }
 bool testLinkPile(void) {

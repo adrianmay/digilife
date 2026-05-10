@@ -15,7 +15,7 @@ typedef Index   (*XXPileCount)(void);
 typedef Index   (*XXGetUsr)(void); // Misc number
 typedef void    (*XXSetUsr)(Index u);
 typedef void    (*XXModUsr)(IndexDiff u);
-typedef void    (*XXPileShow)(void);
+typedef void    (*XXPileShow)(bool stopAtUsr); // cos of meap
 
 typedef struct {
   XXPileOpen open;

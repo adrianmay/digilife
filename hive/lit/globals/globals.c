@@ -41,11 +41,17 @@ static void * openGlobals_(uint64_t len, bool * virgin) {
 }
 
 // Close and maybe delete the file
-static void closeGlobals_(int fd, bool rm) {
+static void closeGlobals_(int fd, FATE fate) {
   if (fd == -1) return;
   //munmap(ph); //TODO: I thought I needed this
   close(fd);
-  if (rm) unlink(GLOBALS_FILENAME);
+  if (fate==DELETE) unlink(GLOBALS_FILENAME);
+  if (fate==HIDE) {
+    char dest[MAX_FILENAME+1];
+    *dest='.';
+    strcpy(dest+1,GLOBALS_FILENAME);
+    rename(GLOBALS_FILENAME, dest);
+  }
 }
 
 bool openGlobals(void) {

@@ -84,7 +84,7 @@ static bool draw(XXTicket * pTicket, Cash * pCash) {
 }
 
 static bool open(Cash cash, XXBulkIndex * pI0) { 
-  return hotelOfXXs.open(cash, pI0); 
+  return hotelOfXXs.open(cash); 
 }
 static void close(FATE f) { hotelOfXXs.close(f); }
 

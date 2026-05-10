@@ -140,10 +140,10 @@ static Chomped chomp(Score thresh, XX * pCopyOut, int pseudoAnimals) {
     memcpy(pCopyOut, p, sizeof(XX));
     Score lowestScoreInMeap = p->tocks;
     ScoreDiff sd = wrapSub32S(lowestScoreInMeap, thresh);
-    printf("chomped: lowest=%d, thresh=%d, sd=%d\n", lowestScoreInMeap, thresh, sd);
+    //printf("chomped: lowest=%d, thresh=%d, sd=%d\n", lowestScoreInMeap, thresh, sd);
     if (sd <= 0) {
       erase_(i);
-      show();
+      //show();
       res = Killed;
     } else {
       res = Idle;

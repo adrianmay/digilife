@@ -1,5 +1,4 @@
 #include <pthread.h>
-#include <signal.h>
 #include "types.h"
 #include "misc/h.h"
 #include "globals/h.h"
@@ -8,6 +7,11 @@
 #include "h.h"
 
 XXBulkIndex rentCollectorIndexXX = (XXBulkIndex) {0}; // This is crap
+
+static void show(void) {
+  meapOfXXBombs.show();
+  pileOfXXBulks.show(false);
+}
 
 static void close(FATE fate) {
   pileOfXXBulks.close(fate);
@@ -61,19 +65,14 @@ static void review(XXBulkIndex i) {
 }
 
 static void transfer(Cash amt, XXBulkIndex iFrom, XXBulkIndex iTo) {
+  printf("Transfer: amt=%'ld, iFrom=%d, iTo=%d\n", amt, iFrom.i, iTo.i);
   collectRent(iFrom);
   XXBulk * pFrom = pileOfXXBulks.get(iFrom);
   XXRent * pFromRent = &pFrom->rent;
   XXBulk * pTo = pileOfXXBulks.get(iTo);
   XXRent * pToRent = &pTo->rent;
-  printf("Transfer before: cash: from: %'ld, to: %'ld\n", pFromRent->cash, pToRent->cash);
   pFromRent->cash -= amt;
   pToRent->cash += amt;
-  printf("Transfer after:  cash: from: %'ld, to: %'ld\n", pFromRent->cash, pToRent->cash);
-  collectRent(iTo);
-  review(iFrom);
-  review(iTo);
-  printf("Transfer end:    cash: from: %'ld, to: %'ld\n", pFromRent->cash, pToRent->cash);
 }
 
 static XXBulkIndex alloc_(Cash cash, XXBulkIndex iDonor, XXBulk ** ppBulk, bool * pRecycled) {
@@ -86,10 +85,14 @@ static XXBulkIndex alloc_(Cash cash, XXBulkIndex iDonor, XXBulk ** ppBulk, bool 
   else {
     pBulk->rent.cash = 0;
     transfer(cash, iDonor, iBulk);
+    review(iDonor);
   }
   XXBombIndex iBomb;
   XXBomb * pBomb;
   meapOfXXBombs.insert(&iBomb, &pBomb, iBulk.i); // onNew should do the rest
+  printf("In alloc near end\n");
+  show();
+  review(iBulk);
   if (ppBulk) *ppBulk = pBulk;
   return iBulk;
 }
@@ -102,33 +105,29 @@ static XXBulkIndex alloc(Cash cash, XXBulkIndex iDonor, XXBulk ** ppBulk, bool *
   return alloc_(cash, iDonor, ppBulk, pRecycled);
 }
 
-static bool open(Cash cash, XXBulkIndex * pI) {
+static bool open(Cash cash) {
   meapOfXXBombs.open();
   bool virgin = pileOfXXBulks.open();
-  if (virgin) {
-    XXBulkIndex i = alloc_(cash, (XXBulkIndex){BAD_INDEX}, 0, 0);
-    if (pI) *pI = i;
-  }
+  if (virgin) alloc_(cash, (XXBulkIndex){BAD_INDEX}, 0, 0); 
   return virgin;
 }
 
-static void show(void) {
-  meapOfXXBombs.show();
-  pileOfXXBulks.show(false);
-}
-
 // This has to get called at strategic times from worker threads
-static void killer(void) {
+static void kill(void) {
   XXBomb bomb; // Bomb copied out to here
   updateTocks();
   Tocks now = tocksNow();            
   while (true) { // Returns when nothing to kill for now
     bomb.who = badXXBulkIndex; // Prevent false alarms
     Chomped ch = meapOfXXBombs.chomp(now, &bomb, 1);
-    if (ch == Extinct) { onXXsExtinct(); return; }
+    if (ch == Extinct) { 
+      printf("Extinct\n");
+      onXXsExtinct(); 
+      return; 
+    }
     if (ch == Killed ) { 
       pileOfXXBulks.free(bomb.who); //TODO: funeral and recover cash
-      printf("Killing %i\n", bomb.who.i);
+      printf("Killed %i\n", bomb.who.i);
       show();
       continue; 
     }
@@ -140,7 +139,7 @@ static Cash rob(XXBulkIndex i) {
   XXBulk * pBulk = pileOfXXBulks.get(i);
   XXRent * pRent = &pBulk->rent;
   transfer(pRent->cash, i, rentCollectorIndexXX);
-  killer();
+  kill();
   return 0; //TODO: proper accounts
 }
 
@@ -168,5 +167,5 @@ void showXXBulk(XXBulk * p) {
   showXXBody(&p->body);
 }
 
-XXHotel hotelOfXXs = {open, alloc, get, transfer, review, rob, killer, count, close, show};
+XXHotel hotelOfXXs = {open, alloc, get, transfer, review, rob, kill, count, close, show};
 

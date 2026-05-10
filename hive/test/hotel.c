@@ -20,22 +20,23 @@ static ThingBulkIndex iDonor = {0};
 
 static bool init(void) {
   openGlobals();
-  hotelOfThings.open(1000000, &iDonor);
+  hotelOfThings.open(1000000);
+  hotelOfThings.show();
   return true;
 }
 
 void killTilExtinct(void) {
   while (true) {
     updateTocks();
-    printf("killTilExtinct: now=%d\n", tocksNow());
+    //printf("killTilExtinct: now=%d\n", tocksNow());
     hotelOfThings.kill(); 
     if (extinct) return;
-    usleep(50000);
+    usleep(10000);
   }
 }
 
 bool testNoPop(void) {
-  hotelOfThings.show();
+  extinct = false;
   TIME_VOID_PROC(killTilExtinct()); 
   printf("testNoPop: %'ld\n", ns);
   assertLongCond(ns, <20000);
@@ -51,7 +52,7 @@ void make(Index name, Cash cash) {
 bool test1(void) {
   extinct = false;
   make(3, 2000);
-  hotelOfThings.show();
+  printf("Made in test1\n");
   TIME_VOID_PROC(killTilExtinct());
   printf("test1: %'ld\n", ns);
   assertLongCond(ns, <2100000000ull)
@@ -62,11 +63,12 @@ bool test1(void) {
 void * earn(void *) {
   sleepNs(1000000000);
   hotelOfThings.transfer(2000, iDonor, iThing);
-  //hotelOfThings.review(iThing);
   return 0;
 }
 
 bool testEarn(void) {
+  extinct = false;
+  hotelOfThings.show();
   make(4, 3000);
   background(earn);
   TIME_VOID_PROC(killTilExtinct());
@@ -80,8 +82,8 @@ void cleanupHotel(void) { hotelOfThings.close(DELETE); closeGlobals(DELETE); }
 bool testHotel(void) {
   background(sweat_forever); // Got to do work to advance CPU time ...
   return 
-    //testNoPop() &&
-    //test1() &&
+    testNoPop() &&
+    test1() &&
     //(cleanupHotel(), init()) &&
     //test1() &&
     //(cleanupHotel(), init()) &&

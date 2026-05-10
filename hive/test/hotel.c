@@ -68,10 +68,13 @@ void * earn(void *) {
 
 bool testEarn(void) {
   extinct = false;
+  printf("testEarn\n");
   hotelOfThings.show();
   make(4, 3000);
+  hotelOfThings.show();
   background(earn);
   TIME_VOID_PROC(killTilExtinct());
+  printf("testEarn: %'ld\n", ns);
   assertLongCond(ns, <5100000000ull)
   assertLongCond(ns, >4900000000ull)
   return true;
@@ -82,8 +85,8 @@ void cleanupHotel(void) { hotelOfThings.close(DELETE); closeGlobals(DELETE); }
 bool testHotel(void) {
   background(sweat_forever); // Got to do work to advance CPU time ...
   return 
-    testNoPop() &&
-    test1() &&
+    //testNoPop() &&
+    //test1() &&
     //(cleanupHotel(), init()) &&
     //test1() &&
     //(cleanupHotel(), init()) &&

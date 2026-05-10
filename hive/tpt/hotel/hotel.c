@@ -64,15 +64,20 @@ static void review(XXBulkIndex i) {
   updateXXDeathWithBulkIndex(i); 
 }
 
-static void transfer(Cash amt, XXBulkIndex iFrom, XXBulkIndex iTo) {
+static void transfer_(Cash amt, XXBulkIndex iFrom, XXBulkIndex iTo) {
   printf("Transfer: amt=%'ld, iFrom=%d, iTo=%d\n", amt, iFrom.i, iTo.i);
-  collectRent(iFrom);
   XXBulk * pFrom = pileOfXXBulks.get(iFrom);
   XXRent * pFromRent = &pFrom->rent;
   XXBulk * pTo = pileOfXXBulks.get(iTo);
   XXRent * pToRent = &pTo->rent;
   pFromRent->cash -= amt;
   pToRent->cash += amt;
+}
+
+static void transfer(Cash amt, XXBulkIndex iFrom, XXBulkIndex iTo) {
+  transfer_(amt, iFrom, iTo);
+  review(iFrom);
+  review(iTo);
 }
 
 static XXBulkIndex alloc_(Cash cash, XXBulkIndex iDonor, XXBulk ** ppBulk, bool * pRecycled) {
@@ -84,7 +89,7 @@ static XXBulkIndex alloc_(Cash cash, XXBulkIndex iDonor, XXBulk ** ppBulk, bool 
     pBulk->rent.cash = cash; // Genesis only
   else {
     pBulk->rent.cash = 0;
-    transfer(cash, iDonor, iBulk);
+    transfer_(cash, iDonor, iBulk);
     review(iDonor);
   }
   XXBombIndex iBomb;

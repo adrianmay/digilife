@@ -80,18 +80,35 @@ bool testEarn(void) {
   return true;
 }
 
+void * rob(void *) {
+  sleepNs(1000000000);
+  hotelOfThings.rob(iThing);
+  return 0;
+}
+
+bool testRob(void) {
+  extinct = false;
+  printf("testRob\n");
+  make(5, 9000);
+  background(rob);
+  TIME_VOID_PROC(killTilExtinct());
+  printf("testRob: %'ld\n", ns);
+  assertLongCond(ns, <1100000000ull)
+  assertLongCond(ns, > 900000000ull)
+  return true;
+}
+
+
 void cleanupHotel(void) { hotelOfThings.close(DELETE); closeGlobals(DELETE); }
 
 bool testHotel(void) {
   background(sweat_forever); // Got to do work to advance CPU time ...
   return 
     testNoPop() &&
-    //test1() &&
     //(cleanupHotel(), init()) &&
     test1() &&
-    //(cleanupHotel(), init()) &&
     testEarn() &&
-    //testRob() &&
+    testRob() &&
     true;
 }
 

@@ -85,10 +85,10 @@ void cleanupHotel(void) { hotelOfThings.close(DELETE); closeGlobals(DELETE); }
 bool testHotel(void) {
   background(sweat_forever); // Got to do work to advance CPU time ...
   return 
-    //testNoPop() &&
+    testNoPop() &&
     //test1() &&
     //(cleanupHotel(), init()) &&
-    //test1() &&
+    test1() &&
     //(cleanupHotel(), init()) &&
     testEarn() &&
     //testRob() &&
@@ -97,83 +97,4 @@ bool testHotel(void) {
 
 bool hotel(void) { return bkt("hotel", init, testHotel, cleanupHotel); }
 
-//
-//static bool init() {
-//  openGlobals();
-//  hotelOfThings.open();
-//  background(sweat_forever); // Got to do work to advance CPU time ...
-//  return true;
-//}
-//
-//
-//
-//void make(Index name, Cash cash) {
-//  hotelOfThings.alloc(cash, &pThing);
-//  pThing->body.name = name;
-//}
-//
-//bool test1() {
-//  make(3, 2000);
-//  TIME_VOID_PROC(hotelOfThings.collectRent(0));
-//  assertLongCond(ns, <2100000000ull)
-//  assertLongCond(ns, >1900000000ull)
-//  return true;
-//}
-//
-//static bool testHotel() {
-//  return 
-//    //testNoPop() &&
-//    test1() &&
-////    testEarn() &&
-//    true;
-//}
-//
-//static void cleanupHotel() { closeGlobals(1); hotelOfThings.close(1); }
-//bool hotel() { return bkt("hotel", init, testHotel, cleanupHotel); }
-
-/////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////
-  /*
-   *
-#include "test.h"
-#include "hotel/h.h"
-
-Nanosecs ns;
-
-MAKEHOTEL1(Block)
-
-typedef struct { Index name; BlockRent rent; } Block;
-
-void BlockFuneral(Block * pB) {
-  printf("Alas poor BlockMeap %d, I knew him well.\n", pB->name);
-}
-MAKEHOTEL2(Block, GIGA)
-
-
-//bool testNoPop() {
-//  TIME_VOID_PROC(hotelOfThings.collectRent(0)); 
-//  printf("testNoPop: %'ld\n", ns);
-//  assertLongCond(ns, <4000);
-//  return true;
-//}
-
-Block * pB; 
-BlockMeapIndex iBM;
-
-void make(Index name, Cash cash) {
-  reserveBlock(cash, &pB);
-  pB->name = name;
-}
-
-bool test1() {
-  make(3, 2000);
-  TIME_VOID_PROC(BlockRentCollector());
-  assertLongCond(ns, <2100000000ull)
-  assertLongCond(ns, >1900000000ull)
-  return true;
-}
-
-*/
 

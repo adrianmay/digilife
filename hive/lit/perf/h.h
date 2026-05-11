@@ -2,8 +2,12 @@
 
 // The experiment code is in the test for now
 
-void initPerf(bool threadNotProcess);
+typedef int MyPerfHandle;
+typedef int YourPerfHandle;
 
-void armPerfRel(bool threadNotProcess, Nanosecs ns);
-void armPerfAbs(bool threadNotProcess, Nanosecs ns);
+typedef void (*PerfHandler)(YourPerfHandle yph);
+
+MyPerfHandle initThreadPerf(PerfHandler ph, YourPerfHandle yph);
+Cycles threadJustUsed(MyPerfHandle mph); //Also adds to cpuCycles;
+void arm(MyPerfHandle mph, Cycles fromNow);
 

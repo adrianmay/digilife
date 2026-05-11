@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stdatomic.h>
 
+#define MAX_WORKER_THREADS 100 // These are file handles so some are wasted
 #define NS_PER_SEC 1000000000.0
 #define SECS_PER_MIN 60.0
 #define MINS_PER_HOUR 60.0
@@ -27,7 +28,8 @@
 #define B32 (B16*B16)       
 
 // Ought to be using the FPU here
-typedef uint64_t Nanosecs;
+typedef uint64_t Nanosecs; // Kill this
+typedef uint64_t Cycles;
 typedef uint32_t Tocks;  // A tock might be around a microsecond, but varies
 typedef int32_t  TockDiff;  // A tock might be around a microsecond, but varies
 typedef Tocks    Score;

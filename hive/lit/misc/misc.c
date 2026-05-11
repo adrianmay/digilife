@@ -28,9 +28,7 @@ Nanosecs age(clockid_t what) {
   return ts.tv_sec*1000000000 + ts.tv_nsec;
 }
 
-Nanosecs ageOfTime(void)    { return age(CLOCK_REALTIME); }
 Nanosecs ageOfProcess(void) { return age(CLOCK_PROCESS_CPUTIME_ID); }
-Nanosecs ageOfThread(void)  { return age(CLOCK_THREAD_CPUTIME_ID); }
 
 ////////////////////////////////////////////////////////////////
 

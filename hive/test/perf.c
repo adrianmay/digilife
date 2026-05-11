@@ -50,8 +50,7 @@ static bool init(void) {
   return true;
 }
 
-int makeMonitor(void)
-{
+int makeThreadMonitor(void) {
   struct perf_event_attr pe;
   memset(&pe, 0, sizeof(pe));
 
@@ -67,7 +66,9 @@ int makeMonitor(void)
   pe.wakeup_events = 1;
   pe.sample_period = CLOCK_SPEED/10.0; // dummy threshold
 
-  int fd = syscall(__NR_perf_event_open, &pe, 0, -1, -1, 0);
+  int fd = syscall(__NR_perf_event_open, &pe, 
+                   0,  // This thread
+                   -1, -1, 0);
   if (fd == -1) {
     perror("perf_event_open");
     exit(EXIT_FAILURE);
@@ -87,7 +88,7 @@ void burn(void) {
 
 void * testThread(void * p) {
   //long which = (long) p;
-  int fd = makeMonitor();
+  int fd = makeThreadMonitor();
   pidsByFd[fd]=pthread_self();
   testArm(fd);
   burn();

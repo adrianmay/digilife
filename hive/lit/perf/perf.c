@@ -17,18 +17,21 @@ typedef struct {
   Cycles threadCyclesNow;
   PerfHandler handler;
   PerfHandleC phc;
-} ThreadPerf;
+} Perf;
 
-ThreadPerf threadPerfsByFileHandle[MAX_WORKER_THREADS];
+Perf threadPerfsByFileHandle[MAX_WORKER_THREADS];
 
-Cycles readThreadCyclesNow(PerfHandleS phs) {
-  ThreadPerf * pTP = &threadPerfsByFileHandle[phs];
+Cycles readCyclesNow(PerfHandleS phs) {
+  Perf * pTP = &threadPerfsByFileHandle[phs];
   size_t res = read(phs, &pTP->threadCyclesNow, sizeof(Cycles));
-  if (res != sizeof(Cycles)) { printf("Dying in readThreadCyclesNow\n"); exit(1); }
+  if (res != sizeof(Cycles)) { printf("Dying in readCyclesNow\n"); exit(1); }
   return pTP->threadCyclesNow;
 }
 
-static void handler(int signo, siginfo_t *info, void *ucontext) { }
+static void handler(int signo, siginfo_t *info, void *ucontext) {
+  Perf * pPerf = &threadPerfsByFileHandle[info->si_fd];
+  pPerf->handler(pPerf->phc);
+}
 
 void initOnce() {
   bool done = false;
@@ -40,37 +43,55 @@ void initOnce() {
   done=true;
 }
 
-
-PerfHandleS initThreadPerf(PerfHandler ph, PerfHandleC phc) {
+PerfHandleS initPerf(int countDescendentTasks, PerfHandler ph, PerfHandleC phc) {
   initOnce();
   struct perf_event_attr pe;
   memset(&pe, 0, sizeof(pe));
   pe.type = PERF_TYPE_HARDWARE;
   pe.size = sizeof(pe);
   pe.config = PERF_COUNT_HW_CPU_CYCLES;
-  pe.inherit = 1;
+  pe.inherit = countDescendentTasks;
   pe.disabled = 1;
   pe.exclude_kernel = 0;
   pe.exclude_hv = 1;
   pe.sample_type = PERF_SAMPLE_IP;
   pe.wakeup_events = 1;
-  pe.sample_period = 100000000;
+  pe.sample_period = 1000000000000ull;
   int fd = syscall(__NR_perf_event_open, &pe, 
                    0,  // This thread
+                   //gettid(),  // This thread
                    -1, -1, 0);
   fcntl(fd, F_SETFL, O_RDWR | O_NONBLOCK | O_ASYNC);
   fcntl(fd, F_SETSIG, SIGIO);
   fcntl(fd, F_SETOWN, getpid());
-  ThreadPerf * pTP = &threadPerfsByFileHandle[fd];
+  Perf * pTP = &threadPerfsByFileHandle[fd];
   pTP->handler = ph;
   pTP->phc     = phc;
   pTP->pid     = pthread_self();
   ioctl(fd, PERF_EVENT_IOC_ENABLE);
-  readThreadCyclesNow(fd);
+  //ioctl(fd, PERF_EVENT_IOC_DISABLE);
+  readCyclesNow(fd);
   return fd;
 }
 
+PerfHandleS initProcPerf(PerfHandler ph, PerfHandleC phc) {
+  return initPerf(1, ph, phc);
+}
+
+PerfHandleS initThreadPerf(PerfHandler ph, PerfHandleC phc) {
+  return initPerf(0, ph, phc);
+}
+
 void arm(PerfHandleS phs, Cycles fromNow) {
+  ioctl(phs, PERF_EVENT_IOC_PERIOD, fromNow);
+  ioctl(phs, PERF_EVENT_IOC_RESET, 0);
+  ioctl(phs, PERF_EVENT_IOC_ENABLE, 0);
+}
+
+void disarm(PerfHandleS phs) {
+  ioctl(phs, PERF_EVENT_IOC_PERIOD, 0);
+  ioctl(phs, PERF_EVENT_IOC_RESET, 0);
+  ioctl(phs, PERF_EVENT_IOC_DISABLE, 0);
 }
 
 Cycles threadJustUsed(PerfHandleS phs) {

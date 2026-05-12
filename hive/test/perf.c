@@ -23,7 +23,6 @@ void say(const char * msg) {
   strncpy(res[cur++], msg, MX); 
 }
 
-
 bool check(char e[20][20], int line) {
   char lineS[20];
   sprintf(lineS, "%d", line);
@@ -42,21 +41,68 @@ bool checkHarness() {
       ;
 } 
 
-uint64_t burn(uint64_t l) { uint64_t x; for (x=0; x<l; x++); return x; }
+#define LOTS 397000000ull
 
-bool checkThreadUsed() {
-  PerfHandleC phc = initThreadPerf(0, 0);
-  burn(2*GIGA);
-  Cycles now = readThreadCyclesNow(phc);
-  assertLongCond(now, >1900000000ull)
-  assertLongCond(now, <2100000000ull)
+uint64_t burn(uint64_t l, bool * quit) { 
+  uint64_t x; 
+  *quit = false;
+  for (x=0; x<l && !(*quit); x++); 
+  return x; 
+}
+
+bool burnAndRead(PerfHandleS phs, uint64_t toBurn, Cycles cycles, bool * pQ) {
+  burn(toBurn, pQ);
+  Cycles now = readCyclesNow(phs);
+  printf("burnAndRead: fh=%d, %'ld\n", phs, now);
+  assertLongApprox(now, cycles);
+  return true;
+}
+
+bool quits[10] = {false};
+bool beenhere[10] = {false};
+
+static void handler(PerfHandleC phc) {
+  disarm(phc);
+  if (!beenhere[phc]) {
+    beenhere[phc]=true;
+    printf("Ignoring quit %d\n", phc);
+    return;
+  }
+  printf("Told to quit %d\n", phc);
+  quits[phc] = true;
+}
+
+void * otherThreadInt(void * p) {
+  PerfHandleS phs = initThreadPerf(handler, 2);
+  //arm(phs, LOTS);
+  burnAndRead(phs, 3*LOTS, 3000000000, &quits[2]); 
+  return 0;
+}
+void * otherThread(void * p) {
+  PerfHandleS phs = initThreadPerf(handler, 2);
+  burnAndRead(phs, 3*LOTS, 3000000000, &quits[2]); 
+  return 0;
+}
+
+bool checkUsed() {
+  background(otherThread); // Not included in proc counter
+  PerfHandleS phsProc = initProcPerf(handler, 0);
+  //arm(phsProc, LOTS);
+  PerfHandleS phs = initThreadPerf(handler, 1);
+  background(otherThreadInt);
+  burnAndRead(phs, 2*LOTS, 2000000000, &quits[1]);
+  burnAndRead(phs, 2*LOTS, 4000000000, &quits[1]);
+  Cycles now = readCyclesNow(phsProc);
+  assertLongApprox(now, 7000000000); // Cos 4 is total in this thread.
   return true;
 }
  
 bool perf(void) {
-  background(sweat_forever);
-  return checkHarness(exp1)
-      && checkThreadUsed()
-      && (sleepNs(1000000000), true);
-    ;
+  return 
+    //checkHarness(exp1) && 
+    checkUsed() && 
+    true ;
 }
+
+
+

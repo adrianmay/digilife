@@ -11,6 +11,11 @@
     return false; \
   }
 
+#define assertLongApprox(VAR, VAL) \
+  assertLongCond(now, >(VAL*19/20)) \
+  assertLongCond(now, <(VAL*21/20))
+
+
 #define assertStringAtLine(S1, E1, MX, LINE) \
   if (0!=strncmp(S1, E1, MX)) { \
     fprintf(stdout, "%s:%s: Expected: '%s'; Got: '%s'\n", __FILE__, LINE, S1, E1); \

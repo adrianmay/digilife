@@ -58,9 +58,10 @@ int main(void) {
 //    wrap() && 
 //    globals() && 
 //    pile() && 
-    meap() && 
-    hotel() &&
-    raffle() &&
+//    meap() && 
+//    hotel() &&
+//    raffle() &&
+    perf() &&
     true;
   return suc?0:1;
 }

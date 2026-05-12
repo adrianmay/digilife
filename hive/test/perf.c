@@ -2,108 +2,61 @@
 ////// test/perf.c
 
 #define _GNU_SOURCE
-#include <linux/perf_event.h>
-#include <sys/syscall.h>
-#include <unistd.h>
 #include <string.h>
-#include <signal.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/ioctl.h>
-#include <time.h>
 #include "types.h"
+#include "test.h"
+#include "assert.h"
 #include "misc/h.h"
+#include "perf/h.h"
 
 //This can monitor threads irrespective of CPU, but not the whole process.
 //So memory killing will have to be done by worker threads before
 // an animal tries to allocate memory, or whenever.
 
 
-#define CLOCK_SPEED 4000000000
-#define MAX_FD 10
-long periods[] = {1, 2, 4};
+#define MX 20
+char res[MX][MX]={0};
+int cur = 0;
 
-int state[MAX_FD] = {0,0,0,0,1,0};
-pthread_t pidsByFd[MAX_FD]={0};
 
-void armMonitor(int fd, long * cycles) {
-  ioctl(fd, PERF_EVENT_IOC_PERIOD, cycles);
-  ioctl(fd, PERF_EVENT_IOC_RESET, 0);
-  ioctl(fd, PERF_EVENT_IOC_ENABLE, 0);
+void say(const char * msg) { 
+  strncpy(res[cur++], msg, MX); 
 }
 
-void testArm(int fd) {
-  state[fd] = (state[fd] + 1) % 3;
-  printf("State=%d fd=%d pid=%ld\n", state[fd], fd, pidsByFd[fd]);
-  long next = periods[state[fd]]*CLOCK_SPEED;
-  armMonitor(fd, &next);
-}
 
-void handler(int signo, siginfo_t *info, void *ucontext) { testArm(info->si_fd); }
-
-static bool init(void) {
-  struct sigaction sa = {0};
-  sa.sa_sigaction = handler;
-  sa.sa_flags = SA_SIGINFO;
-  sigaction(SIGIO, &sa, NULL);
+bool check(char e[20][20], int line) {
+  char lineS[20];
+  sprintf(lineS, "%d", line);
+  for (int a=0; a<MX; a++) 
+    assertStringAtLine(e[a], res[a], MX, lineS);
   return true;
 }
 
-int makeThreadMonitor(void) {
-  struct perf_event_attr pe;
-  memset(&pe, 0, sizeof(pe));
+char exp1[MX][MX]={"Foo", "Bar", {0}};
+bool checkHarness() {
+  return (                   !check(exp1, __LINE__))
+      && (       say("Foo"), !check(exp1, __LINE__))
+      && (       say("Bur"), !check(exp1, __LINE__))
+      && (cur--, say("Bar"),  check(exp1, __LINE__))
+      && (       say("Wop"), !check(exp1, __LINE__))
+      ;
+} 
 
-  pe.type = PERF_TYPE_HARDWARE;
-  pe.size = sizeof(pe);
-  pe.config = PERF_COUNT_HW_CPU_CYCLES;
+uint64_t burn(uint64_t l) { uint64_t x; for (x=0; x<l; x++); return x; }
 
-  pe.inherit = 1;
-  pe.disabled = 1;
-  pe.exclude_kernel = 0;
-  pe.exclude_hv = 1;
-  pe.sample_type = PERF_SAMPLE_IP;
-  pe.wakeup_events = 1;
-  pe.sample_period = CLOCK_SPEED/10.0; // dummy threshold
-
-  int fd = syscall(__NR_perf_event_open, &pe, 
-                   0,  // This thread
-                   -1, -1, 0);
-  if (fd == -1) {
-    perror("perf_event_open");
-    exit(EXIT_FAILURE);
-  }
-
-  fcntl(fd, F_SETFL, O_RDWR | O_NONBLOCK | O_ASYNC);
-  fcntl(fd, F_SETSIG, SIGIO);
-  fcntl(fd, F_SETOWN, getpid());
-  return fd;
+bool checkThreadUsed() {
+  PerfHandleC phc = initThreadPerf(0, 0);
+  burn(2*GIGA);
+  Cycles now = readThreadCyclesNow(phc);
+  assertLongCond(now, >1900000000ull)
+  assertLongCond(now, <2100000000ull)
+  return true;
 }
-
-void burn(void) {
-  while (1) {
-    asm volatile("" ::: "memory");
-  }
-}
-
-void * testThread(void * p) {
-  //long which = (long) p;
-  int fd = makeThreadMonitor();
-  pidsByFd[fd]=pthread_self();
-  testArm(fd);
-  burn();
-  return 0;
-}
-
+ 
 bool perf(void) {
-  init();
-  pthread_t pid1, pid2;
-  pthread_create(&pid1, 0, testThread, (void*)0);
-  printf("Started thread: %ld\n", pid1);
-  pthread_create(&pid2, 0, testThread, (void*)1);
-  printf("Started thread: %ld\n", pid2);
-  pthread_join(pid1, 0);
-  pthread_join(pid2, 0);
-  return true;
+  background(sweat_forever);
+  return checkHarness(exp1)
+      && checkThreadUsed()
+      && (sleepNs(1000000000), true);
+    ;
 }
-

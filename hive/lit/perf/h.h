@@ -2,12 +2,13 @@
 
 // The experiment code is in the test for now
 
-typedef int MyPerfHandle;
-typedef int YourPerfHandle;
+typedef int PerfHandleS;
+typedef int PerfHandleC;
 
-typedef void (*PerfHandler)(YourPerfHandle yph);
+typedef void (*PerfHandler)(PerfHandleC phc);
 
-MyPerfHandle initThreadPerf(PerfHandler ph, YourPerfHandle yph);
-Cycles threadJustUsed(MyPerfHandle mph); //Also adds to cpuCycles;
-void arm(MyPerfHandle mph, Cycles fromNow);
+Cycles readThreadCyclesNow(PerfHandleS phs);
+PerfHandleS initThreadPerf(PerfHandler ph, PerfHandleC phc);
+Cycles threadJustUsed(PerfHandleS phs); //Also adds to cpuCycles;
+void arm(PerfHandleS phs, Cycles fromNow);
 

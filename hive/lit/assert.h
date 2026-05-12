@@ -11,6 +11,12 @@
     return false; \
   }
 
+#define assertStringAtLine(S1, E1, MX, LINE) \
+  if (0!=strncmp(S1, E1, MX)) { \
+    fprintf(stdout, "%s:%s: Expected: '%s'; Got: '%s'\n", __FILE__, LINE, S1, E1); \
+    return false; \
+  }
+
 #define assertInt(VAR, VAL) \
   if (VAR != VAL) { \
     fprintf(stdout, "%s:%d: Expected: " #VAL "=%d ; Got: %d\n", __FILE__, __LINE__, VAL, VAR); \

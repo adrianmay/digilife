@@ -7,10 +7,10 @@ typedef int PerfHandleC;
 
 typedef void (*PerfHandler)(PerfHandleC phc);
 
-Cycles readCyclesNow(PerfHandleS phs);
+Cycles readCycles(PerfHandleS phs);
 PerfHandleS initProcPerf(PerfHandler ph, PerfHandleC phc); // All threads subsequently started by this one also included
 PerfHandleS initThreadPerf(PerfHandler ph, PerfHandleC phc);
-Cycles threadJustUsed(PerfHandleS phs); //Also adds to cpuCycles;
-void arm(PerfHandleS phs, Cycles fromNow);
-void disarm(PerfHandleS phs);
+//Cycles threadJustUsed(PerfHandleS phs); //Also adds to cpuCycles;
+void setAlarm(PerfHandleS phs, Cycles fromNow);
+void cancelAlarm(PerfHandleS phs);
 

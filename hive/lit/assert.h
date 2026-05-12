@@ -12,8 +12,8 @@
   }
 
 #define assertLongApprox(VAR, VAL) \
-  assertLongCond(now, >(VAL*19/20)) \
-  assertLongCond(now, <(VAL*21/20))
+  assertLongCond(VAR, >(VAL*19/20)) \
+  assertLongCond(VAR, <(VAL*21/20))
 
 
 #define assertStringAtLine(S1, E1, MX, LINE) \

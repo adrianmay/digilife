@@ -41,7 +41,7 @@ bool checkHarness() {
       ;
 } 
 
-#define LOTS 397000000ull
+#define LOTS 400000000ull
 
 uint64_t burn(uint64_t l, bool * quit) { 
   uint64_t x; 
@@ -51,56 +51,106 @@ uint64_t burn(uint64_t l, bool * quit) {
 }
 
 bool burnAndRead(PerfHandleS phs, uint64_t toBurn, Cycles cycles, bool * pQ) {
-  burn(toBurn, pQ);
-  Cycles now = readCyclesNow(phs);
-  printf("burnAndRead: fh=%d, %'ld\n", phs, now);
-  assertLongApprox(now, cycles);
+  *pQ=false;
+  Cycles before = readCycles(phs);
+  burn(LOTS*toBurn, pQ);
+  Cycles after = readCycles(phs);
+  Cycles used = after-before;
+  printf("burnAndRead: fh=%d, want=%'ld, got=%'ld\n", phs, cycles, used);
+  assertLongApprox(used, cycles);
   return true;
 }
 
 bool quits[10] = {false};
-bool beenhere[10] = {false};
 
 static void handler(PerfHandleC phc) {
-  disarm(phc);
-  if (!beenhere[phc]) {
-    beenhere[phc]=true;
-    printf("Ignoring quit %d\n", phc);
-    return;
-  }
-  printf("Told to quit %d\n", phc);
+  //printf("Told to quit %d\n", phc);
   quits[phc] = true;
 }
 
-void * otherThreadInt(void * p) {
-  PerfHandleS phs = initThreadPerf(handler, 2);
-  //arm(phs, LOTS);
-  burnAndRead(phs, 3*LOTS, 3000000000, &quits[2]); 
-  return 0;
-}
-void * otherThread(void * p) {
-  PerfHandleS phs = initThreadPerf(handler, 2);
-  burnAndRead(phs, 3*LOTS, 3000000000, &quits[2]); 
-  return 0;
-}
+//void * otherThreadInt(void * p) {
+//  PerfHandleS phs = initThreadPerf(handler, 2);
+//  //arm(phs, LOTS);
+//  burnAndRead(phs, 3*LOTS, 3000000000, &quits[2]); 
+//  return 0;
+//}
+//void * otherThread(void * p) {
+//  PerfHandleS phs = initThreadPerf(handler, 2);
+//  burnAndRead(phs, 3*LOTS, 3000000000, &quits[2]); 
+//  return 0;
+//}
 
 bool checkUsed() {
-  background(otherThread); // Not included in proc counter
-  PerfHandleS phsProc = initProcPerf(handler, 0);
+  //background(otherThread); // Not included in proc counter
+  //PerfHandleS phsProc = initProcPerf(handler, 0);
   //arm(phsProc, LOTS);
   PerfHandleS phs = initThreadPerf(handler, 1);
-  background(otherThreadInt);
-  burnAndRead(phs, 2*LOTS, 2000000000, &quits[1]);
-  burnAndRead(phs, 2*LOTS, 4000000000, &quits[1]);
-  Cycles now = readCyclesNow(phsProc);
+  //background(otherThreadInt);
+  setAlarm(phs, LOTS);
+  burnAndRead(phs, 4*LOTS, 4000000000, &quits[1]);
+  Cycles now = readCycles(phs);
   assertLongApprox(now, 7000000000); // Cos 4 is total in this thread.
   return true;
 }
  
+int procPhs;
+bool checkMainProc() {
+  PerfHandleS phs = initProcPerf(handler, 0);
+  burnAndRead(phs, 2, 2000000000ull, &quits[0]);
+  procPhs = phs;
+  return true;
+}
+
+bool checkMainThread() {
+  PerfHandleS phs = initThreadPerf(handler, 1);
+  burnAndRead(phs, 1, 1000000000ull, &quits[1]);
+  return true;
+}
+
+bool checkMainThreadInt() {
+  PerfHandleS phs = initThreadPerf(handler, 1);
+  setAlarm(phs, 1000000000ull);
+  burnAndRead(phs, 3, 1000000000ull, &quits[1]);
+  setAlarm(phs, 10000000000ull);
+  burnAndRead(phs, 50, 10000000000ull, &quits[1]);
+  setAlarm(phs, 20000000000ull);
+  burnAndRead(phs, 500, 20000000000ull, &quits[1]);
+  return true;
+}
+
+static void *worker_main(void *arg)
+{
+  uint64_t * sleeps = (uint64_t *) arg;
+  PerfHandleS phs = initThreadPerf(handler, sleeps[0]);
+
+  for (int s=0;sleeps[s]!=0;s++) {
+    Cycles cycles = 1000000000*sleeps[s];
+    setAlarm(phs, cycles);
+    burnAndRead(phs, 50000, cycles, &quits[sleeps[0]]);
+  }
+
+  return NULL;
+}
+
+bool checkManyThreads() {
+  uint64_t sleeps[2][5] = { {1, 4, 1, 0, 0}
+                          , {2, 2, 2, 3, 0} };
+  pthread_t a, b;
+  pthread_create(&a, NULL, worker_main, sleeps[0]);
+  pthread_create(&b, NULL, worker_main, sleeps[1]);
+  pthread_join(a, NULL);
+  pthread_join(b, NULL);
+  return true;
+}
+
 bool perf(void) {
   return 
-    //checkHarness(exp1) && 
-    checkUsed() && 
+    checkHarness(exp1) && 
+    checkMainProc() && 
+    checkMainThread() && 
+    checkMainThreadInt() && 
+    checkManyThreads() && 
+    printf("Proc cycles total: %'ld\n", readCycles(procPhs)); //49
     true ;
 }
 

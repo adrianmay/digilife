@@ -4,6 +4,7 @@
 #include <string.h>
 #include <signal.h>
 #include "globals/h.h"
+#include "perf/h.h"
 #include "test.h"
 
 void B2V(B b) { (*b)(); }
@@ -46,6 +47,7 @@ pthread_t background(void * (*f)(void *)) { pthread_t pid; pthread_create(&pid, 
 //}
 void initEverything(void) {
 //  handleSigusr1();
+  initPerf();
   srand(0);
   setlocale(LC_NUMERIC, "");
 }
@@ -54,12 +56,11 @@ void initEverything(void) {
 int main(void) {
   initEverything();
   bool suc = 
-//    perf() && 
-//    wrap() && 
-//    globals() && 
-//    pile() && 
-//    meap() && 
-//    hotel() &&
+    wrap() && 
+    globals() && 
+    pile() && 
+    meap() && 
+    hotel() &&
 //    raffle() &&
     perf() &&
     true;

@@ -6,15 +6,15 @@
 bool testGlobals(void) {
   bool v = openGlobals();
   assertInt(v, true);
-  uint64_t i = pg->lastKnownTock + vg.tocksReviewedAt + pg->nsPerTock;
+  uint64_t i = pg->lastKnownTock + vg.tocksReviewedAt + pg->cyclesPerTock;
   assertLong(i, 1000000L);
   vg.tocksReviewedAt = 2;
   pg->lastKnownTock = 1;
-  pg->nsPerTock = 3;
+  pg->cyclesPerTock = 3;
   closeGlobals(0);
   v = openGlobals(); // Resets vg
   assertInt(v, false);
-  i = pg->lastKnownTock + vg.tocksReviewedAt + pg->nsPerTock;
+  i = pg->lastKnownTock + vg.tocksReviewedAt + pg->cyclesPerTock;
   assertLong(i, 4l);
   return true;
 }

@@ -22,15 +22,6 @@ int64_t  wrapSub64S (uint64_t a, uint64_t b) { return a - b; }
 
 ////////////////////////////////////////////////////////////////
 
-Nanosecs age(clockid_t what) {
-  struct timespec ts;
-  clock_gettime(what, &ts); 
-  return ts.tv_sec*1000000000 + ts.tv_nsec;
-}
-
-Nanosecs ageOfProcess(void) { return age(CLOCK_PROCESS_CPUTIME_ID); }
-
-////////////////////////////////////////////////////////////////
 
 int quit(int i) {
   abort();
@@ -42,19 +33,6 @@ int fileSize(int fd) {
   return sb.st_size;
 } 
   
-void nsToTs(Nanosecs ns, struct timespec * pTs) {
-  memset(pTs, 0, sizeof(*pTs));
-  lldiv_t qr = lldiv(ns, 1000000000);
-  pTs->tv_sec = qr.quot;
-  pTs->tv_nsec= qr.rem;
-}
-
-void sleepNs(Nanosecs ns) {
-  struct timespec ts;
-  nsToTs(ns, &ts);
-  clock_nanosleep(CLOCK_PROCESS_CPUTIME_ID, 0, &ts, 0);
-}
-
 uint64_t randIntBelow(uint64_t lim) {
   uint64_t thresh = -1;
   thresh = -(thresh % lim + 1); 

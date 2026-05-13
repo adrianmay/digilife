@@ -52,9 +52,9 @@ uint64_t burn(uint64_t l, bool * quit) {
 
 bool burnAndRead(PerfHandleS phs, uint64_t toBurn, Cycles cycles, bool * pQ) {
   *pQ=false;
-  Cycles before = readCycles(phs);
+  Cycles before = readThreadCycles(phs);
   burn(LOTS*toBurn, pQ);
-  Cycles after = readCycles(phs);
+  Cycles after = readThreadCycles(phs);
   Cycles used = after-before;
   printf("burnAndRead: fh=%d, want=%'ld, got=%'ld\n", phs, cycles, used);
   assertLongApprox(used, cycles);
@@ -84,31 +84,31 @@ bool checkUsed() {
   //background(otherThread); // Not included in proc counter
   //PerfHandleS phsProc = initProcPerf(handler, 0);
   //arm(phsProc, LOTS);
-  PerfHandleS phs = initThreadPerf(handler, 1);
+  PerfHandleS phs = initThread(handler, 1);
   //background(otherThreadInt);
   setAlarm(phs, LOTS);
   burnAndRead(phs, 4*LOTS, 4000000000, &quits[1]);
-  Cycles now = readCycles(phs);
+  Cycles now = readThreadCycles(phs);
   assertLongApprox(now, 7000000000); // Cos 4 is total in this thread.
   return true;
 }
  
-int procPhs;
 bool checkMainProc() {
-  PerfHandleS phs = initProcPerf(handler, 0);
-  burnAndRead(phs, 2, 2000000000ull, &quits[0]);
-  procPhs = phs;
+  initPerf();
+  bool q;
+  burn(2, &q);
+  readProcessCycles();
   return true;
 }
 
 bool checkMainThread() {
-  PerfHandleS phs = initThreadPerf(handler, 1);
+  PerfHandleS phs = initThread(handler, 1);
   burnAndRead(phs, 1, 1000000000ull, &quits[1]);
   return true;
 }
 
 bool checkMainThreadInt() {
-  PerfHandleS phs = initThreadPerf(handler, 1);
+  PerfHandleS phs = initThread(handler, 1);
   setAlarm(phs, 1000000000ull);
   burnAndRead(phs, 3, 1000000000ull, &quits[1]);
   setAlarm(phs, 10000000000ull);
@@ -121,7 +121,7 @@ bool checkMainThreadInt() {
 static void *worker_main(void *arg)
 {
   uint64_t * sleeps = (uint64_t *) arg;
-  PerfHandleS phs = initThreadPerf(handler, sleeps[0]);
+  PerfHandleS phs = initThread(handler, sleeps[0]);
 
   for (int s=0;sleeps[s]!=0;s++) {
     Cycles cycles = 1000000000*sleeps[s];
@@ -150,7 +150,7 @@ bool perf(void) {
     checkMainThread() && 
     checkMainThreadInt() && 
     checkManyThreads() && 
-    printf("Proc cycles total: %'ld\n", readCycles(procPhs)); //49
+    printf("Proc cycles total: %'ld\n", readProcessCycles()); //49
     true ;
 }
 

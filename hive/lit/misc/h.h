@@ -13,13 +13,8 @@ int8_t   wrapSub8S  (uint8_t  a, uint8_t  b);
 int32_t  wrapSub32S (uint32_t a, uint32_t b);
 int64_t  wrapSub64S (uint64_t a, uint64_t b);
 
-Nanosecs ageOfProcess(void);
-
 int quit(int i);
 int fileSize(int fd);                                                         
-
-void nsToTs(Nanosecs ns, struct timespec * pTs);
-int sleepNs(Nanosecs ns);
 
 uint64_t randIntBelow(uint64_t lim);
 

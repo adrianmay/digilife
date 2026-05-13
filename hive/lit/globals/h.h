@@ -6,5 +6,5 @@ void closeGlobals(bool rm);
 TockPrice tockPrice(void);
 void updateTocks(void);
 Tocks tocksNow(void);
-Tocks nsUntilTock(Tocks deadline); 
-Tocks nsAtTock(Tocks deadline); 
+Cycles cyclesUntilTock(Tocks deadline); 
+Cycles cyclesAtTock(Tocks deadline); 

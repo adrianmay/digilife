@@ -63,19 +63,19 @@ bool nearly(double a, double b);
 ////////////////////////////////////////////////////////////////
 
 #define TIME_VOID(CLOCK, WORK) \
-{ Nanosecs start = CLOCK(); \
+{ Cycles start = CLOCK(); \
   WORK; \
-  Nanosecs stop  = CLOCK(); \
-  ns = stop - start; \
+  Cycles stop  = CLOCK(); \
+  cycles = stop - start; \
 }
 
 #define TIME_RET(CLOCK, RET, WORK) \
-{ Nanosecs start = CLOCK(); \
+{ Cycles start = CLOCK(); \
   RET = WORK; \
-  Nanosecs stop  = CLOCK(); \
-  ns = stop - start; \
+  Cycles stop  = CLOCK(); \
+  cycles = stop - start; \
 }
 
-#define TIME_VOID_PROC(WORK)     TIME_VOID(ageOfProcess, WORK)
-#define TIME_RET_PROC(RET, WORK) TIME_RET(ageOfProcess, RET, WORK)
+#define TIME_VOID_PROC(WORK)     TIME_VOID(readProcessCycles, WORK)
+#define TIME_RET_PROC(RET, WORK) TIME_RET(readProcessCycles, RET, WORK)
   

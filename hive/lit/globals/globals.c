@@ -4,9 +4,10 @@
 #include <unistd.h>
 #include "structs.h"
 #include "h.h"
+#include "perf/h.h"
 #include "misc/h.h"
 
-#define GUESS_NS_PER_TOCK 1000000                                           
+#define GUESS_CYCLES_PER_TOCK 1000000                                           
 #define GLOBALS_FILENAME "Globals.pile"
 
 VolatileGlobals vg; 
@@ -14,8 +15,8 @@ PersistentGlobals * pg;
 
 static void initVirginPersistentGlobals(void) {
   pg->lastKnownTock = 0;
-  pg->nsNotTocked = 0;
-  pg->nsPerTock = GUESS_NS_PER_TOCK; //Don't ignore animal for more than 2**32/nsPerTock
+  pg->cyclesNotTocked = 0;
+  pg->cyclesPerTock = GUESS_CYCLES_PER_TOCK; //Don't ignore animal for more than 2**32/nsPerTock
   pg->groatsPerTock = 1; //min_groats_per_nanosecond * GUESS_NS_PER_TOCK;
 }
 
@@ -69,16 +70,16 @@ void closeGlobals(bool rm) {  // And that param should be enum
 TockPrice tockPrice(void) {return pg->groatsPerTock;}
 
 void updateTocks(void) {
-  Nanosecs now = ageOfProcess();
-  Nanosecs sleptFor = wrapSub64U(now, vg.tocksReviewedAt);
-  Nanosecs toBill = sleptFor + pg->nsNotTocked;
+  Cycles now = readProcessCycles();
+  Cycles sleptFor = wrapSub64U(now, vg.tocksReviewedAt);
+  Cycles toBill = sleptFor + pg->cyclesNotTocked;
   vg.tocksReviewedAt = now;
-  lldiv_t qr = lldiv(toBill, pg->nsPerTock);
+  lldiv_t qr = lldiv(toBill, pg->cyclesPerTock);
   pg->lastKnownTock = pg->lastKnownTock + qr.quot;
-  pg->nsNotTocked = qr.rem;
+  pg->cyclesNotTocked = qr.rem;
 } 
 
 Tocks tocksNow(void) {return pg->lastKnownTock;}
-Tocks nsUntilTock(Tocks deadline) {return (deadline - pg->lastKnownTock)*pg->nsPerTock - pg->nsNotTocked;}
-Tocks nsAtTock(Tocks deadline) {return nsUntilTock(deadline)+ageOfProcess();}
+Cycles cyclesUntilTock(Tocks deadline) {return (deadline - pg->lastKnownTock)*pg->cyclesPerTock - pg->cyclesNotTocked;}
+Cycles cyclesAtTock(Tocks deadline) {return cyclesUntilTock(deadline)+readProcessCycles();}
 

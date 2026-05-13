@@ -28,7 +28,6 @@
 #define B32 (B16*B16)       
 
 // Ought to be using the FPU here
-typedef uint64_t Nanosecs; // Kill this
 typedef uint64_t Cycles;
 typedef uint32_t Tocks;  // A tock might be around a microsecond, but varies
 typedef int32_t  TockDiff;  // A tock might be around a microsecond, but varies

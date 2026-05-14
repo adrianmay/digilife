@@ -25,9 +25,9 @@ void * sweat(void * p) {
   uint64_t z=1;
   for (int b=0;b<10;b++) {
     for (int a=0;a<99999999;a++) {
-      sched_yield();
       z*=a;
     }
+    sched_yield();
   }
   return (void*)z;
 }

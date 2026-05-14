@@ -6,12 +6,13 @@
 #include "XXBulk_pile/2.h"
 #include "h.h"
 
-#define GOT ZZ
-#define WANT threadsafe
-#if GOT == WANT
-char XXGOD[] = "good";
+#if ZZ
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+static void lock() { pthread_lock_mutex(&mutex); } 
+static void unlock() { pthread_unlock_mutex(&mutex); } 
 #else
-char XXGOD[] = "dead";
+static void lock() {} 
+static void unlock() {} 
 #endif
 
 XXBulkIndex rentCollectorIndexXX = (XXBulkIndex) {0}; // This is crap
@@ -22,8 +23,10 @@ static void show(void) {
 }
 
 static void close(FATE fate) {
+  lock();
   pileOfXXBulks.close(fate);
   meapOfXXBombs.close(fate);
+  unlock();
 }
 
 static Index count(void) {
@@ -66,10 +69,15 @@ static bool updateXXDeathWithBulkIndexAndBombPointer(XXBulkIndex iBulk, XXBomb *
   return updateXXDeath(pBulk, pBomb);
 }
 
-static void review(XXBulkIndex i) { 
+static void review_(XXBulkIndex i) { 
   collectRent(i);
   //printf("Reviewing i=%d... ", i.i);
   updateXXDeathWithBulkIndex(i); 
+}
+static void review(XXBulkIndex i) { 
+  lock();
+  review_(i);
+  unlock();
 }
 
 static void transfer_(Cash amt, XXBulkIndex iFrom, XXBulkIndex iTo) {
@@ -83,9 +91,11 @@ static void transfer_(Cash amt, XXBulkIndex iFrom, XXBulkIndex iTo) {
 }
 
 static void transfer(Cash amt, XXBulkIndex iFrom, XXBulkIndex iTo) {
+  lock();
+  review_(iFrom);
+  review_(iTo);
   transfer_(amt, iFrom, iTo);
-  review(iFrom);
-  review(iTo);
+  unlock();
 }
 
 static XXBulkIndex alloc_(Cash cash, XXBulkIndex iDonor, XXBulk ** ppBulk, bool * pRecycled) {
@@ -111,22 +121,28 @@ static XXBulkIndex alloc_(Cash cash, XXBulkIndex iDonor, XXBulk ** ppBulk, bool 
 }
 
 static XXBulkIndex alloc(Cash cash, XXBulkIndex iDonor, XXBulk ** ppBulk, bool * pRecycled) {
+  lock();
   if (!pileOfXXBulks.indexValid(iDonor)) {
     printf("Don't disregard double entry\n");
     exit(1);
   }
-  return alloc_(cash, iDonor, ppBulk, pRecycled);
+  XXBulkIndex ret = alloc_(cash, iDonor, ppBulk, pRecycled);
+  unlock();
+  return ret;
 }
 
 static bool open(Cash cash) {
+  lock();
   meapOfXXBombs.open();
   bool virgin = pileOfXXBulks.open();
   if (virgin) alloc_(cash, (XXBulkIndex){BAD_INDEX}, 0, 0); 
+  unlock();
   return virgin;
 }
 
 // This has to get called at strategic times from worker threads
 static void kill(void) {
+  lock();
   XXBomb bomb; // Bomb copied out to here
   updateTocks();
   Tocks now = tocksNow();            
@@ -136,6 +152,7 @@ static void kill(void) {
     if (ch == Extinct) { 
       printf("Extinct\n");
       onXXsExtinct(); 
+      unlock();
       return; 
     }
     if (ch == Killed ) { 
@@ -144,6 +161,7 @@ static void kill(void) {
       show();
       continue; 
     }
+    unlock();
     return; // Must be Idle
   }
 }

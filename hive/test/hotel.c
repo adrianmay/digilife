@@ -28,8 +28,9 @@ static bool init(void) {
 void killTilExtinct(void) {
   while (true) {
     updateTocks();
-    //printf("killTilExtinct: tocks=%d, processCycles=%'ld\n", tocksNow(), readProcessCycles());
+    printf("killTilExtinct: tocks=%d, processCycles=%'ld\n", tocksNow(), readProcessCycles());
     hotelOfThings.kill(); 
+    //printf("GOGOGOG");
     if (extinct) return;
     usleep(10000);
   }
@@ -102,14 +103,12 @@ bool testRob(void) {
 void cleanupHotel(void) { hotelOfThings.close(DELETE); closeGlobals(DELETE); }
 
 bool testHotel(void) {
-  printf("God: %s\n", ThingGOD);
-  return true;
   background(sweat_forever); // Got to do work to advance CPU time ...
   return 
     //testNoPop() &&
     test1() &&
-    // testEarn() &&
-    // testRob() &&
+    //testEarn() &&
+    //testRob() &&
     true;
 }
 

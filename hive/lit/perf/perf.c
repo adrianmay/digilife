@@ -21,7 +21,7 @@ static int openCyclesEvent(int process, int disabled, Cycles sample_period) {
   pe.type = PERF_TYPE_HARDWARE;
   pe.size = sizeof(pe);
   pe.config = PERF_COUNT_HW_CPU_CYCLES;
-  pe.exclude_kernel = 1;
+  pe.exclude_kernel = 0;
   pe.exclude_hv = 1;
   pe.pinned = 0;
   pe.disabled = disabled;
@@ -38,7 +38,7 @@ static int openCyclesEvent(int process, int disabled, Cycles sample_period) {
 int processFd = -1;
 
 void initProcessTimer() {
-  processFd = openCyclesEvent(1, 0, 1000000);
+  processFd = openCyclesEvent(1, 0, 0);
 }
 
 typedef struct perf_event_mmap_page PerfMap; 
@@ -97,11 +97,6 @@ Cycles readPerfMap(PerfMap * pMap) {
 Cycles readThreadCycles(Timer t) {
   return readPerfMap(t.map);
 }
-
-//Cycles readThreadCycles(PerfHandleS fd) {
-//  Perf * pPerf = &threadPerfsByFileHandle[fd];
-//  return readAlarmCycles(pPerf->total_fd);
-//}
 
 Alarm * alarmsByFd[MAX_WORKER_THREADS];
 

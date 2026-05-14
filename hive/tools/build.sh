@@ -11,13 +11,13 @@ cp -r test hive bin
 find gen bin -type f | xargs chmod -w
 
 export TARGET=test
-tools/make_pile.sh   Link  bit/Link.h       MEGA            || exit 1
-tools/make_meap.sh   Junk  bit/Junk.h       MEGA            || exit 1
-tools/make_hotel.sh  Thing bit/ThingBody.h  GIGA notthreadsafe || exit 1
-tools/make_raffle.sh Mess  bit/MessTicket.h GIGA            || exit 1
+tools/make_pile.sh   Link  bit/Link.h       MEGA   || exit 1
+tools/make_meap.sh   Junk  bit/Junk.h       MEGA   || exit 1
+tools/make_hotel.sh  Thing bit/ThingBody.h  GIGA 0 || exit 1
+tools/make_raffle.sh Mess  bit/MessTicket.h GIGA   || exit 1
 
 export TARGET=hive
-# tools/make_hotel.sh Mob GIGA threadsafe
+# tools/make_hotel.sh Mob GIGA 1
 # tools/make_raffle.sh Msg GIGA
 
 echo "Building tags"

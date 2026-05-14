@@ -6,6 +6,7 @@
 
 #include "XXBulk_pile/1.h"
 
+extern char XXGOD[];
 typedef bool        (*XXHotelOpen)(Cash cash); // Creates animal with this much cash when virgin pile
 typedef XXBulkIndex (*XXHotelAlloc)(Cash cash, XXBulkIndex iDonor, XXBulk ** ppBulk, bool * pRecycled);
 typedef XXBulk *    (*XXHotelGet)(XXBulkIndex i); 

@@ -1,5 +1,5 @@
 echo "Making raffle $1 $2 $3"
-tools/make_hotel.sh $1 $1_raffle/Body.h $3
+tools/make_hotel.sh $1 $1_raffle/Body.h $3 notthreadsafe
 tools/usetpt.sh raffle $1 $2
 echo $1_raffle >> gen/${TARGET}.objs
 

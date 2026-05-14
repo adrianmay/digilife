@@ -102,6 +102,8 @@ bool testRob(void) {
 void cleanupHotel(void) { hotelOfThings.close(DELETE); closeGlobals(DELETE); }
 
 bool testHotel(void) {
+  printf("God: %s\n", ThingGOD);
+  return true;
   background(sweat_forever); // Got to do work to advance CPU time ...
   return 
     //testNoPop() &&

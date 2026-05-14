@@ -6,6 +6,14 @@
 #include "XXBulk_pile/2.h"
 #include "h.h"
 
+#define GOT ZZ
+#define WANT threadsafe
+#if GOT == WANT
+char XXGOD[] = "good";
+#else
+char XXGOD[] = "dead";
+#endif
+
 XXBulkIndex rentCollectorIndexXX = (XXBulkIndex) {0}; // This is crap
 
 static void show(void) {

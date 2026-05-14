@@ -60,9 +60,9 @@ int main(void) {
 //    globals() && 
 //    pile() && 
 //    meap() && 
-//    hotel() &&
+    hotel() &&
 //    raffle() &&
-    perf() &&
+//    perf() &&
     true;
   return suc?0:1;
 }

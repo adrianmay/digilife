@@ -2,11 +2,10 @@
 Finish raffle and hotel tests.
 
 Need accounting.
-Thread protection in raffle
 Free/alloc only write ghost and free *. Preserve most stuff
 Get rid of name for now (later make flame (flags+name) at mob level (2 flag bits for interpreter inc system animal in C) )
 
-Obligatory genesis program: no virgin pile in main program. Simplifies hotel mess.
+? Obligatory genesis program: no virgin pile in main program. Simplifies hotel mess.
 
 AFTER RAFFLE: MESSAGING:
   Function of cpu bid to weight.
@@ -15,7 +14,6 @@ AFTER RAFFLE: MESSAGING:
   Sweat. Charge cpu fee. Read sweat time from message. Keep change.
 
 
-Eradicate ns. Only cycles.
 Tidying:
   Another look at include structure and tests
   More statics in templates, fewer XX names

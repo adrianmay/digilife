@@ -2,13 +2,6 @@
 #include "misc/h.h"
 #include "2.h"
 
-pthread_mutex_t XXMeapMutex = PTHREAD_MUTEX_INITIALIZER;
-static void lock(bool b, int line) {
-//  printf(b ? "Locking %d\n" : "Unlocking %d\n", line);
-  if (b) pthread_mutex_lock(&XXMeapMutex);
-  else   pthread_mutex_unlock(&XXMeapMutex);
-}
-
 static XXIndex parent(XXIndex i) {return ( XXIndex ){ (i.i-1)/2 };}
 static XXIndex left  (XXIndex i) {return ( XXIndex ){ 2*i.i + 1 };}
 static XXIndex right (XXIndex i) {return ( XXIndex ){ 2*i.i + 2 };}
@@ -68,7 +61,6 @@ static void siftDown(XXIndex iCur) {
 
 // Returns whether or not the lowest changed.
 static bool insert(XXIndex * pI, XX ** ppNew, Index hint) {
-  lock(true, __LINE__);
   Index meapTop = pileOfXXs.getUsr(); //meapish size
   if (meapTop < pileOfXXs.count()) { // That's pile's top minus pile's free count. But we'll never use free in this pile anyway.
     pI->i = meapTop;                   // Got meapish spares so just return one
@@ -82,10 +74,8 @@ static bool insert(XXIndex * pI, XX ** ppNew, Index hint) {
   if (pI->i > 0) {                          // No point sorting a singleton.
     bool res = siftUp(*pI);             // Calls siftUp if it returns true;
     if (!res) onMoveXX(*ppNew, *pI);    // Something else might want to keep track of where the meap member is.
-    lock(false, __LINE__);
     return res;
   }
-  lock(false, __LINE__);
   return false;
 }
 
@@ -98,16 +88,13 @@ static bool editTocksWhenLocked(XXIndex iCur, Score when) {
 }
 
 static bool editTocksTakingLock(XXIndex iCur, Score when) { 
-  lock(true, __LINE__);
   bool res = editTocksWhenLocked(iCur, when);
-  lock(false, __LINE__);
   return res;
 }
 
 static bool erase_(XXIndex iCur) {
   Index cnt = pileOfXXs.getUsr();
   if (!cnt) {
-    lock(false, __LINE__);
     return false;
   }
   Index iLast = cnt-1;
@@ -118,9 +105,7 @@ static bool erase_(XXIndex iCur) {
 }
 
 static bool erase(XXIndex iCur) {
-  lock(true, __LINE__);
   int res = erase_(iCur);
-  lock(false, __LINE__);
   return res;
 }
 
@@ -131,7 +116,6 @@ static void show(void) {
 
 static Chomped chomp(Score thresh, XX * pCopyOut, int pseudoAnimals) {
   Chomped res;
-  lock(true, __LINE__);
   Index x = meapOfXXs.size();
   if (x<=pseudoAnimals) { res = Extinct; }
   else {
@@ -149,12 +133,10 @@ static Chomped chomp(Score thresh, XX * pCopyOut, int pseudoAnimals) {
       res = Idle;
     }
   }
-  lock(false, __LINE__);
   return res;
 }
 
 static bool checkOrdered(void) {
-  lock(true, __LINE__);
   bool ok=true;
   Index cnt = pileOfXXs.getUsr();
   for (Index i=1;i<cnt;i++) {
@@ -164,7 +146,6 @@ static bool checkOrdered(void) {
     Score sPar = pileOfXXs.get(iPar)->tocks;
     ok &= sPar <= sCur;
   }
-  lock(false, __LINE__);
   return ok;
 }
 

@@ -1,20 +1,32 @@
 #include "types.h"
 
-// The experiment code is in the test for now
+typedef struct perf_event_mmap_page PerfMap; 
 
-typedef int PerfHandleS;
-typedef int PerfHandleC;
+typedef struct {
+  int fd;
+  PerfMap *map;
+} Timer;
 
-typedef void (*PerfHandler)(PerfHandleC phc);
-
-void initPerf(); // Call this early in the whole process from the main thread
+void initProcessTimer();
 Cycles readProcessCycles();
 
-PerfHandleS initThread(PerfHandler ph, PerfHandleC phc);
-Cycles readThreadCycles(PerfHandleS phs);
-void setAlarm(PerfHandleS phs, Cycles fromNow);
-Cycles readAlarmCycles(PerfHandleS phs);
-void cancelAlarm(PerfHandleS phs);
+Timer initThreadTimer() ;
+Cycles readThreadCycles(Timer t);
+
+typedef int PerfHandleC;
+typedef void (*PerfHandler)(PerfHandleC phc);
+
+typedef struct {
+  PerfHandler handler;
+  PerfHandleC phc;
+  Timer t;
+} Alarm;
+
+void initThreadAlarm(Alarm * pA, PerfHandler h, PerfHandleC phc);
+void setAlarm(Alarm * pA, Cycles cycles_);
+Cycles readAlarmCycles(Alarm * pA);
+
+void initPerf(); // Call this early in the whole process from the main thread
 
 void nsToTs(uint64_t ns, struct timespec * pTs);
 void sleepNs(uint64_t ns);

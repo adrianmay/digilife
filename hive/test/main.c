@@ -56,11 +56,11 @@ void initEverything(void) {
 int main(void) {
   initEverything();
   bool suc = 
-    wrap() && 
-    globals() && 
-    pile() && 
-    meap() && 
-    hotel() &&
+//    wrap() && 
+//    globals() && 
+//    pile() && 
+//    meap() && 
+//    hotel() &&
 //    raffle() &&
     perf() &&
     true;

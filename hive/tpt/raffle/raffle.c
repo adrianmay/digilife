@@ -1,8 +1,13 @@
 #include <string.h>
+#include <pthread.h>
 #include "misc/h.h"
 #include "XX_raffle/h.h"
 #include "XXBulk_pile/2.h"
 #include "XX_hotel/h.h"
+
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+static void lock() { pthread_mutex_lock(&mutex); } 
+static void unlock() { pthread_mutex_unlock(&mutex); } 
 
 static XXBulkIndex left  (XXBulkIndex i) {return ( XXBulkIndex ){ 2*i.i + 1 };}
 static XXBulkIndex right (XXBulkIndex i) {return ( XXBulkIndex ){ 2*i.i + 2 };}
@@ -30,6 +35,7 @@ static void propagateWeightUp(XXBulkIndex i, Weight w) {
 }
 
 static XXBulkIndex enter(Cash cash, XXBulkIndex iDonor, Weight w, XXTicket * pTicket) {
+  lock();
   XXBulk * pBulk;
   bool recycled;
   XXBulkIndex iBulk = hotelOfXXs.alloc(cash, iDonor, &pBulk, &recycled);
@@ -38,10 +44,12 @@ static XXBulkIndex enter(Cash cash, XXBulkIndex iDonor, Weight w, XXTicket * pTi
   if (!recycled)  pR->l = pR->r = 0; 
   pR->s = w;
   propagateWeightUp(iBulk, w);
+  unlock();
   return iBulk;
 }
 
 static Cash cancel(XXBulkIndex i) {
+  lock();
   XXBulk * pB = pileOfXXBulks.get(i);
   XXRafle * pR = &pB->body.raffle;
   Weight w = pR->s;
@@ -49,6 +57,7 @@ static Cash cancel(XXBulkIndex i) {
   //When drawing, we'll treat a free slot like a proper node with a self-weight of zero and descend through it.
   propagateWeightUp(i, -w);
   Cash c = hotelOfXXs.rob(i); //Take all money so it soon gets freed...
+  unlock();
   return c;
 }
 
@@ -77,16 +86,29 @@ static Cash drawAssumeNotEmpty(XXTicket * pTicket) {
 }
 
 static bool draw(XXTicket * pTicket, Cash * pCash) {
+  bool ret;
+  lock();
   if (hotelOfXXs.count() == 0) 
-    return false;
-  *pCash = drawAssumeNotEmpty(pTicket);
-  return true;
+    ret = false;
+  else {
+    *pCash = drawAssumeNotEmpty(pTicket);
+    ret = true;
+  }
+  unlock();
+  return ret;
 }
 
 static bool open(Cash cash, XXBulkIndex * pI0) { 
-  return hotelOfXXs.open(cash); 
+  lock();
+  bool ret = hotelOfXXs.open(cash); 
+  unlock();
+  return ret;
 }
-static void close(FATE f) { hotelOfXXs.close(f); }
+static void close(FATE f) { 
+  lock();
+  hotelOfXXs.close(f); 
+  unlock();
+}
 
 static void show(void) {
   hotelOfXXs.show();

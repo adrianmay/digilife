@@ -8,8 +8,8 @@
 
 #if ZZ
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-static void lock() { pthread_lock_mutex(&mutex); } 
-static void unlock() { pthread_unlock_mutex(&mutex); } 
+static void lock() { pthread_mutex_lock(&mutex); } 
+static void unlock() { pthread_mutex_unlock(&mutex); } 
 #else
 static void lock() {} 
 static void unlock() {} 
@@ -108,14 +108,14 @@ static XXBulkIndex alloc_(Cash cash, XXBulkIndex iDonor, XXBulk ** ppBulk, bool 
   else {
     pBulk->rent.cash = 0;
     transfer_(cash, iDonor, iBulk);
-    review(iDonor);
+    review_(iDonor);
   }
   XXBombIndex iBomb;
   XXBomb * pBomb;
   meapOfXXBombs.insert(&iBomb, &pBomb, iBulk.i); // onNew should do the rest
   printf("In alloc near end\n");
   show();
-  review(iBulk);
+  review_(iBulk);
   if (ppBulk) *ppBulk = pBulk;
   return iBulk;
 }
@@ -169,8 +169,11 @@ static void kill(void) {
 static Cash rob(XXBulkIndex i) { 
   XXBulk * pBulk = pileOfXXBulks.get(i);
   XXRent * pRent = &pBulk->rent;
+  printf("rob1\n");
   transfer(pRent->cash, i, rentCollectorIndexXX);
+  printf("rob2\n");
   kill();
+  printf("rob3\n");
   return 0; //TODO: proper accounts
 }
 

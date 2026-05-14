@@ -1,6 +1,5 @@
 
 Finish raffle and hotel tests.
-No ns. Only cycles. Perf module. Each worker must update cyclesNow by reading its counter.
 
 Need accounting.
 Thread protection in raffle

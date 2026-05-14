@@ -81,7 +81,7 @@ static void review(XXBulkIndex i) {
 }
 
 static void transfer_(Cash amt, XXBulkIndex iFrom, XXBulkIndex iTo) {
-  printf("Transfer: amt=%'ld, iFrom=%d, iTo=%d\n", amt, iFrom.i, iTo.i);
+  //printf("Transfer: amt=%'ld, iFrom=%d, iTo=%d\n", amt, iFrom.i, iTo.i);
   XXBulk * pFrom = pileOfXXBulks.get(iFrom);
   XXRent * pFromRent = &pFrom->rent;
   XXBulk * pTo = pileOfXXBulks.get(iTo);
@@ -113,7 +113,7 @@ static XXBulkIndex alloc_(Cash cash, XXBulkIndex iDonor, XXBulk ** ppBulk, bool 
   XXBombIndex iBomb;
   XXBomb * pBomb;
   meapOfXXBombs.insert(&iBomb, &pBomb, iBulk.i); // onNew should do the rest
-  printf("In alloc near end\n");
+  //printf("In alloc near end\n");
   show();
   review_(iBulk);
   if (ppBulk) *ppBulk = pBulk;
@@ -169,11 +169,8 @@ static void kill(void) {
 static Cash rob(XXBulkIndex i) { 
   XXBulk * pBulk = pileOfXXBulks.get(i);
   XXRent * pRent = &pBulk->rent;
-  printf("rob1\n");
   transfer(pRent->cash, i, rentCollectorIndexXX);
-  printf("rob2\n");
   kill();
-  printf("rob3\n");
   return 0; //TODO: proper accounts
 }
 

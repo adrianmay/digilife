@@ -10,7 +10,7 @@
 #include "h.h"
 #include "structs.h"
 
-Index recLen(Pilehead * ph) { return ph->rec; }
+Ix recLen(Pilehead * ph) { return ph->rec; }
 
 // The minimum stretch of virtual memory that can accomodate a pile with
 //  a known record size and number of slots reserved (not necessarily in use).
@@ -26,7 +26,7 @@ uint32_t capacity(Pilehead * ph, size_t filelen) {
   return (filelen-sizeof(Pilehead)) / ph->rec;
 }
 
-Pilehead * openPile(const char * filename, uint32_t rec, uint32_t stp, Index lim, bool * virgin) { // returns array address
+Pilehead * openPile(const char * filename, uint32_t rec, uint32_t stp, Ix lim, bool * virgin) { // returns array address
   if (rec<4) { printf("Record size too small for free indices.\n"); quit(1); }
   // Could this ^ be at compile time?
   int fd;
@@ -102,21 +102,21 @@ void growPile(Pilehead * ph) {
   }
 }
 
-typedef struct {Index bad; Index nextFree; } Free;
+typedef struct {Ix bad; Ix nextFree; } Free;
 // The main way to dereference an index:
-void  * findInPile(Pilehead * ph, Index i) { return (((void*)(ph+1)) + i*ph->rec); }                                         
+void  * findInPile(Pilehead * ph, Ix i) { return (((void*)(ph+1)) + i*ph->rec); }                                         
 // If it's free, we know we're pointing at an index of another free block or BAD_INDEX, so cast it:
-Free * findFreeInPile(Pilehead * ph, Index i) { return (Free*) findInPile(ph,i); }
+Free * findFreeInPile(Pilehead * ph, Ix i) { return (Free*) findInPile(ph,i); }
 
-void * withInPile(Pilehead * ph, Index i, F f, void * u) {
+void * withInPile(Pilehead * ph, Ix i, F f, void * u) {
   void * p = findInPile(ph, i);
   void * ret = f(p, u);
   return ret;
 }
                                                 //
 // Allocate a new slot by trying the free list, or incrementing top, or growing
-Index allocInPile(Pilehead * ph, void ** ppNew, bool * pRecycled, void * ghost, int ghostlen) {
-  Index ret;
+Ix allocInPile(Pilehead * ph, void ** ppNew, bool * pRecycled, void * ghost, int ghostlen) {
+  Ix ret;
   if (ph->fro != BAD_INDEX) {
     if (pRecycled) *pRecycled = true;
     ph->frn -= 1;           
@@ -125,7 +125,7 @@ Index allocInPile(Pilehead * ph, void ** ppNew, bool * pRecycled, void * ghost, 
     ph->fro = pFree->nextFree;
     if (ph->fro == BAD_INDEX) ph->fri = BAD_INDEX;
     if (ghost) { 
-      Index * pGhost = (Index*) &pFree->nextFree;
+      Ix * pGhost = (Ix*) &pFree->nextFree;
       memcpy(ghost, (void*) pGhost, ghostlen);
     }
   } else {
@@ -135,14 +135,14 @@ Index allocInPile(Pilehead * ph, void ** ppNew, bool * pRecycled, void * ghost, 
     ret = ph->top-1;
   } 
   void * pNew = findInPile(ph, ret);
-  *((Index*)pNew) = ret; // Anything but BAD_INDEX. In Rent, the name is declared there.
+  *((Ix*)pNew) = ret; // Anything but BAD_INDEX. In Rent, the name is declared there.
   if (ppNew) *ppNew = pNew;
   return ret;
 }   
   
 // Free a block to the free list
 // Only the rent collector thread does this?
-void freeInPile(Pilehead * ph, Index i, void * ghost, int ghostlen) {
+void freeInPile(Pilehead * ph, Ix i, void * ghost, int ghostlen) {
   Free * pFree = findFreeInPile(ph,i); // Get the block
   //memset((void*)pFree,0xaa,ph->rec); // Erase for privacy
   pFree->bad = BAD_INDEX;
@@ -159,10 +159,10 @@ void freeInPile(Pilehead * ph, Index i, void * ghost, int ghostlen) {
 } 
   
 // Sundry utils:
-Index countFree(Pilehead * ph ) { return ph->frn; }
-Index countPop(Pilehead * ph ) { return ph->top - ph->frn; }      
-Index getUsr(Pilehead * ph) { return ph->usr; }
-void setUsr(Pilehead * ph, Index u) { ph->usr = u; } 
+Ix countFree(Pilehead * ph ) { return ph->frn; }
+Ix countPop(Pilehead * ph ) { return ph->top - ph->frn; }      
+Ix getUsr(Pilehead * ph) { return ph->usr; }
+void setUsr(Pilehead * ph, Ix u) { ph->usr = u; } 
 void modUsr(Pilehead * ph, int32_t u)  { ph->usr += u; } 
 
 void showPile(Pilehead * ph, VP showSlot, bool onlyToUsr) {
@@ -170,7 +170,7 @@ void showPile(Pilehead * ph, VP showSlot, bool onlyToUsr) {
   if (!ph) return;
   printf("  REC |   TOP |   USR |   FRN |   FRI |   FRO \n");
   printf("%5d | %5d | %5d | %5d | %5d | %5d\n\n", ph->rec, ph->top, ph->usr, ph->frn, ph->fri, ph->fro);
-  for (Index a=0;a<(onlyToUsr?ph->usr:ph->top);a++) {
+  for (Ix a=0;a<(onlyToUsr?ph->usr:ph->top);a++) {
     Free * p = findFreeInPile(ph, a);
     printf("%5d | ",a);
     if (p->bad == BAD_INDEX) printf("Free: nextFree=%4d | ", p->nextFree);

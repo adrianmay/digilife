@@ -1,7 +1,11 @@
 
-Finish raffle and hotel tests.
+Finish raffle and hotel tests. Raffle tests: 
+  empty, just 1, drain
+  equal weights: sorted/unsorted species
+  diff weights
+  Multiple setup/measure functions as in some other test file
 
-Need accounting.
+Need accounting. System animals as accounts. Rob proceeds.
 Free/alloc only write ghost and free *. Preserve most stuff
 Get rid of name for now (later make flame (flags+name) at mob level (2 flag bits for interpreter inc system animal in C) )
 
@@ -13,25 +17,14 @@ AFTER RAFFLE: MESSAGING:
   Workers pull them within semaphore or something. 
   Sweat. Charge cpu fee. Read sweat time from message. Keep change.
 
-
 Tidying:
   Another look at include structure and tests
   More statics in templates, fewer XX names
-  Index -> Ix
-
-Raffle tests: 
-  empty, just 1, drain
-  equal weights: sorted/unsorted species
-  diff weights
-  Multiple setup/measure functions as in some other test file
-
-Perf module
-Accounting: system animals as accounts
 
 =====================
 
-
 Test that meapInsert returns whether or not lowest changed
 Non-pedantic build 
-Index overused
-Pile doesn't need recLen - use sizeof(XX)
+Index type overused
+? Pile doesn't need recLen - use sizeof(XX)
+

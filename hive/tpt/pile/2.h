@@ -4,17 +4,17 @@
 typedef void * (*F_XX)(XX * p, void * u); 
 
 typedef bool    (*XXPileOpen)(void); 
-typedef XXIndex (*XXPileAlloc)(XX ** pNew, bool * pRecycled); 
-typedef XX *    (*XXPileGet)(XXIndex i); 
-typedef void *  (*XXPileWith)(XXIndex i, F_XX f, void * u); 
-typedef void    (*XXPileFree)(XXIndex i);
+typedef XXIx (*XXPileAlloc)(XX ** pNew, bool * pRecycled); 
+typedef XX *    (*XXPileGet)(XXIx i); 
+typedef void *  (*XXPileWith)(XXIx i, F_XX f, void * u); 
+typedef void    (*XXPileFree)(XXIx i);
 typedef void    (*XXPileClose)(FATE fate);
-typedef bool    (*XXPileIndexValid)(XXIndex i);
-typedef Index   (*XXPileCount)(void); 
+typedef bool    (*XXPileIxValid)(XXIx i);
+typedef Ix   (*XXPileCount)(void); 
 // Types are same but this saves collisions:
-typedef Index   (*XXGetUsr)(void); // Misc number
-typedef void    (*XXSetUsr)(Index u);
-typedef void    (*XXModUsr)(IndexDiff u);
+typedef Ix   (*XXGetUsr)(void); // Misc number
+typedef void    (*XXSetUsr)(Ix u);
+typedef void    (*XXModUsr)(IxDiff u);
 typedef void    (*XXPileShow)(bool stopAtUsr); // cos of meap
 
 typedef struct {
@@ -24,7 +24,7 @@ typedef struct {
   XXPileWith with;
   XXPileFree free;
   XXPileClose close;
-  XXPileIndexValid indexValid;
+  XXPileIxValid indexValid;
   XXPileCount count;
   XXGetUsr getUsr;
   XXSetUsr setUsr;
@@ -34,5 +34,5 @@ typedef struct {
 
 extern XXPile pileOfXXs;
 
-extern const XXIndex badXXIndex;
+extern const XXIx badXXIx;
 

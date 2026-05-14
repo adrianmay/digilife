@@ -3,25 +3,25 @@
 #include "2.h"
 
 Pilehead * headOfXXs = 0; 
-const XXIndex  badXXIndex = (XXIndex) {BAD_INDEX}; 
+const XXIx  badXXIx = (XXIx) {BAD_INDEX}; 
 
 extern void showXX(XX * pXX); //Provide this;
 bool      openXXPile(void)                        { bool v; headOfXXs = openPile("XXs.pile", sizeof(XX), 10, ZZ, &v); return v; } 
-XXIndex   allocXX(XX ** pNew, bool * pRecycled) { 
-  Index i = allocInPile(headOfXXs, (void**)pNew, pRecycled, 0, 0); 
-  return (XXIndex) {i};
+XXIx   allocXX(XX ** pNew, bool * pRecycled) { 
+  Ix i = allocInPile(headOfXXs, (void**)pNew, pRecycled, 0, 0); 
+  return (XXIx) {i};
 } 
-XX *      getXX(XXIndex i)                    { return (XX*)findInPile(headOfXXs, i.i); } 
-void *    withXX(XXIndex i, F_XX f, void * u) { return withInPile(headOfXXs, i.i, (F)f, u); } 
-void      freeXX(XXIndex i)                   { 
+XX *      getXX(XXIx i)                    { return (XX*)findInPile(headOfXXs, i.i); } 
+void *    withXX(XXIx i, F_XX f, void * u) { return withInPile(headOfXXs, i.i, (F)f, u); } 
+void      freeXX(XXIx i)                   { 
   freeInPile(headOfXXs, i.i, 0, 0); 
 } 
 void      closeXXPile(FATE fate)              { closePile(headOfXXs, fate); headOfXXs = 0; } 
-bool      validXXIndex(XXIndex i)             { return i.i != BAD_INDEX; } 
-Index     countXXs(void)                      { return countPop(headOfXXs); } 
-Index     getXXUsr(void)                      { return getUsr(headOfXXs); } 
-void      setXXUsr(Index u)                   { setUsr(headOfXXs, u); } 
-void      modXXUsr(IndexDiff u)               { modUsr(headOfXXs, u); }  // Make this atomic sometime
+bool      validXXIx(XXIx i)             { return i.i != BAD_INDEX; } 
+Ix     countXXs(void)                      { return countPop(headOfXXs); } 
+Ix     getXXUsr(void)                      { return getUsr(headOfXXs); } 
+void      setXXUsr(Ix u)                   { setUsr(headOfXXs, u); } 
+void      modXXUsr(IxDiff u)               { modUsr(headOfXXs, u); }  // Make this atomic sometime
 void      showXXPile(bool u)                  { showPile(headOfXXs, (VP)showXX, u); }
 
 XXPile pileOfXXs = 
@@ -31,7 +31,7 @@ XXPile pileOfXXs =
   , withXX
   , freeXX
   , closeXXPile
-  , validXXIndex
+  , validXXIx
   , countXXs
   , getXXUsr
   , setXXUsr

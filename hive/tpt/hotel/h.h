@@ -8,13 +8,13 @@
 
 extern char XXGOD[];
 typedef bool        (*XXHotelOpen)(Cash cash); // Creates animal with this much cash when virgin pile
-typedef XXBulkIndex (*XXHotelAlloc)(Cash cash, XXBulkIndex iDonor, XXBulk ** ppBulk, bool * pRecycled);
-typedef XXBulk *    (*XXHotelGet)(XXBulkIndex i); 
-typedef void        (*XXHotelTransfer)(Cash amt, XXBulkIndex iFrom, XXBulkIndex iTo);
-typedef void        (*XXHotelReview)(XXBulkIndex i);
-typedef Cash        (*XXHotelRobber)(XXBulkIndex i);
+typedef XXBulkIx (*XXHotelAlloc)(Cash cash, XXBulkIx iDonor, XXBulk ** ppBulk, bool * pRecycled);
+typedef XXBulk *    (*XXHotelGet)(XXBulkIx i); 
+typedef void        (*XXHotelTransfer)(Cash amt, XXBulkIx iFrom, XXBulkIx iTo);
+typedef void        (*XXHotelReview)(XXBulkIx i);
+typedef Cash        (*XXHotelRobber)(XXBulkIx i);
 typedef void        (*XXHotelKiller)(void);
-typedef Index       (*XXHotelCount)(void); 
+typedef Ix       (*XXHotelCount)(void); 
 typedef void        (*XXHotelClose)(FATE fate);
 typedef void        (*XXHotelShow)(void);
 

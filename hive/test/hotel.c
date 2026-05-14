@@ -15,8 +15,8 @@ void onThingsExtinct(void) { extinct = true; }
 
 Cycles cycles;
 ThingBulk * pThing;
-ThingBulkIndex iThing;
-static ThingBulkIndex iDonor = {0};
+ThingBulkIx iThing;
+static ThingBulkIx iDonor = {0};
 
 static bool init(void) {
   openGlobals();
@@ -44,7 +44,7 @@ bool testNoPop(void) {
   return true;
 }
 
-void make(Index name, Cash cash) {
+void make(Ix name, Cash cash) {
   bool recycledSlot;
   iThing = hotelOfThings.alloc(cash, iDonor, &pThing, &recycledSlot);
   pThing->body.name = name;

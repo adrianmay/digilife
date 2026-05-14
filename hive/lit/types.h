@@ -33,8 +33,8 @@ typedef uint32_t Tocks;  // A tock might be around a microsecond, but varies
 typedef int32_t  TockDiff;  // A tock might be around a microsecond, but varies
 typedef Tocks    Score;
 typedef TockDiff ScoreDiff;
-typedef uint32_t Index;
-typedef  int32_t IndexDiff;
+typedef uint32_t Ix;
+typedef  int32_t IxDiff;
 typedef uint32_t Name;
 typedef uint32_t TockDuration; // In nanoseconds.
 typedef int64_t Cash;  

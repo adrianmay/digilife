@@ -2,11 +2,11 @@
 #include "misc/h.h"
 #include "2.h"
 
-static XXIndex parent(XXIndex i) {return ( XXIndex ){ (i.i-1)/2 };}
-static XXIndex left  (XXIndex i) {return ( XXIndex ){ 2*i.i + 1 };}
-static XXIndex right (XXIndex i) {return ( XXIndex ){ 2*i.i + 2 };}
+static XXIx parent(XXIx i) {return ( XXIx ){ (i.i-1)/2 };}
+static XXIx left  (XXIx i) {return ( XXIx ){ 2*i.i + 1 };}
+static XXIx right (XXIx i) {return ( XXIx ){ 2*i.i + 2 };}
 
-static void swap(XXIndex i1, XXIndex i2) {
+static void swap(XXIx i1, XXIx i2) {
   if (i1.i==i2.i) return;
   XX tmp;
   size_t len = sizeof(tmp);
@@ -19,12 +19,12 @@ static void swap(XXIndex i1, XXIndex i2) {
   onMoveXX(p2, i2);
 }
 
-static bool siftUp(XXIndex iCur) {
+static bool siftUp(XXIx iCur) {
   if (iCur.i == 0) return false;
   Score sCur;
   while (iCur.i > 0) {
     sCur = pileOfXXs.get(iCur)->tocks;
-    XXIndex iPar = parent(iCur);
+    XXIx iPar = parent(iCur);
     XX * pPar = pileOfXXs.get(iPar);
     Score sPar = pPar->tocks;
     if (sPar <= sCur) return false;
@@ -35,18 +35,18 @@ static bool siftUp(XXIndex iCur) {
 }
 
 // We can't use free cos meaps must be contiguous, so we use the heap's usr for the "meapish" size
-static void siftDown(XXIndex iCur) {
-  Index cnt = pileOfXXs.getUsr();
+static void siftDown(XXIx iCur) {
+  Ix cnt = pileOfXXs.getUsr();
   while (1) {
-    XXIndex iSmallest = iCur;
+    XXIx iSmallest = iCur;
     XX * pCur = pileOfXXs.get(iCur); Score sCur = pCur->tocks;
     Score sSmallest = sCur;
 
-    XXIndex iL = left(iCur);
+    XXIx iL = left(iCur);
     if (iL.i<cnt) {
       XX * pL   = pileOfXXs.get(iL  ); Score sL   =   pL->tocks;
       if (iL.i < cnt && sL < sSmallest) { iSmallest.i = iL.i; sSmallest = sL; }
-      XXIndex iR = right(iCur);
+      XXIx iR = right(iCur);
       if (iR.i<cnt) {
         XX * pR   = pileOfXXs.get(iR  ); Score sR   =   pR->tocks;
         if (iR.i < cnt && sR < sSmallest) iSmallest.i = iR.i;
@@ -60,8 +60,8 @@ static void siftDown(XXIndex iCur) {
 }
 
 // Returns whether or not the lowest changed.
-static bool insert(XXIndex * pI, XX ** ppNew, Index hint) {
-  Index meapTop = pileOfXXs.getUsr(); //meapish size
+static bool insert(XXIx * pI, XX ** ppNew, Ix hint) {
+  Ix meapTop = pileOfXXs.getUsr(); //meapish size
   if (meapTop < pileOfXXs.count()) { // That's pile's top minus pile's free count. But we'll never use free in this pile anyway.
     pI->i = meapTop;                   // Got meapish spares so just return one
     *ppNew = pileOfXXs.get(*pI);    
@@ -79,7 +79,7 @@ static bool insert(XXIndex * pI, XX ** ppNew, Index hint) {
   return false;
 }
 
-static bool editTocksWhenLocked(XXIndex iCur, Score when) { 
+static bool editTocksWhenLocked(XXIx iCur, Score when) { 
   //printf("editTocksWhenLocked: i=%d, when=%d\n", iCur.i, when);
   pileOfXXs.get(iCur)->tocks = when;
   siftDown(iCur); 
@@ -87,24 +87,24 @@ static bool editTocksWhenLocked(XXIndex iCur, Score when) {
   return res;
 }
 
-static bool editTocksTakingLock(XXIndex iCur, Score when) { 
+static bool editTocksTakingLock(XXIx iCur, Score when) { 
   bool res = editTocksWhenLocked(iCur, when);
   return res;
 }
 
-static bool erase_(XXIndex iCur) {
-  Index cnt = pileOfXXs.getUsr();
+static bool erase_(XXIx iCur) {
+  Ix cnt = pileOfXXs.getUsr();
   if (!cnt) {
     return false;
   }
-  Index iLast = cnt-1;
-  swap((XXIndex){iLast}, iCur);
+  Ix iLast = cnt-1;
+  swap((XXIx){iLast}, iCur);
   pileOfXXs.modUsr(-1);
   siftDown(iCur); //Not calling review cos I'd need a recursive mutex
   return siftUp(iCur);
 }
 
-static bool erase(XXIndex iCur) {
+static bool erase(XXIx iCur) {
   int res = erase_(iCur);
   return res;
 }
@@ -116,10 +116,10 @@ static void show(void) {
 
 static Chomped chomp(Score thresh, XX * pCopyOut, int pseudoAnimals) {
   Chomped res;
-  Index x = meapOfXXs.size();
+  Ix x = meapOfXXs.size();
   if (x<=pseudoAnimals) { res = Extinct; }
   else {
-    XXIndex i = (XXIndex) {0};
+    XXIx i = (XXIx) {0};
     XX * p = pileOfXXs.get(i);
     memcpy(pCopyOut, p, sizeof(XX));
     Score lowestScoreInMeap = p->tocks;
@@ -138,18 +138,18 @@ static Chomped chomp(Score thresh, XX * pCopyOut, int pseudoAnimals) {
 
 static bool checkOrdered(void) {
   bool ok=true;
-  Index cnt = pileOfXXs.getUsr();
-  for (Index i=1;i<cnt;i++) {
-    XXIndex iCur = (XXIndex){i};
+  Ix cnt = pileOfXXs.getUsr();
+  for (Ix i=1;i<cnt;i++) {
+    XXIx iCur = (XXIx){i};
     Score sCur = pileOfXXs.get(iCur)->tocks;
-    XXIndex iPar = parent(iCur);
+    XXIx iPar = parent(iCur);
     Score sPar = pileOfXXs.get(iPar)->tocks;
     ok &= sPar <= sCur;
   }
   return ok;
 }
 
-static Index size(void) {  return pileOfXXs.getUsr(); } 
+static Ix size(void) {  return pileOfXXs.getUsr(); } 
 
 static bool open(void) { return pileOfXXs.open(); }
 static void close(FATE f) { pileOfXXs.close(f); }

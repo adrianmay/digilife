@@ -1,5 +1,5 @@
 #pragma once
 
 #include "types.h"
-typedef struct { Index i; } XXIndex; 
+typedef struct { Ix i; } XXIx; 
 

@@ -9,24 +9,24 @@ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static void lock() { pthread_mutex_lock(&mutex); } 
 static void unlock() { pthread_mutex_unlock(&mutex); } 
 
-static XXBulkIndex left  (XXBulkIndex i) {return ( XXBulkIndex ){ 2*i.i + 1 };}
-static XXBulkIndex right (XXBulkIndex i) {return ( XXBulkIndex ){ 2*i.i + 2 };}
-static XXBulkIndex parent(XXBulkIndex i) {return ( XXBulkIndex ){ (i.i-1)/2 };}
-static bool isChild(XXBulkIndex i) { return i.i>0; }
-static bool isChildRightChild(XXBulkIndex i) {return i.i%2==0; } //Whole approach could have fewer ifs
+static XXBulkIx left  (XXBulkIx i) {return ( XXBulkIx ){ 2*i.i + 1 };}
+static XXBulkIx right (XXBulkIx i) {return ( XXBulkIx ){ 2*i.i + 2 };}
+static XXBulkIx parent(XXBulkIx i) {return ( XXBulkIx ){ (i.i-1)/2 };}
+static bool isChild(XXBulkIx i) { return i.i>0; }
+static bool isChildRightChild(XXBulkIx i) {return i.i%2==0; } //Whole approach could have fewer ifs
 
 //openXXRaffle() {openXXHotel();}
 
-static Weight totWeight(XXBulkIndex i) {
+static Weight totWeight(XXBulkIx i) {
   XXBulk * pB = hotelOfXXs.get(i);
   XXRafle * pR = &pB->body.raffle;
   return pR->s + pR->l + pR->r;
 }
 
-static void propagateWeightUp(XXBulkIndex i, Weight w) {
+static void propagateWeightUp(XXBulkIx i, Weight w) {
   // i's weight is already correct, this adjusts the ancestors
   if (!isChild(i)) return;
-  XXBulkIndex iP = parent(i);
+  XXBulkIx iP = parent(i);
   if (isChildRightChild(i))
     pileOfXXBulks.get(iP)->body.raffle.r += w;
   else 
@@ -34,11 +34,11 @@ static void propagateWeightUp(XXBulkIndex i, Weight w) {
   propagateWeightUp(iP, w);
 }
 
-static XXBulkIndex enter(Cash cash, XXBulkIndex iDonor, Weight w, XXTicket * pTicket) {
+static XXBulkIx enter(Cash cash, XXBulkIx iDonor, Weight w, XXTicket * pTicket) {
   lock();
   XXBulk * pBulk;
   bool recycled;
-  XXBulkIndex iBulk = hotelOfXXs.alloc(cash, iDonor, &pBulk, &recycled);
+  XXBulkIx iBulk = hotelOfXXs.alloc(cash, iDonor, &pBulk, &recycled);
   memcpy(&pBulk->body.ticket, pTicket, sizeof(XXTicket));
   XXRafle * pR = &pBulk->body.raffle;
   if (!recycled)  pR->l = pR->r = 0; 
@@ -48,7 +48,7 @@ static XXBulkIndex enter(Cash cash, XXBulkIndex iDonor, Weight w, XXTicket * pTi
   return iBulk;
 }
 
-static Cash cancel(XXBulkIndex i) {
+static Cash cancel(XXBulkIx i) {
   lock();
   XXBulk * pB = pileOfXXBulks.get(i);
   XXRafle * pR = &pB->body.raffle;
@@ -62,7 +62,7 @@ static Cash cancel(XXBulkIndex i) {
 }
 
 // Assumes there are tickets. Look out of onXXsExtinct
-static Cash drawBelow(XXBulkIndex i, Weight w, XXTicket * pTicket) {
+static Cash drawBelow(XXBulkIx i, Weight w, XXTicket * pTicket) {
   XXBulk * pB = pileOfXXBulks.get(i);
   XXRafle * pR = &pB->body.raffle;
   if (pR->l > 0 && w < pR->l)
@@ -79,7 +79,7 @@ static Cash drawBelow(XXBulkIndex i, Weight w, XXTicket * pTicket) {
 }
 
 static Cash drawAssumeNotEmpty(XXTicket * pTicket) {
-  XXBulkIndex i0 = (XXBulkIndex){0};
+  XXBulkIx i0 = (XXBulkIx){0};
   Weight tw = totWeight(i0);
   uint64_t w = randIntBelow(tw);
   return drawBelow(i0, w, pTicket);
@@ -98,7 +98,7 @@ static bool draw(XXTicket * pTicket, Cash * pCash) {
   return ret;
 }
 
-static bool open(Cash cash, XXBulkIndex * pI0) { 
+static bool open(Cash cash, XXBulkIx * pI0) { 
   lock();
   bool ret = hotelOfXXs.open(cash); 
   unlock();

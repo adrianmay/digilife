@@ -3,13 +3,13 @@
  #include "Junk_meap/2.h"
  #include "test.h"
  
- void  onNewJunk(JunkIndex iJ, Index hint) { pileOfJunks.get(iJ)->tocks=hint;}
- void  onMoveJunk(Junk * pJ, JunkIndex to) { }
+ void  onNewJunk(JunkIx iJ, Ix hint) { pileOfJunks.get(iJ)->tocks=hint;}
+ void  onMoveJunk(Junk * pJ, JunkIx to) { }
  
 
  #define assertWholeMeap(pExp, N) { \
    printf("Meap setup %d: ", setupNum); \
-   Index tot = pileOfJunks.getUsr(); \
+   Ix tot = pileOfJunks.getUsr(); \
    assertInt(tot, N); \
    for (uint32_t a = 0; a<N; a++) { \
      Junk * v = getJunk((Junk) {a}); \
@@ -24,7 +24,7 @@
  }
  
  Junk * pJunk;
- JunkIndex iJunk;
+ JunkIx iJunk;
  
  #define CHOMPNOTHING 1
  int doWhat;
@@ -106,8 +106,8 @@
  
  int counts[numMeapSetups ] = {0,1,2,2,2,2,3,3,3,3,3,3,3};
  bool count(int killed) {
-   Index cnt = pileOfJunks.getUsr();
-   Index exp = counts[setupNum]-killed;
+   Ix cnt = pileOfJunks.getUsr();
+   Ix exp = counts[setupNum]-killed;
    assertIntM(cnt, exp);
    return true;
  }
@@ -133,7 +133,7 @@
  
  bool testMeap3(void) {
    return
-     (meapOfJunks.erase((JunkIndex){2})) &&
+     (meapOfJunks.erase((JunkIx){2})) &&
      count(setupNum>0 ? 1 : 0) &&
      ordered() &&
      true;
@@ -141,10 +141,10 @@
  
  
  bool testMeap4(void) {
-   Index cnt = pileOfJunks.getUsr();
+   Ix cnt = pileOfJunks.getUsr();
    if (cnt==0) return true;
    for (int a=0;a<500;a++) {
-     JunkIndex i = (JunkIndex) {a%cnt};
+     JunkIx i = (JunkIx) {a%cnt};
      meapOfJunks.editTocksTakingLock(i,rand()%0x100);
      ordered();
    }

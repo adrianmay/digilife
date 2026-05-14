@@ -1,10 +1,10 @@
 #include "XXBulk_pile/1.h"
 #include "YY"
 
-typedef bool        (*XXRaffleOpen)   (Cash cash, XXBulkIndex * pI);
+typedef bool        (*XXRaffleOpen)   (Cash cash, XXBulkIx * pI);
 typedef void        (*XXRaffleClose)  (FATE fate);
-typedef XXBulkIndex (*XXRaffleEnter)  (Cash cash, XXBulkIndex iDonor, Weight w, XXTicket * pTicket);
-typedef Cash        (*XXRaffleCancel) (XXBulkIndex i);
+typedef XXBulkIx (*XXRaffleEnter)  (Cash cash, XXBulkIx iDonor, Weight w, XXTicket * pTicket);
+typedef Cash        (*XXRaffleCancel) (XXBulkIx i);
 typedef bool        (*XXRaffleDraw)   (XXTicket * pTicket, Cash * pCash);
 typedef void        (*XXRaffleShow)   (void);
 

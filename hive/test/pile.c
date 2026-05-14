@@ -14,23 +14,23 @@ bool recycledity(void) {
   return true;
 }
 
-int sumLinks(LinkIndex i0) {
+int sumLinks(LinkIx i0) {
   Link * pT;
   int total=0;
-  for (LinkIndex i=i0;pileOfLinks.indexValid(i);i=pT->next) { pT = pileOfLinks.get(i); total += pT->x;}
+  for (LinkIx i=i0;pileOfLinks.indexValid(i);i=pT->next) { pT = pileOfLinks.get(i); total += pT->x;}
   return total;
 }
 
-bool sumItems(LinkIndex * i0) {
+bool sumItems(LinkIx * i0) {
   bool vir1 = pileOfLinks.open(); //Assume it doesn't exist
   assertInt(vir1,true);
-  LinkIndex i; Link * pT;
+  LinkIx i; Link * pT;
   *i0 = i = pileOfLinks.alloc(&pT, &recycledSlot); // Must be index zero
   pT->x = 0; 
   Link * pNew;
   for (int a=0;a<40;a++) {
     pT->next=pileOfLinks.alloc(&pNew, &recycledSlot);
-    pNew->next = badLinkIndex;                       
+    pNew->next = badLinkIx;                       
     pNew->x = 10*a;
     pT=pNew;
   }
@@ -39,16 +39,16 @@ bool sumItems(LinkIndex * i0) {
   return true;
 }
 
-LinkIndex nextLink(LinkIndex i) { return pileOfLinks.get(i)->next; }
+LinkIx nextLink(LinkIx i) { return pileOfLinks.get(i)->next; }
 
-bool freeing(LinkIndex i0) {
+bool freeing(LinkIx i0) {
   int count = pileOfLinks.count();
   assertInt(count,41);
-  LinkIndex i1 = nextLink(i0); //1
-  LinkIndex i2 = nextLink(i1); //2
-  LinkIndex i3 = nextLink(i2);
-  LinkIndex i4 = nextLink(i3);
-  LinkIndex i5 = nextLink(i4);
+  LinkIx i1 = nextLink(i0); //1
+  LinkIx i2 = nextLink(i1); //2
+  LinkIx i3 = nextLink(i2);
+  LinkIx i4 = nextLink(i3);
+  LinkIx i5 = nextLink(i4);
   pileOfLinks.free(i2); 
   pileOfLinks.free(i4); 
   pileOfLinks.free(i3); 
@@ -61,7 +61,7 @@ bool freeing(LinkIndex i0) {
 }
 
 bool reallocing(void) { //Free list = 2,3,4
-  LinkIndex i = pileOfLinks.alloc(0, &recycledSlot);
+  LinkIx i = pileOfLinks.alloc(0, &recycledSlot);
   assertInt(i.i,2);
   i = pileOfLinks.alloc(0, &recycledSlot);
   assertInt(i.i,4);
@@ -81,7 +81,7 @@ void * incrementBy(Link * p, void * u) {
   return 0;
 }
 
-bool with(LinkIndex i0) {
+bool with(LinkIx i0) {
   int total = sumLinks(i0);
   assertInt(total,7740);
   int i = 3;
@@ -97,7 +97,7 @@ bool showIt(void) {
   return false;
 }
 bool testLinkPile(void) {
-  LinkIndex i0;
+  LinkIx i0;
   return true
          && recycledity()  // deletes the pilee
          && (sumItems(&i0), true) // leaves it open

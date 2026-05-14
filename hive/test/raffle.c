@@ -8,7 +8,7 @@
 static bool extinct = false;
 void onMesssExtinct(void) { extinct = true; } 
 
-static MessBulkIndex iDonor = {0};
+static MessBulkIx iDonor = {0};
 
 static bool init(void) {
   openGlobals();

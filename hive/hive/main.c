@@ -4,8 +4,8 @@
 
 int main(void) { printf("Hello from HIVE\n"); return 0; }
 
-// void  onNewJunk(JunkIndex iJ, Index hint) { }
-// void  onMoveJunk(Junk * pJ, JunkIndex to) { }
+// void  onNewJunk(JunkIx iJ, Ix hint) { }
+// void  onMoveJunk(Junk * pJ, JunkIx to) { }
  
 void onMobsExtinct(void) {}
 void onMsgsExtinct(void) {}

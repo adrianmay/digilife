@@ -5,6 +5,10 @@
 #include "globals/h.h"
 #include "Mess_raffle/h.h"
 
+void showMessTicket(MessTicket * p) {
+  printf("type=%c\n", p->type);
+}
+
 static bool extinct = false;
 void onMesssExtinct(void) { extinct = true; } 
 

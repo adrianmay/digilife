@@ -1,4 +1,4 @@
-// #pragma once
+#pragma once
 
 #include "MobBulk_pile/1.h"
 typedef struct {

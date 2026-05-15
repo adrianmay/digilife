@@ -7,6 +7,11 @@
 #include "perf/h.h"
 #include "args/h.h"
 #include "test.h"
+#include "bit/MsgTicket.h"
+
+void onMobsExtinct(void) {}
+void onMsgsExtinct(void) {}
+void showMsgTicket(MsgTicket * p) {}
 
 void B2V(B b) { (*b)(); }
 

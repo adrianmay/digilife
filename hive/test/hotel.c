@@ -6,9 +6,16 @@
 #include "globals/h.h"
 #include "Thing_hotel/structs.h"
 #include "Thing_hotel/h.h"
+#include "bit/MobBody.h"
+
+void showMobBody(MobBody * p) {
+  printf("code=<binary>\n");
+}
 
 static bool extinct;
 void onThingsExtinct(void) { extinct = true; } 
+
+
 
 // void onMobsExtinct() {}
 // void onMsgsExtinct() {}

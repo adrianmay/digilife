@@ -1,9 +1,18 @@
-export TARGET=test
-tools/make_pile.sh   Link  bit/Link.h       MEGA   || exit 1
-tools/make_meap.sh   Junk  bit/Junk.h       MEGA   || exit 1
-tools/make_hotel.sh  Thing bit/ThingBody.h  GIGA 1 || exit 1
-tools/make_raffle.sh Mess  bit/MessTicket.h GIGA   || exit 1
 
-export TARGET=hive
-tools/make_hotel.sh Mob bit/MobBody.h GIGA 1
-tools/make_raffle.sh Msg bit/MsgTicket.h GIGA
+chmod +w gen/all.objs
+export TARGET=all
+tools/make_hotel.sh  Mob   bit/MobBody.h    GIGA 1 
+pids="$pids $!"
+tools/make_raffle.sh Msg   bit/MsgTicket.h  GIGA   
+pids="$pids $!"
+
+export TARGET=test
+tools/make_pile.sh   Link  bit/Link.h       MEGA    
+pids="$pids $!"
+tools/make_meap.sh   Junk  bit/Junk.h       MEGA   
+pids="$pids $!"
+tools/make_hotel.sh  Thing bit/ThingBody.h  GIGA 1 
+pids="$pids $!"
+tools/make_raffle.sh Mess  bit/MessTicket.h GIGA   
+pids="$pids $!"
+

@@ -10,7 +10,13 @@ cp -r lit/* gen
 cp -r test hive bin
 find gen bin -type f | xargs chmod -w
 
+pids=""
 . instances.sh
+
+for p in $pids
+do
+  wait "$p" || exit 1
+done
 
 echo "Building tags"
 find gen bin -name "*.h" -or -name "*.c" | xargs ctags || exit 1
@@ -19,13 +25,23 @@ echo "Doctoring tags"
 awk -F'\t' -f tools/doctor.awk OFS='\t' tags > newtags
 mv newtags tags
 
+pids=""
+
 CS=`find gen bin -name "*.c"`
 for C  in $CS
 do
   O=${C/.c/.o}
   echo "Compiling C to $O"
-  $CC -pthread -g -iquote gen -Wall -Werror -c $C -o $O || exit 1
+  $CC -pthread -g -iquote gen -Wall -Werror -c $C -o $O &
+  pids="$pids $!"
 done
+
+for p in $pids
+do
+  wait "$p" || exit 1
+done
+
+pids=""
 
 for M in `find gen bin -maxdepth 1 -type d | grep '/'`
 do
@@ -33,8 +49,14 @@ do
   if [[ -n $OS ]]
   then
     echo "Building module object $M.o"
-    ld --relocatable -o $M.o $OS || exit 1
+    ld --relocatable -o $M.o $OS &
+    pids="$pids $!"
   fi
+done
+
+for p in $pids
+do
+  wait "$p" || exit 1
 done
 
 # X=(gen/*.o)

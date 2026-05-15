@@ -100,7 +100,7 @@ bool testRob(void) {
 }
 
 
-void cleanupHotel(void) { hotelOfThings.close(DELETE); closeGlobals(DELETE); }
+void cleanupHotel(void) { hotelOfThings.close(HIDE); closeGlobals(HIDE); }
 
 bool testHotel(void) {
   background(sweat_forever); // Got to do work to advance CPU time ...

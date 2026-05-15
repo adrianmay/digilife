@@ -7,8 +7,10 @@
 #include <unistd.h>
 #include "types.h"
 #include "misc/h.h"
+#include "args/h.h"
 #include "h.h"
 #include "structs.h"
+#define MAX_FULL_PATH (MAX_FILENAME+DATA_DIR_MAX)
 
 Ix recLen(Pilehead * ph) { return ph->rec; }
 
@@ -26,7 +28,9 @@ uint32_t capacity(Pilehead * ph, size_t filelen) {
   return (filelen-sizeof(Pilehead)) / ph->rec;
 }
 
-Pilehead * openPile(const char * filename, uint32_t rec, uint32_t stp, Ix lim, bool * virgin) { // returns array address
+Pilehead * openPile(const char * basefilename, uint32_t rec, uint32_t stp, Ix lim, bool * virgin) { // returns array address
+  char filename[MAX_FULL_PATH];
+  snprintf(filename, MAX_FULL_PATH, "%s/%s", getDataDir(), basefilename); 
   if (rec<4) { printf("Record size too small for free indices.\n"); quit(1); }
   // Could this ^ be at compile time?
   int fd;
@@ -66,7 +70,7 @@ Pilehead * openPile(const char * filename, uint32_t rec, uint32_t stp, Ix lim, b
     ph->fro = BAD_INDEX;
     ph->frn = 0;
     ph->usr = 0;
-    strncpy(ph->fn, filename, MAX_FILENAME-1);
+    strncpy(ph->fn, basefilename, MAX_FILENAME);
   }
   return ph;
 }
@@ -78,10 +82,11 @@ void closePile(Pilehead * ph, FATE fate) {
   close(fd);
   if (fate==DELETE) unlink(ph->fn);
   if (fate==HIDE) {
-    char dest[MAX_FILENAME+1];
-    *dest='.';
-    strcpy(dest+1,ph->fn);
-    rename(ph->fn, dest);
+    char src[MAX_FULL_PATH];
+    snprintf(src, MAX_FULL_PATH, "%s/%s", getDataDir(), ph->fn); 
+    char dest[MAX_FULL_PATH+1];
+    snprintf(dest, MAX_FULL_PATH+1, "%s/.%s", getDataDir(), ph->fn); 
+    rename(src, dest);
   }
   munmap(ph, ((uint64_t)ph->lim)*PAGE);
 }

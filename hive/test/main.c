@@ -5,6 +5,7 @@
 #include <signal.h>
 #include "globals/h.h"
 #include "perf/h.h"
+#include "args/h.h"
 #include "test.h"
 
 void B2V(B b) { (*b)(); }
@@ -53,15 +54,16 @@ void initEverything(void) {
 }
 /////////////////////
 
-int main(void) {
+int main(int argc, char **argv) { 
+  parseArgs(argc, argv);
   initEverything();
   bool suc = 
 //    wrap() && 
-//    globals() && 
-//    pile() && 
-//    meap() && 
+    globals() && 
+    pile() && 
+    meap() && 
 //    hotel() &&
-    raffle() &&
+//    raffle() &&
 //    perf() &&
     true;
   return suc?0:1;

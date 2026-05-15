@@ -151,7 +151,7 @@
    return true;
  }
  
- void cleanupMeap(void) { pileOfJunks.close(DELETE); }
+ void cleanupMeap(void) { pileOfJunks.close(HIDE); }
  
  bool chompT(void) {
    Junk j;

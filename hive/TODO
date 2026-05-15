@@ -1,4 +1,6 @@
 
+Thread protection for globals
+
 Finish raffle and hotel tests. Raffle tests: 
   empty, just 1, drain
   equal weights: sorted/unsorted species

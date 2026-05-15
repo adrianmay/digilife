@@ -1,5 +1,7 @@
 #include "types.h"
 
+// This is quite inaccurate. We could do with a kernel module to cut out the middleman
+
 typedef struct perf_event_mmap_page PerfMap; 
 
 typedef struct {

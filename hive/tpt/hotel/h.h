@@ -1,18 +1,18 @@
 // #pragma once
 
-//#include "XXBulk_pile/1.h"
-//#include "XX_hotel/Bulk.h"
-//#include "XXBulk_pile/2.h"
+//#include "XX_pile/1.h"
+//#include "XX_hotel/.h"
+//#include "XX_pile/2.h"
 
-#include "XXBulk_pile/1.h"
+#include "XX_pile/1.h"
 
 extern char XXGOD[];
 typedef bool        (*XXHotelOpen)(Cash cash); // Creates animal with this much cash when virgin pile
-typedef XXBulkIx (*XXHotelAlloc)(Cash cash, XXBulkIx iDonor, XXBulk ** ppBulk, bool * pRecycled);
-typedef XXBulk *    (*XXHotelGet)(XXBulkIx i); 
-typedef void        (*XXHotelTransfer)(Cash amt, XXBulkIx iFrom, XXBulkIx iTo);
-typedef void        (*XXHotelReview)(XXBulkIx i);
-typedef Cash        (*XXHotelRobber)(XXBulkIx i);
+typedef XXIx (*XXHotelAlloc)(Cash cash, XXIx iDonor, XX ** pp, bool * pRecycled);
+typedef XX *    (*XXHotelGet)(XXIx i); 
+typedef void        (*XXHotelTransfer)(Cash amt, XXIx iFrom, XXIx iTo);
+typedef void        (*XXHotelReview)(XXIx i);
+typedef Cash        (*XXHotelRobber)(XXIx i);
 typedef void        (*XXHotelKiller)(void);
 typedef Ix       (*XXHotelCount)(void); 
 typedef void        (*XXHotelClose)(FATE fate);

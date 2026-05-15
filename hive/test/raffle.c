@@ -12,7 +12,7 @@ void showMessTicket(MessTicket * p) {
 static bool extinct = false;
 void onMesssExtinct(void) { extinct = true; } 
 
-static MessBulkIx iDonor = {0};
+static MessIx iDonor = {0};
 
 static bool init(void) {
   openGlobals();

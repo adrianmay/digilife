@@ -3,7 +3,7 @@
 #include "misc/h.h"
 #include "globals/h.h"
 #include "XXBomb_meap/2.h"
-#include "XXBulk_pile/2.h"
+#include "XX_pile/2.h"
 #include "h.h"
 
 #if ZZ
@@ -15,32 +15,32 @@ static void lock() {}
 static void unlock() {} 
 #endif
 
-XXBulkIx rentCollectorIxXX = (XXBulkIx) {0}; // This is crap
+XXIx rentCollectorIxXX = (XXIx) {0}; // This is crap
 
 static void show(void) {
   meapOfXXBombs.show();
-  pileOfXXBulks.show(false);
+  pileOfXXs.show(false);
 }
 
 static void close(FATE fate) {
   lock();
-  pileOfXXBulks.close(fate);
+  pileOfXXs.close(fate);
   meapOfXXBombs.close(fate);
   unlock();
 }
 
 static Ix count(void) {
-  return pileOfXXBulks.count();
+  return pileOfXXs.count();
 }
 
-static XXBulk * get(XXBulkIx i) { 
-  return pileOfXXBulks.get(i);
+static XX * get(XXIx i) { 
+  return pileOfXXs.get(i);
 }
 
-static void collectRent(XXBulkIx i) {
+static void collectRent(XXIx i) {
   updateTocks();
-  XXBulk * pBulk = pileOfXXBulks.get(i);
-  XXRent * pRent = &pBulk->rent;
+  XX * p = pileOfXXs.get(i);
+  XXRent * pRent = &p->rent;
   Tocks now = tocksNow();
   Tocks time = now - pRent->lastPaidRent;
   Cash bill = tockPrice() * time;
@@ -48,49 +48,49 @@ static void collectRent(XXBulkIx i) {
   pRent->lastPaidRent = now;
 }
 
-static bool updateXXDeath(XXBulk* pBulk, XXBomb * pBomb) {
-  Cash cash = pBulk->rent.cash;
+static bool updateXXDeath(XX* p, XXBomb * pBomb) {
+  Cash cash = p->rent.cash;
   Tocks ttl = cash/tockPrice();
   //printf("UpdateXXDeath: ttl=%d\n", ttl);
   Tocks death = tocksNow() + ttl;
-  return meapOfXXBombs.editTocksWhenLocked(pBulk->rent.bomb, death);
+  return meapOfXXBombs.editTocksWhenLocked(p->rent.bomb, death);
   // The meap is properly reordered but nobody called kill
 }
 
-static bool updateXXDeathWithBulkIx(XXBulkIx iBulk) {
-  XXBulk * pBulk = pileOfXXBulks.get(iBulk);
-  XXBombIx iBomb = pBulk->rent.bomb;
+static bool updateXXDeathWithIx(XXIx i) {
+  XX * p = pileOfXXs.get(i);
+  XXBombIx iBomb = p->rent.bomb;
   XXBomb * pBomb = pileOfXXBombs.get(iBomb);
-  return updateXXDeath(pBulk, pBomb);
+  return updateXXDeath(p, pBomb);
 }
 
-static bool updateXXDeathWithBulkIxAndBombPointer(XXBulkIx iBulk, XXBomb * pBomb) {
-  XXBulk * pBulk = pileOfXXBulks.get(iBulk);
-  return updateXXDeath(pBulk, pBomb);
+static bool updateXXDeathWithIxAndBombPointer(XXIx i, XXBomb * pBomb) {
+  XX * p = pileOfXXs.get(i);
+  return updateXXDeath(p, pBomb);
 }
 
-static void review_(XXBulkIx i) { 
+static void review_(XXIx i) { 
   collectRent(i);
   //printf("Reviewing i=%d... ", i.i);
-  updateXXDeathWithBulkIx(i); 
+  updateXXDeathWithIx(i); 
 }
-static void review(XXBulkIx i) { 
+static void review(XXIx i) { 
   lock();
   review_(i);
   unlock();
 }
 
-static void transfer_(Cash amt, XXBulkIx iFrom, XXBulkIx iTo) {
+static void transfer_(Cash amt, XXIx iFrom, XXIx iTo) {
   //printf("Transfer: amt=%'ld, iFrom=%d, iTo=%d\n", amt, iFrom.i, iTo.i);
-  XXBulk * pFrom = pileOfXXBulks.get(iFrom);
+  XX * pFrom = pileOfXXs.get(iFrom);
   XXRent * pFromRent = &pFrom->rent;
-  XXBulk * pTo = pileOfXXBulks.get(iTo);
+  XX * pTo = pileOfXXs.get(iTo);
   XXRent * pToRent = &pTo->rent;
   pFromRent->cash -= amt;
   pToRent->cash += amt;
 }
 
-static void transfer(Cash amt, XXBulkIx iFrom, XXBulkIx iTo) {
+static void transfer(Cash amt, XXIx iFrom, XXIx iTo) {
   lock();
   review_(iFrom);
   review_(iTo);
@@ -98,35 +98,35 @@ static void transfer(Cash amt, XXBulkIx iFrom, XXBulkIx iTo) {
   unlock();
 }
 
-static XXBulkIx alloc_(Cash cash, XXBulkIx iDonor, XXBulk ** ppBulk, bool * pRecycled) {
+static XXIx alloc_(Cash cash, XXIx iDonor, XX ** pp, bool * pRecycled) {
   updateTocks();
-  XXBulk * pBulk;
-  XXBulkIx iBulk = pileOfXXBulks.alloc(&pBulk, pRecycled);
-  pBulk->rent.lastPaidRent = tocksNow();
-  if (!pileOfXXBulks.indexValid(iDonor)) 
-    pBulk->rent.cash = cash; // Genesis only
+  XX * p;
+  XXIx i = pileOfXXs.alloc(&p, pRecycled);
+  p->rent.lastPaidRent = tocksNow();
+  if (!pileOfXXs.indexValid(iDonor)) 
+    p->rent.cash = cash; // Genesis only
   else {
-    pBulk->rent.cash = 0;
-    transfer_(cash, iDonor, iBulk);
+    p->rent.cash = 0;
+    transfer_(cash, iDonor, i);
     review_(iDonor);
   }
   XXBombIx iBomb;
   XXBomb * pBomb;
-  meapOfXXBombs.insert(&iBomb, &pBomb, iBulk.i); // onNew should do the rest
+  meapOfXXBombs.insert(&iBomb, &pBomb, i.i); // onNew should do the rest
   //printf("In alloc near end\n");
   show();
-  review_(iBulk);
-  if (ppBulk) *ppBulk = pBulk;
-  return iBulk;
+  review_(i);
+  if (pp) *pp = p;
+  return i;
 }
 
-static XXBulkIx alloc(Cash cash, XXBulkIx iDonor, XXBulk ** ppBulk, bool * pRecycled) {
+static XXIx alloc(Cash cash, XXIx iDonor, XX ** pp, bool * pRecycled) {
   lock();
-  if (!pileOfXXBulks.indexValid(iDonor)) {
+  if (!pileOfXXs.indexValid(iDonor)) {
     printf("Don't disregard double entry\n");
     exit(1);
   }
-  XXBulkIx ret = alloc_(cash, iDonor, ppBulk, pRecycled);
+  XXIx ret = alloc_(cash, iDonor, pp, pRecycled);
   unlock();
   return ret;
 }
@@ -134,8 +134,8 @@ static XXBulkIx alloc(Cash cash, XXBulkIx iDonor, XXBulk ** ppBulk, bool * pRecy
 static bool open(Cash cash) {
   lock();
   meapOfXXBombs.open();
-  bool virgin = pileOfXXBulks.open();
-  if (virgin) alloc_(cash, (XXBulkIx){BAD_INDEX}, 0, 0); 
+  bool virgin = pileOfXXs.open();
+  if (virgin) alloc_(cash, (XXIx){BAD_INDEX}, 0, 0); 
   unlock();
   return virgin;
 }
@@ -147,7 +147,7 @@ static void kill(void) {
   updateTocks();
   Tocks now = tocksNow();            
   while (true) { // Returns when nothing to kill for now
-    bomb.who = badXXBulkIx; // Prevent false alarms
+    bomb.who = badXXIx; // Prevent false alarms
     Chomped ch = meapOfXXBombs.chomp(now, &bomb, 1);
     if (ch == Extinct) { 
       printf("Extinct\n");
@@ -156,7 +156,7 @@ static void kill(void) {
       return; 
     }
     if (ch == Killed ) { 
-      pileOfXXBulks.free(bomb.who); //TODO: funeral and recover cash
+      pileOfXXs.free(bomb.who); //TODO: funeral and recover cash
       printf("Killed %i\n", bomb.who.i);
       show();
       continue; 
@@ -166,9 +166,9 @@ static void kill(void) {
   }
 }
 
-static Cash rob(XXBulkIx i) { 
-  XXBulk * pBulk = pileOfXXBulks.get(i);
-  XXRent * pRent = &pBulk->rent;
+static Cash rob(XXIx i) { 
+  XX * p = pileOfXXs.get(i);
+  XXRent * pRent = &p->rent;
   transfer(pRent->cash, i, rentCollectorIxXX);
   kill();
   return 0; //TODO: proper accounts
@@ -177,23 +177,23 @@ static Cash rob(XXBulkIx i) {
 void onNewXXBomb(XXBombIx iBomb, Ix hint) { 
   //printf("OnNew: iBomb: %d hint: %d\n", iBomb.i, hint);
   XXBomb * pBomb = pileOfXXBombs.get(iBomb);
-  pBomb->who = (XXBulkIx){hint};
-  XXBulk * pBulk = pileOfXXBulks.get(pBomb->who);
-  pBulk->rent.bomb = iBomb;
-  updateXXDeathWithBulkIxAndBombPointer(pBomb->who, pBomb);
+  pBomb->who = (XXIx){hint};
+  XX * p = pileOfXXs.get(pBomb->who);
+  p->rent.bomb = iBomb;
+  updateXXDeathWithIxAndBombPointer(pBomb->who, pBomb);
 }
 
 void onMoveXXBomb(XXBomb * pBomb, XXBombIx to) { 
-  XXBulk * pBulk = pileOfXXBulks.get(pBomb->who);
-  //printf("Moving bomb for bulk %d from %d to %d\n", pBomb->who.i, pBulk->rent.bomb.i, to.i);
-  pBulk->rent.bomb = to;
+  XX * p = pileOfXXs.get(pBomb->who);
+  //printf("Moving bomb for bulk %d from %d to %d\n", pBomb->who.i, p->rent.bomb.i, to.i);
+  p->rent.bomb = to;
 }
 
 void showXXBomb(XXBomb * p) {
   printf("tocks=%d,who=%d\n", p->tocks, p->who.i);
 }
 
-void showXXBulk(XXBulk * p) {
+void showXX(XX * p) {
   printf("cash=%'ld,lastPaidRent=%d,bomb=%d,", p->rent.cash, p->rent.lastPaidRent, p->rent.bomb.i);
   showXXBody(&p->body);
 }

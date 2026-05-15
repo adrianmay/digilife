@@ -4,7 +4,7 @@
 #include "misc/h.h"
 #include "perf/h.h"
 #include "globals/h.h"
-#include "Thing_hotel/Bulk.h"
+#include "Thing_hotel/structs.h"
 #include "Thing_hotel/h.h"
 
 static bool extinct;
@@ -14,9 +14,9 @@ void onThingsExtinct(void) { extinct = true; }
 // void onMsgsExtinct() {}
 
 Cycles cycles;
-ThingBulk * pThing;
-ThingBulkIx iThing;
-static ThingBulkIx iDonor = {0};
+Thing * pThing;
+ThingIx iThing;
+static ThingIx iDonor = {0};
 
 static bool init(void) {
   openGlobals();

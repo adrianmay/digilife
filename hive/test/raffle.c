@@ -12,11 +12,9 @@ void showMessTicket(MessTicket * p) {
 static bool extinct = false;
 void onMesssExtinct(void) { extinct = true; } 
 
-static MessIx iDonor = {0};
-
 static bool init(void) {
   openGlobals();
-  raffleOfMesss.open(1000000000, 0);
+  raffleOfMesss.open();
   background(sweat_forever); // Got to do work to advance CPU time ...
   return true;
 }
@@ -24,30 +22,39 @@ static bool init(void) {
 MessTicket tkt = {'V' };
 Cash cash;
 
+
 // Equal weight, unequal types, loads of cash
 void stuff1(void) {
-  for (int a=0; a<100; a++) {
+  for (int a=0; a<10000; a++) {
     tkt.serial=a;
     tkt.type = a%3 ? 'T' : 'H';  //Twice as many heads
-    raffleOfMesss.enter(5000, iDonor, 10, &tkt);
+    raffleOfMesss.enter(5000, 10, &tkt);
   }
 }
 
 void stuff2(void) {
-  for (int a=0; a<10; a++) {
+  for (int a=0; a<10000; a++) {
     tkt.serial=a;
     tkt.type = a%2 ? 'T' : 'H';  //Twice as many heads
     Weight w = a%2 ? 4 : 8;  //Twice as many heads
-    raffleOfMesss.enter(5000, iDonor, w, &tkt);
+    raffleOfMesss.enter(5000, w, &tkt);
   }
   //raffleOfMesss.show();
 }
 
+void empty(void) {
+  while (raffleOfMesss.draw(&tkt, &cash)); 
+}
+
 void sample(void) {
   int h=0, t=0, v=0, e=0;
-  for (int a=0; a<1000; a++) {
+  for (int a=0;a<100;a++) {
     bool res = raffleOfMesss.draw(&tkt, &cash);
-    if (!res) return;
+    //printf("In sample after draw: %d\n", res);
+    if (!res) {
+      printf("Sampled %d H, %d T, %d virgins and %d errors.\n", h, t, v, e);
+      return; 
+    }
     if (tkt.type=='H') h++; 
     else if (tkt.type=='T') t++;
     else if (tkt.type=='V') v++;
@@ -56,19 +63,20 @@ void sample(void) {
   printf("Sampled %d H, %d T, %d virgins and %d errors.\n", h, t, v, e);
 }
 
-void cleanupRaffle(void) { closeGlobals(1); raffleOfMesss.close(1); }
+void cleanupRaffle(void) { closeGlobals(DELETE); raffleOfMesss.close(DELETE); }
+
+bool ch() {
+  if (!raffleOfMesss.check()) {
+    printf("Check failed\n");
+    raffleOfMesss.show();
+    return false;
+  }
+  return true;
+}
 
 bool testRaffle() { 
-  stuff1();
-  sample();
-  cleanupRaffle();
-  init();
-  stuff2();
-  sample();
-  cleanupRaffle();
-  //init();
-  //stuff3();
-  //sample();
+  stuff1(); ch(); sample(); ch(); empty();
+  stuff2(); ch(); sample(); ch(); empty();
   return true; 
 }
 

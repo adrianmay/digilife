@@ -80,10 +80,10 @@ void closePile(Pilehead * ph, FATE fate) {
   int fd = ph->fd;
   if (fd == -1) return;
   close(fd);
-  if (fate==DELETE) unlink(ph->fn);
+  char src[MAX_FULL_PATH];
+  snprintf(src, MAX_FULL_PATH, "%s/%s", getDataDir(), ph->fn); 
+  if (fate==DELETE) unlink(src);
   if (fate==HIDE) {
-    char src[MAX_FULL_PATH];
-    snprintf(src, MAX_FULL_PATH, "%s/%s", getDataDir(), ph->fn); 
     char dest[MAX_FULL_PATH+1];
     snprintf(dest, MAX_FULL_PATH+1, "%s/.%s", getDataDir(), ph->fn); 
     rename(src, dest);

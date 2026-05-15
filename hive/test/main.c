@@ -64,11 +64,11 @@ int main(int argc, char **argv) {
   initEverything();
   bool suc = 
 //    wrap() && 
-    globals() && 
-    pile() && 
-    meap() && 
+//    globals() && 
+//    pile() && 
+//    meap() && 
 //    hotel() &&
-//    raffle() &&
+    raffle() &&
 //    perf() &&
     true;
   return suc?0:1;

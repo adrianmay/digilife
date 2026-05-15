@@ -98,51 +98,39 @@ static void transfer(Cash amt, XXIx iFrom, XXIx iTo) {
   unlock();
 }
 
-static XXIx alloc_(Cash cash, XXIx iDonor, XX ** pp, bool * pRecycled) {
+static XXIx alloc_(Cash cash, XX ** pp, bool * pRecycled) {
   updateTocks();
   XX * p;
   XXIx i = pileOfXXs.alloc(&p, pRecycled);
   p->rent.lastPaidRent = tocksNow();
-  if (!pileOfXXs.indexValid(iDonor)) 
-    p->rent.cash = cash; // Genesis only
-  else {
-    p->rent.cash = 0;
-    transfer_(cash, iDonor, i);
-    review_(iDonor);
-  }
+  p->rent.cash = cash;
   XXBombIx iBomb;
   XXBomb * pBomb;
   meapOfXXBombs.insert(&iBomb, &pBomb, i.i); // onNew should do the rest
   //printf("In alloc near end\n");
-  show();
+  //show();
   review_(i);
   if (pp) *pp = p;
   return i;
 }
 
-static XXIx alloc(Cash cash, XXIx iDonor, XX ** pp, bool * pRecycled) {
+static XXIx alloc(Cash cash, XX ** pp, bool * pRecycled) {
   lock();
-  if (!pileOfXXs.indexValid(iDonor)) {
-    printf("Don't disregard double entry\n");
-    exit(1);
-  }
-  XXIx ret = alloc_(cash, iDonor, pp, pRecycled);
+  XXIx ret = alloc_(cash, pp, pRecycled);
   unlock();
   return ret;
 }
 
-static bool open(Cash cash) {
+static bool open() {
   lock();
   meapOfXXBombs.open();
   bool virgin = pileOfXXs.open();
-  if (virgin) alloc_(cash, (XXIx){BAD_INDEX}, 0, 0); 
   unlock();
   return virgin;
 }
 
 // This has to get called at strategic times from worker threads
-static void kill(void) {
-  lock();
+static void kill_(void) {
   XXBomb bomb; // Bomb copied out to here
   updateTocks();
   Tocks now = tocksNow();            
@@ -152,25 +140,31 @@ static void kill(void) {
     if (ch == Extinct) { 
       printf("Extinct\n");
       onXXsExtinct(); 
-      unlock();
       return; 
     }
     if (ch == Killed ) { 
       pileOfXXs.free(bomb.who); //TODO: funeral and recover cash
-      printf("Killed %i\n", bomb.who.i);
-      show();
+      //printf("Killed %i\n", bomb.who.i);
+      //show();
       continue; 
     }
-    unlock();
     return; // Must be Idle
   }
 }
 
+static void kill(void) {
+  lock();
+  kill_();
+  unlock();
+}
 static Cash rob(XXIx i) { 
+  lock();
   XX * p = pileOfXXs.get(i);
   XXRent * pRent = &p->rent;
-  transfer(pRent->cash, i, rentCollectorIxXX);
-  kill();
+  transfer_(pRent->cash, i, rentCollectorIxXX);
+  review_(i);
+  kill_();
+  unlock();
   return 0; //TODO: proper accounts
 }
 

@@ -7,14 +7,14 @@
 #include "XX_pile/1.h"
 
 extern char XXGOD[];
-typedef bool        (*XXHotelOpen)(Cash cash); // Creates animal with this much cash when virgin pile
-typedef XXIx (*XXHotelAlloc)(Cash cash, XXIx iDonor, XX ** pp, bool * pRecycled);
-typedef XX *    (*XXHotelGet)(XXIx i); 
+typedef bool        (*XXHotelOpen)(void);
+typedef XXIx        (*XXHotelAlloc)(Cash cash, XX ** pp, bool * pRecycled);
+typedef XX *        (*XXHotelGet)(XXIx i); 
 typedef void        (*XXHotelTransfer)(Cash amt, XXIx iFrom, XXIx iTo);
 typedef void        (*XXHotelReview)(XXIx i);
 typedef Cash        (*XXHotelRobber)(XXIx i);
 typedef void        (*XXHotelKiller)(void);
-typedef Ix       (*XXHotelCount)(void); 
+typedef Ix          (*XXHotelCount)(void); 
 typedef void        (*XXHotelClose)(FATE fate);
 typedef void        (*XXHotelShow)(void);
 

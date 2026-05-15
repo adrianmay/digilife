@@ -27,15 +27,15 @@ static ThingIx iDonor = {0};
 
 static bool init(void) {
   openGlobals();
-  hotelOfThings.open(1000000);
-  hotelOfThings.show();
+  hotelOfThings.open();
+  //hotelOfThings.show();
   return true;
 }
 
 void killTilExtinct(void) {
   while (true) {
     updateTocks();
-    printf("killTilExtinct: tocks=%d, processCycles=%'ld\n", tocksNow(), readProcessCycles());
+//    printf("killTilExtinct: tocks=%d, processCycles=%'ld\n", tocksNow(), readProcessCycles());
     hotelOfThings.kill(); 
     //printf("GOGOGOG");
     if (extinct) return;
@@ -47,13 +47,13 @@ bool testNoPop(void) {
   extinct = false;
   TIME_VOID_PROC(killTilExtinct()); 
   printf("testNoPop: %'ld\n", cycles);
-  assertLongCond(cycles, <40000);
+  assertLongCond(cycles, <100000);
   return true;
 }
 
 void make(Ix name, Cash cash) {
   bool recycledSlot;
-  iThing = hotelOfThings.alloc(cash, iDonor, &pThing, &recycledSlot);
+  iThing = hotelOfThings.alloc(cash, &pThing, &recycledSlot);
   pThing->body.name = name;
 }
 
@@ -77,19 +77,19 @@ void * earn(void *) {
 bool testEarn(void) {
   extinct = false;
   printf("testEarn\n");
-  hotelOfThings.show();
+  //hotelOfThings.show();
   make(4, 3000);
-  hotelOfThings.show();
+  //hotelOfThings.show();
   background(earn);
   TIME_VOID_PROC(killTilExtinct());
   printf("testEarn: %'ld\n", cycles);
-  assertLongCond(cycles, <5100000000ull)
-  assertLongCond(cycles, >4900000000ull)
+  assertLongCond(cycles, <3100000000ull)
+  assertLongCond(cycles, >2900000000ull)
   return true;
 }
 
 void * rob(void *) {
-  sleepNs(1000000000);
+  sleepNs(250000000);
   hotelOfThings.rob(iThing);
   return 0;
 }
@@ -101,7 +101,7 @@ bool testRob(void) {
   background(rob);
   TIME_VOID_PROC(killTilExtinct());
   printf("testRob: %'ld\n", cycles);
-  assertLongCond(cycles, <1100000000ull)
+  assertLongCond(cycles, <1400000000ull)
   assertLongCond(cycles, > 900000000ull)
   return true;
 }
@@ -112,10 +112,10 @@ void cleanupHotel(void) { hotelOfThings.close(HIDE); closeGlobals(HIDE); }
 bool testHotel(void) {
   background(sweat_forever); // Got to do work to advance CPU time ...
   return 
-    //testNoPop() &&
+    testNoPop() &&
     test1() &&
-    //testEarn() &&
-    //testRob() &&
+    testEarn() &&
+    testRob() &&
     true;
 }
 

@@ -74,10 +74,31 @@ bool ch() {
   return true;
 }
 
+void * produce(void * p) {
+  (void)p;
+  usleep(1000000);
+  raffleOfMesss.enter(2000, 10, &tkt);
+  usleep(1000000);
+  raffleOfMesss.enter(2000, 10, &tkt);
+  raffleOfMesss.enter(2000, 10, &tkt);
+  return 0;
+}
+
+bool testBlock() {
+  pthread_t pid;
+  MessTicket tick;
+  Cash cash;
+  pthread_create(&pid, 0, produce, 0);
+  raffleOfMesss.draw(&tick, &cash);
+  raffleOfMesss.draw(&tick, &cash);
+  raffleOfMesss.draw(&tick, &cash);
+  return true;
+}
+
 bool testRaffle() { 
   stuff1(); ch(); sample(); ch(); empty();
-  printf("Here\n");
   stuff2(); ch(); sample(); ch(); empty();
+  testBlock();
   return true; 
 }
 

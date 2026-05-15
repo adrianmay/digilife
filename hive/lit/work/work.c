@@ -5,18 +5,24 @@
 #include "Msg_raffle/h.h"
 #include "h.h"
 
-// Assume files open
-void emit(Cash cash, CpuBid bid, MobIx rcvr, MsgTicket body) {
-  // raffleOfMsgs.enter(cash, )
+Weight bidToWeight(CpuBid bid) {return bid;}
+
+void emit(Cash cash, CpuBid bid, MsgTicket * pTicket) {
+  raffleOfMsgs.enter(cash, bidToWeight(bid), pTicket);
 }
 
-// void runUnlimited(Msg * m) { }
-
-atomic_int numWorkersRunning = 0; // Can read with int x = atomic_load(&numWorkersRunning);
+void runUnlimited(MsgTicket * m) { 
+}
 
 void work_(void) {
+  Cash cash;
+  MsgTicket ticket;
+  if (!raffleOfMsgs.draw(&ticket, &cash)) return;
+  
 }
 
+atomic_int numWorkersRunning = 0; // Can read with int x = atomic_load(&numWorkersRunning);
+                                  //
 void * work(void * p) {
   (void)(p);
   atomic_fetch_add(&numWorkersRunning, 1);
@@ -25,6 +31,7 @@ void * work(void * p) {
   return 0;
 }
 
+// Assume files open
 void initWork() { 
   //Start the workers
   for (int w=0;w<getNumWorkers();w++) {

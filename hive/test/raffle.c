@@ -43,7 +43,7 @@ void stuff2(void) {
 }
 
 void empty(void) {
-  while (raffleOfMesss.draw(&tkt, &cash)); 
+  while (!raffleOfMesss.empty()) { raffleOfMesss.draw(&tkt, &cash); }; 
 }
 
 void sample(void) {
@@ -76,6 +76,7 @@ bool ch() {
 
 bool testRaffle() { 
   stuff1(); ch(); sample(); ch(); empty();
+  printf("Here\n");
   stuff2(); ch(); sample(); ch(); empty();
   return true; 
 }

@@ -2,7 +2,7 @@
 #include "bit/MsgTicket.h"
 
 void initWork();
-void emit(Cash cash, CpuBid bid, MobIx rcvr, MsgTicket body);
+void emit(Cash cash, CpuBid bid, MsgTicket * pTicket);
 
 /*
 

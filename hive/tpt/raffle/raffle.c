@@ -6,6 +6,7 @@
 #include "XX_hotel/h.h"
 
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t  cond  = PTHREAD_COND_INITIALIZER;
 static void lock() { pthread_mutex_lock(&mutex); } 
 static void unlock() { pthread_mutex_unlock(&mutex); } 
 
@@ -38,8 +39,19 @@ static void propagateWeightUp(XXIx i, Weight w) {
   propagateWeightUp(iP, w);
 }
 
+static bool empty() {
+  if (hotelOfXXs.count() == 0) 
+    return true;
+  XXIx i0 = (XXIx){0};
+  Weight tw = totWeight(i0);
+  if (tw==0) 
+    return true;
+  return false;
+}
+
 static XXIx enter(Cash cash, Weight w, XXTicket * pTicket) {
   lock();
+  bool wasEmpty = empty();
   XX * p;
   bool recycled;
   XXIx i = hotelOfXXs.alloc(cash, &p, &recycled);
@@ -48,6 +60,7 @@ static XXIx enter(Cash cash, Weight w, XXTicket * pTicket) {
   if (!recycled)  pR->l = pR->r = 0; 
   pR->s = w;
   propagateWeightUp(i, w);
+  if (wasEmpty) pthread_cond_signal(&cond);
   unlock();
   return i;
 }
@@ -106,23 +119,17 @@ static Cash drawAssumeNotEmpty(XXTicket * pTicket) {
   return drawBelow(i0, w, pTicket);
 }
 
+// If this returns false we're closing down the program
 static bool draw(XXTicket * pTicket, Cash * pCash) {
   bool ret;
   lock();
-  if (hotelOfXXs.count() == 0) 
-    ret = false;
-  else {
-    XXIx i0 = (XXIx){0};
-    Weight tw = totWeight(i0);
-    if (tw == 0) 
-      ret = false;
-    else {
-      *pCash = drawAssumeNotEmpty(pTicket);
-      ret = true;
-    }
-  }
+  if (empty())
+    pthread_cond_wait(&cond, &mutex);
+  ret = !empty();
+  if (ret)
+    *pCash = drawAssumeNotEmpty(pTicket);
   unlock();
-  return ret;
+  return ret; 
 }
 
 static bool open() { 
@@ -147,7 +154,7 @@ static bool check_(XXIx i) {
 
 static bool check() { return check_((XXIx) {0}); }
 
-XXRaffle raffleOfXXs = { open, enter, cancel, draw, close, show, check };
+XXRaffle raffleOfXXs = { open, enter, cancel, empty, draw, close, show, check };
 
 void showXXBody(XXBody * p) {
   printf("l=%'ld,s=%'ld,r=%'ld,", p->raffle.l, p->raffle.s, p->raffle.r);

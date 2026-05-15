@@ -1,7 +1,8 @@
-#include "perf/h.h"
-#include "misc/h.h"
-#include "work/h.h"
-#include "raffle/h.h"
+
+#include "bit/MsgTicket.h"
+
+void initWork();
+void emit(Cash cash, CpuBid bid, MobIx rcvr, MsgTicket body);
 
 /*
 

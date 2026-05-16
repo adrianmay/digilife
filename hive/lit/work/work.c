@@ -2,6 +2,7 @@
 #include "perf/h.h"
 #include "misc/h.h"
 #include "args/h.h"
+#include "lang/h.h"
 #include "Msg_raffle/h.h"
 #include "h.h"
 
@@ -14,20 +15,17 @@ void emit(Cash cash, CpuBid bid, MsgTicket * pTicket) {
 void runUnlimited(MsgTicket * m) { 
 }
 
-void work_(void) {
-  Cash cash;
-  MsgTicket ticket;
-  if (!raffleOfMsgs.draw(&ticket, &cash)) return;
-  
-}
-
-atomic_int numWorkersRunning = 0; // Can read with int x = atomic_load(&numWorkersRunning);
                                   //
 void * work(void * p) {
   (void)(p);
-  atomic_fetch_add(&numWorkersRunning, 1);
-  work_();
-  atomic_fetch_sub(&numWorkersRunning, 1);
+  CoreHandle core = newCore();
+  while (!quitting(core)) {
+    MsgTicket ticket;
+    Cash cash;
+    if (!raffleOfMsgs.draw(&ticket, &cash)) break;
+    //runLimited();
+  }
+  delCore(core);
   return 0;
 }
 

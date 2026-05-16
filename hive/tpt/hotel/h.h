@@ -10,7 +10,7 @@ extern char XXGOD[];
 typedef bool        (*XXHotelOpen)(void);
 typedef XXIx        (*XXHotelAlloc)(Cash cash, XX ** pp, bool * pRecycled);
 typedef XX *        (*XXHotelGet)(XXIx i); 
-typedef void        (*XXHotelTransfer)(Cash amt, XXIx iFrom, XXIx iTo);
+typedef void        (*XXHotelEnrich)(XXIx iWho, Cash amt);
 typedef void        (*XXHotelReview)(XXIx i);
 typedef Cash        (*XXHotelRobber)(XXIx i);
 typedef void        (*XXHotelKiller)(void);
@@ -22,7 +22,7 @@ typedef struct {
   XXHotelOpen open;
   XXHotelAlloc alloc;
   XXHotelGet get;
-  XXHotelTransfer transfer;
+  XXHotelEnrich enrich;
   XXHotelReview review;
   XXHotelRobber rob;
   XXHotelKiller kill;

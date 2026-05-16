@@ -23,7 +23,6 @@ void onThingsExtinct(void) { extinct = true; }
 Cycles cycles;
 Thing * pThing;
 ThingIx iThing;
-static ThingIx iDonor = {0};
 
 static bool init(void) {
   openGlobals();
@@ -70,7 +69,7 @@ bool test1(void) {
 
 void * earn(void *) {
   sleepNs(1000000000);
-  hotelOfThings.transfer(2000, iDonor, iThing);
+  hotelOfThings.enrich(iThing, 2000);
   return 0;
 }
 

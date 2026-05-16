@@ -15,11 +15,17 @@ static void lock() {}
 static void unlock() {} 
 #endif
 
-XXIx rentCollectorIxXX = (XXIx) {0}; // This is crap
-
 static void show(void) {
   meapOfXXBombs.show();
   pileOfXXs.show(false);
+}
+
+static bool open() {
+  lock();
+  meapOfXXBombs.open();
+  bool virgin = pileOfXXs.open();
+  unlock();
+  return virgin;
 }
 
 static void close(FATE fate) {
@@ -80,55 +86,6 @@ static void review(XXIx i) {
   unlock();
 }
 
-static void transfer_(Cash amt, XXIx iFrom, XXIx iTo) {
-  //printf("Transfer: amt=%'ld, iFrom=%d, iTo=%d\n", amt, iFrom.i, iTo.i);
-  XX * pFrom = pileOfXXs.get(iFrom);
-  XXRent * pFromRent = &pFrom->rent;
-  XX * pTo = pileOfXXs.get(iTo);
-  XXRent * pToRent = &pTo->rent;
-  pFromRent->cash -= amt;
-  pToRent->cash += amt;
-}
-
-static void transfer(Cash amt, XXIx iFrom, XXIx iTo) {
-  lock();
-  review_(iFrom);
-  review_(iTo);
-  transfer_(amt, iFrom, iTo);
-  unlock();
-}
-
-static XXIx alloc_(Cash cash, XX ** pp, bool * pRecycled) {
-  updateTocks();
-  XX * p;
-  XXIx i = pileOfXXs.alloc(&p, pRecycled);
-  p->rent.lastPaidRent = tocksNow();
-  p->rent.cash = cash;
-  XXBombIx iBomb;
-  XXBomb * pBomb;
-  meapOfXXBombs.insert(&iBomb, &pBomb, i.i); // onNew should do the rest
-  //printf("In alloc near end\n");
-  //show();
-  review_(i);
-  if (pp) *pp = p;
-  return i;
-}
-
-static XXIx alloc(Cash cash, XX ** pp, bool * pRecycled) {
-  lock();
-  XXIx ret = alloc_(cash, pp, pRecycled);
-  unlock();
-  return ret;
-}
-
-static bool open() {
-  lock();
-  meapOfXXBombs.open();
-  bool virgin = pileOfXXs.open();
-  unlock();
-  return virgin;
-}
-
 // This has to get called at strategic times from worker threads
 static void kill_(void) {
   XXBomb bomb; // Bomb copied out to here
@@ -157,15 +114,53 @@ static void kill(void) {
   kill_();
   unlock();
 }
+
+static void enrich_(XXIx iWho, Cash amt) {
+  //printf("Transfer: amt=%'ld, iFrom=%d, iTo=%d\n", amt, iFrom.i, iTo.i);
+  XX * pWho = pileOfXXs.get(iWho);
+  XXRent * pRent = &pWho->rent;
+  pRent->cash += amt;
+  review_(iWho);
+  kill_();
+}
+
+static void enrich(XXIx iWho, Cash amt) {
+  lock();
+  enrich_(iWho, amt);
+  unlock();
+}
+
 static Cash rob(XXIx i) { 
   lock();
   XX * p = pileOfXXs.get(i);
   XXRent * pRent = &p->rent;
-  transfer_(pRent->cash, i, rentCollectorIxXX);
-  review_(i);
-  kill_();
+  Cash c = pRent->cash;
+  enrich_(i, -c);
   unlock();
-  return 0; //TODO: proper accounts
+  return c; //TODO: proper accounts
+}
+
+static XXIx alloc_(Cash cash, XX ** pp, bool * pRecycled) {
+  updateTocks();
+  XX * p;
+  XXIx i = pileOfXXs.alloc(&p, pRecycled);
+  p->rent.lastPaidRent = tocksNow();
+  p->rent.cash = cash;
+  XXBombIx iBomb;
+  XXBomb * pBomb;
+  meapOfXXBombs.insert(&iBomb, &pBomb, i.i); // onNew should do the rest
+  //printf("In alloc near end\n");
+  //show();
+  review_(i);
+  if (pp) *pp = p;
+  return i;
+}
+
+static XXIx alloc(Cash cash, XX ** pp, bool * pRecycled) {
+  lock();
+  XXIx ret = alloc_(cash, pp, pRecycled);
+  unlock();
+  return ret;
 }
 
 void onNewXXBomb(XXBombIx iBomb, Ix hint) { 
@@ -192,5 +187,5 @@ void showXX(XX * p) {
   showXXBody(&p->body);
 }
 
-XXHotel hotelOfXXs = {open, alloc, get, transfer, review, rob, kill, count, close, show};
+XXHotel hotelOfXXs = {open, alloc, get, enrich, review, rob, kill, count, close, show};
 

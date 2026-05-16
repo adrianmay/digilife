@@ -1,9 +1,9 @@
 #include <stdatomic.h>
-#include "perf/h.h"
 #include "misc/h.h"
 #include "args/h.h"
 #include "lang/h.h"
 #include "Msg_raffle/h.h"
+#include "Mob_hotel/h.h"
 #include "h.h"
 
 Weight bidToWeight(CpuBid bid) {return bid;}
@@ -15,15 +15,22 @@ void emit(Cash cash, CpuBid bid, MsgTicket * pTicket) {
 void runUnlimited(MsgTicket * m) { 
 }
 
-                                  //
-void * work(void * p) {
+static void alarmHandler(int core) {
+  forceYield(core);
+}
+                                  
+void * workerThread(void * p) {
   (void)(p);
   CoreHandle core = newCore();
+  initThreadAlarm(coreAlarm(core), alarmHandler, core);
   while (!quitting(core)) {
     MsgTicket ticket;
     Cash cash;
     if (!raffleOfMsgs.draw(&ticket, &cash)) break;
-    //runLimited();
+    Cycles cycleLimit = cash / ticket.cpuBid; //TODO: careful
+    setAlarm(coreAlarm(core), cycleLimit);
+    runMob(hotelOfMobs.get(ticket.iRcvr));
+    // Get output and do stuff.
   }
   delCore(core);
   return 0;
@@ -34,7 +41,7 @@ void initWork() {
   //Start the workers
   for (int w=0;w<getNumWorkers();w++) {
     pthread_t pid;
-    pthread_create(&pid, 0, work, 0);
+    pthread_create(&pid, 0, workerThread, 0);
   }
 }
 

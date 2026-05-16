@@ -7,7 +7,7 @@ void emit(Cash cash, CpuBid bid, MsgTicket * pTicket);
 /*
 
 Make a raffle of messages.
-Function to make a message with cpubid, rcvr, body
+Function to make a message with cpuBid, rcvr, body
 
 Worker loop for worker threads:
   update tocks

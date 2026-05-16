@@ -2,7 +2,7 @@
 
 #include "Mob_pile/1.h"
 typedef struct {
-  CpuBid cpubid; 
+  CpuBid cpuBid; 
   MobIx iRcvr; // Name nRcvr;
   MobIx iSndr; // Name nSndr; 
   MobIx iCtnt; // Name nCtnt; 

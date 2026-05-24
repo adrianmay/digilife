@@ -33,7 +33,7 @@ bool burnAndRead(Alarm * pA, uint64_t toBurn, Cycles cycles, bool * pQ) {
 
 Cycles res1[MR];
 
-void work(uint64_t w) { int x; for (int a=0;a<w;a++) x+=x; }
+void graft(uint64_t w) { int x; for (int a=0;a<w;a++) x+=x; }
 
 Cycles readTimer(Timer t) {
   return readThreadCycles(t);
@@ -43,7 +43,7 @@ Cycles readTimer(Timer t) {
 bool checkProcessTimer() {
   Cycles prev = readProcessCycles();
   for (int a=0;a<MR;a++) {
-    work(1000000000);
+    graft(1000000000);
     Cycles c = readProcessCycles();
     res1[a] = c-prev;
     prev = c;
@@ -57,7 +57,7 @@ bool checkThreadTimer() {
   Timer t = initThreadTimer();
   Cycles prev = readTimer(t);
   for (int a=0;a<MR;a++) {
-    work(1000000000);
+    graft(1000000000);
     Cycles c = readTimer(t);
     res1[a] = c-prev;
     prev = c;
@@ -67,20 +67,30 @@ bool checkThreadTimer() {
   return true;
 }
 
-bool quits[10] = {false};
+typedef struct {
+  uint64_t sleeps[5];
+  bool byeee;
+} Wkr;
+
+Wkr wkrs[2] = 
+  { { {1, 4, 1, 0, 0}, false }
+  , { {2, 2, 2, 3, 0}, false }
+  };
 
 static void handler(PerfHandleC phc) {
+  Wkr * pW = (Wkr *) phc;
   //printf("Told to quit %d\n", phc);
-  quits[phc] = true;
+  pW->byeee = true;
 }
 
 Alarm a;
-int phc = 1;
+int phc = 0;
 
 bool checkThreadAlarm() {
-  quits[phc] = false;
+  Wkr * pW = &wkrs[0];
+  pW->byeee = false;
   setAlarm(&a, 10000000000);
-  for (unsigned long long i=0;!quits[phc];i++)
+  for (unsigned long long i=0;!pW->byeee;i++)
     if (0==i%200000000)
       printf("In checkThreadAlarm: %'ld\n", readAlarmCycles(&a));
   return true;
@@ -89,13 +99,13 @@ bool checkThreadAlarm() {
 static void *worker_main(void *arg)
 {
   Alarm a;
-  uint64_t * sleeps = (uint64_t *) arg;
-  initThreadAlarm(&a, handler, sleeps[0]);
+  Wkr * pW = (Wkr *) arg;
+  initThreadAlarm(&a, handler, pW);
 
-  for (int s=0;sleeps[s]!=0;s++) {
-    Cycles cycles = 1000000000*sleeps[s];
+  for (int s=0;pW->sleeps[s]!=0;s++) {
+    Cycles cycles = 1000000000*pW->sleeps[s];
     setAlarm(&a, cycles);
-    burnAndRead(&a, 50000, cycles, &quits[sleeps[0]]);
+    burnAndRead(&a, 50000, cycles, &pW->byeee);
   }
 
   return NULL;
@@ -117,7 +127,7 @@ bool perf(void) {
   return 
     checkProcessTimer() &&
     checkThreadTimer() &&
-    (initThreadAlarm(&a, handler, phc), true) &&
+    (initThreadAlarm(&a, handler, &wkrs[0]), true) &&
     checkThreadAlarm() &&
     checkManyThreads() && 
     printf("Proc cycles total: %'ld\n", readProcessCycles()); //49

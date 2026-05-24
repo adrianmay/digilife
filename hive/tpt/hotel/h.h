@@ -11,6 +11,7 @@ typedef bool        (*XXHotelOpen)(void);
 typedef XXIx        (*XXHotelAlloc)(Cash cash, XX ** pp, bool * pRecycled);
 typedef XX *        (*XXHotelGet)(XXIx i); 
 typedef void        (*XXHotelEnrich)(XXIx iWho, Cash amt);
+typedef bool        (*XXHotelChargeIfCan)(XXIx iWho, Cash amt);
 typedef void        (*XXHotelReview)(XXIx i);
 typedef Cash        (*XXHotelRobber)(XXIx i);
 typedef void        (*XXHotelKiller)(void);
@@ -23,6 +24,7 @@ typedef struct {
   XXHotelAlloc alloc;
   XXHotelGet get;
   XXHotelEnrich enrich;
+  XXHotelChargeIfCan chargeIfCan;
   XXHotelReview review;
   XXHotelRobber rob;
   XXHotelKiller kill;

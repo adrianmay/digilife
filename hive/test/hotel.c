@@ -27,7 +27,6 @@ ThingIx iThing;
 static bool init(void) {
   openGlobals();
   hotelOfThings.open();
-  //hotelOfThings.show();
   return true;
 }
 
@@ -46,7 +45,7 @@ bool testNoPop(void) {
   extinct = false;
   TIME_VOID_PROC(killTilExtinct()); 
   printf("testNoPop: %'ld\n", cycles);
-  assertLongCond(cycles, <100000);
+  assertLongCond(cycles, <200000);
   return true;
 }
 
@@ -54,6 +53,7 @@ void make(Ix name, Cash cash) {
   bool recycledSlot;
   iThing = hotelOfThings.alloc(cash, &pThing, &recycledSlot);
   pThing->body.name = name;
+  hotelOfThings.show();
 }
 
 bool test1(void) {

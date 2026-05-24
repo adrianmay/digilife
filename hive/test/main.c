@@ -9,7 +9,6 @@
 #include "test.h"
 #include "bit/MsgTicket.h"
 
-void onMobsExtinct(void) {}
 void onMsgsExtinct(void) {}
 void showMsgTicket(MsgTicket * p) {}
 
@@ -68,8 +67,9 @@ int main(int argc, char **argv) {
 //    pile() && 
 //    meap() && 
 //    hotel() &&
-    raffle() &&
+//    raffle() &&
 //    perf() &&
+    work() &&
     true;
   return suc?0:1;
 }

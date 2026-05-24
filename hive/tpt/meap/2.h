@@ -12,7 +12,7 @@ typedef bool    (*XXMeapEditTocks) (XXIx i, Score when);
 typedef bool    (*XXMeapErase)    (XXIx i);
 typedef Chomped (*XXMeapChomp)    (Score thresh, XX * p, int pseudoAnimals);
 typedef bool    (*XXCheckOrdered) (void);
-typedef Ix   (*XXMeapSize)     (void);
+typedef Ix      (*XXMeapSize)     (void);
 typedef void    (*XXMeapShow)     (void);
 //
 // typedef enum {EXTINCT=-1, IDLE, } ChompResult;

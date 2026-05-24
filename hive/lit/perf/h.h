@@ -15,7 +15,7 @@ Cycles readProcessCycles();
 Timer initThreadTimer() ;
 Cycles readThreadCycles(Timer t);
 
-typedef int PerfHandleC;
+typedef void * PerfHandleC;
 typedef void (*PerfHandler)(PerfHandleC phc);
 
 typedef struct {

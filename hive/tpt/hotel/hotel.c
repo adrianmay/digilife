@@ -93,9 +93,9 @@ static void kill_(void) {
   Tocks now = tocksNow();            
   while (true) { // Returns when nothing to kill for now
     bomb.who = badXXIx; // Prevent false alarms
-    Chomped ch = meapOfXXBombs.chomp(now, &bomb, 1);
+    Chomped ch = meapOfXXBombs.chomp(now, &bomb, 0);
     if (ch == Extinct) { 
-      printf("Extinct\n");
+      printf("XXs are extinct\n");
       onXXsExtinct(); 
       return; 
     }
@@ -121,13 +121,31 @@ static void enrich_(XXIx iWho, Cash amt) {
   XXRent * pRent = &pWho->rent;
   pRent->cash += amt;
   review_(iWho);
-  kill_();
+  kill_(); // amt might be negative
 }
 
 static void enrich(XXIx iWho, Cash amt) {
   lock();
   enrich_(iWho, amt);
   unlock();
+}
+
+static bool chargeIfCan_(XXIx iWho, Cash amt) {
+  //printf("Transfer: amt=%'ld, iFrom=%d, iTo=%d\n", amt, iFrom.i, iTo.i);
+  XX * pWho = pileOfXXs.get(iWho);
+  XXRent * pRent = &pWho->rent;
+  if (pRent->cash < amt) return false;
+  pRent->cash -= amt;
+  review_(iWho);
+  kill_();
+  return true;
+}
+
+static bool chargeIfCan(XXIx iWho, Cash amt) {
+  lock();
+  bool res = chargeIfCan_(iWho, amt);
+  unlock();
+  return res;
 }
 
 static Cash rob(XXIx i) { 
@@ -187,5 +205,5 @@ void showXX(XX * p) {
   showXXBody(&p->body);
 }
 
-XXHotel hotelOfXXs = {open, alloc, get, enrich, review, rob, kill, count, close, show};
+XXHotel hotelOfXXs = {open, alloc, get, enrich, chargeIfCan, review, rob, kill, count, close, show};
 

@@ -1,8 +1,8 @@
 // core/structs.h
 
-typedef struct {
-  CoreHandle handle;
-  bool quitting;
-  bool forceYield;
-  Alarm alarm;
-} Core;
+// typedef struct {
+//   pthread_t pid;
+//   CoreHandle handle;
+//   bool forceYield;
+//   Alarm alarm;
+// } Core;

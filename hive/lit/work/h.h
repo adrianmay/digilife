@@ -1,8 +1,10 @@
 
 #include "bit/MsgTicket.h"
 
+void * thisWorkerThread(int w);
+void emit(Cash cash, CpuBid bid, MobIx iRcvr, MobIx iSndr);
 void initWork();
-void emit(Cash cash, CpuBid bid, MsgTicket * pTicket);
+void waitWorkersAllDone();
 
 /*
 

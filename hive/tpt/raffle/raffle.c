@@ -18,6 +18,8 @@ static bool isChildRightChild(XXIx i) {return i.i%2==0; } //Whole approach could
 
 //openXXRaffle() {openXXHotel();}
 
+bool gottaQuitXX = false;
+
 static void show(void) {
   hotelOfXXs.show();
 }
@@ -121,15 +123,14 @@ static Cash drawAssumeNotEmpty(XXTicket * pTicket) {
 
 // If this returns false we're closing down the program
 static bool draw(XXTicket * pTicket, Cash * pCash) {
-  bool ret;
   lock();
-  if (empty())
-    pthread_cond_wait(&cond, &mutex);
-  ret = !empty();
-  if (ret)
-    *pCash = drawAssumeNotEmpty(pTicket);
+  if (gottaQuitXX)    { unlock(); return false; }
+  else if (empty()) pthread_cond_wait(&cond, &mutex);
+  if (gottaQuitXX)    { unlock(); return false; }
+  // Can't be empty
+  *pCash = drawAssumeNotEmpty(pTicket);
   unlock();
-  return ret; 
+  return true; 
 }
 
 static bool open() { 
@@ -154,7 +155,12 @@ static bool check_(XXIx i) {
 
 static bool check() { return check_((XXIx) {0}); }
 
-XXRaffle raffleOfXXs = { open, enter, cancel, empty, draw, close, show, check };
+static void quitNow() { 
+  gottaQuitXX = true; 
+  pthread_cond_signal(&cond); 
+}
+
+XXRaffle raffleOfXXs = { open, enter, cancel, empty, draw, close, show, check, quitNow };
 
 void showXXBody(XXBody * p) {
   printf("l=%'ld,s=%'ld,r=%'ld,", p->raffle.l, p->raffle.s, p->raffle.r);

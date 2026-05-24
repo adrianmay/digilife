@@ -105,7 +105,7 @@
  int setupNum, testNum;
  
  int counts[numMeapSetups ] = {0,1,2,2,2,2,3,3,3,3,3,3,3};
- bool count(int killed) {
+ bool howMany(int killed) {
    Ix cnt = pileOfJunks.getUsr();
    Ix exp = counts[setupNum]-killed;
    assertIntM(cnt, exp);
@@ -120,21 +120,21 @@
  
  bool testMeap1(void) {
    return
-     count(0) &&
+     howMany(0) &&
      ordered() && 
      true;
  }
  
  bool testMeap2(void) {
    return
-     count(0) &&
+     howMany(0) &&
      true;
  }
  
  bool testMeap3(void) {
    return
      (meapOfJunks.erase((JunkIx){2})) &&
-     count(setupNum>0 ? 1 : 0) &&
+     howMany(setupNum>0 ? 1 : 0) &&
      ordered() &&
      true;
  }
@@ -176,7 +176,6 @@
    meapOfJunks.show();
    return true;
  }
- 
  
  bool chompTest(void) {
    return bkt("chompTest",nowt, chompT, cleanupMeap);

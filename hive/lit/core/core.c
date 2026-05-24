@@ -1,4 +1,4 @@
-// lang/lang.c
+// core/core.c
 #include <string.h>
 #include "h.h"
 #include "structs.h"

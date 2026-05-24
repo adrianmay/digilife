@@ -1,7 +1,7 @@
 #include <stdatomic.h>
 #include "misc/h.h"
 #include "args/h.h"
-#include "lang/h.h"
+#include "core/h.h"
 #include "Msg_raffle/h.h"
 #include "Mob_hotel/h.h"
 #include "h.h"

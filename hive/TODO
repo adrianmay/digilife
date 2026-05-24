@@ -1,3 +1,21 @@
+###################################################
+FINALE
+
+Basics:
+1. Make one message, run one worker thread. See it processed. Check CPU charged. Wait memory bankruptcy. Exit.
+2. Two messages: 
+     One more work. See it die first.
+     Different bids. Higher more likely.
+     Different message balance. Message dies of memory rent before being processed.
+
+Lang:
+1. Send a message to self, others
+2. Reserve a block
+3. Reproduce
+
+
+
+###################################################
 
 Make sure cash of drawn ticket is correct after billing memory rent on the message.
 

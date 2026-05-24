@@ -1,4 +1,4 @@
-// lang/structs.h
+// core/structs.h
 
 typedef struct {
   CoreHandle handle;

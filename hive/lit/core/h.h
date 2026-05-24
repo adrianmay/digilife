@@ -1,4 +1,4 @@
-// lang/h.h
+// core/h.h
 
 #include "perf/h.h"
 #include "Mob_hotel/structs.h"

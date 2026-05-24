@@ -17,9 +17,9 @@ typedef struct {
 Worker workers[MAX_WORKER_THREADS] = {0};
 Weight bidToWeight(CpuBid bid) {return bid;}
 
-void onMobsExtinct(void) {
-  raffleOfMsgs.quit();
-}
+//void onMobsExtinct(void) {
+//  raffleOfMsgs.quit();
+//}
 
 void emit(Cash cash, CpuBid bid, MobIx iR, MobIx iS) {
   static MsgTicket tmp;

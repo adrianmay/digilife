@@ -18,3 +18,4 @@ int fileSize(int fd);
 
 uint64_t randIntBelow(uint64_t lim);
 
+bool nearly(double a, double b, double f);

@@ -34,10 +34,8 @@
     return false; \
   }
 
-bool nearly(double a, double b);
-
-#define assertDoubleApprox(VAR, VAL) \
-  if (!nearly(VAR, VAL)) { \
+#define assertDoubleApprox(VAR, VAL, TOL) \
+  if (!nearly(VAR, VAL, TOL)) { \
     fprintf(stdout, "%s:%d: Expected: " #VAL "=%f ; Got: %f\n", __FILE__, __LINE__, VAL, VAR); \
     return false; \
   }

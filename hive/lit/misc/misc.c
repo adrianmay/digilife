@@ -44,3 +44,10 @@ uint64_t randIntBelow(uint64_t lim) {
   else return res%lim;
   return res;
 }
+
+bool nearly(double a, double b, double f) {
+  double m = (a+b)/2;
+  double d2 = (b-m)*(m-a); // Positive
+  double t = m*f;
+  return d2 < t*t;
+}

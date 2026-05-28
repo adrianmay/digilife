@@ -77,7 +77,7 @@ static bool setup3() {
 static bool setup4() {
   MobIx i1 = makeOneMobWithCashAndEffort(5000, DEFAULT_EFFORT+1);
   MobIx i2 = makeOneMobWithCashAndEffort(5000, DEFAULT_EFFORT+2);
-  makeMsgWithCashAndBid(i1, 2000, 0.2);
+  makeMsgWithCashAndBid(i1, 2000, 0.1);
   makeMsgWithCashAndBid(i2, 2000, 0.01);
   //hotelOfMobs.show();
   //raffleOfMsgs.show();
@@ -135,11 +135,11 @@ void * rentCollector(void * p) {
 }
 
 Test ts[] = {
-//  {"One mob, no msg, starves. No thread cpu usage", setup0, 0, cleanup0, 0},
-//  {"Add a rich msg, mob dies much sooner, message runs to completion", setup1, 2, cleanup0, 10000000},
-//  {"Add a poor msg, mob dies a bit sooner, message preempted", setup2, 1, cleanup0, 7000000},
-//  {"Economical mob can afford it", setup3, 2, cleanup0, 3700000},
-//  {"Choice depends on bid", setup4, 22, cleanup0, 18000000}, //Sometimes get 12
+  {"One mob, no msg, starves. No thread cpu usage", setup0, 0, cleanup0, 0},
+  {"Add a rich msg, mob dies much sooner, message runs to completion", setup1, 2, cleanup0, 10000000},
+  {"Add a poor msg, mob dies a bit sooner, message preempted", setup2, 1, cleanup0, 7000000},
+  {"Economical mob can afford it", setup3, 2, cleanup0, 3700000},
+  {"Choice depends on bid", setup4, 22, cleanup0, 20000000}, //Sometimes get 12
   {"Message can die of memory rent before being called", setup5, 11, cleanup0, 9000000}, //Sometimes get 12
 };
 

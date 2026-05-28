@@ -21,7 +21,7 @@ static int openCyclesEvent(int process, int disabled, Cycles sample_period) {
   pe.type = PERF_TYPE_HARDWARE;
   pe.size = sizeof(pe);
   pe.config = PERF_COUNT_HW_CPU_CYCLES;
-  pe.exclude_kernel = 0;
+  pe.exclude_kernel = 1;
   pe.exclude_hv = 1;
   pe.pinned = 0;
   pe.disabled = disabled;

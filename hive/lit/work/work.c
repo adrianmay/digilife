@@ -38,7 +38,7 @@ void runMob(Worker * pW, MobIx i, Mob * p) {
   if (p->body.effort == 10000001) pW->output += 10;
   if (p->body.effort == 10000002) pW->output *= 2;
   // So it's either 22 or 12 depending on the order.
-  int e = p->body.effort*0.23;
+  int e = p->body.effort*0.264;
   for (int x=0, a=0; a < e; a++) {
     if (pW->forceYield) return;
     x+=a;

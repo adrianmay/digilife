@@ -10,7 +10,10 @@
 #include "bit/MsgTicket.h"
 
 void onMsgsExtinct(void) {}
-void showMsgTicket(MsgTicket * p) {}
+
+void showMsgTicket(MsgTicket * p) {
+  printf("cpuBid=%lf, rcvr=%d\n", p->cpuBid, p->iRcvr.i);
+}
 
 void B2V(B b) { (*b)(); }
 

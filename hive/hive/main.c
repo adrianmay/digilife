@@ -13,7 +13,7 @@ void showMobBody(MobBody * p) {
 }
  
 void showMsgTicket(MsgTicket * p) {
-  printf("cpuBid=%lf, more\n", p->cpuBid);
+  printf("cpuBid=%lf, rcvr=%d\n", p->cpuBid, p->iRcvr.i);
 }
 
 

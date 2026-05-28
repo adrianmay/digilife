@@ -12,7 +12,8 @@ typedef struct {
 void initProcessTimer();
 Cycles readProcessCycles();
 
-Timer initThreadTimer() ;
+Timer initThreadTimer();
+void unitThreadTimer(Timer t);
 Cycles readThreadCycles(Timer t);
 
 typedef void * PerfHandleC;
@@ -25,6 +26,7 @@ typedef struct {
 } Alarm;
 
 void initThreadAlarm(Alarm * pA, PerfHandler h, PerfHandleC phc);
+void unitThreadAlarm(Alarm * pA);
 void setAlarm(Alarm * pA, Cycles cycles_);
 Cycles readAlarmCycles(Alarm * pA);
 

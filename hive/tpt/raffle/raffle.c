@@ -24,6 +24,9 @@ static void show(void) {
   hotelOfXXs.show();
 }
 
+static void kill(void) {
+  hotelOfXXs.kill();
+}
 static Weight totWeight(XXIx i) {
   XX * pB = hotelOfXXs.get(i);
   XXRafle * pR = &pB->body.raffle;
@@ -100,9 +103,11 @@ static Cash drawBelow(XXIx i, Weight w, XXTicket * pTicket) {
     return drawBelow(left(i), w, pTicket);
   w -= pR->l;
   if (w < pR->s) {
+    Cash c = pB->rent.cash;
     memcpy(pTicket, &pB->body.ticket, sizeof(XXTicket));
     cancel_(i);
-    return 0; //TODO: cash
+    //printf("Returning cash=%ld from drawBelow\n", c);
+    return c;
   } 
   w -= pR->s;
   if (pR->r == 0) {
@@ -124,9 +129,11 @@ static Cash drawAssumeNotEmpty(XXTicket * pTicket) {
 // If this returns false we're closing down the program
 static bool draw(XXTicket * pTicket, Cash * pCash) {
   lock();
-  if (gottaQuitXX)    { unlock(); return false; }
-  else if (empty()) pthread_cond_wait(&cond, &mutex);
-  if (gottaQuitXX)    { unlock(); return false; }
+  if (gottaQuitXX)    { gottaQuitXX=false; unlock(); return false; }
+  else if (empty()) {
+    pthread_cond_wait(&cond, &mutex);
+  }
+  if (gottaQuitXX)    { gottaQuitXX=false; unlock(); return false; }
   // Can't be empty
   *pCash = drawAssumeNotEmpty(pTicket);
   unlock();
@@ -160,7 +167,7 @@ static void quitNow() {
   pthread_cond_signal(&cond); 
 }
 
-XXRaffle raffleOfXXs = { open, enter, cancel, empty, draw, close, show, check, quitNow };
+XXRaffle raffleOfXXs = { open, enter, cancel, empty, draw, close, show, check, kill, quitNow };
 
 void showXXBody(XXBody * p) {
   printf("l=%'ld,s=%'ld,r=%'ld,", p->raffle.l, p->raffle.s, p->raffle.r);

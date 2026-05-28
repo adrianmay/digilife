@@ -8,3 +8,4 @@ void updateTocks(void);
 Tocks tocksNow(void);
 Cycles cyclesUntilTock(Tocks deadline); 
 Cycles cyclesAtTock(Tocks deadline); 
+Cycles cyclesPerTock(); 

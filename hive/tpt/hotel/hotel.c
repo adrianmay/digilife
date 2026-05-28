@@ -101,7 +101,7 @@ static void kill_(void) {
     }
     if (ch == Killed ) { 
       pileOfXXs.free(bomb.who); //TODO: funeral and recover cash
-      //printf("Killed %i\n", bomb.who.i);
+      printf("Killed XX %i\n", bomb.who.i);
       //show();
       continue; 
     }

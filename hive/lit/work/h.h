@@ -1,7 +1,19 @@
 
 #include "bit/MsgTicket.h"
 
-void * thisWorkerThread(int w);
+typedef struct {
+  pthread_t pid;
+  bool forceYield;
+  Timer timer;
+  Alarm alarm;
+  int output;
+  Cycles firstStarted;
+  Cycles lastStarted;
+  Cycles lastEnded;
+} Worker;
+
+Worker * thisWorker(int w);
+int runWorker(Worker * pW);
 void emit(Cash cash, CpuBid bid, MobIx iRcvr, MobIx iSndr);
 void initWork();
 void waitWorkersAllDone();

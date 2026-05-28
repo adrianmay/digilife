@@ -41,6 +41,10 @@ void initProcessTimer() {
   processFd = openCyclesEvent(1, 0, 0);
 }
 
+void unitProcessTimer() {
+  close(processFd);
+}
+
 typedef struct perf_event_mmap_page PerfMap; 
 
 PerfMap * openPerfMap(int fd) {
@@ -60,6 +64,12 @@ Timer initThreadTimer() {
   t.fd = openCyclesEvent(0, 0, 1000000);
   t.map = openPerfMap(t.fd);
   return t;
+}
+
+void unitThreadTimer(Timer t) {
+  int pagesz = getpagesize();
+  munmap(t.map, pagesz * 2);
+  close(t.fd);
 }
 
 Cycles readFd(int fd) {
@@ -111,11 +121,16 @@ void initThreadAlarm(Alarm * pA, PerfHandler h, PerfHandleC phc) {
   alarmsByFd[pA->t.fd] = pA;
 }
 
+void unitThreadAlarm(Alarm * pA) {
+  unitThreadTimer(pA->t);
+}
+
 void setAlarm(Alarm * pA, Cycles cycles) {
   //Cycles cycles = cycles_ - 100000;
   int fd = pA->t.fd;
   ioctl(fd, PERF_EVENT_IOC_DISABLE, 0);
   ioctl(fd, PERF_EVENT_IOC_RESET, 0);
+  if (!cycles) return;
   ioctl(fd, PERF_EVENT_IOC_PERIOD, &cycles);
   ioctl(fd, PERF_EVENT_IOC_ENABLE, 0);
 }

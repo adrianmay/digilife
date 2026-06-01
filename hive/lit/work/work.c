@@ -33,18 +33,28 @@ static void alarmHandler(void * p) {
   printf("Job overran in %'ld\n", pW->lastEnded - pW->lastStarted);
 }
 
-void runMob(Worker * pW, MobIx i, Mob * p) {
+void runMobA(Worker * pW, MobIx i, Mob * p) {
   if (pW->output == 0) pW->output = 1;
-  if (p->body.effort == 10000001) pW->output += 10;
-  if (p->body.effort == 10000002) pW->output *= 2;
+  if (p->body.p.a.effort == 10000001) pW->output += 10;
+  if (p->body.p.a.effort == 10000002) pW->output *= 2;
   // So it's either 22 or 12 depending on the order.
-  int e = p->body.effort*0.264;
+  int e = p->body.p.a.effort*0.264;
   for (int x=0, a=0; a < e; a++) {
     if (pW->forceYield) return;
     x+=a;
   }
   if (pW->output == 1) pW->output=2;
   //printf("Just did Mob %d\n", i.i);
+}
+
+void runMob(Worker * pW, MobIx i, Mob * p) {
+  switch (p->body.phylum) {
+    case 'a':
+      runMobA(pW, i, p);
+    default:
+      printf("Unknown phylum\n");
+      exit(1);
+  }
 }
 
 void * workerThread(void * p) {

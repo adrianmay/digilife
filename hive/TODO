@@ -7,10 +7,10 @@ ERAS
   Memory rent fixed. Bid fixed. Pay fixed.
   doMob:
     gets paid
-    self-posts with cash pMSC.
-    yields with prob pY.
-    reproduces with cash pRC.
-    child-posts with cash pMCC.
+    self-posts with prop of cash like prop of sizes of Mob and Msg plus cost of doMob
+    yields with prob pY dep on cash.
+    mutably reproduces with genesis birth cash.
+    child-posts with usual birth cash
 
 
 FINALE
@@ -26,7 +26,6 @@ Lang:
 1. Send a message to self, others
 2. Reserve a block
 3. Reproduce
-
 
 
 ###################################################

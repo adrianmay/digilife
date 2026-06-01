@@ -33,7 +33,8 @@ bool noMoreRent = false;
 MobIx makeOneMobWithCashAndEffort(Cash cash, int effort) {
   Mob * pMob;
   MobIx i = hotelOfMobs.alloc(cash, &pMob, 0);
-  pMob->body.effort = effort;
+  pMob->body.phylum = 'a';
+  pMob->body.p.a.effort = effort;
   return i;
 }
 

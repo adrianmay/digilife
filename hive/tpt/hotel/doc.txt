@@ -10,7 +10,7 @@ This keeps bombs in a meap to kill animals in a pile when they can't
 
 Each hotel needs its own thread running killer. It'll exit if the population
   falls to zero. A worker thread should call review after it does a transaction.
-  
+
 You no longer kill animals. They get killed by this mechanism.
 
 Tocks are the unit of time billing and all the code stores deadlines in tocks.

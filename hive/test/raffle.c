@@ -11,7 +11,7 @@ void showMessTicket(MessTicket * p) {
 }
 
 static bool extinct = false;
-void onMesssExtinct(void) { extinct = true; } 
+void onMesssExtinct(void) { extinct = true; }
 
 static bool init(void) {
   openGlobals();
@@ -44,7 +44,7 @@ void stuff2(void) {
 }
 
 void empty(void) {
-  while (!raffleOfMesss.empty()) { raffleOfMesss.draw(&tkt, &cash); }; 
+  while (!raffleOfMesss.empty()) { raffleOfMesss.draw(&tkt, &cash); };
 }
 
 void sample(void) {
@@ -54,9 +54,9 @@ void sample(void) {
     //printf("In sample after draw: %d\n", res);
     if (!res) {
       printf("Sampled %d H, %d T, %d virgins and %d errors.\n", h, t, v, e);
-      return; 
+      return;
     }
-    if (tkt.type=='H') h++; 
+    if (tkt.type=='H') h++;
     else if (tkt.type=='T') t++;
     else if (tkt.type=='V') v++;
     else e++;
@@ -96,11 +96,11 @@ bool testBlock() {
   return true;
 }
 
-bool testRaffle() { 
+bool testRaffle() {
   stuff1(); ch(); sample(); ch(); empty();
   stuff2(); ch(); sample(); ch(); empty();
   testBlock();
-  return true; 
+  return true;
 }
 
 bool raffle(void) { return bkt("raffle", init, testRaffle, cleanupRaffle); }

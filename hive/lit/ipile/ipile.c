@@ -1,9 +1,9 @@
 
-#include <fcntl.h>                                   
+#include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/mman.h>                                
-#include <sys/stat.h>                                
+#include <sys/mman.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include "types.h"
 #include "misc/h.h"
@@ -17,12 +17,12 @@ Ix recLen(Pilehead * ph) { return ph->rec; }
 // The minimum stretch of virtual memory that can accomodate a pile with
 //  a known record size and number of slots reserved (not necessarily in use).
 size_t pileSize(Pilehead * ph) {
-  int x = ph->rec * ph->res + sizeof(Pilehead),                                    
+  int x = ph->rec * ph->res + sizeof(Pilehead),
       d = x/PAGE,
-      r = x%PAGE;                                                              
+      r = x%PAGE;
   return PAGE*(d + (r?1:0)); //Round up to whole page
-} 
-  
+}
+
 // How many slots in a pile of a given filesize, given a known record size
 uint32_t capacity(Pilehead * ph, size_t filelen) {
   return (filelen-sizeof(Pilehead)) / ph->rec;
@@ -30,7 +30,7 @@ uint32_t capacity(Pilehead * ph, size_t filelen) {
 
 Pilehead * openPile(const char * basefilename, uint32_t rec, uint32_t stp, Ix lim, bool * virgin) { // returns array address
   char filename[MAX_FULL_PATH];
-  snprintf(filename, MAX_FULL_PATH, "%s/%s", getDataDir(), basefilename); 
+  snprintf(filename, MAX_FULL_PATH, "%s/%s", getDataDir(), basefilename);
   if (rec<4) { printf("Record size too small for free indices.\n"); quit(1); }
   // Could this ^ be at compile time?
   int fd;
@@ -81,11 +81,11 @@ void closePile(Pilehead * ph, FATE fate) {
   if (fd == -1) return;
   close(fd);
   char src[MAX_FULL_PATH];
-  snprintf(src, MAX_FULL_PATH, "%s/%s", getDataDir(), ph->fn); 
+  snprintf(src, MAX_FULL_PATH, "%s/%s", getDataDir(), ph->fn);
   if (fate==DELETE) unlink(src);
   if (fate==HIDE) {
     char dest[MAX_FULL_PATH+1];
-    snprintf(dest, MAX_FULL_PATH+1, "%s/.%s", getDataDir(), ph->fn); 
+    snprintf(dest, MAX_FULL_PATH+1, "%s/.%s", getDataDir(), ph->fn);
     rename(src, dest);
   }
   munmap(ph, ((uint64_t)ph->lim)*PAGE);
@@ -101,7 +101,7 @@ void growPile(Pilehead * ph) {
   void * wholeMap = (void*)ph;
   void * newPh = mmap(wholeMap+oldLen, newLen-oldLen, PROT_READ|PROT_WRITE, MAP_SHARED_VALIDATE|MAP_FIXED, ph->fd, oldLen);
   if (newPh != wholeMap + oldLen) {
-    printf("Subsequent mmap failed returning %p instead of %p with wholeMap=%p changing length from %ld to %ld\n", 
+    printf("Subsequent mmap failed returning %p instead of %p with wholeMap=%p changing length from %ld to %ld\n",
            newPh, ph, wholeMap, oldLen, newLen);
     quit(1);
   }
@@ -109,7 +109,7 @@ void growPile(Pilehead * ph) {
 
 typedef struct {Ix bad; Ix nextFree; } Free;
 // The main way to dereference an index:
-void  * findInPile(Pilehead * ph, Ix i) { return (((void*)(ph+1)) + i*ph->rec); }                                         
+void  * findInPile(Pilehead * ph, Ix i) { return (((void*)(ph+1)) + i*ph->rec); }
 // If it's free, we know we're pointing at an index of another free block or BAD_INDEX, so cast it:
 Free * findFreeInPile(Pilehead * ph, Ix i) { return (Free*) findInPile(ph,i); }
 
@@ -124,27 +124,27 @@ Ix allocInPile(Pilehead * ph, void ** ppNew, bool * pRecycled, void * ghost, int
   Ix ret;
   if (ph->fro != BAD_INDEX) {
     if (pRecycled) *pRecycled = true;
-    ph->frn -= 1;           
+    ph->frn -= 1;
     ret = ph->fro;
     Free * pFree = findFreeInPile(ph,ret);
     ph->fro = pFree->nextFree;
     if (ph->fro == BAD_INDEX) ph->fri = BAD_INDEX;
-    if (ghost) { 
+    if (ghost) {
       Ix * pGhost = (Ix*) &pFree->nextFree;
       memcpy(ghost, (void*) pGhost, ghostlen);
     }
   } else {
     if (pRecycled) *pRecycled = false;
-    growPile(ph);                                                                                                             
-    ph->top++; 
+    growPile(ph);
+    ph->top++;
     ret = ph->top-1;
-  } 
+  }
   void * pNew = findInPile(ph, ret);
   *((Ix*)pNew) = ret; // Anything but BAD_INDEX. In Rent, the name is declared there.
   if (ppNew) *ppNew = pNew;
   return ret;
-}   
-  
+}
+
 // Free a block to the free list
 // Only the rent collector thread does this?
 void freeInPile(Pilehead * ph, Ix i, void * ghost, int ghostlen) {
@@ -154,21 +154,21 @@ void freeInPile(Pilehead * ph, Ix i, void * ghost, int ghostlen) {
   pFree->nextFree = BAD_INDEX;
   if (ph->fri != BAD_INDEX) {
     Free * pOldInEnd = findFreeInPile(ph,ph->fri); // Get the block
-    pOldInEnd->nextFree = i; // Point old in end at newly freed block                                                 
+    pOldInEnd->nextFree = i; // Point old in end at newly freed block
   }
   ph->fri = i; //Set free in end to that block
   if (ghost) memcpy((void*)(&pFree->nextFree), ghost, ghostlen); //Stuff the ghost into the rest
   if (ph->fro==BAD_INDEX) ph->fro = i; // Only if this is the first do we mess with the out end
-  ph->frn += 1;           
+  ph->frn += 1;
   // Should assert that fri and fro have same badness
-} 
-  
+}
+
 // Sundry utils:
 Ix countFree(Pilehead * ph ) { return ph->frn; }
-Ix countPop(Pilehead * ph ) { return ph->top - ph->frn; }      
+Ix countPop(Pilehead * ph ) { return ph->top - ph->frn; }
 Ix getUsr(Pilehead * ph) { return ph->usr; }
-void setUsr(Pilehead * ph, Ix u) { ph->usr = u; } 
-void modUsr(Pilehead * ph, int32_t u)  { ph->usr += u; } 
+void setUsr(Pilehead * ph, Ix u) { ph->usr = u; }
+void modUsr(Pilehead * ph, int32_t u)  { ph->usr += u; }
 
 void showPile(Pilehead * ph, VP showSlot, bool onlyToUsr) {
   printf("\nPILE: %s\n", ph?ph->fn:"closed.");

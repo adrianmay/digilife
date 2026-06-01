@@ -1,10 +1,10 @@
-#include <sys/stat.h>                                
+#include <sys/stat.h>
 #include <sys/random.h>
 #include <stdio.h>
-#include <stdlib.h>         
-#include <string.h>         
-#include <time.h>         
-#include "types.h"         
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include "types.h"
 
 ////////////////////////////////////////////////////////////////
 
@@ -25,21 +25,21 @@ int64_t  wrapSub64S (uint64_t a, uint64_t b) { return a - b; }
 
 int quit(int i) {
   abort();
-} // { return *((int*)(0)); }                         
-    
-int fileSize(int fd) {                                                         
-  struct stat sb;                                                              
+} // { return *((int*)(0)); }
+
+int fileSize(int fd) {
+  struct stat sb;
   if (fstat(fd, &sb) == -1) { printf("Can't stat fd=%d\n", fd); quit(1); }
   return sb.st_size;
-} 
-  
+}
+
 uint64_t randIntBelow(uint64_t lim) {
   uint64_t thresh = -1;
-  thresh = -(thresh % lim + 1); 
+  thresh = -(thresh % lim + 1);
   uint64_t res;
   getrandom(&res, sizeof(res), 0);
 //  printf("randIntBelow: lim=%lu, thresh=%lu, res=%lu\n", lim, thresh, res);
-  if (res > thresh) 
+  if (res > thresh)
     return randIntBelow(lim); // Try again.
   else return res%lim;
   return res;

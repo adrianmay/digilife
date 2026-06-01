@@ -5,9 +5,9 @@
 
 typedef enum {Extinct, Idle, Killed} Chomped;
 
-typedef bool    (*XXMeapOpen)(void); 
+typedef bool    (*XXMeapOpen)(void);
 typedef void    (*XXMeapClose)(FATE fate);
-typedef bool    (*XXMeapInsert)   (XXIx *pI, XX ** pNew, Ix hint); 
+typedef bool    (*XXMeapInsert)   (XXIx *pI, XX ** pNew, Ix hint);
 typedef bool    (*XXMeapEditTocks) (XXIx i, Score when);
 typedef bool    (*XXMeapErase)    (XXIx i);
 typedef Chomped (*XXMeapChomp)    (Score thresh, XX * p, int pseudoAnimals);

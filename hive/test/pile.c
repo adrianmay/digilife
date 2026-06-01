@@ -26,11 +26,11 @@ bool sumItems(LinkIx * i0) {
   assertInt(vir1,true);
   LinkIx i; Link * pT;
   *i0 = i = pileOfLinks.alloc(&pT, &recycledSlot); // Must be index zero
-  pT->x = 0; 
+  pT->x = 0;
   Link * pNew;
   for (int a=0;a<40;a++) {
     pT->next=pileOfLinks.alloc(&pNew, &recycledSlot);
-    pNew->next = badLinkIx;                       
+    pNew->next = badLinkIx;
     pNew->x = 10*a;
     pT=pNew;
   }
@@ -49,9 +49,9 @@ bool freeing(LinkIx i0) {
   LinkIx i3 = nextLink(i2);
   LinkIx i4 = nextLink(i3);
   LinkIx i5 = nextLink(i4);
-  pileOfLinks.free(i2); 
-  pileOfLinks.free(i4); 
-  pileOfLinks.free(i3); 
+  pileOfLinks.free(i2);
+  pileOfLinks.free(i4);
+  pileOfLinks.free(i3);
   pileOfLinks.get(i1)->next = i5; // 6
   int total = sumLinks(i0);
   assertInt(total,7740);
@@ -89,7 +89,7 @@ bool with(LinkIx i0) {
   total = sumLinks(i0);
   assertInt(total,7743);
   assertInt(i,6);
-  return true;  
+  return true;
 }
 
 bool showIt(void) {

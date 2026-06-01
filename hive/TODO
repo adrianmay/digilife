@@ -1,10 +1,5 @@
 ###################################################
 
-URGENT LOOSE ENDS
-
-Return msg change to rcvr
-Charge rent on msgs too, smaller cos they are. 
-
 ERAS
 
 *** Era 1
@@ -22,7 +17,7 @@ FINALE
 
 Basics:
 1. Make one message, run one worker thread. See it processed. Check CPU charged. Wait memory bankruptcy. Exit.
-2. Two messages: 
+2. Two messages:
      One more work. See it die first.
      Different bids. Higher more likely.
      Different message balance. Message dies of memory rent before being processed.
@@ -41,7 +36,7 @@ Make sure cash of drawn ticket is correct after billing memory rent on the messa
 Cash back on robbing.
 Thread protection for globals
 
-Finish raffle and hotel tests. Raffle tests: 
+Finish raffle and hotel tests. Raffle tests:
   empty, just 1, drain
   equal weights: sorted/unsorted species
   diff weights
@@ -56,7 +51,7 @@ Get rid of name for now (later make flame (flags+name) at mob level (2 flag bits
 AFTER RAFFLE: MESSAGING:
   Function of cpu bid to weight.
   Function to make a message. Test they die of memory rent, which should be proportional to size.
-  Workers pull them within semaphore or something. 
+  Workers pull them within semaphore or something.
   Sweat. Charge cpu fee. Read sweat time from message. Keep change.
 
 Tidying:
@@ -66,7 +61,7 @@ Tidying:
 =====================
 
 Test that meapInsert returns whether or not lowest changed
-Non-pedantic build 
+Non-pedantic build
 Index type overused
 ? Pile doesn't need recLen - use sizeof(XX)
 

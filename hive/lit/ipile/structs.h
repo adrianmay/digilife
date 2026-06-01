@@ -10,8 +10,8 @@ struct __attribute__((aligned(KILO))) Pilehead { // This should be of a good siz
   Ix fri; // Ix of recently freed record
   Ix fro; // Ix of next free record to be used in alloc
   Ix frn; // Num free slots
-  char fn[MAX_FILENAME]; // So we can offer to delete it upon closing           
+  char fn[MAX_FILENAME]; // So we can offer to delete it upon closing
   Ix usr; // Misc persistent variable about this pile.TODO: make it atomic
 };
-                            
+
 

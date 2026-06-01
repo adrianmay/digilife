@@ -14,7 +14,7 @@ int32_t  wrapSub32S (uint32_t a, uint32_t b);
 int64_t  wrapSub64S (uint64_t a, uint64_t b);
 
 int quit(int i);
-int fileSize(int fd);                                                         
+int fileSize(int fd);
 
 uint64_t randIntBelow(uint64_t lim);
 

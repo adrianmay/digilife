@@ -1,4 +1,4 @@
-typedef struct __attribute__((aligned(KILO))) { 
+typedef struct __attribute__((aligned(KILO))) {
   int x;
   LinkIx next;
 } Link;

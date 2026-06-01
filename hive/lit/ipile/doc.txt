@@ -5,15 +5,15 @@ This implementation is called by the pile template to save code bloat.
 The other templates simply bloat.
 
 malloc became redundant the day they invented the huge virtual memory
-  space. We can now declare a huge array for each struct in the 
+  space. We can now declare a huge array for each struct in the
   program and rely on paging to avoid using physical memory until we
   write something in that part of the array. A pile is just that
-  growing from the bottom up with a free list. 
+  growing from the bottom up with a free list.
 
-The pile template takes the name of a struct and feeds corresponding 
+The pile template takes the name of a struct and feeds corresponding
   parameters to ipile
 
-A further advantage is that we can refer to things by 32-bit 
+A further advantage is that we can refer to things by 32-bit
   (or even 24 or 16-bit) indices rather than 64-bit pointers.
   This has a huge impact on data size, therefore page faults,
   therefore speed.

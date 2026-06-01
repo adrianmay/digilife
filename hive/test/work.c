@@ -114,7 +114,7 @@ void onMsgsExtinct(void) {
   //printf("Msgs extinct\n");
 }
 
-bool expectWhenExtinct(int expect, Cycles dur) { 
+bool expectWhenExtinct(int expect, Cycles dur) {
   updateTocks();
   Worker * pW = thisWorker(0);
   pW->output = 0; pW->firstStarted = pW->lastStarted = pW->lastEnded = 0;
@@ -155,7 +155,7 @@ Test ts[] = {
   {"Economical mob can afford it", setup3, 2, cleanup0, 1'600'000'000},
   {"Choice depends on bid", setup4, 22, cleanup0, 4'900'000'000}, //Sometimes get 12
   {"Message can die of memory rent before being called", setup5, 11, cleanup0, 3'000'000'000},
-  {"Rcvr gets change", setup6, 11, cleanup0, 900'000'000},                                                                                        
+  {"Rcvr gets change", setup6, 11, cleanup0, 900'000'000},
 };
 
 #define NUM_TESTS (sizeof(ts)/sizeof(Test))
@@ -179,7 +179,7 @@ bool work() {
     pthread_join(rentColPid, 0);
   }
   printf("\n");
-  //waitWorkersAllDone(); 
+  //waitWorkersAllDone();
   raffleOfMsgs.close(DELETE);
   hotelOfMobs.close(DELETE);
   closeGlobals(DELETE);

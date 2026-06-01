@@ -6,7 +6,7 @@
 
 static Args args = {
   .dataDir = "",
-  .numWorkers = 24,  
+  .numWorkers = 24,
 };
 
 static struct argp_option options[] = {
@@ -31,7 +31,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
       break;
     case ARGP_KEY_END:
       /* REQUIRED OPTION CHECK */
-      if (!*args.dataDir) 
+      if (!*args.dataDir)
         argp_usage(state);  // prints usage + exits
       break;
     default:

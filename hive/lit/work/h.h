@@ -30,5 +30,5 @@ Worker loop for worker threads:
   run with timer into action list
   do actions
 
-*/ 
+*/
 

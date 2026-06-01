@@ -45,7 +45,7 @@ void unitProcessTimer() {
   close(processFd);
 }
 
-typedef struct perf_event_mmap_page PerfMap; 
+typedef struct perf_event_mmap_page PerfMap;
 
 PerfMap * openPerfMap(int fd) {
   int pagesz = getpagesize();

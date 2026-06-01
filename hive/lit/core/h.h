@@ -9,5 +9,5 @@
 // bool quitting();
 // Alarm * coreAlarm(CoreHandle ch);
 // void forceYield(CoreHandle ch);
-// 
+//
 // void runMob(Mob * p);

@@ -13,7 +13,7 @@ void showMobBody(MobBody * p) {
 }
 
 static bool extinct;
-void onThingsExtinct(void) { extinct = true; } 
+void onThingsExtinct(void) { extinct = true; }
 
 
 
@@ -34,7 +34,7 @@ void killTilExtinct(void) {
   while (true) {
     updateTocks();
 //    printf("killTilExtinct: tocks=%d, processCycles=%'ld\n", tocksNow(), readProcessCycles());
-    hotelOfThings.kill(); 
+    hotelOfThings.kill();
     //printf("GOGOGOG");
     if (extinct) return;
     sleepMs(10);
@@ -43,7 +43,7 @@ void killTilExtinct(void) {
 
 bool testNoPop(void) {
   extinct = false;
-  TIME_VOID_PROC(killTilExtinct()); 
+  TIME_VOID_PROC(killTilExtinct());
   printf("testNoPop: %'ld\n", cycles);
   assertLongCond(cycles, <200000);
   return true;
@@ -110,7 +110,7 @@ void cleanupHotel(void) { hotelOfThings.close(HIDE); closeGlobals(HIDE); }
 
 bool testHotel(void) {
   background(sweat_forever); // Got to do work to advance CPU time ...
-  return 
+  return
     testNoPop() &&
     test1() &&
     testEarn() &&

@@ -77,4 +77,4 @@
 
 #define TIME_VOID_PROC(WORK)     TIME_VOID(readProcessCycles, WORK)
 #define TIME_RET_PROC(RET, WORK) TIME_RET(readProcessCycles, RET, WORK)
-  
+

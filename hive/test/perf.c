@@ -11,11 +11,11 @@
 
 #define LOTS 400000000ull
 
-uint64_t burn(uint64_t l, bool * quit) { 
-  uint64_t x; 
+uint64_t burn(uint64_t l, bool * quit) {
+  uint64_t x;
   *quit = false;
-  for (x=0; x<l && !(*quit); x++); 
-  return x; 
+  for (x=0; x<l && !(*quit); x++);
+  return x;
 }
 
 bool burnAndRead(Alarm * pA, uint64_t toBurn, Cycles cycles, bool * pQ) {
@@ -48,7 +48,7 @@ bool checkProcessTimer() {
     res1[a] = c-prev;
     prev = c;
   }
-  for (int a=0;a<MR;a++) 
+  for (int a=0;a<MR;a++)
     printf("checkProcessTimer: diff=%'ld\n", res1[a]);
   return true;
 }
@@ -62,7 +62,7 @@ bool checkThreadTimer() {
     res1[a] = c-prev;
     prev = c;
   }
-  for (int a=0;a<MR;a++) 
+  for (int a=0;a<MR;a++)
     printf("checkThreadTimer: diff=%'ld\n", res1[a]);
   return true;
 }
@@ -72,7 +72,7 @@ typedef struct {
   bool byeee;
 } Wkr;
 
-Wkr wkrs[2] = 
+Wkr wkrs[2] =
   { { {1, 4, 1, 0, 0}, false }
   , { {2, 2, 2, 3, 0}, false }
   };
@@ -124,12 +124,12 @@ bool checkManyThreads() {
 
 bool perf(void) {
   initPerf();
-  return 
+  return
     checkProcessTimer() &&
     checkThreadTimer() &&
     (initThreadAlarm(&a, handler, &wkrs[0]), true) &&
     checkThreadAlarm() &&
-    checkManyThreads() && 
+    checkManyThreads() &&
     (printf("Proc cycles total: %'ld\n", readProcessCycles()), true);
 }
 

@@ -51,7 +51,7 @@ static void siftDown(XXIx iCur) {
         XX * pR   = pileOfXXs.get(iR  ); Score sR   =   pR->tocks;
         if (iR.i < cnt && sR < sSmallest) iSmallest.i = iR.i;
       }
-    }  
+    }
 
     if (iSmallest.i == iCur.i) break;
     swap(iCur, iSmallest);
@@ -64,13 +64,13 @@ static bool insert(XXIx * pI, XX ** ppNew, Ix hint) {
   Ix meapTop = pileOfXXs.getUsr(); //meapish size
   if (meapTop < pileOfXXs.count()) { // That's pile's top minus pile's free count. But we'll never use free in this pile anyway.
     pI->i = meapTop;                   // Got meapish spares so just return one
-    *ppNew = pileOfXXs.get(*pI);    
-  }  
+    *ppNew = pileOfXXs.get(*pI);
+  }
   else
-    *pI = pileOfXXs.alloc(ppNew, 0); 
+    *pI = pileOfXXs.alloc(ppNew, 0);
   // ppNew is now correct either way.
   onNewXX(*pI, hint);                   // Expected to stuff *pI with things that depend on hint. Needed after allocing the meap member but before sorting.
-  pileOfXXs.modUsr(1);                        // Not sure if this should be before the above, but certainly it's before siftUp. 
+  pileOfXXs.modUsr(1);                        // Not sure if this should be before the above, but certainly it's before siftUp.
   if (pI->i > 0) {                          // No point sorting a singleton.
     bool res = siftUp(*pI);             // Calls siftUp if it returns true;
     if (!res) onMoveXX(*ppNew, *pI);    // Something else might want to keep track of where the meap member is.
@@ -79,15 +79,15 @@ static bool insert(XXIx * pI, XX ** ppNew, Ix hint) {
   return false;
 }
 
-static bool editTocksWhenLocked(XXIx iCur, Score when) { 
+static bool editTocksWhenLocked(XXIx iCur, Score when) {
   //printf("editTocksWhenLocked: i=%d, when=%d\n", iCur.i, when);
   pileOfXXs.get(iCur)->tocks = when;
-  siftDown(iCur); 
-  bool res = siftUp(iCur); 
+  siftDown(iCur);
+  bool res = siftUp(iCur);
   return res;
 }
 
-static bool editTocksTakingLock(XXIx iCur, Score when) { 
+static bool editTocksTakingLock(XXIx iCur, Score when) {
   bool res = editTocksWhenLocked(iCur, when);
   return res;
 }
@@ -149,7 +149,7 @@ static bool checkOrdered(void) {
   return ok;
 }
 
-static Ix size(void) {  return pileOfXXs.getUsr(); } 
+static Ix size(void) {  return pileOfXXs.getUsr(); }
 
 static bool open(void) { return pileOfXXs.open(); }
 static void close(FATE f) { pileOfXXs.close(f); }

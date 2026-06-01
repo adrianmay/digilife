@@ -60,14 +60,14 @@ void initEverything(void) {
 }
 /////////////////////
 
-int main(int argc, char **argv) { 
+int main(int argc, char **argv) {
   parseArgs(argc, argv);
   initEverything();
-  bool suc = 
-//    wrap() && 
-//    globals() && 
-//    pile() && 
-//    meap() && 
+  bool suc =
+//    wrap() &&
+//    globals() &&
+//    pile() &&
+//    meap() &&
 //    hotel() &&
 //    raffle() &&
 //    perf() &&

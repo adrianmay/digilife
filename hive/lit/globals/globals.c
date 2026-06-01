@@ -1,18 +1,18 @@
-#include <fcntl.h>                                   
+#include <fcntl.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <sys/mman.h>                                
+#include <sys/mman.h>
 #include <unistd.h>
 #include "structs.h"
 #include "h.h"
 #include "perf/h.h"
 #include "misc/h.h"
 
-#define GUESS_CYCLES_PER_TOCK 1000000                                           
+#define GUESS_CYCLES_PER_TOCK 1000000
 #define GLOBALS_FILENAME "Globals.pile"
 
-VolatileGlobals vg; 
-PersistentGlobals * pg; 
+VolatileGlobals vg;
+PersistentGlobals * pg;
 
 static void initVirginPersistentGlobals(void) {
   pg->lastKnownTock = 0;
@@ -65,8 +65,8 @@ bool openGlobals(void) {
 }
 
 void closeGlobals(bool rm) {  // And that param should be enum
-  closeGlobals_(pg->fd, rm); 
-} 
+  closeGlobals_(pg->fd, rm);
+}
 
 TockPrice tockPrice(void) {return pg->groatsPerTockPerByte;}
 
@@ -78,7 +78,7 @@ void updateTocks(void) {
   lldiv_t qr = lldiv(toBill, pg->cyclesPerTock);
   pg->lastKnownTock = pg->lastKnownTock + qr.quot;
   pg->cyclesNotTocked = qr.rem;
-} 
+}
 
 Tocks tocksNow(void) {return pg->lastKnownTock;}
 Cycles cyclesUntilTock(Tocks deadline) {return (deadline - pg->lastKnownTock)*pg->cyclesPerTock - pg->cyclesNotTocked;}

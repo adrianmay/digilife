@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CC=gcc 
+CC=gcc
 CFLAGS="-pthread -g -std=c23"
 
 tools/clean.sh
@@ -46,7 +46,7 @@ pids=""
 
 for M in `find gen bin -maxdepth 1 -type d | grep '/'`
 do
-  OS=`find $M -name *.o` 
+  OS=`find $M -name *.o`
   if [[ -n $OS ]]
   then
     echo "Building module object $M.o"
@@ -73,7 +73,7 @@ PARA=`cat /proc/sys/kernel/perf_event_paranoid`
 if [ "$PARA" -ne "1" ]
 then
   sudo sysctl kernel.perf_event_paranoid=1
-else 
+else
   echo "Permissions OK"
 fi
 

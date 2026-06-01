@@ -8,11 +8,11 @@
 
 #if ZZ
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-static void lock() { pthread_mutex_lock(&mutex); } 
-static void unlock() { pthread_mutex_unlock(&mutex); } 
+static void lock() { pthread_mutex_lock(&mutex); }
+static void unlock() { pthread_mutex_unlock(&mutex); }
 #else
-static void lock() {} 
-static void unlock() {} 
+static void lock() {}
+static void unlock() {}
 #endif
 
 static void show(void) {
@@ -39,7 +39,7 @@ static Ix count(void) {
   return pileOfXXs.count();
 }
 
-static XX * get(XXIx i) { 
+static XX * get(XXIx i) {
   return pileOfXXs.get(i);
 }
 
@@ -75,12 +75,12 @@ static bool updateXXDeathWithIxAndBombPointer(XXIx i, XXBomb * pBomb) {
   return updateXXDeath(p, pBomb);
 }
 
-static void review_(XXIx i) { 
+static void review_(XXIx i) {
   collectRent(i);
   //printf("Reviewing i=%d... ", i.i);
-  updateXXDeathWithIx(i); 
+  updateXXDeathWithIx(i);
 }
-static void review(XXIx i) { 
+static void review(XXIx i) {
   lock();
   review_(i);
   unlock();
@@ -90,20 +90,20 @@ static void review(XXIx i) {
 static void kill_(void) {
   XXBomb bomb; // Bomb copied out to here
   updateTocks();
-  Tocks now = tocksNow();            
+  Tocks now = tocksNow();
   while (true) { // Returns when nothing to kill for now
     bomb.who = badXXIx; // Prevent false alarms
     Chomped ch = meapOfXXBombs.chomp(now, &bomb, 0);
-    if (ch == Extinct) { 
+    if (ch == Extinct) {
       printf("XXs are extinct\n");
-      onXXsExtinct(); 
-      return; 
+      onXXsExtinct();
+      return;
     }
-    if (ch == Killed ) { 
+    if (ch == Killed ) {
       pileOfXXs.free(bomb.who); //TODO: funeral and recover cash
       printf("Killed XX %i\n", bomb.who.i);
       //show();
-      continue; 
+      continue;
     }
     return; // Must be Idle
   }
@@ -148,7 +148,7 @@ static bool chargeIfCan(XXIx iWho, Cash amt) {
   return res;
 }
 
-static Cash rob(XXIx i) { 
+static Cash rob(XXIx i) {
   lock();
   XX * p = pileOfXXs.get(i);
   XXRent * pRent = &p->rent;
@@ -181,7 +181,7 @@ static XXIx alloc(Cash cash, XX ** pp, bool * pRecycled) {
   return ret;
 }
 
-void onNewXXBomb(XXBombIx iBomb, Ix hint) { 
+void onNewXXBomb(XXBombIx iBomb, Ix hint) {
   //printf("OnNew: iBomb: %d hint: %d\n", iBomb.i, hint);
   XXBomb * pBomb = pileOfXXBombs.get(iBomb);
   pBomb->who = (XXIx){hint};
@@ -190,7 +190,7 @@ void onNewXXBomb(XXBombIx iBomb, Ix hint) {
   updateXXDeathWithIxAndBombPointer(pBomb->who, pBomb);
 }
 
-void onMoveXXBomb(XXBomb * pBomb, XXBombIx to) { 
+void onMoveXXBomb(XXBomb * pBomb, XXBombIx to) {
   XX * p = pileOfXXs.get(pBomb->who);
   //printf("Moving bomb for bulk %d from %d to %d\n", pBomb->who.i, p->rent.bomb.i, to.i);
   p->rent.bomb = to;

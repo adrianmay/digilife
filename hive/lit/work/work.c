@@ -32,7 +32,7 @@ static void alarmHandler(void * p) {
   pW->lastEnded = readThreadCycles(pW->timer);
   printf("Job overran in %'ld\n", pW->lastEnded - pW->lastStarted);
 }
-                                  
+
 void runMob(Worker * pW, MobIx i, Mob * p) {
   if (pW->output == 0) pW->output = 1;
   if (p->body.effort == 10000001) pW->output += 10;
@@ -87,11 +87,11 @@ Worker * thisWorker(int w) {
 }
 
 int runWorker(Worker * pW) {
-  workerThread(pW); 
+  workerThread(pW);
   return pW->output;
 }
 // Assume files open
-void initWork() { 
+void initWork() {
   //Start the workers
   for (int w=0;w<getNumWorkers();w++) {
     pthread_t junk;

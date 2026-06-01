@@ -1,16 +1,16 @@
 #include "1.h"
 #include "YY"
 
-typedef void * (*F_XX)(XX * p, void * u); 
+typedef void * (*F_XX)(XX * p, void * u);
 
-typedef bool    (*XXPileOpen)(void); 
-typedef XXIx (*XXPileAlloc)(XX ** pNew, bool * pRecycled); 
-typedef XX *    (*XXPileGet)(XXIx i); 
-typedef void *  (*XXPileWith)(XXIx i, F_XX f, void * u); 
+typedef bool    (*XXPileOpen)(void);
+typedef XXIx (*XXPileAlloc)(XX ** pNew, bool * pRecycled);
+typedef XX *    (*XXPileGet)(XXIx i);
+typedef void *  (*XXPileWith)(XXIx i, F_XX f, void * u);
 typedef void    (*XXPileFree)(XXIx i);
 typedef void    (*XXPileClose)(FATE fate);
 typedef bool    (*XXPileIxValid)(XXIx i);
-typedef Ix   (*XXPileCount)(void); 
+typedef Ix   (*XXPileCount)(void);
 // Types are same but this saves collisions:
 typedef Ix   (*XXGetUsr)(void); // Misc number
 typedef void    (*XXSetUsr)(Ix u);

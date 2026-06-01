@@ -5,15 +5,15 @@ echo $1_raffle >> gen/${TARGET}.objs
 
 # echo "
 # #include \"${1}_raffle/structs.h\"
-# 
-# void show${1}Body(${1}Body * p); 
+#
+# void show${1}Body(${1}Body * p);
 # " > gen/$1_hotel/$1Body.h
-# 
+#
 # echo "
 # // #include \"${1}_raffle/${1}Ticket.h\"
 # #include \"$1_hotel/$1Body.h\"
-# 
-# void show${1}Body(${1}Body * p) { 
-#   show${1}Ticket(&p->ticket); 
+#
+# void show${1}Body(${1}Body * p) {
+#   show${1}Ticket(&p->ticket);
 # }
 # " > gen/$1_hotel/$1Body.c

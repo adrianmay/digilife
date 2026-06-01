@@ -1,7 +1,7 @@
 #pragma once
 
 #include <pthread.h>
-#include <stdint.h>         
+#include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,13 +19,13 @@
 
 #define BAD_INDEX UINT32_MAX
 #define MAX_FILENAME 256
-#define PAGE 4096    
-#define KILO 1024ull           
-#define MEGA (KILO*KILO)    
-#define GIGA (MEGA*KILO)    
-#define B8 256ull           
-#define B16 (B8*B8)         
-#define B32 (B16*B16)       
+#define PAGE 4096
+#define KILO 1024ull
+#define MEGA (KILO*KILO)
+#define GIGA (MEGA*KILO)
+#define B8 256ull
+#define B16 (B8*B8)
+#define B32 (B16*B16)
 
 // Ought to be using the FPU here
 typedef uint64_t Cycles;
@@ -38,7 +38,7 @@ typedef uint32_t Ix;
 typedef  int32_t IxDiff;
 typedef uint32_t Name;
 typedef uint32_t TockDuration; // In nanoseconds.
-typedef int64_t Cash;  
+typedef int64_t Cash;
 typedef double TockPrice; // The currency unit can be tiny.
 typedef int64_t Weight; // We use negative ones when removing stuff. TODO: 32 bit
 typedef double CpuBid; // Float or int?

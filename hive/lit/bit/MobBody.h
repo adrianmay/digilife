@@ -1,6 +1,6 @@
 typedef struct {
   //Ix name;
-  int effort; 
+  int effort;
   char code[40];
 } MobBody;
 

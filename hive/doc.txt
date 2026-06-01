@@ -13,7 +13,7 @@ Then build.sh runs some templates (which are under tpt) putting the result under
 The sensible order in which to read the templates is: pile, meap, timer, hotel.
 
 The template invocations of build.sh make some test stuff and hotels Mob and Msg.
-Then a raffle will be generated in Msg, but that's yet to be written. 
+Then a raffle will be generated in Msg, but that's yet to be written.
 
 test and hive are executables and they are built into bin/ rather than gen/.
 

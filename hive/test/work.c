@@ -85,7 +85,6 @@ static bool setup4() {
   return true;
 }
 
-
 static bool setup5() {
   MobIx i1 = makeOneMobWithCashAndEffort(5000, DEFAULT_EFFORT+1);
   MobIx i2 = makeOneMobWithCashAndEffort(3000, DEFAULT_EFFORT+2);
@@ -109,6 +108,10 @@ void onMobsExtinct(void) {
   extinctAtProc = readProcessCycles();
   noMoreRent = true;
   raffleOfMsgs.quit();
+}
+
+void onMsgsExtinct(void) {
+  //printf("Msgs extinct\n");
 }
 
 bool expectWhenExtinct(int expect, Cycles dur) { 

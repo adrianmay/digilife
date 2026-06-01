@@ -10,7 +10,7 @@ typedef struct __attribute__((aligned(KILO))) {
   Tocks lastKnownTock; // 
   Cycles cyclesNotTocked; // Tocks were rounded down, such that this much time was not charged
   TockDuration cyclesPerTock; // Easy way to adjust price per ns, while keeping price per tock fixed.
-  TockPrice groatsPerTock;                       
+  TockPrice groatsPerTockPerByte;                       
 } PersistentGlobals;
 
 extern VolatileGlobals vg; 

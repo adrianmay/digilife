@@ -49,14 +49,14 @@ static void collectRent(XXIx i) {
   XXRent * pRent = &p->rent;
   Tocks now = tocksNow();
   Tocks time = now - pRent->lastPaidRent;
-  Cash bill = tockPrice() * time;
+  Cash bill = tockPrice() * (sizeof(XX)+sizeof(XXBomb)) * time;
   pRent->cash -= bill;
   pRent->lastPaidRent = now;
 }
 
 static bool updateXXDeath(XX* p, XXBomb * pBomb) {
   Cash cash = p->rent.cash;
-  Tocks ttl = cash/tockPrice();
+  Tocks ttl = cash / ( tockPrice() * (sizeof(XX)+sizeof(XXBomb)) );
   //printf("UpdateXXDeath: ttl=%d\n", ttl);
   Tocks death = tocksNow() + ttl;
   return meapOfXXBombs.editTocksWhenLocked(p->rent.bomb, death);

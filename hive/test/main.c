@@ -9,7 +9,6 @@
 #include "test.h"
 #include "bit/MsgTicket.h"
 
-void onMsgsExtinct(void) {}
 
 void showMsgTicket(MsgTicket * p) {
   printf("cpuBid=%lf, rcvr=%d\n", p->cpuBid, p->iRcvr.i);

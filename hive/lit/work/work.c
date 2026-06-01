@@ -13,7 +13,7 @@
 Worker workers[MAX_WORKER_THREADS] = {0};
 Weight bidToWeight(CpuBid bid) {return 1000000000*bid;}
 
-//void onMobsExtinct(void) {
+//void onMobsExtinct(void) { onXXsExtinct
 //  raffleOfMsgs.quit();
 //}
 
@@ -69,7 +69,10 @@ void * workerThread(void * p) {
     runMob(pW, ticket.iRcvr, hotelOfMobs.get(ticket.iRcvr));
     if (!pW->forceYield) {
       pW->lastEnded = readThreadCycles(pW->timer);
-      printf("Job finished in %'ld - %'ld = %'ld cycles\n", pW->lastEnded, pW->lastStarted, pW->lastEnded - pW->lastStarted);
+      CycleDiff used = pW->lastEnded - pW->lastStarted;
+      cash -= used * ticket.cpuBid / 1000;
+      printf("Job finished in %'ld - %'ld = %'ld cycles with change = %'ld\n", pW->lastEnded, pW->lastStarted, used, cash);
+      hotelOfMobs.enrich(ticket.iRcvr, cash);
     }
     setAlarm(&pW->alarm, 0);
     // Get output and do stuff.

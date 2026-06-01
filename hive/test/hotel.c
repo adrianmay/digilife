@@ -37,7 +37,7 @@ void killTilExtinct(void) {
     hotelOfThings.kill(); 
     //printf("GOGOGOG");
     if (extinct) return;
-    usleep(10000);
+    sleepMs(10);
   }
 }
 

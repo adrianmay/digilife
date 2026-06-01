@@ -29,6 +29,7 @@
 
 // Ought to be using the FPU here
 typedef uint64_t Cycles;
+typedef int64_t CycleDiff;
 typedef uint32_t Tocks;  // A tock might be around a microsecond, but varies
 typedef int32_t  TockDiff;  // A tock might be around a microsecond, but varies
 typedef Tocks    Score;

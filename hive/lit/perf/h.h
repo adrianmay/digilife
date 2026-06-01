@@ -34,4 +34,5 @@ void initPerf(); // Call this early in the whole process from the main thread
 
 void nsToTs(uint64_t ns, struct timespec * pTs);
 void sleepNs(uint64_t ns);
+void sleepMs(uint64_t ms);
 

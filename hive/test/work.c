@@ -1,6 +1,6 @@
 #pragma GCC diagnostic ignored "-Wunused-function"
-#include <stdio.h>
 #include <unistd.h>
+#include <stdio.h>
 #include <string.h>
 #include "types.h"
 #include "test.h"
@@ -15,7 +15,7 @@ typedef struct {
   char name[100]; B setup;
   int expect;
   V cleanup;
-  Tocks duration;
+  Cycles duration;
 } Test;
 
 Timer workerTimer;
@@ -95,20 +95,31 @@ static bool setup5() {
   return true;
 }
 
+static bool setup6() {
+  MobIx i1 = makeOneMobWithCashAndEffort(1000, DEFAULT_EFFORT+1);
+  makeMsgWithCashAndBid(i1, 900, 0.01); // Should cost 100
+  return true;
+}
+
+Cycles genesisAtProc = 0;
+Cycles extinctAtProc = 0;
+
 void onMobsExtinct(void) {
 //  printf("onMobsExtinct\n");
+  extinctAtProc = readProcessCycles();
   noMoreRent = true;
   raffleOfMsgs.quit();
 }
 
-bool expectWhenExtinct(int expect, Tocks dur) { 
+bool expectWhenExtinct(int expect, Cycles dur) { 
   updateTocks();
   Worker * pW = thisWorker(0);
   pW->output = 0; pW->firstStarted = pW->lastStarted = pW->lastEnded = 0;
+  genesisAtProc = readProcessCycles();
   runWorker(pW);
   updateTocks();
   assertInt(pW->output, expect);
-  Cycles dr = pW->lastEnded - pW->firstStarted;
+  Cycles dr = extinctAtProc - genesisAtProc;
   printf("dr=%'ld\n", dr);
   assertDoubleApprox((double)dr, (double)dur, 0.1);
   return true;
@@ -129,18 +140,19 @@ void * rentCollector(void * p) {
   (void)p;
   while (!noMoreRent) {
     hotelOfMobs.kill();
-    usleep(1000);
+    sleepMs(1);
   }
   return 0;
 }
 
 Test ts[] = {
-  {"One mob, no msg, starves. No thread cpu usage", setup0, 0, cleanup0, 0},
-  {"Add a rich msg, mob dies much sooner, message runs to completion", setup1, 2, cleanup0, 10000000},
-  {"Add a poor msg, mob dies a bit sooner, message preempted", setup2, 1, cleanup0, 7000000},
-  {"Economical mob can afford it", setup3, 2, cleanup0, 3700000},
-  {"Choice depends on bid", setup4, 22, cleanup0, 20000000}, //Sometimes get 12
-  {"Message can die of memory rent before being called", setup5, 11, cleanup0, 9000000}, //Sometimes get 12
+  {"One mob, no msg, starves. No thread cpu usage", setup0, 0, cleanup0, 2'000'000'000},
+  {"Add a rich msg, mob dies much sooner, message runs to completion", setup1, 2, cleanup0, 980'000'000},
+  {"Add a poor msg, mob dies a bit sooner, message preempted", setup2, 1, cleanup0, 1'300'000'000},
+  {"Economical mob can afford it", setup3, 2, cleanup0, 1'600'000'000},
+  {"Choice depends on bid", setup4, 22, cleanup0, 4'900'000'000}, //Sometimes get 12
+  {"Message can die of memory rent before being called", setup5, 11, cleanup0, 3'000'000'000},
+  {"Rcvr gets change", setup6, 11, cleanup0, 900'000'000},                                                                                        
 };
 
 #define NUM_TESTS (sizeof(ts)/sizeof(Test))

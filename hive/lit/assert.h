@@ -37,7 +37,7 @@
 #define assertDoubleApprox(VAR, VAL, TOL) \
   if (VAR == VAL && VAR == 0) return true; \
   if (!nearly(VAR, VAL, TOL)) { \
-    fprintf(stdout, "%s:%d: Expected: " #VAL "=%f ; Got: %f\n", __FILE__, __LINE__, VAL, VAR); \
+    fprintf(stdout, "%s:%d: Expected: " #VAL "=%'f ; Got: %'f\n", __FILE__, __LINE__, VAL, VAR); \
     return false; \
   }
 

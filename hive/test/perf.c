@@ -130,8 +130,7 @@ bool perf(void) {
     (initThreadAlarm(&a, handler, &wkrs[0]), true) &&
     checkThreadAlarm() &&
     checkManyThreads() && 
-    printf("Proc cycles total: %'ld\n", readProcessCycles()); //49
-    true ;
+    (printf("Proc cycles total: %'ld\n", readProcessCycles()), true);
 }
 
 

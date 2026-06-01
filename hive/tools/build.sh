@@ -1,6 +1,7 @@
 #!/bin/bash
 
-CC=gcc
+CC=gcc 
+CFLAGS="-pthread -g -std=c23"
 
 tools/clean.sh
 rm -rf gen bin
@@ -32,7 +33,7 @@ for C  in $CS
 do
   O=${C/.c/.o}
   echo "Compiling C to $O"
-  $CC -pthread -g -iquote gen -Wall -Werror -c $C -o $O &
+  $CC $CFLAGS -iquote gen -Wall -Werror -c $C -o $O &
   pids="$pids $!"
 done
 
@@ -64,9 +65,9 @@ done
 # ld --relocatable --allow-shlib-undefined -o gen/o.o gen/*.o || exit 1
 
 echo "Building Test"
-$CC -pthread -o Test bin/test.o $(cat gen/all.objs gen/test.objs | sed 's#^#gen/#; s#$#.o#') || exit 1
+$CC $CFLAGS -o Test bin/test.o $(cat gen/all.objs gen/test.objs | sed 's#^#gen/#; s#$#.o#') || exit 1
 echo "Building Hive"
-$CC -pthread -o Hive bin/hive.o $(cat gen/all.objs gen/hive.objs | sed 's#^#gen/#; s#$#.o#') || exit 1
+$CC $CFLAGS -o Hive bin/hive.o $(cat gen/all.objs gen/hive.objs | sed 's#^#gen/#; s#$#.o#') || exit 1
 
 PARA=`cat /proc/sys/kernel/perf_event_paranoid`
 if [ "$PARA" -ne "1" ]

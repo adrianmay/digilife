@@ -171,3 +171,4 @@ void sleepNs(uint64_t ns) {
   clock_nanosleep(CLOCK_PROCESS_CPUTIME_ID, 0, &ts, 0);
 }
 
+void sleepMs(uint64_t ms) { sleepNs(1000000*ms); }

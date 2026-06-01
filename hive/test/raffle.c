@@ -2,6 +2,7 @@
 #include "types.h"
 #include "test.h"
 #include "misc/h.h"
+#include "perf/h.h"
 #include "globals/h.h"
 #include "Mess_raffle/h.h"
 
@@ -76,9 +77,9 @@ bool ch() {
 
 void * produce(void * p) {
   (void)p;
-  usleep(1000000);
+  sleepMs(1000);
   raffleOfMesss.enter(2000, 10, &tkt);
-  usleep(1000000);
+  sleepMs(1000);
   raffleOfMesss.enter(2000, 10, &tkt);
   raffleOfMesss.enter(2000, 10, &tkt);
   return 0;

@@ -1,4 +1,23 @@
 ###################################################
+
+URGENT LOOSE ENDS
+
+Return msg change to rcvr
+Rent depends on record size, so smaller for msg than mob
+
+ERAS
+
+*** Era 1
+  No murderer.
+  Memory rent fixed. Bid fixed. Pay fixed.
+  doMob:
+    gets paid
+    self-posts with cash pMSC.
+    yields with prob pY.
+    reproduces with cash pRC.
+    child-posts with cash pMCC.
+
+
 FINALE
 
 Basics:

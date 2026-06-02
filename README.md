@@ -1,5 +1,7 @@
 (The long but out of date version: index.html on gh-pages branch or go to http://adrianmay.github.io/digilife)
 
+(The code is under `hive`. Type `make` under linux to generate the `C` code with `bash`, build it and run whichever tests happen to be enabled at the time. Type `make` under linux or WSL. Star the repo if you want to collaborate.)
+
 ## TLDR
 
 Why doesn't software evolve like animals do? Why do we have to write the stuff?

@@ -91,8 +91,10 @@ void spawnB(MobIx iParent, Mob * pParent) {
 }
 
 int iter=0;
+FILE * outfile;
+
 void runMobB(Worker * pW, MobIx i, Mob * pMob) {
-  printf("%d %d %d\n", iter++, hotelOfMobs.count(), raffleOfMsgs.count());
+  fprintf(outfile, "%d %d %d\n", iter++, hotelOfMobs.count(), raffleOfMsgs.count());
   PhyB * p = &pMob->body.p.b;
   //if (pMob->rent.cash>10000) abort();
   hotelOfMobs.enrich(i, p->pay);
@@ -103,8 +105,8 @@ void runMobB(Worker * pW, MobIx i, Mob * pMob) {
   //double pYield = clampProb(p->oddsLazyByCash0 - 0.5 + p->oddsLazyByCash1 * pMob->rent.cash/2.0/p->spawnCash);
   //printf("pYield=%f\n", pYield);
   //if (rollProb(pYield)) return;
-  if (rollProb(0.8)) return;
-  spawnB(i, pMob);
+  if (!rollProb(0.8)) 
+    spawnB(i, pMob);
 }
 
 void runMob(Worker * pW, MobIx i, Mob * p) {
@@ -124,12 +126,13 @@ void runMob(Worker * pW, MobIx i, Mob * p) {
 }
 
 void * workerThread(void * p) {
+  outfile = fopen("out","w");
   Worker * pW = (Worker *) p;
   memset(pW, 0, sizeof(Worker));
   pW->timer = initThreadTimer();
   pW->pid = pthread_self();
   initThreadAlarm(&pW->alarm, alarmHandler, pW);
-  while (iter<60000) {
+  while (iter<50000) {
     raffleOfMsgs.kill();
     MsgTicket ticket;
     Cash cash;
@@ -158,6 +161,7 @@ void * workerThread(void * p) {
   }
   unitThreadAlarm(&pW->alarm);
   unitThreadTimer(pW->timer);
+  fclose(outfile);
   return 0;
 }
 

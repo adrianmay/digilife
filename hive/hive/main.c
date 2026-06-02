@@ -3,6 +3,7 @@
 #include "bit/MsgTicket.h"
 #include "bit/MobBody.h"
 
+void onMobKilled(MobIx i) {}
 void onMobsExtinct(void) {}
 void onMsgsExtinct(void) {}
 void onThingsExtinct(void) {}

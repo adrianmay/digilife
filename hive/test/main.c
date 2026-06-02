@@ -9,6 +9,7 @@
 #include "test.h"
 #include "bit/MsgTicket.h"
 
+void onMobKilled(MobIx i) {}
 
 void showMsgTicket(MsgTicket * p) {
   printf("cpuBid=%lf, rcvr=%d\n", p->cpuBid, p->iRcvr.i);
@@ -55,7 +56,7 @@ pthread_t background(void * (*f)(void *)) { pthread_t pid; pthread_create(&pid, 
 void initEverything(void) {
 //  handleSigusr1();
   initPerf();
-  srand(0);
+  srand(123);
   setlocale(LC_NUMERIC, "");
 }
 /////////////////////

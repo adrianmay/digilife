@@ -94,16 +94,17 @@ static void kill_(void) {
   while (true) { // Returns when nothing to kill for now
     bomb.who = badXXIx; // Prevent false alarms
     Chomped ch = meapOfXXBombs.chomp(now, &bomb, 0);
-    if (ch == Extinct) {
-      printf("XXs are extinct\n");
-      onXXsExtinct();
-      return;
-    }
     if (ch == Killed ) {
+      onXXKilled(bomb.who);
       pileOfXXs.free(bomb.who); //TODO: funeral and recover cash
       //printf("Killed XX %i\n", bomb.who.i);
       //show();
       continue;
+    }
+    if (ch == Extinct) {
+      //printf("XXs are extinct\n");
+      onXXsExtinct();
+      return;
     }
     return; // Must be Idle
   }

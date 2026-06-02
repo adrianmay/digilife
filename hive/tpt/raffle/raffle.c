@@ -95,37 +95,40 @@ static bool empty() {
 static XXIx enter(Cash cash, Weight w, XXTicket * pTicket) {
   char blah[40];
   lock();
-  checkM("enter 1");
+  checkM("enter1");
   bool wasEmpty = empty();
   XX * p;
   bool recycled;
   XXIx i = hotelOfXXs.alloc(cash, &p, &recycled);
-  if (p->rent.cash>10000) { printf("Overrich 1 %d has %'ld from %'ld\n", i.i, p->rent.cash, cash); exit(1); }
+  //if (p->rent.cash>10000) { printf("Overrich 1 %d has %'ld from %'ld\n", i.i, p->rent.cash, cash); exit(1); }
   memcpy(&p->body.ticket, pTicket, sizeof(XXTicket));
   XXRafle * pRaf = &p->body.raffle;
-  sprintf(blah, "enter 2 i=%d recyc=%b", i.i, recycled);
+  sprintf(blah, "enter2 i=%d recyc=%b", i.i, recycled);
   checkM(blah);
   if (recycled) {
     //pRaf->l = totWeightI(left(i));
     //pRaf->r = totWeightI(right(i));
   } else pRaf->l = pRaf->r = 0;
+  sprintf(blah, "enter3 i=%d recyc=%b", i.i, recycled);
   pRaf->s = w;
   propagateWeightUp(i, w);
-  if (p->rent.cash>10000) { printf("Overrich 2 %d has %'ld\n", i.i, p->rent.cash); exit(1); }
-  sprintf(blah, "enter 3 i=%d recyc=%b", i.i, recycled);
+  //if (p->rent.cash>10000) { printf("Overrich 2 %d has %'ld\n", i.i, p->rent.cash); exit(1); }
+  sprintf(blah, "enter4 i=%d recyc=%b", i.i, recycled);
   checkM(blah);
   if (wasEmpty) pthread_cond_signal(&cond);
   unlock();
   return i;
 }
 
-static Cash cancel_(XXIx i) {
-  XX * pB = pileOfXXs.get(i);
-  XXRafle * pR = &pB->body.raffle;
+void onXXKilled(XXIx i) {
+  XX * p = pileOfXXs.get(i);
+  XXRafle * pR = &p->body.raffle;
   Weight w = pR->s;
   pR->s = 0;
-  //When drawing, we'll treat a free slot like a proper node with a self-weight of zero and descend through it.
   propagateWeightUp(i, -w);
+}
+
+static Cash cancel_(XXIx i) {
   Cash c = hotelOfXXs.rob(i); //Take all money so it soon gets freed...
   hotelOfXXs.kill();
   return c;

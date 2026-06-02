@@ -20,7 +20,7 @@ static bool init(void) {
   return true;
 }
 
-MessTicket tkt = {'V' };
+MessTicket tkt = {'V'};
 Cash cash;
 
 
@@ -75,13 +75,15 @@ bool ch() {
   return true;
 }
 
+int bored = 0;
+
 void * produce(void * p) {
   (void)p;
-  sleepMs(1000);
-  raffleOfMesss.enter(2000, 10, &tkt);
-  sleepMs(1000);
-  raffleOfMesss.enter(2000, 10, &tkt);
-  raffleOfMesss.enter(2000, 10, &tkt);
+  for (int a=0;a<200;a++) {
+    sleepMs(1+randIntBelow(5));
+    if (bored==1) break;
+    raffleOfMesss.enter(10, 1+randIntBelow(10), &tkt);
+  }
   return 0;
 }
 
@@ -90,11 +92,22 @@ bool testBlock() {
   MessTicket tick;
   Cash cash;
   pthread_create(&pid, 0, produce, 0);
-  raffleOfMesss.draw(&tick, &cash);
-  raffleOfMesss.draw(&tick, &cash);
-  raffleOfMesss.draw(&tick, &cash);
+  //sleepMs(200);
+  for (int a=0;a<100;a++) {
+    sleepMs(1+randIntBelow(5));
+    raffleOfMesss.draw(&tick, &cash);
+  }
+  bored = 1;
+  pthread_join(pid, 0);
   return true;
 }
+
+// bool testRecycling() {
+//   MessTicket tick;
+//   Cash cash;
+//   Weight w;
+//   raffleOfMesss.enter(5000, w, &tkt);
+// }
 
 bool testRaffle() {
   stuff1(); ch(); sample(); ch(); empty();

@@ -61,7 +61,7 @@ PerfMap * openPerfMap(int fd) {
 
 Timer initThreadTimer() {
   Timer t;
-  t.fd = openCyclesEvent(0, 0, 00000000);
+  t.fd = openCyclesEvent(0, 0, 0);
   t.map = openPerfMap(t.fd);
   return t;
 }

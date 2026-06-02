@@ -36,5 +36,6 @@ typedef struct {
 } XXHotel;
 
 extern void onXXsExtinct(void); // Provide this.
+extern void onXXKilled(XXIx); // Provide this.
 extern XXHotel hotelOfXXs;
 

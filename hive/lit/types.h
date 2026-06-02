@@ -46,6 +46,7 @@ typedef double CpuBid; // Float or int?
 typedef void * (*F)(void * item, void * u);
 typedef void (*VV)(void);
 typedef void (*VP)(void *);
+typedef void (*VIP)(Ix, void *);
 
 typedef enum {NOWT, DELETE, HIDE} FATE;
 

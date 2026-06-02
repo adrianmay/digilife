@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CC=gcc
-CFLAGS="-pthread -g -std=c23"
+CFLAGS="-pthread -g -lm -std=c23"
 
 tools/clean.sh
 rm -rf gen bin

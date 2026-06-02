@@ -170,7 +170,7 @@ Ix getUsr(Pilehead * ph) { return ph->usr; }
 void setUsr(Pilehead * ph, Ix u) { ph->usr = u; }
 void modUsr(Pilehead * ph, int32_t u)  { ph->usr += u; }
 
-void showPile(Pilehead * ph, VP showSlot, bool onlyToUsr) {
+void showPile(Pilehead * ph, VIP showSlot, bool onlyToUsr) {
   printf("\nPILE: %s\n", ph?ph->fn:"closed.");
   if (!ph) return;
   printf("  REC |   TOP |   USR |   FRN |   FRI |   FRO \n");
@@ -179,6 +179,6 @@ void showPile(Pilehead * ph, VP showSlot, bool onlyToUsr) {
     Free * p = findFreeInPile(ph, a);
     printf("%5d | ",a);
     if (p->bad == BAD_INDEX) printf("Free: nextFree=%4d | ", p->nextFree);
-    showSlot(p);
+    showSlot(a, p);
   }
 }

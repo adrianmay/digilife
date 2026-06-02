@@ -18,7 +18,7 @@ static void initVirginPersistentGlobals(void) {
   pg->lastKnownTock = 0;
   pg->cyclesNotTocked = 0;
   pg->cyclesPerTock = GUESS_CYCLES_PER_TOCK; //Don't ignore animal for more than 2**32/nsPerTock
-  pg->groatsPerTockPerByte = 0.014; //min_groats_per_nanosecond * GUESS_NS_PER_TOCK;
+  pg->groatsPerTockPerByte = 0.7*0.014; //min_groats_per_nanosecond * GUESS_NS_PER_TOCK;
 }
 
 static void initVolatileGlobals(void) {

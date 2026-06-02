@@ -9,6 +9,7 @@ typedef Cash   (*XXRaffleCancel) (XXIx i);
 typedef bool   (*XXRaffleEmpty)  (void);
 typedef bool   (*XXRaffleDraw)   (XXTicket * pTicket, Cash * pCash);
 typedef void   (*XXRaffleShow)   (void);
+typedef Ix     (*XXRaffleCount)  (void);
 typedef bool   (*XXRaffleCheck)  (void);
 typedef void   (*XXRaffleKiller) (void);
 typedef void   (*XXRaffleQuit)   (void);
@@ -21,6 +22,7 @@ typedef struct {
   XXRaffleDraw draw;
   XXRaffleClose close;
   XXRaffleShow show;
+  XXRaffleCount count;
   XXRaffleCheck check;
   XXRaffleKiller kill;
   XXRaffleQuit quit;

@@ -27,6 +27,7 @@ bool rent(void);
 bool hotel(void);
 bool raffle(void);
 bool work(void);
+bool equi(void);
 
 bool openGlobals(void);
 void closeGlobals(bool);

@@ -71,7 +71,8 @@ int main(int argc, char **argv) {
 //    hotel() &&
 //    raffle() &&
 //    perf() &&
-    work() &&
+//    work() &&
+    equi() &&
     true;
   return suc?0:1;
 }

@@ -18,6 +18,7 @@ typedef void        (*XXHotelKiller)(void);
 typedef Ix          (*XXHotelCount)(void);
 typedef void        (*XXHotelClose)(FATE fate);
 typedef void        (*XXHotelShow)(void);
+typedef void        (*XXHotelShowXX)(XXIx i, XX * p);
 
 typedef struct {
   XXHotelOpen open;
@@ -31,6 +32,7 @@ typedef struct {
   XXHotelCount count;
   XXHotelClose close;
   XXHotelShow show;
+  XXHotelShowXX showXX;
 } XXHotel;
 
 extern void onXXsExtinct(void); // Provide this.

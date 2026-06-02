@@ -8,7 +8,7 @@
 #include "Thing_hotel/h.h"
 #include "bit/MobBody.h"
 
-void showMobBody(MobBody * p) {
+void showMobBody(MobIx i, MobBody * p) {
   printf("code=<binary>\n");
 }
 

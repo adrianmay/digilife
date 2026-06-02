@@ -5,7 +5,9 @@
 Pilehead * headOfXXs = 0;
 const XXIx  badXXIx = (XXIx) {BAD_INDEX};
 
-extern void showXX(XX * pXX); //Provide this;
+extern void showXX(XXIx i, XX * pXX); //Provide this;
+static void showXX_(Ix i, void * p) { showXX( (XXIx){i}, (XX*)p); }
+
 bool      openXXPile(void)                    { bool v; headOfXXs = openPile("XXs.pile", sizeof(XX), 10, ZZ, &v); return v; }
 XXIx      allocXX(XX ** pNew, bool * pRecyc)  { Ix i = allocInPile(headOfXXs, (void**)pNew, pRecyc, 0, 0); return (XXIx) {i}; }
 XX *      getXX(XXIx i)                       { return (XX*)findInPile(headOfXXs, i.i); }
@@ -17,7 +19,7 @@ Ix        countXXs(void)                      { return countPop(headOfXXs); }
 Ix        getXXUsr(void)                      { return getUsr(headOfXXs); }
 void      setXXUsr(Ix u)                      { setUsr(headOfXXs, u); }
 void      modXXUsr(IxDiff u)                  { modUsr(headOfXXs, u); }  // Make this atomic sometime
-void      showXXPile(bool u)                  { showPile(headOfXXs, (VP)showXX, u); }
+void      showXXPile(bool u)                  { showPile(headOfXXs, showXX_, u); }
 
 XXPile pileOfXXs =
   { openXXPile

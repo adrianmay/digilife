@@ -7,7 +7,7 @@ void onMobsExtinct(void) {}
 void onMsgsExtinct(void) {}
 void onThingsExtinct(void) {}
 
-void showMobBody(MobBody * p) {
+void showMobBody(MobIx i, MobBody * p) {
   printf("code=<binary>\n");
 
 }

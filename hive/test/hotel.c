@@ -5,15 +5,17 @@
 #include "perf/h.h"
 #include "globals/h.h"
 #include "Thing_hotel/structs.h"
+#include "Thing_pile/1.h"
 #include "Thing_hotel/h.h"
 #include "bit/MobBody.h"
 
-void showMobBody(MobBody * p) {
+void showMobBody(MobIx i, MobBody * p) {
   printf("code=<binary>\n");
 }
 
 static bool extinct;
 void onThingsExtinct(void) { extinct = true; }
+void onThingKilled(ThingIx i) {}
 
 
 
@@ -62,8 +64,8 @@ bool test1(void) {
   printf("Made in test1\n");
   TIME_VOID_PROC(killTilExtinct());
   printf("test1: %'ld\n", cycles);
-  assertLongCond(cycles, <2100000000ull)
-  assertLongCond(cycles, >1900000000ull)
+  assertLongCond(cycles, <2700000000ull)
+  assertLongCond(cycles, >2300000000ull)
   return true;
 }
 
@@ -82,8 +84,8 @@ bool testEarn(void) {
   background(earn);
   TIME_VOID_PROC(killTilExtinct());
   printf("testEarn: %'ld\n", cycles);
-  assertLongCond(cycles, <3100000000ull)
-  assertLongCond(cycles, >2900000000ull)
+  assertLongCond(cycles, <4000000000ull)
+  assertLongCond(cycles, >3600000000ull)
   return true;
 }
 

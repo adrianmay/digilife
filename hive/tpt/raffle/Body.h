@@ -6,4 +6,4 @@
 typedef struct {Weight s; Weight l; Weight r;} XXRafle;
 typedef struct {XXRafle raffle; XXTicket ticket;} XXBody;
 
-void showXXBody(XXBody * p);
+void showXXBody(XXIx i, XXBody * p); //Add index param so we can show pointers to lchild, rchild, parent in raffle

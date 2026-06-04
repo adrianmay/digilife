@@ -115,10 +115,10 @@ bool checkManyThreads() {
   uint64_t sleeps[2][5] = { {1, 4, 1, 0, 0}
                           , {2, 2, 2, 3, 0} };
   pthread_t a, b;
-  pthread_create(&a, NULL, worker_main, sleeps[0]);
-  pthread_create(&b, NULL, worker_main, sleeps[1]);
-  pthread_join(a, NULL);
-  pthread_join(b, NULL);
+  pthread_create(&a, 0, worker_main, sleeps[0]);
+  pthread_create(&b, 0, worker_main, sleeps[1]);
+  pthread_join(a, 0);
+  pthread_join(b, 0);
   return true;
 }
 

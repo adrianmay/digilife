@@ -13,4 +13,4 @@ Ix countPop(Pilehead * ph );
 Ix getUsr(Pilehead * ph); // Misc number
 void setUsr(Pilehead * ph, Ix u);
 void modUsr(Pilehead * ph, IxDiff u);
-void showPile(Pilehead * ph, VP showSlot, bool onlyToUsr);
+void showPile(Pilehead * ph, VIP showSlot, bool onlyToUsr);

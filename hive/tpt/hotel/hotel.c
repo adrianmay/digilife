@@ -94,16 +94,17 @@ static void kill_(void) {
   while (true) { // Returns when nothing to kill for now
     bomb.who = badXXIx; // Prevent false alarms
     Chomped ch = meapOfXXBombs.chomp(now, &bomb, 0);
-    if (ch == Extinct) {
-      printf("XXs are extinct\n");
-      onXXsExtinct();
-      return;
-    }
     if (ch == Killed ) {
+      onXXKilled(bomb.who);
       pileOfXXs.free(bomb.who); //TODO: funeral and recover cash
-      printf("Killed XX %i\n", bomb.who.i);
+      //printf("Killed XX %i\n", bomb.who.i);
       //show();
       continue;
+    }
+    if (ch == Extinct) {
+      //printf("XXs are extinct\n");
+      onXXsExtinct();
+      return;
     }
     return; // Must be Idle
   }
@@ -196,14 +197,14 @@ void onMoveXXBomb(XXBomb * pBomb, XXBombIx to) {
   p->rent.bomb = to;
 }
 
-void showXXBomb(XXBomb * p) {
+void showXXBomb(XXBombIx i, XXBomb * p) {
   printf("tocks=%d,who=%d\n", p->tocks, p->who.i);
 }
 
-void showXX(XX * p) {
+void showXX(XXIx i, XX * p) {
   printf("cash=%'ld,lastPaidRent=%d,bomb=%d,", p->rent.cash, p->rent.lastPaidRent, p->rent.bomb.i);
-  showXXBody(&p->body);
+  showXXBody(i, &p->body);
 }
 
-XXHotel hotelOfXXs = {open, alloc, get, enrich, chargeIfCan, review, rob, kill, count, close, show};
+XXHotel hotelOfXXs = {open, alloc, get, enrich, chargeIfCan, review, rob, kill, count, close, show, showXX};
 

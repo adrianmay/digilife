@@ -1,10 +1,12 @@
 #include <sys/stat.h>
+#include <unistd.h>
 #include <sys/random.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <string.h>
-#include <time.h>
 #include "types.h"
+#include "h.h"
 
 ////////////////////////////////////////////////////////////////
 
@@ -50,4 +52,27 @@ bool nearly(double a, double b, double f) {
   double d2 = (b-m)*(m-a); // Positive
   double t = m*f;
   return d2 < t*t;
+}
+
+double gaussian_random(double mean, double stddev) {
+  static int has_spare = 0;
+  static double spare;
+  if (has_spare) {
+    has_spare = 0;
+    return mean + stddev * spare;
+  }
+  has_spare = 1;
+  double u, v, s;
+  do {
+    u = (rand() / ((double)RAND_MAX)) * 2.0 - 1.0;
+    v = (rand() / ((double)RAND_MAX)) * 2.0 - 1.0;
+    s = u * u + v * v;
+  } while (s == 0 || s >= 1);
+  s = sqrt(-2.0 * log(s) / s);
+  spare = v * s;
+  return mean + stddev * (u * s);
+}
+
+double clampProb(double p) {
+  return MAX(0,MIN(1,p));
 }

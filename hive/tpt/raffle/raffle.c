@@ -123,6 +123,7 @@ static XXIx enter(Cash cash, Weight w, XXTicket * pTicket) {
 void onXXKilled(XXIx i) {
   XX * p = pileOfXXs.get(i);
   XXRafle * pR = &p->body.raffle;
+  if (pR->s == 0) abort();
   Weight w = pR->s;
   pR->s = 0;
   propagateWeightUp(i, -w);
@@ -158,7 +159,10 @@ static Cash drawBelow(XXIx i, XXTicket * pTicket) {
   if (target < pR->s) {
     c = pB->rent.cash;
     memcpy(pTicket, &pB->body.ticket, sizeof(XXTicket));
+    if (pR->s == 0) abort();
     cancel_(i);
+    if (pR->s != 0) abort();
+    if (!(pB->rent.nick & 0x80000000)) abort();
     //printf("Returning cash=%ld from drawBelow\n", c);
     return c;
   }
@@ -219,7 +223,6 @@ static void quitNow() {
 }
 
 XXRaffle raffleOfXXs = { open, enter, cancel, empty, draw, close, show, count, check, kill, quitNow };
-
 
 void showXXBody(XXIx i, XXBody * p) {
   printf("l=%'ld,s=%'ld,r=%'ld,⇑=%d,⇙=%d,⇘=%d,", p->raffle.l, p->raffle.s, p->raffle.r, parent(i).i, left(i).i, right(i).i);

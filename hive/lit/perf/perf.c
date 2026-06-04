@@ -110,21 +110,6 @@ Cycles readThreadCycles(Timer t) {
 
 Alarm * alarmsByFd[MAX_WORKER_THREADS];
 
-void initThreadAlarm(Alarm * pA, PerfHandler h, PerfHandleC phc) {
-  pA->handler = h;
-  pA->phc = phc;
-  pA->t.fd = openCyclesEvent(0, 1, 1000000);
-  pA->t.map = openPerfMap(pA->t.fd);
-  fcntl(pA->t.fd , F_SETFL, O_ASYNC | O_NONBLOCK);
-  fcntl(pA->t.fd , F_SETSIG, SIGIO);
-  fcntl(pA->t.fd , F_SETOWN, getpid());
-  alarmsByFd[pA->t.fd] = pA;
-}
-
-void unitThreadAlarm(Alarm * pA) {
-  unitThreadTimer(pA->t);
-}
-
 void setAlarm(Alarm * pA, Cycles cycles) {
   //Cycles cycles = cycles_ - 100000;
   int fd = pA->t.fd;
@@ -133,6 +118,23 @@ void setAlarm(Alarm * pA, Cycles cycles) {
   if (!cycles) return;
   ioctl(fd, PERF_EVENT_IOC_PERIOD, &cycles);
   ioctl(fd, PERF_EVENT_IOC_ENABLE, 0);
+}
+
+void initThreadAlarm(Alarm * pA, PerfHandler h, PerfHandleC phc) {
+  pA->handler = h;
+  pA->phc = phc;
+  pA->t.fd = openCyclesEvent(0, 1, 100000000);
+  pA->t.map = openPerfMap(pA->t.fd);
+  fcntl(pA->t.fd , F_SETFL, O_ASYNC | O_NONBLOCK);
+  fcntl(pA->t.fd , F_SETSIG, SIGIO);
+  fcntl(pA->t.fd , F_SETOWN, getpid());
+  alarmsByFd[pA->t.fd] = pA;
+  ioctl(pA->t.fd, PERF_EVENT_IOC_DISABLE, 0);
+  //setAlarm(pA, 0);
+}
+
+void unitThreadAlarm(Alarm * pA) {
+  unitThreadTimer(pA->t);
 }
 
 Cycles readAlarmCycles(Alarm * pA) {

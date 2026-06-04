@@ -6,14 +6,11 @@ typedef struct {
 } PhyA;
 
 typedef struct {
-  double oddsLazyByCash0;
-  double oddsLazyByCash1; // Hope it learns to repro only when rich
-  double msgCashByCash0; //How much of cash goes to msg
-  double msgCashByCash1; //  For child msg use params after mutation
+  int spawnThresh; // ito cash
   Cash pay; 
-  Cash spawnCash; 
   double bid; 
   double fractionMsgOfMobSize;
+  char pad[96];
   // Children start with same cash as Adam. 
 } PhyB;
 

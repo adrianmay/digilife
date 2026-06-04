@@ -4,6 +4,7 @@
 typedef struct {
   CpuBid cpuBid;
   MobIx iRcvr; // Name nRcvr;
+  Ix nRcvr; // nick
 //  MobIx iSndr; // Name nSndr;
 //  MobIx iCtnt; // Name nCtnt;
 //  uint16_t ctntStart; uint16_t ctntEnded;

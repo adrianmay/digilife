@@ -36,6 +36,12 @@ int fileSize(int fd) {
 }
 
 uint64_t randIntBelow(uint64_t lim) {
+  uint64_t res;
+  getrandom(&res, sizeof(res), 0);
+  return res%lim;
+}
+
+uint64_t randIntBelow_(uint64_t lim) {
   uint64_t thresh = -1;
   thresh = -(thresh % lim + 1);
   uint64_t res;

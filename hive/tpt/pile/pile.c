@@ -14,7 +14,7 @@ XX *      getXX(XXIx i)                       { return (XX*)findInPile(headOfXXs
 void *    withXX(XXIx i, F_XX f, void * u)    { return withInPile(headOfXXs, i.i, (F)f, u); }
 void      freeXX(XXIx i)                      { freeInPile(headOfXXs, i.i, 0, 0); }
 void      closeXXPile(FATE fate)              { closePile(headOfXXs, fate); headOfXXs = 0; }
-bool      validXXIx(XXIx i)                   { return i.i != BAD_INDEX; }
+bool      validXXIx(XXIx i)                   { return (i.i & 0x7FFFFFFF) != 0x7FFFFFFF; }
 Ix        countXXs(void)                      { return countPop(headOfXXs); }
 Ix        getXXUsr(void)                      { return getUsr(headOfXXs); }
 void      setXXUsr(Ix u)                      { setUsr(headOfXXs, u); }

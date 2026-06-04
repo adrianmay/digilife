@@ -1,4 +1,5 @@
 #include <pthread.h>
+#include <string.h>
 #include "types.h"
 #include "misc/h.h"
 #include "globals/h.h"
@@ -59,7 +60,10 @@ static bool updateXXDeath(XX* p, XXBomb * pBomb) {
   Tocks ttl = cash / ( tockPrice() * (sizeof(XX)+sizeof(XXBomb)) );
   //printf("UpdateXXDeath: ttl=%d\n", ttl);
   Tocks death = tocksNow() + ttl;
-  return meapOfXXBombs.editTocksWhenLocked(p->rent.bomb, death);
+  meapOfXXBombs.check();
+  bool res = meapOfXXBombs.editTocksWhenLocked(p->rent.bomb, death);
+  meapOfXXBombs.check();
+  return res;
   // The meap is properly reordered but nobody called kill
 }
 
@@ -77,6 +81,7 @@ static bool updateXXDeathWithIxAndBombPointer(XXIx i, XXBomb * pBomb) {
 
 static void review_(XXIx i) {
   collectRent(i);
+  meapOfXXBombs.check();
   //printf("Reviewing i=%d... ", i.i);
   updateXXDeathWithIx(i);
 }
@@ -86,6 +91,21 @@ static void review(XXIx i) {
   unlock();
 }
 
+static XXIx bombee;
+static void bombeeSafe(Ix i, void * p) { 
+  XXBomb * pB = (XXBomb *) p;
+  if (pB->who.i == bombee.i) {
+    printf("After chomp: Another bomb for XX %d\n", bombee.i);
+    abort();
+  }
+}
+static void bombeeSafe2(Ix i, void * p) { 
+  XXBomb * pB = (XXBomb *) p;
+  if (pB->who.i == bombee.i) {
+    printf("In alloc: Another bomb for XX %d\n", bombee.i);
+    abort();
+  }
+}
 // This has to get called at strategic times from worker threads
 static void kill_(void) {
   XXBomb bomb; // Bomb copied out to here
@@ -93,10 +113,17 @@ static void kill_(void) {
   Tocks now = tocksNow();
   while (true) { // Returns when nothing to kill for now
     bomb.who = badXXIx; // Prevent false alarms
+    meapOfXXBombs.check();
     Chomped ch = meapOfXXBombs.chomp(now, &bomb, 0);
+    meapOfXXBombs.check();
     if (ch == Killed ) {
+      bombee = bomb.who;
+      meapOfXXBombs.forAll(bombeeSafe);
+      meapOfXXBombs.check();
       onXXKilled(bomb.who);
+      printf("Gonna free XX %d cos chomped\n", bomb.who.i);
       pileOfXXs.free(bomb.who); //TODO: funeral and recover cash
+      meapOfXXBombs.check();
       //printf("Killed XX %i\n", bomb.who.i);
       //show();
       continue;
@@ -104,6 +131,7 @@ static void kill_(void) {
     if (ch == Extinct) {
       //printf("XXs are extinct\n");
       onXXsExtinct();
+      meapOfXXBombs.check();
       return;
     }
     return; // Must be Idle
@@ -122,7 +150,9 @@ static void enrich_(XXIx iWho, Cash amt) {
   XXRent * pRent = &pWho->rent;
   pRent->cash += amt;
   review_(iWho);
+  meapOfXXBombs.check();
   kill_(); // amt might be negative
+  meapOfXXBombs.check();
 }
 
 static void enrich(XXIx iWho, Cash amt) {
@@ -138,7 +168,9 @@ static bool chargeIfCan_(XXIx iWho, Cash amt) {
   if (pRent->cash < amt) return false;
   pRent->cash -= amt;
   review_(iWho);
+  meapOfXXBombs.check();
   kill_();
+  meapOfXXBombs.check();
   return true;
 }
 
@@ -154,9 +186,16 @@ static Cash rob(XXIx i) {
   XX * p = pileOfXXs.get(i);
   XXRent * pRent = &p->rent;
   Cash c = pRent->cash;
-  enrich_(i, -c);
+  if (c>0)
+    enrich_(i, -c);
+  meapOfXXBombs.check();
   unlock();
   return c; //TODO: proper accounts
+}
+
+void showXX(XXIx i, XX * p) {
+  printf("ix=%4d|nick=%x,lastPaidRent=%d,cash=%'ld,bomb=%d,", i.i, p->rent.nick, p->rent.lastPaidRent, p->rent.cash, p->rent.bomb.i);
+  showXXBody(i, &p->body);
 }
 
 static XXIx alloc_(Cash cash, XX ** pp, bool * pRecycled) {
@@ -167,7 +206,11 @@ static XXIx alloc_(Cash cash, XX ** pp, bool * pRecycled) {
   p->rent.cash = cash;
   XXBombIx iBomb;
   XXBomb * pBomb;
+  bombee.i = i.i;
+  meapOfXXBombs.forAll(bombeeSafe2);
+  meapOfXXBombs.check();
   meapOfXXBombs.insert(&iBomb, &pBomb, i.i); // onNew should do the rest
+  meapOfXXBombs.check();
   //printf("In alloc near end\n");
   //show();
   review_(i);
@@ -189,21 +232,18 @@ void onNewXXBomb(XXBombIx iBomb, Ix hint) {
   XX * p = pileOfXXs.get(pBomb->who);
   p->rent.bomb = iBomb;
   updateXXDeathWithIxAndBombPointer(pBomb->who, pBomb);
+  meapOfXXBombs.check();
 }
 
 void onMoveXXBomb(XXBomb * pBomb, XXBombIx to) {
   XX * p = pileOfXXs.get(pBomb->who);
   //printf("Moving bomb for bulk %d from %d to %d\n", pBomb->who.i, p->rent.bomb.i, to.i);
   p->rent.bomb = to;
+  meapOfXXBombs.check();
 }
 
 void showXXBomb(XXBombIx i, XXBomb * p) {
   printf("tocks=%d,who=%d\n", p->tocks, p->who.i);
-}
-
-void showXX(XXIx i, XX * p) {
-  printf("cash=%'ld,lastPaidRent=%d,bomb=%d,", p->rent.cash, p->rent.lastPaidRent, p->rent.bomb.i);
-  showXXBody(i, &p->body);
 }
 
 XXHotel hotelOfXXs = {open, alloc, get, enrich, chargeIfCan, review, rob, kill, count, close, show, showXX};

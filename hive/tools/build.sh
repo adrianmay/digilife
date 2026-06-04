@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CC=gcc
-CFLAGS="-pthread -g -lm -std=c23"
+CFLAGS="-O0 -pthread -g -lm -std=c23"
 
 tools/clean.sh
 rm -rf gen bin
@@ -20,7 +20,7 @@ do
 done
 
 echo "Building tags"
-find gen bin -name "*.h" -or -name "*.c" | xargs ctags || exit 1
+find tpt lit gen bin -name "*.h" -or -name "*.c" | xargs ctags || exit 1
 
 echo "Doctoring tags"
 awk -F'\t' -f tools/doctor.awk OFS='\t' tags > newtags

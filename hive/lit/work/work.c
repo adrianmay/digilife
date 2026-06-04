@@ -1,4 +1,5 @@
 #include <stdatomic.h>
+#include <math.h>
 #include <string.h>
 #include <unistd.h>
 #include "misc/h.h"
@@ -9,7 +10,12 @@
 #include "Mob_hotel/h.h"
 #include "h.h"
 
-#define MUT_RATE 0.25
+#define ITERS 100000000.0
+#define START_MUT_RATE 2.0
+#define MUT_RATE (START_MUT_RATE - ((double)iter) / ITERS )
+
+int iter=0;
+FILE * outfile;
 
 Worker workers[MAX_WORKER_THREADS] = {0};
 Weight bidToWeight(CpuBid bid) {return 1000000000*bid;}
@@ -18,11 +24,13 @@ Weight bidToWeight(CpuBid bid) {return 1000000000*bid;}
 //  raffleOfMsgs.quit();
 //}
 
-void emit(Cash cash, CpuBid bid, MobIx iR, MobIx iS) {
+void emit(Cash cash, CpuBid bid, MobIx iR, Ix nRcvr, MobIx iS) {
   //if (cash>10000) { printf("Overrich 3 %d has %'ld\n", iR.i, cash); abort(); }
   static MsgTicket tmp;
   tmp.cpuBid = bid;
   tmp.iRcvr = iR;
+  tmp.nRcvr = nRcvr;
+  hotelOfMobs.review(iS);
   if (hotelOfMobs.chargeIfCan(iS, cash))
     raffleOfMsgs.enter(cash, bidToWeight(bid), &tmp);
 }
@@ -46,6 +54,7 @@ void runMobA(Worker * pW, MobIx i, Mob * p) {
     x+=a;
   }
   if (pW->output == 1) pW->output=2;
+
   //printf("Just did Mob %d\n", i.i);
 }
 
@@ -57,9 +66,18 @@ bool rollProb(double p) {
   return (r<t);
 }
 
-double mutProb(double p) {
-  double g = gaussian_random(0, 0.5*MUT_RATE);
+double mutF(double p, double sd) {
+  double g = gaussian_random(0, sd);
   return p+g;
+}
+
+double mutScale(double p, double sd) {
+  double g = gaussian_random(0, sd*p);
+  return p+g;
+}
+
+int mutI(int i, double sd) {
+  return round(mutF( (double)i, sd ));
 }
 
 void spawnB(MobIx iParent, Mob * pParent) {
@@ -67,46 +85,53 @@ void spawnB(MobIx iParent, Mob * pParent) {
   //hotelOfMobs.showMob(iParent, pParent);
   PhyB * pPB = &pParent->body.p.b;
   Mob * pChild;
-  Cash forChildMsg = pPB->spawnCash * pPB->fractionMsgOfMobSize; 
-  Cash mustHave = pPB->spawnCash + forChildMsg; // Processing cost too
-  //printf("Must have %ld\n", mustHave);
-  if (pParent->rent.cash < mustHave) 
-    return;
+  Cycles jobCycles = 1000000;
+  Cash jobCash = pPB->bid*jobCycles;
+  Cash nowCash = pParent->rent.cash;
+  Cash restCash = nowCash - jobCash;
+  if (restCash < 0) return;
+  Cash totChildCash = restCash/2;
+  Cash msgCash = totChildCash * pPB->fractionMsgOfMobSize / (1 + pPB->fractionMsgOfMobSize);
+  Cash childCash = totChildCash - msgCash;
   //printf("Spawning...\n");
-  MobIx iChild = hotelOfMobs.alloc(pPB->spawnCash, &pChild, 0);
-  hotelOfMobs.enrich(iParent, -pPB->spawnCash);
+  MobIx iChild = hotelOfMobs.alloc(childCash, &pChild, 0);
+  hotelOfMobs.enrich(iParent, childCash);
   PhyB * pCB = &pChild->body.p.b;
   pChild->body.phylum = pParent->body.phylum;
-  pCB->spawnCash = pPB->spawnCash;
   pCB->pay = pPB->pay;
   pCB->bid = pPB->bid;
   pCB->fractionMsgOfMobSize = pPB->fractionMsgOfMobSize;
-  pCB->oddsLazyByCash0 = mutProb(pPB->oddsLazyByCash0);
-  pCB->oddsLazyByCash1 = mutProb(pPB->oddsLazyByCash1);
-  pCB->msgCashByCash0  = mutProb(pPB->msgCashByCash0);
-  pCB->msgCashByCash1  = mutProb(pPB->msgCashByCash1);
-  emit(forChildMsg, pCB->bid, iChild, iParent);
+  pCB->spawnThresh = mutI(pPB->spawnThresh,MUT_RATE);
+  emit(msgCash, pCB->bid, iChild, pChild->rent.nick, iParent);
   hotelOfMobs.review(iParent);
   hotelOfMobs.kill();
 }
 
-int iter=0;
-FILE * outfile;
+static void burn(int effort) {
+  int x=0;
+  for (int a=0;a<1000*effort;a++) x+=a;
+}
 
 void runMobB(Worker * pW, MobIx i, Mob * pMob) {
-  fprintf(outfile, "%d %d %d\n", iter++, hotelOfMobs.count(), raffleOfMsgs.count());
+  if (randIntBelow(100000)<5) {
+    hotelOfMobs.rob(i);
+    return;
+  }
   PhyB * p = &pMob->body.p.b;
-  //if (pMob->rent.cash>10000) abort();
-  hotelOfMobs.enrich(i, p->pay);
-  //if (pMob->rent.cash>10000) abort();
-  emit(pMob->rent.cash * p->fractionMsgOfMobSize, p->bid, i, i);
-  //if (pMob->rent.cash>10000) abort();
-  // Poorer now
-  //double pYield = clampProb(p->oddsLazyByCash0 - 0.5 + p->oddsLazyByCash1 * pMob->rent.cash/2.0/p->spawnCash);
-  //printf("pYield=%f\n", pYield);
-  //if (rollProb(pYield)) return;
-  if (!rollProb(0.8)) 
+  Cash bestCash = pMob->rent.cash;
+  hotelOfMobs.enrich(i, p->pay - 0.1*bestCash);
+  bestCash = pMob->rent.cash;
+  bool spawn = bestCash > p->spawnThresh;
+  if (spawn) {
     spawnB(i, pMob);
+    burn(300); //Spawn+selfmsg cost = 4*selfmsg alone
+  }
+  burn(144);
+  emit(pMob->rent.cash * p->fractionMsgOfMobSize, p->bid, i, pMob->rent.nick, i);
+  //if (0==iter%10) 
+    fprintf(outfile, "%d %d %d %d %ld %b\n"
+                  , iter, hotelOfMobs.count(), raffleOfMsgs.count(), p->spawnThresh, bestCash, spawn);
+  iter++;
 }
 
 void runMob(Worker * pW, MobIx i, Mob * p) {
@@ -132,7 +157,7 @@ void * workerThread(void * p) {
   pW->timer = initThreadTimer();
   pW->pid = pthread_self();
   initThreadAlarm(&pW->alarm, alarmHandler, pW);
-  while (iter<50000) {
+  while (iter<ITERS) {
     raffleOfMsgs.kill();
     MsgTicket ticket;
     Cash cash;
@@ -141,20 +166,29 @@ void * workerThread(void * p) {
       break;
     }
     //if (cash>10000) { printf("Overrich 4 %d has %'ld\n", ticket.iRcvr.i, cash); abort(); }
-    Cycles cycleLimit = 1000 * cash / ticket.cpuBid; //TODO: careful
+    Cycles cycleLimit = cash / ticket.cpuBid; //TODO: careful
     //printf("cycleLimit=%'ld, cash = %ld, cpuBid = %f\n", cycleLimit, cash, ticket.cpuBid);
     setAlarm(&pW->alarm, cycleLimit);
     pW->lastStarted = readThreadCycles(pW->timer);
     if (pW->firstStarted == 0) pW->firstStarted = pW->lastStarted;
-    runMob(pW, ticket.iRcvr, hotelOfMobs.get(ticket.iRcvr));
-    if (!pW->forceYield) {
+    Mob * pMob = hotelOfMobs.get(ticket.iRcvr);
+    if (pMob->rent.nick & 0x80000000 || pMob->rent.nick != ticket.nRcvr) 
+      continue;
+    runMob(pW, ticket.iRcvr, pMob);
+    if (pW->forceYield) {
+      pW->forceYield = false;
+      //printf("FORCEYIELD\n");
+      hotelOfMobs.enrich(ticket.iRcvr, -25);
+    } else {
+      hotelOfMobs.enrich(ticket.iRcvr, 25);
       pW->lastEnded = readThreadCycles(pW->timer);
       CycleDiff used = pW->lastEnded - pW->lastStarted;
       //if (cash>10000) { printf("Overrich 5 %d has %'ld\n", ticket.iRcvr.i, cash); abort(); }
-      cash -= used * ticket.cpuBid / 1000;
+      cash -= used * ticket.cpuBid;
       ////if (cash>10000) { printf("Overrich 6 %d has %'ld; used=%'ld, lastEnded=%'ld, lastStarted=%'ld\n", ticket.iRcvr.i, cash, used, pW->lastEnded, pW->lastStarted); abort(); }
-      //printf("Job finished in %'ld - %'ld = %'ld cycles with change = %'ld\n", pW->lastEnded, pW->lastStarted, used, cash);
       hotelOfMobs.enrich(ticket.iRcvr, cash);
+      cash = hotelOfMobs.get(ticket.iRcvr)->rent.cash;
+      //printf("\tTook: %'ld - %'ld = %'ld cycles with change = %'ld\n", pW->lastEnded, pW->lastStarted, used, cash);
     }
     setAlarm(&pW->alarm, 0);
     // Get output and do stuff.

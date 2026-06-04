@@ -113,7 +113,7 @@
  }
 
  bool ordered(void) {
-   bool b = meapOfJunks.checkOrdered();
+   bool b = meapOfJunks.check();
    assertInt(b, true);
    return b;
  }

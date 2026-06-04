@@ -14,7 +14,7 @@ typedef struct {
 
 Worker * thisWorker(int w);
 int runWorker(Worker * pW);
-void emit(Cash cash, CpuBid bid, MobIx iRcvr, MobIx iSndr);
+void emit(Cash cash, CpuBid bid, MobIx iRcvr, Ix nRcvr, MobIx iSndr);
 void initWork();
 void waitWorkersAllDone();
 

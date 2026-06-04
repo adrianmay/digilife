@@ -30,56 +30,61 @@ bool noMoreRent = false;
 #define DEFAULT_EFFORT 10000000
 //Extinct
 
-MobIx makeOneMobWithCashAndEffort(Cash cash, int effort) {
+MobIx makeOneMobWithCashAndEffort(Cash cash, int effort, Ix * pNick) {
   Mob * pMob;
   MobIx i = hotelOfMobs.alloc(cash, &pMob, 0);
+  if (pNick) *pNick = pMob->rent.nick;
   pMob->body.phylum = 'a';
   pMob->body.p.a.effort = effort;
   return i;
 }
 
-bool makeMsgWithCashAndBid(MobIx i, Cash cash, CpuBid bid) {
-  emit(cash, bid, i, i);
+bool makeMsgWithCashAndBid(MobIx i, Ix nick, Cash cash, CpuBid bid) {
+  emit(cash, bid, i, nick, i);
   return true;
 }
 
-MobIx makeOneMobWithEffort(int effort)   { return makeOneMobWithCashAndEffort(DEFAULT_MOB_CASH, effort); }
-MobIx makeOneMob()                       { return makeOneMobWithEffort(DEFAULT_EFFORT); }
-bool makeMsgWithCash(MobIx i, Cash cash) { return makeMsgWithCashAndBid(i, cash, DEFAULT_BID); }
-bool makeMsgWithBid(MobIx i, CpuBid bid) { return makeMsgWithCashAndBid(i, POOR_MSG_CASH, bid); }
+MobIx makeOneMobWithEffort(int effort, Ix * pNick) { return makeOneMobWithCashAndEffort(DEFAULT_MOB_CASH, effort, pNick); }
+MobIx makeOneMob(Ix * pNick)                       { return makeOneMobWithEffort(DEFAULT_EFFORT, pNick); }
+bool makeMsgWithCash(MobIx i, Ix nick, Cash cash)  { return makeMsgWithCashAndBid(i, nick, cash, DEFAULT_BID); }
+bool makeMsgWithBid(MobIx i, Ix nick, CpuBid bid)  { return makeMsgWithCashAndBid(i, nick, POOR_MSG_CASH, bid); }
 
 ////////////////////////////////
 bool setup0() {
-  makeOneMob();
+  makeOneMob(0);
   return true;
 }
 
 void cleanup0(void) {}
 
 bool setup1() {
-  MobIx i = makeOneMob();
-  makeMsgWithCash(i, RICH_MSG_CASH);
+  Ix nick;
+  MobIx i = makeOneMob(&nick);
+  makeMsgWithCash(i, nick, RICH_MSG_CASH);
   return true;
 }
 
 bool setup2() {
-  MobIx i = makeOneMob();
-  makeMsgWithCash(i, POOR_MSG_CASH);
+  Ix nick;
+  MobIx i = makeOneMob(&nick);
+  makeMsgWithCash(i, nick, POOR_MSG_CASH);
   return true;
 }
 
 static bool setup3() {
-  MobIx i = makeOneMobWithEffort(4000000);
-  makeMsgWithCash(i, POOR_MSG_CASH);
+  Ix nick;
+  MobIx i = makeOneMobWithEffort(4000000, &nick);
+  makeMsgWithCash(i, nick, POOR_MSG_CASH);
   printf("Made poor message\n");
   return true;
 }
 
 static bool setup4() {
-  MobIx i1 = makeOneMobWithCashAndEffort(5000, DEFAULT_EFFORT+1);
-  MobIx i2 = makeOneMobWithCashAndEffort(5000, DEFAULT_EFFORT+2);
-  makeMsgWithCashAndBid(i1, 2000, 0.1);
-  makeMsgWithCashAndBid(i2, 2000, 0.01);
+  Ix nick1, nick2;
+  MobIx i1 = makeOneMobWithCashAndEffort(5000, DEFAULT_EFFORT+1, &nick1);
+  MobIx i2 = makeOneMobWithCashAndEffort(5000, DEFAULT_EFFORT+2, &nick2);
+  makeMsgWithCashAndBid(i1, nick1, 2000, 0.1);
+  makeMsgWithCashAndBid(i2, nick2, 2000, 0.01);
   //hotelOfMobs.show();
   //raffleOfMsgs.show();
   printf("Made two rich messages\n");
@@ -87,17 +92,19 @@ static bool setup4() {
 }
 
 static bool setup5() {
-  MobIx i1 = makeOneMobWithCashAndEffort(5000, DEFAULT_EFFORT+1);
-  MobIx i2 = makeOneMobWithCashAndEffort(3000, DEFAULT_EFFORT+2);
-  makeMsgWithCashAndBid(i1, 2000, 0.20);
-  makeMsgWithCashAndBid(i2, 10, 0.001);
+  Ix nick1, nick2;
+  MobIx i1 = makeOneMobWithCashAndEffort(5000, DEFAULT_EFFORT+1, &nick1);
+  MobIx i2 = makeOneMobWithCashAndEffort(3000, DEFAULT_EFFORT+2, &nick2);
+  makeMsgWithCashAndBid(i1, nick1, 2000, 0.20);
+  makeMsgWithCashAndBid(i2, nick2, 10, 0.001);
   printf("Made one slow and one very poor messages\n");
   return true;
 }
 
 static bool setup6() {
-  MobIx i1 = makeOneMobWithCashAndEffort(1000, DEFAULT_EFFORT+1);
-  makeMsgWithCashAndBid(i1, 900, 0.01); // Should cost 100
+  Ix nick;
+  MobIx i1 = makeOneMobWithCashAndEffort(1000, DEFAULT_EFFORT+1, &nick);
+  makeMsgWithCashAndBid(i1, nick, 900, 0.01); // Should cost 100
   return true;
 }
 

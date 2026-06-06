@@ -4,8 +4,7 @@ bool openGlobals(void);
 void closeGlobals(bool rm);
 
 TockPrice tockPrice(void);
-void updateTocks(void);
+void notifyCycles(Cycles c);
 Tocks tocksNow(void);
 Cycles cyclesUntilTock(Tocks deadline);
-Cycles cyclesAtTock(Tocks deadline);
 Cycles cyclesPerTock();

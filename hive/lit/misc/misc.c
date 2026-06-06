@@ -37,7 +37,7 @@ int fileSize(int fd) {
 
 uint64_t randIntBelow(uint64_t lim) {
   uint64_t res;
-  getrandom(&res, sizeof(res), 0);
+  res = rand();
   return res%lim;
 }
 
@@ -45,7 +45,7 @@ uint64_t randIntBelow_(uint64_t lim) {
   uint64_t thresh = -1;
   thresh = -(thresh % lim + 1);
   uint64_t res;
-  getrandom(&res, sizeof(res), 0);
+  res = rand();
 //  printf("randIntBelow: lim=%lu, thresh=%lu, res=%lu\n", lim, thresh, res);
   if (res > thresh)
     return randIntBelow(lim); // Try again.

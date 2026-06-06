@@ -55,7 +55,7 @@ pthread_t background(void * (*f)(void *)) { pthread_t pid; pthread_create(&pid, 
 //}
 void initEverything(void) {
 //  handleSigusr1();
-  initPerf();
+  //initPerf();
   srand(123);
   setlocale(LC_NUMERIC, "");
 }

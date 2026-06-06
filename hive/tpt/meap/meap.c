@@ -147,7 +147,7 @@ static bool editTocksTakingLock(XXIx iCur, Score when) {
   return res;
 }
 
-static bool erase_(XXIx iCur) {
+static bool erase(XXIx iCur) {
   Ix cnt = pileOfXXs.getUsr();
   if (!cnt) {
     printf("Meap empty in erase\n");
@@ -167,11 +167,6 @@ static bool erase_(XXIx iCur) {
   return res;
 }
 
-static bool erase(XXIx iCur) {
-  int res = erase_(iCur);
-  return res;
-}
-
 static Chomped chomp(Score thresh, XX * pCopyOut, int pseudoAnimals) {
   Chomped res;
   Ix x = meapOfXXs.size();
@@ -184,7 +179,7 @@ static Chomped chomp(Score thresh, XX * pCopyOut, int pseudoAnimals) {
     ScoreDiff sd = wrapSub32S(lowestScoreInMeap, thresh);
     //printf("chomped: lowest=%d, thresh=%d, sd=%d\n", lowestScoreInMeap, thresh, sd);
     if (sd <= 0) {
-      erase_(i);
+      erase(i);
       //show();
       res = Killed;
     } else {
@@ -214,4 +209,5 @@ static Ix size(void) {  return pileOfXXs.getUsr(); }
 static bool open(void) { return pileOfXXs.open(); }
 static void close(FATE f) { pileOfXXs.close(f); }
 
-XXMeap meapOfXXs = { open, close, insert, editTocksWhenLocked, editTocksTakingLock, erase, chomp, checkOrdered, forAll, size, show };
+XXMeap meapOfXXs = { open, close, insert, editTocksWhenLocked, editTocksTakingLock
+                   , erase, chomp, checkOrdered, forAll, size, show };

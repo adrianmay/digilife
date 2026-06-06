@@ -40,14 +40,10 @@ static Ix count(void) {
   return pileOfXXs.count();
 }
 
-//static XX * get(XXIx i) {
-//  return pileOfXXs.get(i);
-//}
+static XX * get(XXIx i) {
+  return pileOfXXs.get(i);
+}
 
-#define WITH_NAMED(XXI, XXN) \
-  XX * pXX = pileOfXXs.get(XXI); \
-  if (pXX->rent.nick.n == XXN.n) 
-  
 //Below, the trailing underscore means no lock taken
 
 //Deduct cash and set last paid to now
@@ -160,10 +156,9 @@ static void review_(XX * pXX) {
   kill_();
 }
 
-static void review(XXIx i, XXNick n) {
+static void review(XXIx i) {
   lock();
-  WITH_NAMED(i, n)
-    review_(pXX);
+  review_(get(i));
   unlock();
 }
 
@@ -176,10 +171,9 @@ static void enrich_(XX * pXX, Cash amt) {
   meapOfXXBombs.check();
 }
 
-static void enrich(XXIx i, XXNick n, Cash amt) {
+static void enrich(XXIx i, Cash amt) {
   lock();
-  WITH_NAMED(i, n)
-    enrich_(pXX, amt);
+  enrich_(get(i), amt);
   unlock();
 }
 
@@ -196,11 +190,10 @@ static bool chargeIfCan_(XX * pXX, Cash amt) {
   return true;
 }
 
-static bool chargeIfCan(XXIx i, XXNick n, Cash amt) {
+static bool chargeIfCan(XXIx i, Cash amt) {
   bool res = false;
   lock();
-  WITH_NAMED(i, n)
-    res = chargeIfCan_(pXX, amt);
+  res = chargeIfCan_(get(i), amt);
   unlock();
   return res;
 }
@@ -216,17 +209,16 @@ static Cash rob_(XX * pXX) {
   return c;
 }
 
-static Cash rob(XXIx i, XXNick n) {
+static Cash rob(XXIx i) {
   Cash c;
   lock();
-  WITH_NAMED(i,n)
-    c = rob_(pXX);
+  c = rob_(get(i));
   unlock();
   return c; //TODO: proper accounts
 }
 
 void showXX(XXIx i, XX * p) {
-  printf("ix=%4d|nick=%x,lastPaidRent=%d,cash=%'ld,bomb=%d,", i.i, p->rent.nick.n, p->rent.lastPaidRent, p->rent.cash, p->rent.bomb.i);
+  printf("ix=%4d|nick=%x,lastPaidRent=%d,cash=%'ld,bomb=%d,", i.i, p->rent.nick, p->rent.lastPaidRent, p->rent.cash, p->rent.bomb.i);
   showXXBody(i, &p->body);
 }
 
@@ -282,5 +274,5 @@ void showXXBomb(XXBombIx i, XXBomb * p) {
   printf("tocks=%d,who=%d\n", p->tocks, p->who.i);
 }
 
-XXHotel hotelOfXXs = {open, alloc, enrich, chargeIfCan, review, rob, kill, count, close, show, showXX};
+XXHotel hotelOfXXs = {open, alloc, get, enrich, chargeIfCan, review, rob, kill, count, close, show, showXX};
 

@@ -1,3 +1,5 @@
+#pragma once
+
 #include "1.h"
 #include "YY"
 

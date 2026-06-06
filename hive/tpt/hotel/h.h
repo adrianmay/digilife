@@ -1,19 +1,18 @@
 // #pragma once
 
-//#include "XX_pile/1.h"
-//#include "XX_hotel/.h"
-//#include "XX_pile/2.h"
-
 #include "XX_pile/1.h"
+//#include "XX_hotel/h.h"
+#include "XX_pile/2.h"
+
 
 extern char XXGOD[];
 typedef bool        (*XXHotelOpen)(void);
 typedef XXIx        (*XXHotelAlloc)(Cash cash, XX ** pp, bool * pRecycled);
 typedef XX *        (*XXHotelGet)(XXIx i);
-typedef void        (*XXHotelEnrich)(XXIx iWho, XXNick n, Cash amt);
-typedef bool        (*XXHotelChargeIfCan)(XXIx iWho, XXNick n, Cash amt);
-typedef void        (*XXHotelReview)(XXIx i, XXNick n);
-typedef Cash        (*XXHotelRobber)(XXIx i, XXNick n);
+typedef void        (*XXHotelEnrich)(XXIx iWho, Cash amt);
+typedef bool        (*XXHotelChargeIfCan)(XXIx iWho, Cash amt);
+typedef void        (*XXHotelReview)(XXIx in);
+typedef Cash        (*XXHotelRobber)(XXIx i);
 typedef void        (*XXHotelKiller)(void);
 typedef Ix          (*XXHotelCount)(void);
 typedef void        (*XXHotelClose)(FATE fate);
@@ -23,7 +22,7 @@ typedef void        (*XXHotelShowXX)(XXIx i, XX * p);
 typedef struct {
   XXHotelOpen open;
   XXHotelAlloc alloc;
- // XXHotelGet get;
+  XXHotelGet get;
   XXHotelEnrich enrich;
   XXHotelChargeIfCan chargeIfCan;
   XXHotelReview review;

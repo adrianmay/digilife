@@ -9,6 +9,8 @@
 #include "Thing_hotel/h.h"
 #include "bit/MobBody.h"
 
+// ALL OFF COS OF PERF STUFF 
+
 // void showMobBody(MobIx i, MobBody * p) {
 //   printf("code=<binary>\n");
 // }

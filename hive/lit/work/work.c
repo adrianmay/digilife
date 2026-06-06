@@ -6,10 +6,11 @@
 #include "misc/h.h"
 #include "args/h.h"
 #include "perf/h.h"
-#include "Msg_raffle/h.h"
-#include "Mob_hotel/structs.h"
-#include "Mob_hotel/h.h"
+//#include "Msg_raffle/h.h"
+//#include "Mob_hotel/structs.h"
+//#include "Mob_hotel/h.h"
 #include "globals/h.h"
+#include "tank/h.h"
 #include "h.h"
 
 #define ITERS 100000000.0
@@ -54,7 +55,7 @@ void runMobA(Core * pC, Mob * pMob, MobIx iMob, Env * pEnv) {
   abort();
 }
 
-void emit(Cash cash, CpuBid bid, MobIx iR, Ix nRcvr, MobIx iS) {
+void emit(Cash cash, CpuBid bid, MobTact tRcvr, MobTact tSndr) {
   //if (cash>10000) { printf("Overrich 3 %d has %'ld\n", iR.i, cash); abort(); }
   static MsgTicket tmp;
   tmp.cpuBid = bid;
@@ -112,7 +113,7 @@ void runMobB(Core * pC, Mob * pMob, MobIx iMob, Env * pEnv) {
   emit(pMob->rent.cash * p->fractionMsgOfMobSize, p->bid, iMob, pMob->rent.nick, iMob);
   if (0==iter%10) 
     fprintf(outfile, "%d %d %d %d %ld %b\n"
-                   , iter, hotelOfMobs.count(), raffleOfMsgs.count(), p->spawnThresh, cashNow, spawn);
+        , iter, hotelOfMobs.count(), raffleOfMsgs.count(), p->spawnThresh, cashNow, spawn);
 }
 
 void runMob_(Core * pC, Mob * pMob, MobIx iMob, Env * pEnv) {

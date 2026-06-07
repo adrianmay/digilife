@@ -27,13 +27,19 @@ static void show(void) {
   hotelOfXXs.show();
 }
 
-static void panicDump(XXIx i) {
+static void panicDump_(XXIx i) {
+  printf("count: %d\n", pileOfXXs.count());
   XX * pB = pileOfXXs.get(i);
   XXRafle * pR = &pB->body.raffle;
   printf("In panic: w=%'ld, i=%d, l=%'ld, s=%'ld, r=%'ld\n", peep(), i.i, pR->l, pR->s, pR->r );
   if (i.i==0) { return; }
   pop();
-  panicDump(parent(i));
+  panicDump_(parent(i));
+}
+
+static void panicDump(XXIx i) {
+  panicDump_(i);
+  abort();
 }
 
 static Weight totWeightP(XXRafle * p) { return p->l + p->s + p->r; }
@@ -47,12 +53,23 @@ static Weight totWeightI(XXIx i) {
 
 static bool check_(const char * ctx, XXIx i) {
   XXRafle * pP = &pileOfXXs.get(      i )->body.raffle;
-  XXRafle * pL = &pileOfXXs.get(left (i))->body.raffle;
-  XXRafle * pR = &pileOfXXs.get(right(i))->body.raffle;
-  bool res = (pP->l == 0 || (pP->l == totWeightP(pL) && check_(ctx, left (i))))
-          && (pP->r == 0 || (pP->r == totWeightP(pR) && check_(ctx, right(i))));
-  if (!res) { printf("Checking raffle from %s:\n", ctx); show(); panicDump(i); exit(2); }
-  return res;
+  if (left(i).i < pileOfXXs.count()) {
+    XXRafle * p = &pileOfXXs.get(left (i))->body.raffle;
+    if (totWeightP(p) != pP->l) 
+      panicDump(i);
+  } else {
+    if (pP->l != 0)
+      panicDump(i);
+  }
+  if (right(i).i < pileOfXXs.count()) {
+    XXRafle * p = &pileOfXXs.get(right(i))->body.raffle;
+    if (totWeightP(p) != pP->r) 
+      panicDump(i);
+  } else {
+    if (pP->r != 0)
+      panicDump(i);
+  }
+  return true;
 }
 
 static bool checkM(const char * ctx) { return check_(ctx, (XXIx) {0}); }

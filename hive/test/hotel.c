@@ -94,39 +94,28 @@ bool testEarn(void) {
   return true;
 }
 
-///   void * rob(void *) {
-///     sleepNs(250000000);
-///     hotelOfThings.rob(iThing);
-///     return 0;
-///   }
-///   
-///   bool testRob(void) {
-///     extinct = false;
-///     printf("testRob\n");
-///     make(5, 9000);
-///     background(rob);
-///     TIME_VOID_PROC(killTilExtinct());
-///     printf("testRob: %'ld\n", cycles);
-///     assertLongCond(cycles, <1400000000ull)
-///     assertLongCond(cycles, > 900000000ull)
-///     return true;
-///   }
+bool testRob(void) {
+  extinct = false;
+  printf("testRob\n");
+  make(5, 9000);
+  hotelOfThings.rob(iThing);
+  expectExtinctSoon(0);
+  return true;
+}
 
 
 void cleanupHotel(void) { hotelOfThings.close(HIDE); closeGlobals(HIDE); }
 
 bool testHotel(void) {
-//  background(sweat_forever); // Got to do work to advance CPU time ...
   printf("Tock price: %f\n", tockPrice());
   printf("Billable size: %ld\n", hotelOfThings.billableSize);
   return
     testNoPop() &&
     test1() &&
     testEarn() &&
-//    testRob() &&
+    testRob() &&
     true;
 }
-
 
 bool hotel(void) { return bkt("hotel", init, testHotel, cleanupHotel); }
 

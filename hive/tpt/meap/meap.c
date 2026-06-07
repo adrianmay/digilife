@@ -112,7 +112,7 @@ static void siftDown(XXIx iCur) {
 
 // Returns whether or not the lowest changed.
 static bool insert(XXIx * pI, XX ** ppNew, Ix hint) {
-  printf("Inserting bomb for XX %d\n", hint);
+  //printf("Inserting bomb for XX %d\n", hint);
   bombee = hint;
   forAll(bombeeSafe);
   Ix meapTop = pileOfXXs.getUsr(); //meapish size
@@ -155,7 +155,7 @@ static bool erase(XXIx iCur) {
   }
   XX * p = pileOfXXs.get(iCur);
   Ix * pI = (Ix *) p;
-  printf("Erasing bomb for XX %d\n", pI[0]);
+  //printf("Erasing bomb for XX %d\n", pI[0]);
   bombee = pI[0];
   Ix iLast = cnt-1;
   swap((XXIx){iLast}, iCur);
@@ -189,6 +189,24 @@ static Chomped chomp(Score thresh, XX * pCopyOut, int pseudoAnimals) {
   checkNoDupes();
   return res;
 }
+
+// static bool checkSubWeights(void) {
+//   Ix cnt = pileOfXXs.getUsr();
+//   for (Ix i=1;i<cnt;i++) {
+//     XXIx iCur = (XXIx){i};
+//     XX * pCur = pileOfXXs.get(iCur);
+// 
+//     XXIx iL = left(iCur);
+//     if (iL.i<cnt) {
+//       XX * pL = pileOfXXs.get(iL);
+//       if (pCur->body
+//     }
+// 
+//     XXIx iR= right(iCur);
+// 
+//   }
+//   return true;
+// }
 
 static bool checkOrdered(void) {
   bool ok=true;

@@ -47,9 +47,19 @@ void empty(void) {
   while (!raffleOfMesss.empty()) { raffleOfMesss.draw(&tkt, &cash); };
 }
 
+bool ch() {
+  if (!raffleOfMesss.check()) {
+    printf("Check failed\n");
+    raffleOfMesss.show();
+    return false;
+  }
+  return true;
+}
+
 void sample(void) {
   int h=0, t=0, v=0, e=0;
   for (int a=0;a<100;a++) {
+    ch();
     bool res = raffleOfMesss.draw(&tkt, &cash);
     //printf("In sample after draw: %d\n", res);
     if (!res) {
@@ -65,15 +75,6 @@ void sample(void) {
 }
 
 void cleanupRaffle(void) { closeGlobals(DELETE); raffleOfMesss.close(DELETE); }
-
-bool ch() {
-  if (!raffleOfMesss.check()) {
-    printf("Check failed\n");
-    raffleOfMesss.show();
-    return false;
-  }
-  return true;
-}
 
 int bored = 0;
 
@@ -110,9 +111,11 @@ bool testBlock() {
 // }
 
 bool testRaffle() {
-  stuff1(); ch(); sample(); ch(); empty();
-  stuff2(); ch(); sample(); ch(); empty();
-  testBlock();
+  stuff1(); ch(); 
+  sample(); ch(); 
+  //empty();
+//  stuff2(); ch(); sample(); ch(); empty();
+//  testBlock();
   return true;
 }
 

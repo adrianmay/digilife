@@ -133,7 +133,7 @@ Ix allocInPile(Pilehead * ph, void ** ppNew, bool * pRecycled, void * ghost, int
     ret = ph->fro;
     if (ret & 0x80000000) abort();
     Free * pFree = findFreeInPile(ph,ret);
-    printf("In allocInPile: Setting fro of %s from %d to %d from nextFree of %d\n", ph->fn, ph->fro, pFree->nextFree & 0x7FFFFFFF, ret);
+    //printf("In allocInPile: Setting fro of %s from %d to %d from nextFree of %d\n", ph->fn, ph->fro, pFree->nextFree & 0x7FFFFFFF, ret);
     ph->fro = pFree->nextFree & 0x7FFFFFFF;
     if (ph->fro == 0x7FFFFFFF)
       ph->fri = BAD_INDEX;
@@ -150,7 +150,7 @@ Ix allocInPile(Pilehead * ph, void ** ppNew, bool * pRecycled, void * ghost, int
   Free * pNew = findFreeInPile(ph, ret);
   // Make up a new nick. Anything with MSB set but not BAD_INDEX. In Rent, the nick is declared there.
   Ix nck = randIntBelow(0x7FFFFFFF);
-  printf("In allocInPile: Setting nextFree of %d in %s to nick %x\n", ret, ph->fn, nck);
+  //printf("In allocInPile: Setting nextFree of %d in %s to nick %x\n", ret, ph->fn, nck);
   pNew->nextFree = nck; // Bombs can overwrite it.
   if (ppNew) *ppNew = pNew;
   return ret;
@@ -165,18 +165,18 @@ void freeInPile(Pilehead * ph, Ix i, void * ghost, int ghostlen) {
     printf("DOUBLE FREE in %s: %d\n", ph->fn, i);
     abort();
   }
-  printf("In freeInPile 1: Setting nextFree of %d in %s to %x\n", i, ph->fn, BAD_INDEX);
+  //printf("In freeInPile 1: Setting nextFree of %d in %s to %x\n", i, ph->fn, BAD_INDEX);
   pFree->nextFree = BAD_INDEX;
   if (ph->fri != BAD_INDEX) {
     Free * pOldInEnd = findFreeInPile(ph,ph->fri); // Get the block
-    printf("In freeInPile 2: Setting nextFree of %d in %s to %x\n", ph->fri, ph->fn, i | 0x8000000);
+    //printf("In freeInPile 2: Setting nextFree of %d in %s to %x\n", ph->fri, ph->fn, i | 0x8000000);
     pOldInEnd->nextFree = i | 0x80000000; // Point old in end at newly freed block
   }
   ph->fri = i; //Set free in end to that block
   if (ghost)  //Stuff something into the free block after nextFree if desired
     memcpy((void*)(pFree+1), ghost, ghostlen); 
   if (ph->fro==0x7FFFFFFF) {
-    printf("In freeInPile: Setting fro to %x\n", i);
+    //printf("In freeInPile: Setting fro to %x\n", i);
     ph->fro = i & 0x7FFFFFFF; // Only if this is the first do we mess with the out end
   }
   ph->frn += 1;

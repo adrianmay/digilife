@@ -63,7 +63,7 @@ done
 # X=(gen/*.o)
 # echo "Main objects:  ${X[@]}"
 # ld --relocatable --allow-shlib-undefined -o gen/o.o gen/*.o || exit 1
-
+touch gen/test.objs gen/hive.objs
 echo "Building Test"
 $CC $CFLAGS -o Test bin/test.o $(cat gen/all.objs gen/test.objs | sed 's#^#gen/#; s#$#.o#') || exit 1
 echo "Building Hive"

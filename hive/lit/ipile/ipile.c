@@ -190,19 +190,33 @@ Ix getUsr(Pilehead * ph) { return ph->usr; }
 void setUsr(Pilehead * ph, Ix u) { ph->usr = u; }
 void modUsr(Pilehead * ph, int32_t u)  { ph->usr += u; }
 
+
+void forAllPile(Pilehead * ph, bool onlyToUsr, PileAction act) {
+  if (!ph) {
+    printf("Pile is closed\n");
+    abort();
+  }
+  for (Ix i=0;i<(onlyToUsr?ph->usr:ph->top);i++) {
+    Free * p = findFreeInPile(ph, i);
+    if (p->nextFree & 0x80000000); 
+    else act(i);
+  }
+}
+
+// TODO: Could be done with forAllPile:
 void showPile(Pilehead * ph, VIP showSlot, bool onlyToUsr) {
   printf("\nPILE: %s\n", ph?ph->fn:"closed.");
   if (!ph) {
     printf("Pile is closed\n");
-    //return;
+    abort();
   }
   printf("  REC |   TOP |   USR |   FRN |   FRI |   FRO \n");
   printf("%5d | %5d | %5d | %5d | %5d | %5d\n\n", ph->rec, ph->top, ph->usr, ph->frn, ph->fri, ph->fro);
-  for (Ix a=0;a<(onlyToUsr?ph->usr:ph->top);a++) {
-    Free * p = findFreeInPile(ph, a);
-    printf("%5d | ",a);
+  for (Ix i=0;i<(onlyToUsr?ph->usr:ph->top);i++) {
+    Free * p = findFreeInPile(ph, i);
+    printf("%5d | ",i);
     if (p->nextFree & 0x80000000) 
       printf("Free: nextFree=%4d | ", p->nextFree & 0x7FFFFFFF);
-    showSlot(a, p);
+    showSlot(i, p);
   }
 }

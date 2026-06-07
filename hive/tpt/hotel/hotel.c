@@ -78,20 +78,6 @@ static bool updateDeathWithXX_(XX * pXX) {
   return updateDeathWithXXAndBomb_(pXX, pBomb);
 }
 
-// static bool updateDeathWithIxAndBomb_(XXIx i, XXNick n, XXBomb * pBomb) {
-//   bool res = false;
-//   WITH_NAMED(i, n) 
-//     res = updateDeathWithXXAndBomb_(pXX, pBomb);
-//   return res;
-// }
-
-// static bool updateDeathWithIx_(XXIx i, XXNick n) {
-//   bool res = false;
-//   WITH_NAMED(i, n) 
-//     res = updateDeathWithXX_(pXX);
-//   return res;
-// }
-
 // Debug:
 static XXIx bombee;
 static void bombeeSafe(Ix i, void * p) { 
@@ -158,7 +144,9 @@ static void review_(XX * pXX) {
 
 static void review(XXIx i) {
   lock();
-  review_(get(i));
+  XX * pXX = get(i);
+  collectRent_(pXX);
+  review_(pXX);
   unlock();
 }
 
@@ -274,5 +262,7 @@ void showXXBomb(XXBombIx i, XXBomb * p) {
   printf("tocks=%d,who=%d\n", p->tocks, p->who.i);
 }
 
-XXHotel hotelOfXXs = {open, alloc, get, enrich, chargeIfCan, review, rob, kill, count, close, show, showXX};
+static void forAll(XXPileAction act) { pileOfXXs.forAll(false, act); }
+
+XXHotel hotelOfXXs = {open, alloc, get, enrich, chargeIfCan, review, forAll, rob, kill, count, close, show, showXX};
 

@@ -8,8 +8,6 @@
 #include "perf/h.h"
 #include "misc/h.h"
 
-// #define GUESS_CYCLES_PER_TOCK 1000000
-#define GUESS_CYCLES_PER_TOCK 1000
 #define GLOBALS_FILENAME "Globals.pile"
 
 VolatileGlobals vg;
@@ -23,7 +21,7 @@ static void initVirginPersistentGlobals(void) {
   pg->lastKnownTock = 0;
   pg->cyclesNotTocked = 0;
   pg->cyclesPerTock = GUESS_CYCLES_PER_TOCK; //Don't ignore animal for more than 2**32/nsPerTock
-  pg->groatsPerTockPerByte = 0.002; //min_groats_per_nanosecond * GUESS_NS_PER_TOCK;
+  pg->groatsPerTockPerByte = 0.01; //min_groats_per_nanosecond * GUESS_NS_PER_TOCK;
 }
 
 static void initVolatileGlobals(void) {

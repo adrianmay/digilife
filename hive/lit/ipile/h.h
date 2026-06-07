@@ -8,6 +8,7 @@
 // a given slot.
 // TODO: Limit to 2,147,483,648 slots
 
+typedef void (*PileAction)(Ix);
 typedef void * (*F)(void * item, void * u);
 
 typedef struct Pilehead Pilehead;
@@ -21,4 +22,5 @@ Ix countPop(Pilehead * ph );
 Ix getUsr(Pilehead * ph); // Misc number
 void setUsr(Pilehead * ph, Ix u);
 void modUsr(Pilehead * ph, IxDiff u);
+void forAllPile(Pilehead * ph, bool onlyToUsr, PileAction act);
 void showPile(Pilehead * ph, VIP showSlot, bool onlyToUsr);

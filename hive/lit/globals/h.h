@@ -1,5 +1,7 @@
 #include "types.h"
 
+#define GUESS_CYCLES_PER_TOCK 1000
+
 bool openGlobals(void);
 void closeGlobals(bool rm);
 

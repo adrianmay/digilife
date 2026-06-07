@@ -96,6 +96,16 @@ bool showIt(void) {
   pileOfLinks.show(false);
   return false;
 }
+
+void act(LinkIx i) {
+  printf("Foo");
+}
+
+bool forall() {
+  pileOfLinks.forAll(false, act);
+  return true;
+}
+
 bool testLinkPile(void) {
   LinkIx i0;
   return true
@@ -106,6 +116,7 @@ bool testLinkPile(void) {
          && reallocing()
          //&& showIt()
          && with(i0)
+         && forall()
 ;}
 
 void cleanupLinkPile(void) { pileOfLinks.close(HIDE); }

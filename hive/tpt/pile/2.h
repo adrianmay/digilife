@@ -4,6 +4,7 @@
 #include "YY"
 
 typedef void * (*F_XX)(XX * p, void * u);
+typedef void (*XXPileAction)(XXIx);
 
 typedef bool    (*XXPileOpen)(void);
 typedef XXIx (*XXPileAlloc)(XX ** pNew, bool * pRecycled);
@@ -17,6 +18,7 @@ typedef Ix   (*XXPileCount)(void);
 typedef Ix   (*XXGetUsr)(void); // Misc number
 typedef void    (*XXSetUsr)(Ix u);
 typedef void    (*XXModUsr)(IxDiff u);
+typedef void    (*XXPileForAll)(bool onlyToUsr, XXPileAction action); // cos of meap
 typedef void    (*XXPileShow)(bool stopAtUsr); // cos of meap
 
 typedef struct {
@@ -31,6 +33,7 @@ typedef struct {
   XXGetUsr getUsr;
   XXSetUsr setUsr;
   XXModUsr modUsr;
+  XXPileForAll forAll;
   XXPileShow show;
 } XXPile;
 

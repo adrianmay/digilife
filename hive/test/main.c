@@ -69,11 +69,12 @@ int main(int argc, char **argv) {
 //    globals() &&
 //    pile() &&
 //    meap() &&
-//    hotel() &&
+    hotel() &&
 //    raffle() &&
 //    perf() &&
-//    work() &&
-    equi() &&
+//    tank() &&
+//    exec() &&
+//    equi() &&
     true;
   return suc?0:1;
 }

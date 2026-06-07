@@ -16,6 +16,7 @@ typedef Cash        (*XXHotelRobber)(XXIx i);
 typedef void        (*XXHotelKiller)(void);
 typedef Ix          (*XXHotelCount)(void);
 typedef void        (*XXHotelClose)(FATE fate);
+typedef void        (*XXHotelForAll)(XXPileAction);
 typedef void        (*XXHotelShow)(void);
 typedef void        (*XXHotelShowXX)(XXIx i, XX * p);
 
@@ -26,6 +27,7 @@ typedef struct {
   XXHotelEnrich enrich;
   XXHotelChargeIfCan chargeIfCan;
   XXHotelReview review;
+  XXHotelForAll forAll;
   XXHotelRobber rob;
   XXHotelKiller kill;
   XXHotelCount count;

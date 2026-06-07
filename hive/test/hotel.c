@@ -11,18 +11,18 @@
 
 // ALL OFF COS OF PERF STUFF 
 
-// void showMobBody(MobIx i, MobBody * p) {
-//   printf("code=<binary>\n");
-// }
+static bool extinct;
+void onMobsExtinct() {}
+void onMsgsExtinct() {}
+void onThingsExtinct(void) { extinct = true; }
+void onThingKilled(ThingIx i) {}
+void showMobBody(MobIx i, MobBody * p) {
+  printf("code=<binary>\n");
+}
+
 // 
-// static bool extinct;
-// void onThingsExtinct(void) { extinct = true; }
-// void onThingKilled(ThingIx i) {}
 // 
 // 
-// 
-// // void onMobsExtinct() {}
-// // void onMsgsExtinct() {}
 // 
 // Cycles cycles;
 // Thing * pThing;

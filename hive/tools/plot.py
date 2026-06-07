@@ -1,10 +1,16 @@
 #!/usr/bin/python3
 
+import os
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
+fn = "out"
 # Load the data file
-data = np.loadtxt("out")
+if not os.path.exists(fn):
+    sys.exit(0);
+
+data = np.loadtxt(fn)
 
 # Extract columns
 x = data[:, 0]

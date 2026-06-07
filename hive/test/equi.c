@@ -1,24 +1,24 @@
-#pragma GCC diagnostic ignored "-Wunused-function"
-#include <unistd.h>
-#include <stdio.h>
-#include <math.h>
-#include <string.h>
-#include "types.h"
-#include "test.h"
-#include "core/h.h"
-#include "misc/h.h"
-#include "globals/h.h"
-#include "work/h.h"
-#include "Msg_raffle/h.h"
-#include "Mob_hotel/h.h"
-#include "Msg_hotel/structs.h"
-
-#define SIZE_BOMB 32
-
-#define MOB_PER_MSG_SIZE ( ( (double) (sizeof(Mob)+32)) / ( (double) (sizeof(Msg)+32)) ) 
-#define MOB_CASH 400
-#define BID 0.00006
-#define PAY 100
+//#pragma GCC diagnostic ignored "-Wunused-function"
+//#include <unistd.h>
+//#include <stdio.h>
+//#include <math.h>
+//#include <string.h>
+//#include "types.h"
+//#include "test.h"
+//#include "core/h.h"
+//#include "misc/h.h"
+//#include "globals/h.h"
+//#include "work/h.h"
+//#include "Msg_raffle/h.h"
+//#include "Mob_hotel/h.h"
+//#include "Msg_hotel/structs.h"
+//
+//#define SIZE_BOMB 32
+//
+//#define MOB_PER_MSG_SIZE ( ( (double) (sizeof(Mob)+32)) / ( (double) (sizeof(Msg)+32)) ) 
+//#define MOB_CASH 400
+//#define BID 0.00006
+//#define PAY 100
 
 // double randProb() {
 //   uint64_t i = randIntBelow(1024);

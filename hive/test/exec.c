@@ -6,7 +6,7 @@
 #include "test.h"
 #include "misc/h.h"
 #include "globals/h.h"
-#include "work/h.h"
+#include "exec/h.h"
 #include "Msg_raffle/h.h"
 #include "Mob_hotel/h.h"
 
@@ -190,4 +190,4 @@
 //   return ret;
 // }
 
-bool work() { return true; }
+bool exec() { return true; }

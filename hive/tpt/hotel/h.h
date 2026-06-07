@@ -34,6 +34,7 @@ typedef struct {
   XXHotelClose close;
   XXHotelShow show;
   XXHotelShowXX showXX;
+  size_t billableSize; 
 } XXHotel;
 
 extern void onXXsExtinct(void); // Provide this.

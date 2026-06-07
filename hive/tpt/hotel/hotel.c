@@ -264,5 +264,7 @@ void showXXBomb(XXBombIx i, XXBomb * p) {
 
 static void forAll(XXPileAction act) { pileOfXXs.forAll(false, act); }
 
-XXHotel hotelOfXXs = {open, alloc, get, enrich, chargeIfCan, review, forAll, rob, kill, count, close, show, showXX};
+XXHotel hotelOfXXs = { open, alloc, get, enrich, chargeIfCan, review
+                     , forAll, rob, kill, count, close, show, showXX
+                     , sizeof(XX)+sizeof(XXBomb) };
 

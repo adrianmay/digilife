@@ -26,10 +26,12 @@ void showMobBody(MobIx i, MobBody * p) {
 Cycles cycles;
 Thing * pThing;
 ThingIx iThing;
+ThingIx iGod;
 
 static bool init(void) {
   openGlobals();
   hotelOfThings.open();
+  iGod = hotelOfThings.alloc(0,0,0); //God
   return true;
 }
 
@@ -63,8 +65,14 @@ void make(Ix name, Cash cash) {
 
 bool expectExtinctSoon(Cash cash) {
   Tocks dur = killTilExtinct();
-  Tocks expectIdeal = cash / (hotelOfThings.billableSize*tockPrice());
-  Tocks expect = ((expectIdeal - 1) / NOTIFY_TOCKS + 1) * NOTIFY_TOCKS ;
+  Tocks expect;
+  //printf("expectExtinctSoon: dur=%d\n", dur);
+  if (cash==0) 
+    expect = 0;
+  else {
+    Tocks expectIdeal = cash / (hotelOfThings.billableSize*tockPrice());
+     expect = ((expectIdeal - 1) / NOTIFY_TOCKS + 1) * NOTIFY_TOCKS ;
+  }
   assertInt(dur, expect);
   return true;
 }
@@ -103,6 +111,16 @@ bool testRob(void) {
   return true;
 }
 
+bool testGod(void) {
+  extinct = false;
+  printf("testGod\n");
+  make(6, 1000);
+  make(5, 0);
+  expectExtinctSoon(1000);
+  Cash godsCash = hotelOfThings.get(iThing)->rent.cash;
+  assertLong(godsCash, -1200l);
+  return true;
+}
 
 void cleanupHotel(void) { hotelOfThings.close(HIDE); closeGlobals(HIDE); }
 
@@ -114,6 +132,7 @@ bool testHotel(void) {
     test1() &&
     testEarn() &&
     testRob() &&
+    testGod() &&
     true;
 }
 

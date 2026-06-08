@@ -10,9 +10,12 @@ typedef struct { bool ran; RunResult res; } DeliverResult;
 typedef struct { Cash cost; RunResult res; } CostAndResult;
 
 typedef CostAndResult (*Runner)(Mob * pMob);
+typedef void (*WithBody)(MobBody * pMobBody);
 
+extern MobTact tGod;
+bool openTank();
+void closeTank(FATE);
 void showTank(void);
-MobTact eve(Cash cash);
-MobTact spawn(Cash cash, MobTact iParent);
+MobTact spawn(Cash cash, MobTact iParent, WithBody train);
 MsgIx post(Cash cash, CpuBid bid, MobTact sndr, MobTact rcvr);
 DeliverResult deliver(Runner runner, Msg * pMsg);

@@ -1,7 +1,10 @@
-//#include "Msg_pile/2.h"
-//#include "Mob_hotel/h.h"
-//#include "Msg_pile/2.h"
-//#include "Msg_raffle/h.h"
+#include "Mob_pile/1.h"
+#include "Msg_pile/1.h"
+#include "Mob_pile/2.h"
+#include "Mob_hotel/h.h"
+#include "Msg_pile/2.h"
+#include "Msg_raffle/h.h"
+#include "globals/h.h"
 #include "h.h"
 
 void onMobKilled(MobIx i) {
@@ -38,17 +41,22 @@ Mob * derefTact(MobTact t) {
     return 0;
 }
 
-MobTact eve(Cash cash) {
+MobTact tGod;
+
+void makeGod() {
   Mob * p;
-  MobIx iChild = hotelOfMobs.alloc(cash, &p, 0);
-  if (iChild.i != 0) abort(); //Only one eve.
-  return (MobTact){iChild,p->rent.nick};
+  MobIx iChild = hotelOfMobs.alloc(0, &p, 0);
+  if (iChild.i != 0) abort(); //Only one god.
+  tGod = (MobTact){iChild,p->rent.nick};
 }
 
-MobTact spawn(Cash cash, MobTact tParent) {
+MobTact spawn(Cash cash, MobTact tParent, WithBody train) {
   MobIx iChild = badMobIx;
-  if (checkTact(tParent) && hotelOfMobs.chargeIfCan(tParent.i, cash))
-    iChild = hotelOfMobs.alloc(cash, 0, 0);
+  if (checkTact(tParent) && hotelOfMobs.chargeIfCan(tParent.i, cash)) {
+    Mob * pMob;
+    iChild = hotelOfMobs.alloc(cash, &pMob, 0);
+    train(&pMob->body);
+  }
   return tact(iChild);
 }
 
@@ -77,4 +85,17 @@ DeliverResult deliver(Runner runner, Msg * pMsg) {
   return (DeliverResult){true, car.res};
 }
 
+bool openTank() {
+  openGlobals();
+  bool virgin = hotelOfMobs.open();
+  if (virgin) makeGod();
+  raffleOfMsgs.open();
+  return virgin;
+}
+
+void closeTank(FATE f) {
+  raffleOfMsgs.close(f);
+  hotelOfMobs.close(f);
+  closeGlobals(f);
+}
 

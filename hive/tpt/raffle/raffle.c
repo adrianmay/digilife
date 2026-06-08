@@ -158,9 +158,7 @@ void onXXKilled(XXIx i) {
 }
 
 static Cash cancel_(XXIx i) {
-  printf("In raffle.cancel_, gonna call hotel.rob\n");
   Cash c = hotelOfXXs.rob(i); //Take all money so it soon gets freed...
-  printf("In raffle.cancel_, back from hotel.rob\n");
   if (pileOfXXs.get(i)->body.raffle.s != 0) abort();
   return c;
 }
@@ -191,9 +189,7 @@ static Cash drawBelow(XXIx i, XXTicket * pTicket) {
     memcpy(pTicket, &pB->body.ticket, sizeof(XXTicket));
     if (pRaf->s == 0) abort();
     //printf("In drawBelow, drew:\n");
-    printf("In drawBelow, gonna call cancel_\n");
     cancel_(i);
-    printf("In drawBelow, back from cancel_\n");
     if (pRaf->s != 0) abort();
     if (pB->rent.nick & 0x80000000) abort();
     //printf("Returning cash=%ld from drawBelow\n", c);

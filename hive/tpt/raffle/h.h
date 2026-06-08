@@ -1,3 +1,5 @@
+#pragma once
+
 #include "XX_pile/1.h"
 #include "YY"
 #include "ZZ_pile/1.h"

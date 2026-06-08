@@ -1,4 +1,4 @@
-// #pragma once
+#pragma once
 
 #include "XX_pile/1.h"
 //#include "XX_hotel/h.h"
@@ -7,7 +7,7 @@
 
 extern char XXGOD[];
 typedef bool        (*XXHotelOpen)(void);
-typedef XXIx        (*XXHotelAlloc)(Cash cash, XX ** pp, bool * pRecycled);
+typedef XXIx        (*XXHotelAlloc)(Cash cash, XX ** pp, bool * pRecycled); //Cash = 0 -> God
 typedef XX *        (*XXHotelGet)(XXIx i);
 typedef void        (*XXHotelEnrich)(XXIx iWho, Cash amt);
 typedef bool        (*XXHotelChargeIfCan)(XXIx iWho, Cash amt);

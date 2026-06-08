@@ -73,6 +73,7 @@ void closeGlobals(bool rm) {  // And that param should be enum
 TockPrice tockPrice(void) {return pg->groatsPerTockPerByte;}
 
 void notifyCycles(Cycles worked) {
+  printf("Notifying %'ld cycles\n", worked);
   lock();
   Cycles toBill = worked + pg->cyclesNotTocked;
   lldiv_t qr = lldiv(toBill, pg->cyclesPerTock);

@@ -105,37 +105,26 @@ static void kill_(void) {
   while (true) { // Returns when nothing to kill for now
     bomb.who = badXXIx; // Prevent false alarms
     meapOfXXBombs.check();
-    printf("In hotel kill_, before chomp\n");
-    show();
     Chomped ch = meapOfXXBombs.chomp(now, &bomb, 0);
-    printf("In hotel kill_, just chomped this bomb with extinct/idle/killed=%d:\n", ch);
-    showXXBomb(badXXBombIx, &bomb);
-    show();
+    //showXXBomb(badXXBombIx, &bomb);
     meapOfXXBombs.check();
     if (ch == Killed ) {
       //bombee = bomb.who;
       //meapOfXXBombs.forAll(bombeeSafe);
       meapOfXXBombs.check();
-      printf("Gonna call onKilled for %d cos chomped\n", bomb.who.i);
       // For raffle, we don't free it, so this line is wrong:
       //pileOfXXs.free(bomb.who); //TODO: funeral and recover cash
       onXXKilled(bomb.who); // DOES need to free the block
-      printf("Called onKilled for %d cos chomped\n", bomb.who.i);
-      printf("In hotel kill_, just called onXXKilled\n");
-      show();
       meapOfXXBombs.check();
       //printf("Killed XX %i\n", bomb.who.i);
-      //show();
       continue;
     }
     if (ch == Extinct) {
       //printf("XXs are extinct\n");
       onXXsExtinct(); 
       meapOfXXBombs.check();
-      printf("Returning extinct from hotel kill_\n");
       return;
     }
-    printf("Returning idly from hotel kill_\n");
     return; // Must be Idle
   }
 }
@@ -146,16 +135,17 @@ static void kill(void) {
   unlock();
 }
 
+static bool isGod(XX * pXX) { return pXX->rent.bomb.i == BAD_INDEX; }
 // Kills it if it has non-positive cash
 // Assume rent just collected so cash is up to date
 static void review_(XX * pXX) {
   //printf("Hotel reviewing i=%d\n", pXX->rent.bomb.i);
+  if (isGod(pXX))
+    return;
   meapOfXXBombs.check();
   updateDeathWithXX_(pXX);
   meapOfXXBombs.check();
-  printf("Hotel review_ gonna call kill_\n");
   kill_();
-  printf("Hotel review_ back from kill_\n");
 }
 
 static void review(XXIx i) {
@@ -204,13 +194,13 @@ static bool chargeIfCan(XXIx i, Cash amt) {
 
 static Cash rob_(XX * pXX) {
   collectRent_(pXX);
+  if (isGod(pXX))
+    return 0;
   Cash c = pXX->rent.cash;
   if (c>0)
     enrich_(pXX, -c);
   meapOfXXBombs.check();
-  printf("Hotel.rob_ gonna call review_\n");
   review_(pXX);
-  printf("Hotel.rob_ back from review_\n");
   meapOfXXBombs.check();
   return c;
 }
@@ -231,6 +221,13 @@ void showXX(XXIx i, XX * p) {
 static XXIx alloc_(Cash cash, XX ** pp, bool * pRecycled) {
   XX * p;
   XXIx i = pileOfXXs.alloc(&p, pRecycled);
+  if (cash == 0) { 
+    p->rent.lastPaidRent = tocksNow();
+    p->rent.cash = 0;
+    p->rent.bomb = badXXBombIx;
+    pileOfXXs.modUsr(1);
+    return i;
+  }
   p->rent.lastPaidRent = tocksNow();
   p->rent.cash = cash;
   XXBombIx iBomb;

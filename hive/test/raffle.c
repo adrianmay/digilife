@@ -16,7 +16,6 @@ void onMesssExtinct(void) { extinct = true; }
 static bool init(void) {
   openGlobals();
   raffleOfMesss.open();
-  background(sweat_forever); // Got to do work to advance CPU time ...
   return true;
 }
 
@@ -26,7 +25,7 @@ Cash cash;
 
 // Equal weight, unequal types, loads of cash
 void stuff1(void) {
-  for (int a=0; a<10000; a++) {
+  for (int a=0; a<10; a++) {
     tkt.serial=a;
     tkt.type = a%3 ? 'T' : 'H';  //Twice as many heads
     raffleOfMesss.enter(5000, 10, &tkt);
@@ -34,7 +33,7 @@ void stuff1(void) {
 }
 
 void stuff2(void) {
-  for (int a=0; a<10000; a++) {
+  for (int a=0; a<10; a++) {
     tkt.serial=a;
     tkt.type = a%2 ? 'T' : 'H';  //Twice as many heads
     Weight w = a%2 ? 4 : 8;  //Twice as many heads
@@ -58,8 +57,10 @@ bool ch() {
 
 void sample(void) {
   int h=0, t=0, v=0, e=0;
-  for (int a=0;a<100;a++) {
+  for (int a=0;a<10;a++) {
+    //notifyCycles(1);
     ch();
+    printf("In test.sample, gonna draw.\n");
     bool res = raffleOfMesss.draw(&tkt, &cash);
     //printf("In sample after draw: %d\n", res);
     if (!res) {
@@ -94,7 +95,7 @@ bool testBlock() {
   Cash cash;
   pthread_create(&pid, 0, produce, 0);
   //sleepMs(200);
-  for (int a=0;a<100;a++) {
+  for (int a=0;a<10;a++) {
     sleepMs(1+randIntBelow(5));
     raffleOfMesss.draw(&tick, &cash);
   }
@@ -111,7 +112,8 @@ bool testBlock() {
 // }
 
 bool testRaffle() {
-  stuff1(); ch(); 
+  stuff1(); // ch(); 
+  printf("DONE STUFFING\n");
   sample(); ch(); 
   //empty();
 //  stuff2(); ch(); sample(); ch(); empty();

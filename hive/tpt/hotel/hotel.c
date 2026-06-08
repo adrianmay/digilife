@@ -79,20 +79,24 @@ static bool updateDeathWithXX_(XX * pXX) {
 }
 
 // Debug:
-static XXIx bombee;
-static void bombeeSafe(Ix i, void * p) { 
-  XXBomb * pB = (XXBomb *) p;
-  if (pB->who.i == bombee.i) {
-    printf("After chomp: Another bomb for XX %d\n", bombee.i);
-    abort();
-  }
-}
-static void bombeeSafe2(Ix i, void * p) { 
-  XXBomb * pB = (XXBomb *) p;
-  if (pB->who.i == bombee.i) {
-    printf("In alloc: Another bomb for XX %d\n", bombee.i);
-    abort();
-  }
+//static XXIx bombee;
+//static void bombeeSafe(Ix i, void * p) { 
+//  XXBomb * pB = (XXBomb *) p;
+//  if (pB->who.i == bombee.i) {
+//    printf("After chomp: Another bomb for XX %d\n", bombee.i);
+//    abort();
+//  }
+//}
+//static void bombeeSafe2(Ix i, void * p) { 
+//  XXBomb * pB = (XXBomb *) p;
+//  if (pB->who.i == bombee.i) {
+//    printf("In alloc: Another bomb for XX %d\n", bombee.i);
+//    abort();
+//  }
+//}
+
+void showXXBomb(XXBombIx i, XXBomb * p) {
+  printf("tocks=%d,who=%d\n", p->tocks, p->who.i);
 }
 
 static void kill_(void) {
@@ -101,16 +105,24 @@ static void kill_(void) {
   while (true) { // Returns when nothing to kill for now
     bomb.who = badXXIx; // Prevent false alarms
     meapOfXXBombs.check();
+    printf("In hotel kill_, before chomp\n");
+    show();
     Chomped ch = meapOfXXBombs.chomp(now, &bomb, 0);
+    printf("In hotel kill_, just chomped this bomb with extinct/idle/killed=%d:\n", ch);
+    showXXBomb(badXXBombIx, &bomb);
+    show();
     meapOfXXBombs.check();
     if (ch == Killed ) {
-      bombee = bomb.who;
-      meapOfXXBombs.forAll(bombeeSafe);
+      //bombee = bomb.who;
+      //meapOfXXBombs.forAll(bombeeSafe);
       meapOfXXBombs.check();
-      onXXKilled(bomb.who); // Doesn't need to free the block
-      printf("Gonna free XX %d cos chomped\n", bomb.who.i);
-      // This should be the only line that frees blocks in a hotel:
-      pileOfXXs.free(bomb.who); //TODO: funeral and recover cash
+      printf("Gonna call onKilled for %d cos chomped\n", bomb.who.i);
+      // For raffle, we don't free it, so this line is wrong:
+      //pileOfXXs.free(bomb.who); //TODO: funeral and recover cash
+      onXXKilled(bomb.who); // DOES need to free the block
+      printf("Called onKilled for %d cos chomped\n", bomb.who.i);
+      printf("In hotel kill_, just called onXXKilled\n");
+      show();
       meapOfXXBombs.check();
       //printf("Killed XX %i\n", bomb.who.i);
       //show();
@@ -120,8 +132,10 @@ static void kill_(void) {
       //printf("XXs are extinct\n");
       onXXsExtinct(); 
       meapOfXXBombs.check();
+      printf("Returning extinct from hotel kill_\n");
       return;
     }
+    printf("Returning idly from hotel kill_\n");
     return; // Must be Idle
   }
 }
@@ -135,11 +149,13 @@ static void kill(void) {
 // Kills it if it has non-positive cash
 // Assume rent just collected so cash is up to date
 static void review_(XX * pXX) {
-  //printf("Reviewing i=%d... ", i.i);
+  //printf("Hotel reviewing i=%d\n", pXX->rent.bomb.i);
   meapOfXXBombs.check();
   updateDeathWithXX_(pXX);
   meapOfXXBombs.check();
+  printf("Hotel review_ gonna call kill_\n");
   kill_();
+  printf("Hotel review_ back from kill_\n");
 }
 
 static void review(XXIx i) {
@@ -154,9 +170,9 @@ static void enrich_(XX * pXX, Cash amt) {
   //printf("Transfer: amt=%'ld, iFrom=%d, iTo=%d\n", amt, iFrom.i, iTo.i);
   XXRent * pRent = &pXX->rent;
   pRent->cash += amt;
-  collectRent_(pXX);
-  review_(pXX);
-  meapOfXXBombs.check();
+  //collectRent_(pXX);
+//  review_(pXX);
+//  meapOfXXBombs.check();
 }
 
 static void enrich(XXIx i, Cash amt) {
@@ -192,7 +208,9 @@ static Cash rob_(XX * pXX) {
   if (c>0)
     enrich_(pXX, -c);
   meapOfXXBombs.check();
+  printf("Hotel.rob_ gonna call review_\n");
   review_(pXX);
+  printf("Hotel.rob_ back from review_\n");
   meapOfXXBombs.check();
   return c;
 }
@@ -217,14 +235,14 @@ static XXIx alloc_(Cash cash, XX ** pp, bool * pRecycled) {
   p->rent.cash = cash;
   XXBombIx iBomb;
   XXBomb * pBomb;
-  bombee.i = i.i;
-  meapOfXXBombs.forAll(bombeeSafe2);
+  //bombee.i = i.i;
+  //meapOfXXBombs.forAll(bombeeSafe2);
   meapOfXXBombs.check();
   meapOfXXBombs.insert(&iBomb, &pBomb, i.i); // onNew should do the rest
   meapOfXXBombs.check();
   //printf("In alloc near end\n");
   //show();
-  review_(p); // Maybe superfluous
+  //review_(p); // Maybe superfluous
   if (pp) *pp = p;
   return i;
 }
@@ -256,10 +274,6 @@ void onMoveXXBomb(XXBomb * pBomb, XXBombIx to) {
   XX * p = pileOfXXs.get(pBomb->who);
   p->rent.bomb = to;
   meapOfXXBombs.check();
-}
-
-void showXXBomb(XXBombIx i, XXBomb * p) {
-  printf("tocks=%d,who=%d\n", p->tocks, p->who.i);
 }
 
 static void forAll(XXPileAction act) { pileOfXXs.forAll(false, act); }

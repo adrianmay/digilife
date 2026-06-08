@@ -31,7 +31,7 @@ static void forAll(void (*cb)(Ix, void *) ) {
 static Ix seen[100000];
 
 static void markOnce(Ix i, void * p) {
-  Ix * pB = (Ix *) p;
+  Ix * pB = (Ix *) p; // Bombee
   if (seen[*pB] != BAD_INDEX) {
     printf("XX meap: checkNoDupes: Saw bombee %d in %d and %d\n", *pB, i, seen[*pB]);
     abort();

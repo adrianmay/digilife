@@ -9,7 +9,6 @@
 #include "test.h"
 #include "bit/MsgTicket.h"
 
-void onMobKilled(MobIx i) {}
 
 void showMsgTicket(MsgTicket * p) {
   printf("cpuBid=%lf, rcvr=%d\n", p->cpuBid, p->rcvr.i.i);

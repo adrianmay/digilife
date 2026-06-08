@@ -17,7 +17,7 @@ static bool extinct;
 void onMobsExtinct() {}
 void onMsgsExtinct() {}
 void onThingsExtinct(void) { extinct = true; }
-void onThingKilled(ThingIx i) {}
+void onThingKilled(ThingIx i) { pileOfThings.free(i);}
 void showMobBody(MobIx i, MobBody * p) {
   printf("code=<binary>\n");
 }

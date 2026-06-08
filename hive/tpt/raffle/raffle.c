@@ -1,3 +1,6 @@
+
+#pragma GCC diagnostic ignored "-Winfinite-recursion"
+
 #include <string.h>
 #include <pthread.h>
 #include "misc/h.h"
@@ -30,8 +33,8 @@ static void show(void) {
 static void panicDump_(XXIx i) {
   printf("count: %d\n", pileOfXXs.count());
   XX * pB = pileOfXXs.get(i);
-  XXRafle * pR = &pB->body.raffle;
-  printf("In panic: w=%'ld, i=%d, l=%'ld, s=%'ld, r=%'ld\n", peep(), i.i, pR->l, pR->s, pR->r );
+  XXRafle * pRaf = &pB->body.raffle;
+  printf("In panic: w=%'ld, i=%d, l=%'ld, s=%'ld, r=%'ld\n", peep(), i.i, pRaf->l, pRaf->s, pRaf->r );
   if (i.i==0) { return; }
   pop();
   panicDump_(parent(i));
@@ -47,8 +50,8 @@ static Weight totWeightP(XXRafle * p) { return p->l + p->s + p->r; }
 static Weight totWeightI(XXIx i) {
   if (i.i >= hotelOfXXs.count()) return 0;
   XX * pB = hotelOfXXs.get(i);
-  XXRafle * pR = &pB->body.raffle;
-  return totWeightP(pR);
+  XXRafle * pRaf = &pB->body.raffle;
+  return totWeightP(pRaf);
 }
 
 static bool check_(const char * ctx, XXIx i) {
@@ -137,18 +140,28 @@ static XXIx enter(Cash cash, Weight w, XXTicket * pTicket) {
   return i;
 }
 
+static int done9177=0;
+
 void onXXKilled(XXIx i) {
+  if (i.i==9177) {
+    done9177++;
+    if (done9177==2)
+      abort();
+  }
+
   XX * p = pileOfXXs.get(i);
-  XXRafle * pR = &p->body.raffle;
-  if (pR->s == 0) abort();
-  Weight w = pR->s;
-  pR->s = 0;
+  XXRafle * pRaf = &p->body.raffle;
+  if (pRaf->s == 0) abort();
+  Weight w = pRaf->s;
+  pRaf->s = 0;
   propagateWeightUp(i, -w);
 }
 
 static Cash cancel_(XXIx i) {
+  printf("In raffle.cancel_, gonna call hotel.rob\n");
   Cash c = hotelOfXXs.rob(i); //Take all money so it soon gets freed...
-  hotelOfXXs.kill();
+  printf("In raffle.cancel_, back from hotel.rob\n");
+  if (pileOfXXs.get(i)->body.raffle.s != 0) abort();
   return c;
 }
 
@@ -164,27 +177,30 @@ static Cash cancel(XXIx i) {
 static Cash drawBelow(XXIx i, XXTicket * pTicket) {
   Cash c;
   XX * pB = pileOfXXs.get(i);
-  XXRafle * pR = &pB->body.raffle;
+  XXRafle * pRaf = &pB->body.raffle;
   Weight target = peep();
-  if (pR->l > 0 && target < pR->l) {
+  if (pRaf->l > 0 && target < pRaf->l) {
     push(target); 
     c = drawBelow(left(i), pTicket);
     pop();
     return c; 
   }
-  target -= pR->l;
-  if (target < pR->s) {
+  target -= pRaf->l;
+  if (target < pRaf->s) {
     c = pB->rent.cash;
     memcpy(pTicket, &pB->body.ticket, sizeof(XXTicket));
-    if (pR->s == 0) abort();
+    if (pRaf->s == 0) abort();
+    //printf("In drawBelow, drew:\n");
+    printf("In drawBelow, gonna call cancel_\n");
     cancel_(i);
-    if (pR->s != 0) abort();
-    if (!(pB->rent.nick & 0x80000000)) abort();
+    printf("In drawBelow, back from cancel_\n");
+    if (pRaf->s != 0) abort();
+    if (pB->rent.nick & 0x80000000) abort();
     //printf("Returning cash=%ld from drawBelow\n", c);
     return c;
   }
-  target -= pR->s;
-  if (pR->r == 0) {
+  target -= pRaf->s;
+  if (pRaf->r == 0) {
     printf("Bailing from drawBelow\n");
     panicDump(i);
     exit(10);
@@ -197,6 +213,7 @@ static Cash drawBelow(XXIx i, XXTicket * pTicket) {
 
 static Cash drawAssumeNotEmpty(XXTicket * pTicket) {
   XXIx i0 = (XXIx){0};
+  check(); 
   Weight tw = totWeightI(i0);
   uint64_t w = randIntBelow(tw);
   //printf("Rolled w=%ld of %ld\n", w, tw);

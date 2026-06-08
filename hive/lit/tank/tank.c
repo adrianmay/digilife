@@ -4,6 +4,10 @@
 //#include "Msg_raffle/h.h"
 #include "h.h"
 
+void onMobKilled(MobIx i) {
+  pileOfMobs.free(i);
+}
+
 Weight bidToWeight(CpuBid bid) {return 10000000*bid;}
 
 void showTank() {

@@ -84,14 +84,16 @@ MobTact spawn(Cash cash, MobTact tParent, WithBody train) {
   }
 }
 
-MsgIx post(Cash cash, CpuBid bid, MobTact tS, MobTact tR, WithPayload stuff) {
-  MsgTicket tkt;
-  tkt.cpuBid = bid;
-  tkt.rcvr = tR;
-  tkt.sndr = tS;
+
+MsgIx post(Cash cash, CpuBid bid, MobTact tS, MobTact tR, WithPayload stuffPayload) {
+  void stuffTicket(MsgTicket * pT) {
+    pT->cpuBid = bid;
+    pT->rcvr = tR;
+    pT->sndr = tS;
+    stuffPayload(&pT->payload);
+  }
   if (checkTact(tS) && hotelOfMobs.chargeIfCan(tS.i, cash)) {
-    MsgIx iMsg = raffleOfMsgs.enter(cash, bidToWeight(bid), &tkt);
-    stuff(&tkt.payload);
+    MsgIx iMsg = raffleOfMsgs.enter(cash, bidToWeight(bid), stuffTicket);
     return iMsg;
   }
   return badMsgIx;

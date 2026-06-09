@@ -4,9 +4,11 @@
 #include "YY"
 #include "ZZ_pile/1.h"
 
+typedef void (*WithXXTicket)(XXTicket * pTicket);
+
 typedef bool   (*XXRaffleOpen)   (void);
 typedef void   (*XXRaffleClose)  (FATE fate);
-typedef XXIx   (*XXRaffleEnter)  (Cash cash, Weight w, XXTicket * pTicket);
+typedef XXIx   (*XXRaffleEnter)  (Cash cash, Weight w, WithXXTicket stuff);
 typedef Cash   (*XXRaffleCancel) (XXIx i);
 typedef bool   (*XXRaffleEmpty)  (void);
 typedef bool   (*XXRaffleDraw)   (XXTicket * pTicket, Cash * pCash);

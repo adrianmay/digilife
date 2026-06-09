@@ -27,21 +27,33 @@ MessTicket tkt = {'V'};
 Cash cash;
 
 
+WithMessTicket stuffTicket1(int a) {
+  void stuff(MessTicket * pT) {
+    pT->serial = a;
+    pT->type = a%3 ? 'T' : 'H';  //Twice as many heads
+  }
+  return stuff;
+}
+
 // Equal weight, unequal types, loads of cash
 void stuff1(void) {
   for (int a=0; a<1000; a++) {
-    tkt.serial=a;
-    tkt.type = a%3 ? 'T' : 'H';  //Twice as many heads
-    raffleOfMesss.enter(5000, 10, &tkt);
+    raffleOfMesss.enter(5000, 10, stuffTicket1(a));
   }
+}
+
+WithMessTicket stuffTicket2(int a) {
+  void stuff(MessTicket * pT) {
+    pT->serial=a;
+    pT->type = a%2 ? 'T' : 'H';  //Twice as many heads
+  }
+  return stuff;
 }
 
 void stuff2(void) {
   for (int a=0; a<1000; a++) {
-    tkt.serial=a;
-    tkt.type = a%2 ? 'T' : 'H';  //Twice as many heads
     Weight w = a%2 ? 4 : 8;  //Twice as many heads
-    raffleOfMesss.enter(5000, w, &tkt);
+    raffleOfMesss.enter(5000, w, stuffTicket2(a));
   }
   //raffleOfMesss.show();
 }
@@ -83,12 +95,14 @@ void cleanupRaffle(void) { closeGlobals(DELETE); raffleOfMesss.close(DELETE); }
 int bored = 0;
 
 
+void apathy(MessTicket * pT) { (void)pT; }
+
 void * produce(void * p) {
   (void)p;
   for (int a=0;a<20;a++) {
     sleepMs(1+randIntBelow(5));
     if (bored==1) break;
-    raffleOfMesss.enter(10, 1+randIntBelow(10), &tkt);
+    raffleOfMesss.enter(10, 1+randIntBelow(10), apathy);
   }
   return 0;
 }

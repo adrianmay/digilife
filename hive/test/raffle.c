@@ -138,8 +138,8 @@ bool testBlock() {
 // }
 
 bool testRaffle() {
-//  stuff1(); ch(); sample(); ch(); empty();
-//  stuff2(); ch(); sample(); ch(); empty();
+  stuff1(); ch(); sample(); ch(); empty();
+  stuff2(); ch(); sample(); ch(); empty();
   testBlock();
   return true;
 }

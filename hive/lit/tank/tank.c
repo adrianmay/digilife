@@ -94,20 +94,20 @@ MobTact spawn(Cash cash, MobTact tParent, WithBody train) {
   }
 }
 
-WithMsgTicket stuffit(CpuBid bid, MobTact tS, MobTact tR, WithPayload stuffPload) {
+// WithMsgTicket stuffit(CpuBid bid, MobTact tS, MobTact tR, WithPayload stuffPload) {
+//   return st;
+// }
+
+MsgIx post(Cash cash, CpuBid bid, MobTact tS, MobTact tR, WithPayload stuffPayload) {
   void st(MsgTicket * pT) {
     pT->cpuBid = bid;
     pT->rcvr = tR;
     pT->sndr = tS;
-    stuffPload(&pT->payload);
+    stuffPayload(&pT->payload);
   }
-  return st;
-}
-
-MsgIx post(Cash cash, CpuBid bid, MobTact tS, MobTact tR, WithPayload stuffPayload) {
   if (checkTact(tS) && hotelOfMobs.chargeIfCan(tS.i, cash)) {
-    WithMsgTicket s = stuffit(bid, tS, tR, stuffPayload);
-    MsgIx iMsg = raffleOfMsgs.enter(cash, bidToWeight(bid), s);
+    //WithMsgTicket s = stuffit(bid, tS, tR, stuffPayload);
+    MsgIx iMsg = raffleOfMsgs.enter(cash, bidToWeight(bid), st);
     return iMsg;
   }
   return badMsgIx;

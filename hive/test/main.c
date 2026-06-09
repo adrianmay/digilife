@@ -66,11 +66,11 @@ int main(int argc, char **argv) {
   bool suc =
 //    wrap() &&
 //    globals() &&
+//    perf() &&
 //    pile() &&
 //    meap() &&
 //    hotel() &&
-//    raffle() &&
-//    perf() &&
+    raffle() &&
     tank() &&
 //    exec() &&
 //    equi() &&

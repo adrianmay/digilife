@@ -28,11 +28,18 @@ WithPayload stuffPload(int a) {
   return stff;
 }
 
+static MsgIx postie(Cash cash, CpuBid bid, MobTact tSndr, MobTact tRcvr, int a) {
+  void stf(MsgPayload * pP) {  
+    printf("Consider yourself stuffed %d\n", a);
+  }
+  return post(50, 1, tSndr, tRcvr, stf);
+}
+
 static bool test1(void) {
   MobTact t1 = spawn(100, tInvestor, train1);
   MobTact t2 = spawn(200, tInvestor, train2);
-  MsgIx iMsg1 = post(50, 1, t2, t1, stuffPload(1));
-  MsgIx iMsg2 = post(60, 1, t1, t2, stuffPload(2));
+  MsgIx iMsg1 = postie(50, 1, t2, t1, 1);
+  MsgIx iMsg2 = postie(60, 1, t1, t2, 2);
   printf("MsgIx: %d\n", iMsg1.i);
   printf("MsgIx: %d\n", iMsg2.i);
   return true;

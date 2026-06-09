@@ -4,7 +4,9 @@
 #include "Msg_raffle/h.h"
 #include "bit/MsgTicket.h"
 
-extern MobTact tInvestor, tSales, tCostsCpu, tCostsMem;
+extern MobTact 
+  tInvestor, tSales, tCostsCpu, tCostsMem,
+  tRentDefaults, tUndeliverables;
 
 typedef int RunResult;
 typedef struct { bool ran; RunResult res; } DeliverResult;

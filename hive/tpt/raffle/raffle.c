@@ -121,7 +121,6 @@ static XXIx enter(Cash cash, Weight w, WithXXTicket stuff) {
   bool recycled;
   XXIx i = hotelOfXXs.alloc(cash, &p, &recycled);
   //if (p->rent.cash>10000) { printf("Overrich 1 %d has %'ld from %'ld\n", i.i, p->rent.cash, cash); exit(1); }
-//  memcpy(&p->body.ticket, pTicket, sizeof(XXTicket));
 
   stuff(&p->body.ticket);
   XXRafle * pRaf = &p->body.raffle;
@@ -142,15 +141,7 @@ static XXIx enter(Cash cash, Weight w, WithXXTicket stuff) {
   return i;
 }
 
-static int done9177=0;
-
 void onXXKilled(XXIx i) {
-  if (i.i==9177) {
-    done9177++;
-    if (done9177==2)
-      abort();
-  }
-
   XX * p = pileOfXXs.get(i);
   XXRafle * pRaf = &p->body.raffle;
   if (pRaf->s == 0) abort();
@@ -174,28 +165,26 @@ static Cash cancel(XXIx i) {
 }
 
 // Assumes there are tickets. Look out of onXXsExtinct
-static Cash drawBelow(XXIx i, XXTicket * pTicket) {
-  Cash c;
+static void drawBelow(XXIx i, WithXXTicketAndCash enjoyTicket) {
   XX * pB = pileOfXXs.get(i);
   XXRafle * pRaf = &pB->body.raffle;
   Weight target = peep();
   if (pRaf->l > 0 && target < pRaf->l) {
     push(target); 
-    c = drawBelow(left(i), pTicket);
+    drawBelow(left(i), enjoyTicket);
     pop();
-    return c; 
+    return; 
   }
   target -= pRaf->l;
   if (target < pRaf->s) {
-    c = pB->rent.cash;
-    memcpy(pTicket, &pB->body.ticket, sizeof(XXTicket));
+    enjoyTicket(&pB->body.ticket, pB->rent.cash);
     if (pRaf->s == 0) abort();
     //printf("In drawBelow, drew:\n");
     cancel_(i);
     if (pRaf->s != 0) abort();
     if (pB->rent.nick & 0x80000000) abort();
-    //printf("Returning cash=%ld from drawBelow\n", c);
-    return c;
+    //printf("Returning cash=%ld from drawBelow\n", cash);
+    return;
   }
   target -= pRaf->s;
   if (pRaf->r == 0) {
@@ -204,25 +193,23 @@ static Cash drawBelow(XXIx i, XXTicket * pTicket) {
     exit(10);
   }
   push(target);
-  c = drawBelow(right(i), pTicket);
+  drawBelow(right(i), enjoyTicket);
   pop();
-  return c;
 }
 
-static Cash drawAssumeNotEmpty(XXTicket * pTicket) {
+static void drawAssumeNotEmpty(WithXXTicketAndCash enjoyTicket) {
   XXIx i0 = (XXIx){0};
   check(); 
   Weight tw = totWeightI(i0);
   uint64_t w = randIntBelow(tw);
   //printf("Rolled w=%ld of %ld\n", w, tw);
   push(w);
-  Cash c = drawBelow(i0, pTicket);
+  drawBelow(i0, enjoyTicket);
   pop();
-  return c;
 }
 
 // If this returns false we're closing down the program
-static bool draw(XXTicket * pTicket, Cash * pCash) {
+static bool draw(WithXXTicketAndCash enjoyTicket) {
   lock();
   checkM("draw 1");
   if (gottaQuitXX)    { gottaQuitXX=false; unlock(); return false; }
@@ -231,7 +218,7 @@ static bool draw(XXTicket * pTicket, Cash * pCash) {
   }
   if (gottaQuitXX)    { gottaQuitXX=false; unlock(); return false; }
   // Can't be empty
-  *pCash = drawAssumeNotEmpty(pTicket);
+  drawAssumeNotEmpty(enjoyTicket);
   checkM("draw 2");
   unlock();
   return true;

@@ -58,8 +58,12 @@ void stuff2(void) {
   //raffleOfMesss.show();
 }
 
+void enjoy1(MessTicket * pTicket, Cash remaining) {
+  (void)pTicket; (void)remaining;
+}
+
 void empty(void) {
-  while (!raffleOfMesss.empty()) { raffleOfMesss.draw(&tkt, &cash); };
+  while (!raffleOfMesss.empty()) { raffleOfMesss.draw(enjoy1); };
 }
 
 bool ch() {
@@ -71,21 +75,27 @@ bool ch() {
   return true;
 }
 
+int h, t, v, e;
+void enjoy2(MessTicket * pT, Cash remaining) {
+  (void)remaining;
+  if (pT->type=='H') h++;
+  else if (pT->type=='T') t++;
+  else if (pT->type=='V') v++;
+  else e++;
+
+}
+
 void sample(void) {
-  int h=0, t=0, v=0, e=0;
+  h=0; t=0; v=0; e=0;
   for (int a=0;a<100;a++) {
     //notifyCycles(1);
     ch();
-    bool res = raffleOfMesss.draw(&tkt, &cash);
+    bool res = raffleOfMesss.draw(enjoy2);
     //printf("In sample after draw: %d\n", res);
     if (!res) {
       printf("Sampled %d H, %d T, %d virgins and %d errors.\n", h, t, v, e);
       return;
     }
-    if (tkt.type=='H') h++;
-    else if (tkt.type=='T') t++;
-    else if (tkt.type=='V') v++;
-    else e++;
   }
   printf("Sampled %d H, %d T, %d virgins and %d errors.\n", h, t, v, e);
 }
@@ -109,13 +119,11 @@ void * produce(void * p) {
 
 bool testBlock() {
   pthread_t pid;
-  MessTicket tick;
-  Cash cash;
   pthread_create(&pid, 0, produce, 0);
   //sleepMs(200);
   for (int a=0;a<10;a++) {
     sleepMs(1+randIntBelow(5));
-    raffleOfMesss.draw(&tick, &cash);
+    raffleOfMesss.draw(enjoy1);
   }
   bored = 1;
   pthread_join(pid, 0);

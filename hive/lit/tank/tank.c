@@ -16,7 +16,7 @@ void onMobRentCollected(Cash cash) {
 }
 
 void onMobRentDefaulted(Cash cash) {
-  abort();
+  hotelOfMobs.enrich(tRentDefaults.i, cash);
 }
 
 void onMsgRentCollected(Cash cash) {
@@ -24,7 +24,7 @@ void onMsgRentCollected(Cash cash) {
 }
 
 void onMsgRentDefaulted(Cash cash) {
-  abort();
+  hotelOfMobs.enrich(tRentDefaults.i, cash);
 }
 
 Weight bidToWeight(CpuBid bid) {return 10000000*bid;}
@@ -64,7 +64,9 @@ Mob * derefTact(MobTact t) {
     return 0;
 }
 
-MobTact tInvestor, tSales, tCostsCpu, tCostsMem;
+MobTact 
+  tInvestor, tSales, tCostsCpu, tCostsMem,
+  tRentDefaults, tUndeliverables;
 
 MobTact makeGod() {
   Mob * p;
@@ -74,7 +76,8 @@ MobTact makeGod() {
 
 MobTact spawn(Cash cash, MobTact tParent, WithBody train) {
   MobIx iChild = badMobIx;
-  if (checkTact(tParent) && hotelOfMobs.chargeIfCan(tParent.i, cash)) {
+  if (   checkTact(tParent) 
+      && hotelOfMobs.chargeIfCan(tParent.i, cash)) {
     Mob * pMob;
     iChild = hotelOfMobs.alloc(cash, &pMob, 0);
     train(&pMob->body);
@@ -83,7 +86,6 @@ MobTact spawn(Cash cash, MobTact tParent, WithBody train) {
     return (MobTact) {badMobIx, BAD_INDEX};
   }
 }
-
 
 MsgIx post(Cash cash, CpuBid bid, MobTact tS, MobTact tR, WithPayload stuffPayload) {
   void stuffTicket(MsgTicket * pT) {

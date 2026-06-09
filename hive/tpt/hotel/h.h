@@ -4,13 +4,15 @@
 //#include "XX_hotel/h.h"
 #include "XX_pile/2.h"
 
-
-extern char XXGOD[];
+extern void onXXRentCollected(Cash rent); // Provide this
+extern void onXXRentDefaulted(Cash rent); // Provide this
+                                     
 typedef bool        (*XXHotelOpen)(void);
 typedef XXIx        (*XXHotelAlloc)(Cash cash, XX ** pp, bool * pRecycled); //Cash = 0 -> God
 typedef XX *        (*XXHotelGet)(XXIx i);
 typedef void        (*XXHotelEnrich)(XXIx iWho, Cash amt);
 typedef bool        (*XXHotelChargeIfCan)(XXIx iWho, Cash amt);
+typedef void        (*XXHotelCollectRent)(XXIx iWho);
 typedef void        (*XXHotelReview)(XXIx in);
 typedef Cash        (*XXHotelRobber)(XXIx i);
 typedef void        (*XXHotelKiller)(void);
@@ -26,6 +28,7 @@ typedef struct {
   XXHotelGet get;
   XXHotelEnrich enrich;
   XXHotelChargeIfCan chargeIfCan;
+  XXHotelCollectRent collectRent;
   XXHotelReview review;
   XXHotelForAll forAll;
   XXHotelRobber rob;

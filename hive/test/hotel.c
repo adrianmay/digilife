@@ -18,6 +18,8 @@ void onMobsExtinct() {}
 void onMsgsExtinct() {}
 void onThingsExtinct(void) { extinct = true; }
 void onThingKilled(ThingIx i) { pileOfThings.free(i);}
+void onThingRentCollected(Cash cash) { }
+void onThingRentDefaulted(Cash cash) { }
 void showMobBody(MobIx i, MobBody * p) {
   printf("code=<binary>\n");
 }

@@ -11,7 +11,27 @@ void onMobKilled(MobIx i) {
   pileOfMobs.free(i);
 }
 
+void onMobRentCollected(Cash cash) {
+  hotelOfMobs.enrich(tCostsMem.i, cash);
+}
+
+void onMobRentDefaulted(Cash cash) {
+  abort();
+}
+
+void onMsgRentCollected(Cash cash) {
+  hotelOfMobs.enrich(tCostsMem.i, cash);
+}
+
+void onMsgRentDefaulted(Cash cash) {
+  abort();
+}
+
 Weight bidToWeight(CpuBid bid) {return 10000000*bid;}
+
+void showMobTact(MobTact t) {
+  printf("Tact {%d,%x}\n", t.i.i, t.n);
+}
 
 void showTank() {
   hotelOfMobs.show();
@@ -19,12 +39,15 @@ void showTank() {
 }
 
 MobTact tact(MobIx i) {
-  Ix nick = hotelOfMobs.get(i)->rent.nick;
+  Mob * pMob = hotelOfMobs.get(i);
+  Ix nick = pMob->rent.nick;
   if (nick & 0x80000000) abort();
   return (MobTact) {i, nick};
 }
 
 bool checkTact(MobTact t) {
+  if (t.i.i == BAD_INDEX) 
+    return false;
   Mob * p = hotelOfMobs.get(t.i);
   return t.n == p->rent.nick;
 }
@@ -41,13 +64,12 @@ Mob * derefTact(MobTact t) {
     return 0;
 }
 
-MobTact tGod;
+MobTact tInvestor, tSales, tCostsCpu, tCostsMem;
 
-void makeGod() {
+MobTact makeGod() {
   Mob * p;
   MobIx iChild = hotelOfMobs.alloc(0, &p, 0);
-  if (iChild.i != 0) abort(); //Only one god.
-  tGod = (MobTact){iChild,p->rent.nick};
+  return (MobTact){iChild, p->rent.nick};
 }
 
 MobTact spawn(Cash cash, MobTact tParent, WithBody train) {
@@ -56,18 +78,22 @@ MobTact spawn(Cash cash, MobTact tParent, WithBody train) {
     Mob * pMob;
     iChild = hotelOfMobs.alloc(cash, &pMob, 0);
     train(&pMob->body);
+    return tact(iChild);
+  } else {
+    return (MobTact) {badMobIx, BAD_INDEX};
   }
-  return tact(iChild);
 }
 
-
-MsgIx post(Cash cash, CpuBid bid, MobTact tS, MobTact tR) {
+MsgIx post(Cash cash, CpuBid bid, MobTact tS, MobTact tR, WithPayload stuff) {
   MsgTicket tkt;
   tkt.cpuBid = bid;
   tkt.rcvr = tR;
   tkt.sndr = tS;
-  if (checkTact(tS) && hotelOfMobs.chargeIfCan(tS.i, cash))
-    return raffleOfMsgs.enter(cash, bidToWeight(bid), &tkt);
+  if (checkTact(tS) && hotelOfMobs.chargeIfCan(tS.i, cash)) {
+    MsgIx iMsg = raffleOfMsgs.enter(cash, bidToWeight(bid), &tkt);
+    stuff(&tkt.payload);
+    return iMsg;
+  }
   return badMsgIx;
 }
 
@@ -85,10 +111,17 @@ DeliverResult deliver(Runner runner, Msg * pMsg) {
   return (DeliverResult){true, car.res};
 }
 
+void makeVirginTank() {
+  tInvestor = makeGod();
+  tSales    = makeGod();
+  tCostsCpu = makeGod();
+  tCostsMem = makeGod();
+}
+
 bool openTank() {
   openGlobals();
   bool virgin = hotelOfMobs.open();
-  if (virgin) makeGod();
+  if (virgin) makeVirginTank();
   raffleOfMsgs.open();
   return virgin;
 }

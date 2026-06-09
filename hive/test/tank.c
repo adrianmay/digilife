@@ -22,10 +22,13 @@ void train2(MobBody * pMB) {
 }
 
 static bool test1(void) {
-  MobTact t1 = spawn(100, tGod, train1);
-  MobTact t2 = spawn(200, tGod, train2);
-  post(50, 1, t2, t1);
-
+  MobTact t1 = spawn(100, tInvestor, train1);
+  return true;
+  MobTact t2 = spawn(200, tInvestor, train2);
+  MsgIx iMsg1 = post(50, 1, t2, t1, 0);
+  MsgIx iMsg2 = post(60, 1, t1, t2, 0);
+  printf("MsgIx: %d\n", iMsg1.i);
+  printf("MsgIx: %d\n", iMsg2.i);
   return true;
 }
 static bool test(void) {

@@ -46,16 +46,6 @@ static XX * get(XXIx i) {
 
 //Below, the trailing underscore means no lock taken
 
-//Deduct cash and set last paid to now
-static void collectRent_(XX * pXX) {
-  XXRent * pRent = &pXX->rent;
-  Tocks now = tocksNow();
-  Tocks timeUnpaid = now - pRent->lastPaidRent;
-  Cash bill = tockPrice() * (sizeof(XX)+sizeof(XXBomb)) * timeUnpaid;
-  pRent->cash -= bill;
-  pRent->lastPaidRent = now;
-} // Should now update death in bomb
-
 // Updates bomp expiry and reorders meap. 
 // Assumes collectRent was just called.
 static bool updateDeathWithXXAndBomb_(XX* p, XXBomb * pBomb) {
@@ -151,18 +141,44 @@ static void review_(XX * pXX) {
 static void review(XXIx i) {
   lock();
   XX * pXX = get(i);
-  collectRent_(pXX);
   review_(pXX);
   unlock();
 }
 
+//Deduct cash and set last paid to now
+static void collectRent_(XX * pXX, Cash * collected, Cash * defaulted) {
+  XXRent * pRent = &pXX->rent;
+  Tocks now = tocksNow();
+  pRent->lastPaidRent = now;
+  Tocks timeUnpaid = now - pRent->lastPaidRent;
+  Cash bill = tockPrice() * (sizeof(XX)+sizeof(XXBomb)) * timeUnpaid;
+  if (pRent->cash >= bill) {
+    pRent->cash -= bill;
+    *collected = bill;
+    *defaulted = 0;
+  } else {
+    Cash c = pRent->cash;
+    pRent->cash = 0;
+    *collected = c;
+    *defaulted = bill-c;
+  }
+} // Should now update death in bomb
+
+static void collectRent(XXIx i) {
+  lock();
+  XX * pXX = get(i);
+  Cash collected, defaulted;
+  collectRent_(pXX, &collected, &defaulted);
+  review_(pXX);
+  unlock();
+  if (collected) onXXRentCollected(collected);
+  if (defaulted) onXXRentDefaulted(defaulted);
+}
+ 
 static void enrich_(XX * pXX, Cash amt) {
   //printf("Transfer: amt=%'ld, iFrom=%d, iTo=%d\n", amt, iFrom.i, iTo.i);
   XXRent * pRent = &pXX->rent;
   pRent->cash += amt;
-  //collectRent_(pXX);
-//  review_(pXX);
-//  meapOfXXBombs.check();
 }
 
 static void enrich(XXIx i, Cash amt) {
@@ -173,14 +189,17 @@ static void enrich(XXIx i, Cash amt) {
 
 static bool chargeIfCan_(XX * pXX, Cash amt) {
   //printf("Transfer: amt=%'ld, iFrom=%d, iTo=%d\n", amt, iFrom.i, iTo.i);
-  collectRent_(pXX);
-  // CHECK ALIVE
   XXRent * pRent = &pXX->rent;
-  if (pRent->cash < amt) 
-    return false;
-  pRent->cash -= amt;
-  review_(pXX);
-  meapOfXXBombs.check();
+  bool g = isGod(pXX);
+  if (g) 
+    pRent->cash -= amt;
+  else { // Not a god
+    if (pRent->cash < amt) 
+      return false;
+    pRent->cash -= amt;
+    review_(pXX);
+    meapOfXXBombs.check();
+  }
   return true;
 }
 
@@ -193,7 +212,6 @@ static bool chargeIfCan(XXIx i, Cash amt) {
 }
 
 static Cash rob_(XX * pXX) {
-  collectRent_(pXX);
   if (isGod(pXX))
     return 0;
   Cash c = pXX->rent.cash;
@@ -226,20 +244,15 @@ static XXIx alloc_(Cash cash, XX ** pp, bool * pRecycled) {
     p->rent.cash = 0;
     p->rent.bomb = badXXBombIx;
     pileOfXXs.modUsr(1);
-    return i;
+  } else {
+    p->rent.lastPaidRent = tocksNow();
+    p->rent.cash = cash;
+    XXBombIx iBomb;
+    XXBomb * pBomb;
+    meapOfXXBombs.check();
+    meapOfXXBombs.insert(&iBomb, &pBomb, i.i); // onNew should do the rest
+    meapOfXXBombs.check();
   }
-  p->rent.lastPaidRent = tocksNow();
-  p->rent.cash = cash;
-  XXBombIx iBomb;
-  XXBomb * pBomb;
-  //bombee.i = i.i;
-  //meapOfXXBombs.forAll(bombeeSafe2);
-  meapOfXXBombs.check();
-  meapOfXXBombs.insert(&iBomb, &pBomb, i.i); // onNew should do the rest
-  meapOfXXBombs.check();
-  //printf("In alloc near end\n");
-  //show();
-  //review_(p); // Maybe superfluous
   if (pp) *pp = p;
   return i;
 }
@@ -275,7 +288,7 @@ void onMoveXXBomb(XXBomb * pBomb, XXBombIx to) {
 
 static void forAll(XXPileAction act) { pileOfXXs.forAll(false, act); }
 
-XXHotel hotelOfXXs = { open, alloc, get, enrich, chargeIfCan, review
+XXHotel hotelOfXXs = { open, alloc, get, enrich, chargeIfCan, collectRent, review
                      , forAll, rob, kill, count, close, show, showXX
                      , sizeof(XX)+sizeof(XXBomb) };
 

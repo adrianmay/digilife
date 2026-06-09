@@ -6,6 +6,10 @@
 #include "globals/h.h"
 #include "Mess_raffle/h.h"
 
+
+void onMessRentCollected(Cash cash) { }
+void onMessRentDefaulted(Cash cash) { }
+
 void showMessTicket(MessTicket * p) {
   printf("type=%c\n", p->type);
 }

@@ -39,7 +39,7 @@ static bool test1(void) {
   MobTact t1 = spawn(100, tInvestor, train1);
   MobTact t2 = spawn(200, tInvestor, train2);
   MsgIx iMsg1 = postie(50, 1, t2, t1, 1);
-  MsgIx iMsg2 = postie(60, 1, t1, t2, 2);
+  MsgIx iMsg2 = postie(60, 10, t1, t2, 2);
   printf("MsgIx: %d\n", iMsg1.i);
   printf("MsgIx: %d\n", iMsg2.i);
   return true;

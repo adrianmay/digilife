@@ -46,10 +46,17 @@ MobTact tact(MobIx i) {
 }
 
 bool checkTact(MobTact t) {
-  if (t.i.i == BAD_INDEX) 
+  if (t.i.i == BAD_INDEX)  {
+    showMobTact(t);
     return false;
+  }
   Mob * p = hotelOfMobs.get(t.i);
-  return t.n == p->rent.nick;
+  bool res = t.n == p->rent.nick;
+  if (!res) {
+    printf("Tact doesn't match mob's nick: %d\n", p->rent.nick);
+    showMobTact(t);
+  }
+  return res;
 }
 
 void checkTactAbort(MobTact t) {
@@ -87,15 +94,20 @@ MobTact spawn(Cash cash, MobTact tParent, WithBody train) {
   }
 }
 
-MsgIx post(Cash cash, CpuBid bid, MobTact tS, MobTact tR, WithPayload stuffPayload) {
-  void stuffTicket(MsgTicket * pT) {
+WithMsgTicket stuffit(CpuBid bid, MobTact tS, MobTact tR, WithPayload stuffPload) {
+  void st(MsgTicket * pT) {
     pT->cpuBid = bid;
     pT->rcvr = tR;
     pT->sndr = tS;
-    stuffPayload(&pT->payload);
+    stuffPload(&pT->payload);
   }
+  return st;
+}
+
+MsgIx post(Cash cash, CpuBid bid, MobTact tS, MobTact tR, WithPayload stuffPayload) {
   if (checkTact(tS) && hotelOfMobs.chargeIfCan(tS.i, cash)) {
-    MsgIx iMsg = raffleOfMsgs.enter(cash, bidToWeight(bid), stuffTicket);
+    WithMsgTicket s = stuffit(bid, tS, tR, stuffPayload);
+    MsgIx iMsg = raffleOfMsgs.enter(cash, bidToWeight(bid), s);
     return iMsg;
   }
   return badMsgIx;

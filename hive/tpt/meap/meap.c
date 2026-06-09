@@ -2,9 +2,48 @@
 #include "misc/h.h"
 #include "2.h"
 
+
 static XXIx parent(XXIx i) {return ( XXIx ){ (i.i-1)/2 };}
 static XXIx left  (XXIx i) {return ( XXIx ){ 2*i.i + 1 };}
 static XXIx right (XXIx i) {return ( XXIx ){ 2*i.i + 2 };}
+
+static void show(void) {
+  printf("MEAP:\n");
+  pileOfXXs.show(true);
+}
+
+static Ix bombee;
+
+static void bombeeSafe(Ix i, void * p) { 
+  Ix * pB = (Ix *) p;
+  if (*pB == bombee) {
+    printf("In meap insert: Another bomb for XX %d\n", bombee);
+    show();
+    abort();
+  }
+}
+
+static void forAll(void (*cb)(Ix, void *) ) {
+  Ix cnt = pileOfXXs.getUsr();
+  for (Ix i=0;i<cnt;i++) cb(i, pileOfXXs.get((XXIx){i}));
+}
+
+static Ix seen[100000];
+
+static void markOnce(Ix i, void * p) {
+  Ix * pB = (Ix *) p; // Bombee
+  if (seen[*pB] != BAD_INDEX) {
+    printf("XX meap: checkNoDupes: Saw bombee %d in %d and %d\n", *pB, i, seen[*pB]);
+    abort();
+  }
+  seen[*pB]=i;
+}
+
+static void checkNoDupes()
+{
+  memset(seen, BAD_INDEX, sizeof(seen));
+  forAll(markOnce);
+}
 
 static void swap(XXIx i1, XXIx i2) {
   if (i1.i==i2.i) return;
@@ -17,21 +56,32 @@ static void swap(XXIx i1, XXIx i2) {
   memcpy(p2, &tmp, len);
   onMoveXX(p1, i1);
   onMoveXX(p2, i2);
+  checkNoDupes();
 }
 
 static bool siftUp(XXIx iCur) {
-  if (iCur.i == 0) return false;
+  bool res;
   Score sCur;
-  while (iCur.i > 0) {
-    sCur = pileOfXXs.get(iCur)->tocks;
-    XXIx iPar = parent(iCur);
-    XX * pPar = pileOfXXs.get(iPar);
-    Score sPar = pPar->tocks;
-    if (sPar <= sCur) return false;
-    swap(iCur, iPar);
-    iCur.i = iPar.i;
+  if (iCur.i == 0) {
+    res = false; 
+  } else {
+    while (iCur.i > 0) {
+      sCur = pileOfXXs.get(iCur)->tocks;
+      XXIx iPar = parent(iCur);
+      XX * pPar = pileOfXXs.get(iPar);
+      Score sPar = pPar->tocks;
+      if (sPar <= sCur) { 
+        res = false; 
+        break;
+      } else {
+        swap(iCur, iPar);
+        iCur.i = iPar.i;
+        res = true;
+      }
+    }
   }
-  return true; //We changed the zeroth member
+  checkNoDupes();
+  return res;
 }
 
 // We can't use free cos meaps must be contiguous, so we use the heap's usr for the "meapish" size
@@ -57,10 +107,14 @@ static void siftDown(XXIx iCur) {
     swap(iCur, iSmallest);
     iCur = iSmallest;
   } // end of while
+  checkNoDupes();
 }
 
 // Returns whether or not the lowest changed.
 static bool insert(XXIx * pI, XX ** ppNew, Ix hint) {
+  //printf("Inserting bomb for XX %d\n", hint);
+  bombee = hint;
+  forAll(bombeeSafe);
   Ix meapTop = pileOfXXs.getUsr(); //meapish size
   if (meapTop < pileOfXXs.count()) { // That's pile's top minus pile's free count. But we'll never use free in this pile anyway.
     pI->i = meapTop;                   // Got meapish spares so just return one
@@ -84,6 +138,7 @@ static bool editTocksWhenLocked(XXIx iCur, Score when) {
   pileOfXXs.get(iCur)->tocks = when;
   siftDown(iCur);
   bool res = siftUp(iCur);
+  checkNoDupes();
   return res;
 }
 
@@ -92,26 +147,24 @@ static bool editTocksTakingLock(XXIx iCur, Score when) {
   return res;
 }
 
-static bool erase_(XXIx iCur) {
+static bool erase(XXIx iCur) {
   Ix cnt = pileOfXXs.getUsr();
   if (!cnt) {
+    printf("Meap empty in erase\n");
     return false;
   }
+  XX * p = pileOfXXs.get(iCur);
+  Ix * pI = (Ix *) p;
+  //printf("Erasing bomb for XX %d\n", pI[0]);
+  bombee = pI[0];
   Ix iLast = cnt-1;
   swap((XXIx){iLast}, iCur);
   pileOfXXs.modUsr(-1);
   siftDown(iCur); //Not calling review cos I'd need a recursive mutex
-  return siftUp(iCur);
-}
-
-static bool erase(XXIx iCur) {
-  int res = erase_(iCur);
+  bool res = siftUp(iCur);
+  forAll(bombeeSafe);
+  checkNoDupes();
   return res;
-}
-
-static void show(void) {
-  printf("MEAP:\n");
-  pileOfXXs.show(true);
 }
 
 static Chomped chomp(Score thresh, XX * pCopyOut, int pseudoAnimals) {
@@ -126,15 +179,34 @@ static Chomped chomp(Score thresh, XX * pCopyOut, int pseudoAnimals) {
     ScoreDiff sd = wrapSub32S(lowestScoreInMeap, thresh);
     //printf("chomped: lowest=%d, thresh=%d, sd=%d\n", lowestScoreInMeap, thresh, sd);
     if (sd <= 0) {
-      erase_(i);
+      erase(i);
       //show();
       res = Killed;
     } else {
       res = Idle;
     }
   }
+  checkNoDupes();
   return res;
 }
+
+// static bool checkSubWeights(void) {
+//   Ix cnt = pileOfXXs.getUsr();
+//   for (Ix i=1;i<cnt;i++) {
+//     XXIx iCur = (XXIx){i};
+//     XX * pCur = pileOfXXs.get(iCur);
+// 
+//     XXIx iL = left(iCur);
+//     if (iL.i<cnt) {
+//       XX * pL = pileOfXXs.get(iL);
+//       if (pCur->body
+//     }
+// 
+//     XXIx iR= right(iCur);
+// 
+//   }
+//   return true;
+// }
 
 static bool checkOrdered(void) {
   bool ok=true;
@@ -146,6 +218,7 @@ static bool checkOrdered(void) {
     Score sPar = pileOfXXs.get(iPar)->tocks;
     ok &= sPar <= sCur;
   }
+  checkNoDupes();
   return ok;
 }
 
@@ -154,4 +227,5 @@ static Ix size(void) {  return pileOfXXs.getUsr(); }
 static bool open(void) { return pileOfXXs.open(); }
 static void close(FATE f) { pileOfXXs.close(f); }
 
-XXMeap meapOfXXs = { open, close, insert, editTocksWhenLocked, editTocksTakingLock, erase, chomp, checkOrdered, size, show };
+XXMeap meapOfXXs = { open, close, insert, editTocksWhenLocked, editTocksTakingLock
+                   , erase, chomp, checkOrdered, forAll, size, show };

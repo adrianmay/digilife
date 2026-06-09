@@ -1,7 +1,7 @@
 #include "types.h"
 
 typedef struct {
-  Cycles tocksReviewedAt; // Exact CPU uptime
+  Cycles tocksReviewedAt; // Not used in deterministic version.
   bool shouldRun;
 } VolatileGlobals;
 

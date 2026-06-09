@@ -1,14 +1,24 @@
 #pragma once
 
 #include "Mob_pile/1.h"
+
+
+typedef struct {MobIx i; Ix n; } MobTact;
+
+typedef struct {
+} MsgPayload;
+
 typedef struct {
   CpuBid cpuBid;
-  MobIx iRcvr; // Name nRcvr;
-//  MobIx iSndr; // Name nSndr;
+  MobTact rcvr;
+  MobTact sndr;
+  MsgPayload payload;
 //  MobIx iCtnt; // Name nCtnt;
 //  uint16_t ctntStart; uint16_t ctntEnded;
 } MsgTicket;
 
 void showMsgTicket(MsgTicket * p);
+void showMobTact(MobTact t);
+
 
 

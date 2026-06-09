@@ -1,4 +1,5 @@
 #include <pthread.h>
+#include <string.h>
 #include "types.h"
 #include "misc/h.h"
 #include "globals/h.h"
@@ -43,67 +44,75 @@ static XX * get(XXIx i) {
   return pileOfXXs.get(i);
 }
 
-static void collectRent(XXIx i) {
-  updateTocks();
-  XX * p = pileOfXXs.get(i);
-  XXRent * pRent = &p->rent;
-  Tocks now = tocksNow();
-  Tocks time = now - pRent->lastPaidRent;
-  Cash bill = tockPrice() * (sizeof(XX)+sizeof(XXBomb)) * time;
-  pRent->cash -= bill;
-  pRent->lastPaidRent = now;
-}
+//Below, the trailing underscore means no lock taken
 
-static bool updateXXDeath(XX* p, XXBomb * pBomb) {
+// Updates bomp expiry and reorders meap. 
+// Assumes collectRent was just called.
+static bool updateDeathWithXXAndBomb_(XX* p, XXBomb * pBomb) {
   Cash cash = p->rent.cash;
   Tocks ttl = cash / ( tockPrice() * (sizeof(XX)+sizeof(XXBomb)) );
-  //printf("UpdateXXDeath: ttl=%d\n", ttl);
+  //printf("UpdateDeath: ttl=%d\n", ttl);
   Tocks death = tocksNow() + ttl;
-  return meapOfXXBombs.editTocksWhenLocked(p->rent.bomb, death);
-  // The meap is properly reordered but nobody called kill
+  meapOfXXBombs.check();
+  // This changes bomb time and reorders meap:
+  bool res = meapOfXXBombs.editTocksWhenLocked(p->rent.bomb, death);
+  meapOfXXBombs.check();
+  return res;
+  // The meap is now properly reordered but nobody called kill
 }
 
-static bool updateXXDeathWithIx(XXIx i) {
-  XX * p = pileOfXXs.get(i);
-  XXBombIx iBomb = p->rent.bomb;
+// Wrappers:
+static bool updateDeathWithXX_(XX * pXX) {
+  XXBombIx iBomb = pXX->rent.bomb;
   XXBomb * pBomb = pileOfXXBombs.get(iBomb);
-  return updateXXDeath(p, pBomb);
+  return updateDeathWithXXAndBomb_(pXX, pBomb);
 }
 
-static bool updateXXDeathWithIxAndBombPointer(XXIx i, XXBomb * pBomb) {
-  XX * p = pileOfXXs.get(i);
-  return updateXXDeath(p, pBomb);
+// Debug:
+//static XXIx bombee;
+//static void bombeeSafe(Ix i, void * p) { 
+//  XXBomb * pB = (XXBomb *) p;
+//  if (pB->who.i == bombee.i) {
+//    printf("After chomp: Another bomb for XX %d\n", bombee.i);
+//    abort();
+//  }
+//}
+//static void bombeeSafe2(Ix i, void * p) { 
+//  XXBomb * pB = (XXBomb *) p;
+//  if (pB->who.i == bombee.i) {
+//    printf("In alloc: Another bomb for XX %d\n", bombee.i);
+//    abort();
+//  }
+//}
+
+void showXXBomb(XXBombIx i, XXBomb * p) {
+  printf("tocks=%d,who=%d\n", p->tocks, p->who.i);
 }
 
-static void review_(XXIx i) {
-  collectRent(i);
-  //printf("Reviewing i=%d... ", i.i);
-  updateXXDeathWithIx(i);
-}
-static void review(XXIx i) {
-  lock();
-  review_(i);
-  unlock();
-}
-
-// This has to get called at strategic times from worker threads
 static void kill_(void) {
   XXBomb bomb; // Bomb copied out to here
-  updateTocks();
   Tocks now = tocksNow();
   while (true) { // Returns when nothing to kill for now
     bomb.who = badXXIx; // Prevent false alarms
+    meapOfXXBombs.check();
     Chomped ch = meapOfXXBombs.chomp(now, &bomb, 0);
+    //showXXBomb(badXXBombIx, &bomb);
+    meapOfXXBombs.check();
     if (ch == Killed ) {
-      onXXKilled(bomb.who);
-      pileOfXXs.free(bomb.who); //TODO: funeral and recover cash
+      //bombee = bomb.who;
+      //meapOfXXBombs.forAll(bombeeSafe);
+      meapOfXXBombs.check();
+      // For raffle, we don't free it, so this line is wrong:
+      //pileOfXXs.free(bomb.who); //TODO: funeral and recover cash
+      onXXKilled(bomb.who); // DOES need to free the block
+      meapOfXXBombs.check();
       //printf("Killed XX %i\n", bomb.who.i);
-      //show();
       continue;
     }
     if (ch == Extinct) {
       //printf("XXs are extinct\n");
-      onXXsExtinct();
+      onXXsExtinct(); 
+      meapOfXXBombs.check();
       return;
     }
     return; // Must be Idle
@@ -116,61 +125,134 @@ static void kill(void) {
   unlock();
 }
 
-static void enrich_(XXIx iWho, Cash amt) {
-  //printf("Transfer: amt=%'ld, iFrom=%d, iTo=%d\n", amt, iFrom.i, iTo.i);
-  XX * pWho = pileOfXXs.get(iWho);
-  XXRent * pRent = &pWho->rent;
-  pRent->cash += amt;
-  review_(iWho);
-  kill_(); // amt might be negative
+static bool isGod(XX * pXX) { return pXX->rent.bomb.i == BAD_INDEX; }
+// Kills it if it has non-positive cash
+// Assume rent just collected so cash is up to date
+static void review_(XX * pXX) {
+  //printf("Hotel reviewing i=%d\n", pXX->rent.bomb.i);
+  if (isGod(pXX))
+    return;
+  meapOfXXBombs.check();
+  updateDeathWithXX_(pXX);
+  meapOfXXBombs.check();
+  kill_();
 }
 
-static void enrich(XXIx iWho, Cash amt) {
+static void review(XXIx i) {
   lock();
-  enrich_(iWho, amt);
+  XX * pXX = get(i);
+  review_(pXX);
   unlock();
 }
 
-static bool chargeIfCan_(XXIx iWho, Cash amt) {
+//Deduct cash and set last paid to now
+static void collectRent_(XX * pXX, Cash * collected, Cash * defaulted) {
+  XXRent * pRent = &pXX->rent;
+  Tocks now = tocksNow();
+  pRent->lastPaidRent = now;
+  Tocks timeUnpaid = now - pRent->lastPaidRent;
+  Cash bill = tockPrice() * (sizeof(XX)+sizeof(XXBomb)) * timeUnpaid;
+  if (pRent->cash >= bill) {
+    pRent->cash -= bill;
+    *collected = bill;
+    *defaulted = 0;
+  } else {
+    Cash c = pRent->cash;
+    pRent->cash = 0;
+    *collected = c;
+    *defaulted = bill-c;
+  }
+} // Should now update death in bomb
+
+static void collectRent(XXIx i) {
+  lock();
+  XX * pXX = get(i);
+  Cash collected, defaulted;
+  collectRent_(pXX, &collected, &defaulted);
+  review_(pXX);
+  unlock();
+  if (collected) onXXRentCollected(collected);
+  if (defaulted) onXXRentDefaulted(defaulted);
+}
+ 
+static void enrich_(XX * pXX, Cash amt) {
   //printf("Transfer: amt=%'ld, iFrom=%d, iTo=%d\n", amt, iFrom.i, iTo.i);
-  XX * pWho = pileOfXXs.get(iWho);
-  XXRent * pRent = &pWho->rent;
-  if (pRent->cash < amt) return false;
-  pRent->cash -= amt;
-  review_(iWho);
-  kill_();
+  XXRent * pRent = &pXX->rent;
+  pRent->cash += amt;
+}
+
+static void enrich(XXIx i, Cash amt) {
+  lock();
+  enrich_(get(i), amt);
+  unlock();
+}
+
+static bool chargeIfCan_(XX * pXX, Cash amt) {
+  //printf("Transfer: amt=%'ld, iFrom=%d, iTo=%d\n", amt, iFrom.i, iTo.i);
+  XXRent * pRent = &pXX->rent;
+  bool g = isGod(pXX);
+  if (g) 
+    pRent->cash -= amt;
+  else { // Not a god
+    if (pRent->cash < amt) 
+      return false;
+    pRent->cash -= amt;
+    review_(pXX);
+    meapOfXXBombs.check();
+  }
   return true;
 }
 
-static bool chargeIfCan(XXIx iWho, Cash amt) {
+static bool chargeIfCan(XXIx i, Cash amt) {
+  bool res = false;
   lock();
-  bool res = chargeIfCan_(iWho, amt);
+  res = chargeIfCan_(get(i), amt);
   unlock();
   return res;
 }
 
+static Cash rob_(XX * pXX) {
+  if (isGod(pXX))
+    return 0;
+  Cash c = pXX->rent.cash;
+  if (c>0)
+    enrich_(pXX, -c);
+  meapOfXXBombs.check();
+  review_(pXX);
+  meapOfXXBombs.check();
+  return c;
+}
+
 static Cash rob(XXIx i) {
+  Cash c;
   lock();
-  XX * p = pileOfXXs.get(i);
-  XXRent * pRent = &p->rent;
-  Cash c = pRent->cash;
-  enrich_(i, -c);
+  c = rob_(get(i));
   unlock();
   return c; //TODO: proper accounts
 }
 
+void showXX(XXIx i, XX * p) {
+  printf("ix=%4d|nick=%x,lastPaidRent=%d,cash=%'ld,bomb=%d,", i.i, p->rent.nick, p->rent.lastPaidRent, p->rent.cash, p->rent.bomb.i);
+  showXXBody(i, &p->body);
+}
+
 static XXIx alloc_(Cash cash, XX ** pp, bool * pRecycled) {
-  updateTocks();
   XX * p;
   XXIx i = pileOfXXs.alloc(&p, pRecycled);
-  p->rent.lastPaidRent = tocksNow();
-  p->rent.cash = cash;
-  XXBombIx iBomb;
-  XXBomb * pBomb;
-  meapOfXXBombs.insert(&iBomb, &pBomb, i.i); // onNew should do the rest
-  //printf("In alloc near end\n");
-  //show();
-  review_(i);
+  if (cash == 0) { 
+    p->rent.lastPaidRent = tocksNow();
+    p->rent.cash = 0;
+    p->rent.bomb = badXXBombIx;
+    pileOfXXs.modUsr(1);
+  } else {
+    p->rent.lastPaidRent = tocksNow();
+    p->rent.cash = cash;
+    XXBombIx iBomb;
+    XXBomb * pBomb;
+    meapOfXXBombs.check();
+    meapOfXXBombs.insert(&iBomb, &pBomb, i.i); // onNew should do the rest
+    meapOfXXBombs.check();
+  }
   if (pp) *pp = p;
   return i;
 }
@@ -182,29 +264,31 @@ static XXIx alloc(Cash cash, XX ** pp, bool * pRecycled) {
   return ret;
 }
 
+// Assumes some mutex is held, despite the name
+// That's true because onNewXX only called from meap's insert
+//   which for the hotel is only called from hotel's alloc
+// We know it exists, and it doesn't have or need money
 void onNewXXBomb(XXBombIx iBomb, Ix hint) {
   //printf("OnNew: iBomb: %d hint: %d\n", iBomb.i, hint);
   XXBomb * pBomb = pileOfXXBombs.get(iBomb);
   pBomb->who = (XXIx){hint};
   XX * p = pileOfXXs.get(pBomb->who);
   p->rent.bomb = iBomb;
-  updateXXDeathWithIxAndBombPointer(pBomb->who, pBomb);
+  updateDeathWithXXAndBomb_(p, pBomb);
+  meapOfXXBombs.check();
 }
 
+// Similarly thread safe already, I think?
 void onMoveXXBomb(XXBomb * pBomb, XXBombIx to) {
-  XX * p = pileOfXXs.get(pBomb->who);
   //printf("Moving bomb for bulk %d from %d to %d\n", pBomb->who.i, p->rent.bomb.i, to.i);
+  XX * p = pileOfXXs.get(pBomb->who);
   p->rent.bomb = to;
+  meapOfXXBombs.check();
 }
 
-void showXXBomb(XXBombIx i, XXBomb * p) {
-  printf("tocks=%d,who=%d\n", p->tocks, p->who.i);
-}
+static void forAll(XXPileAction act) { pileOfXXs.forAll(false, act); }
 
-void showXX(XXIx i, XX * p) {
-  printf("cash=%'ld,lastPaidRent=%d,bomb=%d,", p->rent.cash, p->rent.lastPaidRent, p->rent.bomb.i);
-  showXXBody(i, &p->body);
-}
-
-XXHotel hotelOfXXs = {open, alloc, get, enrich, chargeIfCan, review, rob, kill, count, close, show, showXX};
+XXHotel hotelOfXXs = { open, alloc, get, enrich, chargeIfCan, collectRent, review
+                     , forAll, rob, kill, count, close, show, showXX
+                     , sizeof(XX)+sizeof(XXBomb) };
 

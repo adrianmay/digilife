@@ -9,10 +9,9 @@
 #include "test.h"
 #include "bit/MsgTicket.h"
 
-void onMobKilled(MobIx i) {}
 
 void showMsgTicket(MsgTicket * p) {
-  printf("cpuBid=%lf, rcvr=%d\n", p->cpuBid, p->iRcvr.i);
+  printf("cpuBid=%lf, rcvr=%d\n", p->cpuBid, p->rcvr.i.i);
 }
 
 void B2V(B b) { (*b)(); }
@@ -55,7 +54,7 @@ pthread_t background(void * (*f)(void *)) { pthread_t pid; pthread_create(&pid, 
 //}
 void initEverything(void) {
 //  handleSigusr1();
-  initPerf();
+  //initPerf();
   srand(123);
   setlocale(LC_NUMERIC, "");
 }
@@ -67,13 +66,14 @@ int main(int argc, char **argv) {
   bool suc =
 //    wrap() &&
 //    globals() &&
+//    perf() &&
 //    pile() &&
 //    meap() &&
 //    hotel() &&
-//    raffle() &&
-//    perf() &&
-//    work() &&
-    equi() &&
+    raffle() &&
+    tank() &&
+//    exec() &&
+//    equi() &&
     true;
   return suc?0:1;
 }

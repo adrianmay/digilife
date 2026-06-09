@@ -9,45 +9,53 @@
 #include "Thing_hotel/h.h"
 #include "bit/MobBody.h"
 
+// ALL OFF COS OF PERF STUFF 
+
+#define NOTIFY_TOCKS 150
+
+static bool extinct;
+void onMobsExtinct() {}
+void onMsgsExtinct() {}
+void onThingsExtinct(void) { extinct = true; }
+void onThingKilled(ThingIx i) { pileOfThings.free(i);}
+void onThingRentCollected(Cash cash) { }
+void onThingRentDefaulted(Cash cash) { }
 void showMobBody(MobIx i, MobBody * p) {
   printf("code=<binary>\n");
 }
 
-static bool extinct;
-void onThingsExtinct(void) { extinct = true; }
-void onThingKilled(ThingIx i) {}
-
-
-
-// void onMobsExtinct() {}
-// void onMsgsExtinct() {}
 
 Cycles cycles;
 Thing * pThing;
 ThingIx iThing;
+ThingIx iGod;
 
 static bool init(void) {
   openGlobals();
   hotelOfThings.open();
+  iGod = hotelOfThings.alloc(0,0,0); //God
   return true;
 }
 
-void killTilExtinct(void) {
+Tocks killTilExtinct(void) {
+  Tocks started = tocksNow();
   while (true) {
-    updateTocks();
 //    printf("killTilExtinct: tocks=%d, processCycles=%'ld\n", tocksNow(), readProcessCycles());
+    hotelOfThings.forAll(hotelOfThings.review);
     hotelOfThings.kill();
-    //printf("GOGOGOG");
-    if (extinct) return;
-    sleepMs(10);
+    if (extinct) break;
+    //hotelOfThings.show();
+    notifyCycles(NOTIFY_TOCKS*GUESS_CYCLES_PER_TOCK);
   }
+  Tocks ended = tocksNow();
+  return ended - started;
 }
 
 bool testNoPop(void) {
   extinct = false;
-  TIME_VOID_PROC(killTilExtinct());
-  printf("testNoPop: %'ld\n", cycles);
-  assertLongCond(cycles, <200000);
+  Tocks dur = killTilExtinct();
+  printf("testNoPop: %d\n", dur);
+  assertCond(dur, ==0);
   return true;
 }
 
@@ -55,22 +63,32 @@ void make(Ix name, Cash cash) {
   bool recycledSlot;
   iThing = hotelOfThings.alloc(cash, &pThing, &recycledSlot);
   pThing->body.name = name;
-  hotelOfThings.show();
+}
+
+bool expectExtinctSoon(Cash cash) {
+  Tocks dur = killTilExtinct();
+  Tocks expect;
+  //printf("expectExtinctSoon: dur=%d\n", dur);
+  if (cash==0) 
+    expect = 0;
+  else {
+    Tocks expectIdeal = cash / (hotelOfThings.billableSize*tockPrice());
+     expect = ((expectIdeal - 1) / NOTIFY_TOCKS + 1) * NOTIFY_TOCKS ;
+  }
+  assertInt(dur, expect);
+  return true;
 }
 
 bool test1(void) {
+  Cash cash = 4000;
   extinct = false;
-  make(3, 2000);
+  make(3, cash);
+  expectExtinctSoon(cash);
   printf("Made in test1\n");
-  TIME_VOID_PROC(killTilExtinct());
-  printf("test1: %'ld\n", cycles);
-  assertLongCond(cycles, <2700000000ull)
-  assertLongCond(cycles, >2300000000ull)
   return true;
 }
 
 void * earn(void *) {
-  sleepNs(1000000000);
   hotelOfThings.enrich(iThing, 2000);
   return 0;
 }
@@ -78,45 +96,45 @@ void * earn(void *) {
 bool testEarn(void) {
   extinct = false;
   printf("testEarn\n");
-  //hotelOfThings.show();
   make(4, 3000);
+  hotelOfThings.enrich(iThing, 2000);
   //hotelOfThings.show();
-  background(earn);
-  TIME_VOID_PROC(killTilExtinct());
-  printf("testEarn: %'ld\n", cycles);
-  assertLongCond(cycles, <4000000000ull)
-  assertLongCond(cycles, >3600000000ull)
+  //earn(0);
+  expectExtinctSoon(5000);
   return true;
-}
-
-void * rob(void *) {
-  sleepNs(250000000);
-  hotelOfThings.rob(iThing);
-  return 0;
 }
 
 bool testRob(void) {
   extinct = false;
   printf("testRob\n");
   make(5, 9000);
-  background(rob);
-  TIME_VOID_PROC(killTilExtinct());
-  printf("testRob: %'ld\n", cycles);
-  assertLongCond(cycles, <1400000000ull)
-  assertLongCond(cycles, > 900000000ull)
+  hotelOfThings.rob(iThing);
+  expectExtinctSoon(0);
   return true;
 }
 
+bool testGod(void) {
+  extinct = false;
+  printf("testGod\n");
+  make(6, 1000);
+  make(5, 0);
+  expectExtinctSoon(1000);
+  Cash godsCash = hotelOfThings.get(iThing)->rent.cash;
+  assertLong(godsCash, -1200l);
+  return true;
+}
 
 void cleanupHotel(void) { hotelOfThings.close(HIDE); closeGlobals(HIDE); }
 
 bool testHotel(void) {
-  background(sweat_forever); // Got to do work to advance CPU time ...
+  printf("Tock price: %f\n", tockPrice());
+  printf("Billable size: %ld\n", hotelOfThings.billableSize);
   return
     testNoPop() &&
     test1() &&
     testEarn() &&
     testRob() &&
+    testGod() &&
     true;
 }
 

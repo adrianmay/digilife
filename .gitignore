@@ -5,5 +5,12 @@ tags
 core.*
 tmp
 *.pile
+*.vim
 m4hive/hive
 m4hive/test
+hive/bin
+hive/gen
+old/m4hive
+old/oldhive
+
+

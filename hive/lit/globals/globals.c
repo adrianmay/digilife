@@ -8,21 +8,23 @@
 #include "perf/h.h"
 #include "misc/h.h"
 
-#define GUESS_CYCLES_PER_TOCK 1000000
 #define GLOBALS_FILENAME "Globals.pile"
 
 VolatileGlobals vg;
 PersistentGlobals * pg;
 
+static pthread_mutex_t mutex=PTHREAD_MUTEX_INITIALIZER;
+static void lock() { pthread_mutex_lock(&mutex); }
+static void unlock() { pthread_mutex_unlock(&mutex); }
+
 static void initVirginPersistentGlobals(void) {
   pg->lastKnownTock = 0;
   pg->cyclesNotTocked = 0;
   pg->cyclesPerTock = GUESS_CYCLES_PER_TOCK; //Don't ignore animal for more than 2**32/nsPerTock
-  pg->groatsPerTockPerByte = 0.7*0.014; //min_groats_per_nanosecond * GUESS_NS_PER_TOCK;
+  pg->groatsPerTockPerByte = GUESS_GROATS_PER_TOCK_PER_BYTE; //min_groats_per_nanosecond * GUESS_NS_PER_TOCK;
 }
 
 static void initVolatileGlobals(void) {
-  vg.tocksReviewedAt = 0;
   vg.shouldRun = true;
 }
 
@@ -70,17 +72,16 @@ void closeGlobals(bool rm) {  // And that param should be enum
 
 TockPrice tockPrice(void) {return pg->groatsPerTockPerByte;}
 
-void updateTocks(void) {
-  Cycles now = readProcessCycles();
-  Cycles sleptFor = wrapSub64U(now, vg.tocksReviewedAt);
-  Cycles toBill = sleptFor + pg->cyclesNotTocked;
-  vg.tocksReviewedAt = now;
+void notifyCycles(Cycles worked) {
+  printf("Notifying %'ld cycles\n", worked);
+  lock();
+  Cycles toBill = worked + pg->cyclesNotTocked;
   lldiv_t qr = lldiv(toBill, pg->cyclesPerTock);
   pg->lastKnownTock = pg->lastKnownTock + qr.quot;
   pg->cyclesNotTocked = qr.rem;
+  unlock();
 }
 
 Tocks tocksNow(void) {return pg->lastKnownTock;}
 Cycles cyclesUntilTock(Tocks deadline) {return (deadline - pg->lastKnownTock)*pg->cyclesPerTock - pg->cyclesNotTocked;}
-Cycles cyclesAtTock(Tocks deadline) {return cyclesUntilTock(deadline)+readProcessCycles();}
 

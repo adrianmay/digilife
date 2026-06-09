@@ -1,3 +1,6 @@
+
+#pragma GCC diagnostic ignored "-Winfinite-recursion"
+
 #include <string.h>
 #include <pthread.h>
 #include "misc/h.h"
@@ -27,13 +30,19 @@ static void show(void) {
   hotelOfXXs.show();
 }
 
-static void panicDump(XXIx i) {
+static void panicDump_(XXIx i) {
+  printf("count: %d\n", pileOfXXs.count());
   XX * pB = pileOfXXs.get(i);
-  XXRafle * pR = &pB->body.raffle;
-  printf("In panic: w=%'ld, i=%d, l=%'ld, s=%'ld, r=%'ld\n", peep(), i.i, pR->l, pR->s, pR->r );
+  XXRafle * pRaf = &pB->body.raffle;
+  printf("In panic: w=%'ld, i=%d, l=%'ld, s=%'ld, r=%'ld\n", peep(), i.i, pRaf->l, pRaf->s, pRaf->r );
   if (i.i==0) { return; }
   pop();
-  panicDump(parent(i));
+  panicDump_(parent(i));
+}
+
+static void panicDump(XXIx i) {
+  panicDump_(i);
+  abort();
 }
 
 static Weight totWeightP(XXRafle * p) { return p->l + p->s + p->r; }
@@ -41,18 +50,29 @@ static Weight totWeightP(XXRafle * p) { return p->l + p->s + p->r; }
 static Weight totWeightI(XXIx i) {
   if (i.i >= hotelOfXXs.count()) return 0;
   XX * pB = hotelOfXXs.get(i);
-  XXRafle * pR = &pB->body.raffle;
-  return totWeightP(pR);
+  XXRafle * pRaf = &pB->body.raffle;
+  return totWeightP(pRaf);
 }
 
 static bool check_(const char * ctx, XXIx i) {
   XXRafle * pP = &pileOfXXs.get(      i )->body.raffle;
-  XXRafle * pL = &pileOfXXs.get(left (i))->body.raffle;
-  XXRafle * pR = &pileOfXXs.get(right(i))->body.raffle;
-  bool res = (pP->l == 0 || (pP->l == totWeightP(pL) && check_(ctx, left (i))))
-          && (pP->r == 0 || (pP->r == totWeightP(pR) && check_(ctx, right(i))));
-  if (!res) { printf("Checking raffle from %s:\n", ctx); show(); panicDump(i); exit(2); }
-  return res;
+  if (left(i).i < pileOfXXs.count()) {
+    XXRafle * p = &pileOfXXs.get(left (i))->body.raffle;
+    if (totWeightP(p) != pP->l) 
+      panicDump(i);
+  } else {
+    if (pP->l != 0)
+      panicDump(i);
+  }
+  if (right(i).i < pileOfXXs.count()) {
+    XXRafle * p = &pileOfXXs.get(right(i))->body.raffle;
+    if (totWeightP(p) != pP->r) 
+      panicDump(i);
+  } else {
+    if (pP->r != 0)
+      panicDump(i);
+  }
+  return true;
 }
 
 static bool checkM(const char * ctx) { return check_(ctx, (XXIx) {0}); }
@@ -92,7 +112,7 @@ static bool empty() {
   return false;
 }
 
-static XXIx enter(Cash cash, Weight w, XXTicket * pTicket) {
+static XXIx enter(Cash cash, Weight w, WithXXTicket stuf) {
   char blah[40];
   lock();
   checkM("enter1");
@@ -101,7 +121,8 @@ static XXIx enter(Cash cash, Weight w, XXTicket * pTicket) {
   bool recycled;
   XXIx i = hotelOfXXs.alloc(cash, &p, &recycled);
   //if (p->rent.cash>10000) { printf("Overrich 1 %d has %'ld from %'ld\n", i.i, p->rent.cash, cash); exit(1); }
-  memcpy(&p->body.ticket, pTicket, sizeof(XXTicket));
+
+  stuf(&p->body.ticket);
   XXRafle * pRaf = &p->body.raffle;
   sprintf(blah, "enter2 i=%d recyc=%b", i.i, recycled);
   checkM(blah);
@@ -122,15 +143,16 @@ static XXIx enter(Cash cash, Weight w, XXTicket * pTicket) {
 
 void onXXKilled(XXIx i) {
   XX * p = pileOfXXs.get(i);
-  XXRafle * pR = &p->body.raffle;
-  Weight w = pR->s;
-  pR->s = 0;
+  XXRafle * pRaf = &p->body.raffle;
+  if (pRaf->s == 0) abort();
+  Weight w = pRaf->s;
+  pRaf->s = 0;
   propagateWeightUp(i, -w);
 }
 
 static Cash cancel_(XXIx i) {
   Cash c = hotelOfXXs.rob(i); //Take all money so it soon gets freed...
-  hotelOfXXs.kill();
+  if (pileOfXXs.get(i)->body.raffle.s != 0) abort();
   return c;
 }
 
@@ -143,50 +165,51 @@ static Cash cancel(XXIx i) {
 }
 
 // Assumes there are tickets. Look out of onXXsExtinct
-static Cash drawBelow(XXIx i, XXTicket * pTicket) {
-  Cash c;
+static void drawBelow(XXIx i, WithXXTicketAndCash enjoyTicket) {
   XX * pB = pileOfXXs.get(i);
-  XXRafle * pR = &pB->body.raffle;
+  XXRafle * pRaf = &pB->body.raffle;
   Weight target = peep();
-  if (pR->l > 0 && target < pR->l) {
+  if (pRaf->l > 0 && target < pRaf->l) {
     push(target); 
-    c = drawBelow(left(i), pTicket);
+    drawBelow(left(i), enjoyTicket);
     pop();
-    return c; 
+    return; 
   }
-  target -= pR->l;
-  if (target < pR->s) {
-    c = pB->rent.cash;
-    memcpy(pTicket, &pB->body.ticket, sizeof(XXTicket));
+  target -= pRaf->l;
+  if (target < pRaf->s) {
+    enjoyTicket(&pB->body.ticket, pB->rent.cash);
+    if (pRaf->s == 0) abort();
+    //printf("In drawBelow, drew:\n");
     cancel_(i);
-    //printf("Returning cash=%ld from drawBelow\n", c);
-    return c;
+    if (pRaf->s != 0) abort();
+    if (pB->rent.nick & 0x80000000) abort();
+    //printf("Returning cash=%ld from drawBelow\n", cash);
+    return;
   }
-  target -= pR->s;
-  if (pR->r == 0) {
+  target -= pRaf->s;
+  if (pRaf->r == 0) {
     printf("Bailing from drawBelow\n");
     panicDump(i);
     exit(10);
   }
   push(target);
-  c = drawBelow(right(i), pTicket);
+  drawBelow(right(i), enjoyTicket);
   pop();
-  return c;
 }
 
-static Cash drawAssumeNotEmpty(XXTicket * pTicket) {
+static void drawAssumeNotEmpty(WithXXTicketAndCash enjoyTicket) {
   XXIx i0 = (XXIx){0};
+  check(); 
   Weight tw = totWeightI(i0);
   uint64_t w = randIntBelow(tw);
   //printf("Rolled w=%ld of %ld\n", w, tw);
   push(w);
-  Cash c = drawBelow(i0, pTicket);
+  drawBelow(i0, enjoyTicket);
   pop();
-  return c;
 }
 
 // If this returns false we're closing down the program
-static bool draw(XXTicket * pTicket, Cash * pCash) {
+static bool draw(WithXXTicketAndCash enjoyTicket) {
   lock();
   checkM("draw 1");
   if (gottaQuitXX)    { gottaQuitXX=false; unlock(); return false; }
@@ -195,7 +218,7 @@ static bool draw(XXTicket * pTicket, Cash * pCash) {
   }
   if (gottaQuitXX)    { gottaQuitXX=false; unlock(); return false; }
   // Can't be empty
-  *pCash = drawAssumeNotEmpty(pTicket);
+  drawAssumeNotEmpty(enjoyTicket);
   checkM("draw 2");
   unlock();
   return true;
@@ -219,7 +242,6 @@ static void quitNow() {
 }
 
 XXRaffle raffleOfXXs = { open, enter, cancel, empty, draw, close, show, count, check, kill, quitNow };
-
 
 void showXXBody(XXIx i, XXBody * p) {
   printf("l=%'ld,s=%'ld,r=%'ld,⇑=%d,⇙=%d,⇘=%d,", p->raffle.l, p->raffle.s, p->raffle.r, parent(i).i, left(i).i, right(i).i);

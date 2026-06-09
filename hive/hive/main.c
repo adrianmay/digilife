@@ -3,7 +3,6 @@
 #include "bit/MsgTicket.h"
 #include "bit/MobBody.h"
 
-void onMobKilled(MobIx i) {}
 void onMobsExtinct(void) {}
 void onMsgsExtinct(void) {}
 void onThingsExtinct(void) {}
@@ -14,7 +13,7 @@ void showMobBody(MobIx i, MobBody * p) {
 }
 
 void showMsgTicket(MsgTicket * p) {
-  printf("cpuBid=%lf, rcvr=%d\n", p->cpuBid, p->iRcvr.i);
+  printf("cpuBid=%lf, rcvr=%d\n", p->cpuBid, p->rcvr.i.i);
 }
 
 

@@ -1,4 +1,65 @@
 
+SYSTEM DIAGRAM
+==============
+
+<mutex>
+
+| LEVEL  | DESCRIPTION        | DATA/HEADER       | FUNCTIONS     
++--------+--------------------+-------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+|        |                    |                   | <alloc>                       | <free>                     |
+|        | Allocator with     | Any, but first 32 |                               |                            |
+| pile   | fixed block        | bits have rules.  | Returns ix and pointer        | Takes ix.                  |
+|        | size. Has          |                   | and whether recycled or not.  | Sets first bit to 1.       |
+|        | GP "usr" field.    |                   | Sets first 32 bits to 0.      | Uses rest of first 32 bits |
+|        |                    |                   | Caller must keep first bit =0 | for free list.             |
+|        |                    |                   | cos =1 means free block.      |                            |
++--------+--------------------+-------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+|        |                    |                   | <insert(expiry, ix)>          | remove_           | <chomp(threshold)>     |          
+|        | Min heap in a      | Bomb:             |                               |                   |                        |       
+| meap   | pile. Doesn't      |   expiry time     | Might alloc (in bulk?)        | Swap with last    | If extinct return so.  |                 
+|        | call free. Dense.  |   Index (of block | usr++                         | usr--             | If head<threshold:     |
+|        | Uses usr as len.   |   in related      | Put new element at end.       | Sift.             |   remove_              |
+|        |                    |   pile.)          | Sift.                         | Don't free!       |   return idx           |
+|        |                    |                   | Return final idx and          |                   | Else return idle.      |
+|        |                    |                   | true if head changed.         |                   |                        |
++--------+--------------------+-------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+|        |                    |                   | rent(cash, stuffer)           | raid         | payRent        | enrich(cash)     | rob()
+| hotel  | Combines a main    | Main pile: nick,  |                               |              |                |   (maybe -ve)    |
+|        | pile and a meap    |   cash, bomb ix,  | alloc, set cash & lastPaid,   | loop:        | Update cash    |                  | payRent
+|        | of bombs to        |   lastPaidRent    | calc expiry, stuffer.         |   chomp      | and lastPaid.  |                  | enrich(-cash)
+|        | charge memory      | Bomb meap: bomb.  | insert, set bomb ix in main.  |   onWillFree | No need to     | Add to cash.     | 
+|        | rent.              |                   | If zero cash, make god (no    |   free       | revise bomb.   | Recalc bomb and  |
+|        |                    | No mutex needed.  | bomb, -ve cash allowed.)      | until idle.  |                |  meap ordering.  |
+|        |                    |                   |                               |              |                | Raid if poorer.  |
+|        |                    |                   |                               |              |                |                  |
++--------+--------------------+-------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+|        |                    |                   | play(cash, weight,            | <choose>       | onWillFree | no need to cancel
+| raffle | Holds tickets of   | Rafle: weights:   |       stuffer, prize?)        |                |            |
+|        | different weights  |   self            |                               | roll, find,    | prize      |
+|        | in a hotel         |   left subtree    | rent(cash,                    | onChosen, rob  |            |
+|        | and chooses at     |   right subtree   |      {if ! recycled:          |                |            |
+|        | random.            |                   |       l=r=s=0})               |                |            |
+|        |                    |                   | <set weight, propUp>          |                |            |
+|        |                    |                   | stuffer                       |                |            |
+|        |                    |                   |                               |                |            |
++--------+--------------------+-------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+|        |                    |                   | spawn     | post      | transfer       | prize
+| tank   | Combines a hotel   | (Tact=Ix,Nick)    |           |           |                |
+|        | of mobs and        |                   |           |           |                |
+|        | a raffle of        |                   |           |           |                |
+|        | messages. Asserts  | Mob: code         |           |           |                |
+|        | double entry       |                   |           |           |                |
+|        | accounting and     | Msg: cpuBid,      |           |           |                |
+|        | access rights.     |   tacts: sndr     |           |           |                |
+|        | Makes some gods    |   & rcvr          |           |           |                |
+|        | if virgin.         |                   |           |           |                |
+|        |                    |                   |           |           |                |
+|        |                    |                   |           |           |                |
+|        |                    |                   |           |           |                |
+|        |                    |                   |           |           |                |
+|        |                    |                   |           |           |                |
++--------+--------------------+-------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
 How to read this code.
 
 tools/build.sh copies a lot of code from lit to a new directory 'gen':

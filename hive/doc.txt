@@ -23,9 +23,9 @@ SYSTEM DIAGRAM
 |         |                    |                   | cos =1 means free block.      |                            |
 |         |                    |                   |                               |                            |
 +---------+--------------------+-------------------+-------------------------------------------------------------------------------------------------------
-|         |                    |                   | <insert(expiry, idx)>         | remove_           | <chomp(threshold)>     |          
-|         | Min heap in a      | Bomb:             |                               |                   |                        |       
-| meap    | pile. Doesn't      |   expiry time     | Might alloc (in bulk?).       | Swap with last.   | If extinct return so.  |                 
+|         |                    |                   | <insert(expiry, idx)>         | remove_           | <chomp(threshold)>     | editTocks
+|         | Min heap in a      | Bomb:             |                               |                   |                        |           
+| meap    | pile. Doesn't      |   expiry time     | Might alloc (in bulk?).       | Swap with last.   | If extinct return so.  | Reorder meap                
 |         | call free. Dense.  |   Index (of block | usr++.                        | usr--.            | If head < threshold:   |
 |         | Uses usr as len.   |   in related      | Put new element at end.       | Sift.             |   remove_              |
 |         |                    |   pile.)          | Sift.                         | Don't free!       |   return idx           |
@@ -33,18 +33,18 @@ SYSTEM DIAGRAM
 |         |                    |                   |   true if head changed.       |                   |                        |
 |         |                    |                   |                               |                   |                        |
 +---------+--------------------+-------------------+-------------------------------------------------------------------------------------------------------
-|         |                    |                   | rent(cash, bodyStuffer)      | raid               | payRent        | enrich(cash)     | rob()
-| hotel   | Combines a main    | Guest=nick,cash,  |                              |                    |                |   (maybe -ve)    |
-|         | pile and a meap    |   bombix,         | alloc.                       | loop:              | Update cash    |                  | (payRent???)
-|         | of bombs to        |                   | set nick, cash & lastPaid.   |   chomp            | and lastPaid.  | (payRent???)     | enrich(-cash)
-|         | charge memory      | Main pile:        | calc expiry. bodyStuffer.    |   onRentDefault    | onRentPaid.    | Add to cash.     | 
-|         | rent.              |   Guest,Body      | insert, set bomb ix in main. |   onHotelWillFree  |                | Recalc bomb and  |---------------
-|         |                    |                   | If zero cash, make god (no   |   free             | No need to     |  meap ordering.  | chargeIfCan
-|         |                    | Bomb meap: bomb.  | bomb, -ve cash allowed.)     | until idle         | revise bomb.   | Raid if poorer.  |
-|         |                    |                   |                              |  or if exinct call |                |                  | 
-|         |                    | No mutex needed.  |                              |  onXXHotelExtinct  |                |                  |
-|         |                    |                   |                              |                    |                |                  |
-|         |                    |                   |                              |                    |                |                  |
+|         |                    |                   | rent(cash, bodyStuffer)      | raid               | payRent        | enrich(cash)      | rob()
+| hotel   | Combines a main    | Guest=nick,cash,  |                              |                    |                |   (maybe -ve)     |
+|         | pile and a meap    |   bombix,         | alloc.                       | loop:              | Update cash    |                   | (payRent???)
+|         | of bombs to        |                   | set nick, cash & lastPaid.   |   chomp            | and lastPaid.  | (payRent???)      | enrich(-cash)
+|         | charge memory      | Main pile:        | calc expiry. bodyStuffer.    |   onRentDefault    | onRentPaid.    | Add to cash.      | 
+|         | rent.              |   Guest,Body      | insert, set bomb ix in main. |   onHotelWillFree  |                | Recalc bomb and   |---------------
+|         |                    |                   | If zero cash, make god (no   |   free             | No need to     |  meap ordering    | chargeIfCan
+|         |                    | Bomb meap: bomb.  | bomb, -ve cash allowed.)     | until idle         | revise bomb.   |  using editTocks. |
+|         |                    |                   |                              |  or if exinct call |                |                   | 
+|         |                    | No mutex needed.  |                              |  onXXHotelExtinct  |                | Raid if poorer.   |
+|         |                    |                   |                              |                    |                |                   |
+|         |                    |                   |                              |                    |                |                   |
 +---------+--------------------+-------------------+-------------------------------------------------------------------------------------------------------
 |         |                    |                   | play(cash, weight,            | choose         | onHotelWillFree   | no need to cancel
 | raffle  | Holds tickets of   | Rafle: weights:   |      ticketStuffer)           |                |                   |

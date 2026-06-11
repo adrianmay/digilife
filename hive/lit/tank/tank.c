@@ -77,7 +77,7 @@ MobTact
 
 MobTact makeGod() {
   Mob * p;
-  MobIx iChild = hotelOfMobs.alloc(0, &p, 0);
+  MobIx iChild = hotelOfMobs.admit(0, &p, 0);
   return (MobTact){iChild, p->rent.nick};
 }
 
@@ -86,7 +86,7 @@ MobTact spawn(Cash cash, MobTact tParent, WithBody train) {
   if (   checkTact(tParent) 
       && hotelOfMobs.chargeIfCan(tParent.i, cash)) {
     Mob * pMob;
-    iChild = hotelOfMobs.alloc(cash, &pMob, 0);
+    iChild = hotelOfMobs.admit(cash, &pMob, 0);
     train(&pMob->body);
     return tact(iChild);
   } else {

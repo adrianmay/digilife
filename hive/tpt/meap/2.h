@@ -5,16 +5,16 @@
 
 typedef enum {Extinct, Idle, Killed} Chomped;
 
-typedef bool    (*XXMeapOpen)(void);
-typedef void    (*XXMeapClose)(FATE fate);
-typedef bool    (*XXMeapInsert)   (XXIx *pI, XX ** pNew, Ix hint);
+typedef bool    (*XXMeapOpen)      (void);
+typedef void    (*XXMeapClose)     (FATE fate);
+typedef XXIx    (*XXMeapInsert)    (Tocks expiry, Ix hint);
 typedef bool    (*XXMeapEditTocks) (XXIx i, Score when);
-typedef bool    (*XXMeapErase)    (XXIx i);
-typedef Chomped (*XXMeapChomp)    (Score thresh, XX * p, int pseudoAnimals);
-typedef bool    (*XXCheckOrdered) (void);
-typedef void    (*XXForAll)       (void (*)(Ix, void *));
-typedef Ix      (*XXMeapSize)     (void);
-typedef void    (*XXMeapShow)     (void);
+typedef bool    (*XXMeapErase)     (XXIx i);
+typedef Chomped (*XXMeapChomp)     (Score thresh, XX * p, int pseudoAnimals);
+typedef bool    (*XXCheckOrdered)  (void);
+typedef void    (*XXForAll)        (void (*)(Ix, void *));
+typedef Ix      (*XXMeapSize)      (void);
+typedef void    (*XXMeapShow)      (void);
 //
 // typedef enum {EXTINCT=-1, IDLE, } ChompResult;
 // typedef ChompResult (*XXMeapChomp)(Score score, XXIx * i);
@@ -36,8 +36,6 @@ typedef struct {
 
 extern XXMeap meapOfXXs;
 
-// The caller should define these:
-
-extern void  onNewXX(XXIx i, Ix hint); // Hint is probably the index of a corresponding other thing.
+// The caller should define this:
 extern void  onMoveXX(XX * p, XXIx to); // Update records of where p's meap is.
 

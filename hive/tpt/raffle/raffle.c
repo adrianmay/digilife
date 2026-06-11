@@ -112,14 +112,14 @@ static bool empty() {
   return false;
 }
 
-static XXIx enter(Cash cash, Weight w, WithXXTicket stuf) {
+static XXIx enter(Cash cash, Weight w, WithXXTicket stuff) {
   char blah[40];
   lock();
   checkM("enter1");
   bool wasEmpty = empty();
   XX * p;
   bool recycled;
-  XXIx i = hotelOfXXs.alloc(cash, &p, &recycled);
+  XXIx i = hotelOfXXs.admit(cash, &p, &recycled);
   //if (p->rent.cash>10000) { printf("Overrich 1 %d has %'ld from %'ld\n", i.i, p->rent.cash, cash); exit(1); }
 
   stuf(&p->body.ticket);

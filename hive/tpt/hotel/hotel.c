@@ -80,7 +80,7 @@ static bool updateDeathWithXX_(XX * pXX) {
 //static void bombeeSafe2(Ix i, void * p) { 
 //  XXBomb * pB = (XXBomb *) p;
 //  if (pB->who.i == bombee.i) {
-//    printf("In alloc: Another bomb for XX %d\n", bombee.i);
+//    printf("In admit: Another bomb for XX %d\n", bombee.i);
 //    abort();
 //  }
 //}
@@ -236,37 +236,36 @@ void showXX(XXIx i, XX * p) {
   showXXBody(i, &p->body);
 }
 
-static XXIx alloc_(Cash cash, XX ** pp, bool * pRecycled) {
+static XXIx admit_(Cash cash, WithXXBody stuff, XX ** pp, bool * pRecycled) {
   XX * p;
   XXIx i = pileOfXXs.alloc(&p, pRecycled);
-  if (cash == 0) { 
+  if (cash == 0) { //God
     p->rent.lastPaidRent = tocksNow();
     p->rent.cash = 0;
     p->rent.bomb = badXXBombIx;
     pileOfXXs.modUsr(1);
   } else {
-    p->rent.lastPaidRent = tocksNow();
+    p->rent.nick = randIntBelow(0x80000000);
     p->rent.cash = cash;
-    XXBombIx iBomb;
-    XXBomb * pBomb;
-    meapOfXXBombs.check();
-    meapOfXXBombs.insert(&iBomb, &pBomb, i.i); // onNew should do the rest
+    p->rent.lastPaidRent = tocksNow();
+    Tocks expiry = p->rent.lastPaidRent + cash / tockPrice();
+    p->rent.bomb = meapOfXXBombs.insert(expiry, i.i); // onNew should do the rest
     meapOfXXBombs.check();
   }
   if (pp) *pp = p;
   return i;
 }
 
-static XXIx alloc(Cash cash, XX ** pp, bool * pRecycled) {
+static XXIx admit(Cash cash, WithXXBody stuff, XX ** pp, bool * pRecycled) {
   lock();
-  XXIx ret = alloc_(cash, pp, pRecycled);
+  XXIx ret = admit_(cash, stuff, pp, pRecycled);
   unlock();
   return ret;
 }
 
 // Assumes some mutex is held, despite the name
 // That's true because onNewXX only called from meap's insert
-//   which for the hotel is only called from hotel's alloc
+//   which for the hotel is only called from hotel's admit
 // We know it exists, and it doesn't have or need money
 void onNewXXBomb(XXBombIx iBomb, Ix hint) {
   //printf("OnNew: iBomb: %d hint: %d\n", iBomb.i, hint);
@@ -288,7 +287,7 @@ void onMoveXXBomb(XXBomb * pBomb, XXBombIx to) {
 
 static void forAll(XXPileAction act) { pileOfXXs.forAll(false, act); }
 
-XXHotel hotelOfXXs = { open, alloc, get, enrich, chargeIfCan, collectRent, review
+XXHotel hotelOfXXs = { open, admit, get, enrich, chargeIfCan, collectRent, review
                      , forAll, rob, kill, count, close, show, showXX
                      , sizeof(XX)+sizeof(XXBomb) };
 

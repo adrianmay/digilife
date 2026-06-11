@@ -33,7 +33,7 @@ ThingIx iGod;
 static bool init(void) {
   openGlobals();
   hotelOfThings.open();
-  iGod = hotelOfThings.alloc(0,0,0); //God
+  iGod = hotelOfThings.admit(0,0,0); //God
   return true;
 }
 
@@ -61,7 +61,7 @@ bool testNoPop(void) {
 
 void make(Ix name, Cash cash) {
   bool recycledSlot;
-  iThing = hotelOfThings.alloc(cash, &pThing, &recycledSlot);
+  iThing = hotelOfThings.admit(cash, &pThing, &recycledSlot);
   pThing->body.name = name;
 }
 

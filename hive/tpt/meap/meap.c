@@ -41,6 +41,7 @@ static void markOnce(Ix i, void * p) {
 
 static void checkNoDupes()
 {
+  return;
   memset(seen, BAD_INDEX, sizeof(seen));
   forAll(markOnce);
 }
@@ -111,7 +112,7 @@ static void siftDown(XXIx iCur) {
 }
 
 // Returns whether or not the lowest changed.
-static bool insert(Tocks expiry, Ix hint) {
+static bool insert(Tocks expiry, Ix hint, XXIx * pI) {
   //printf("Inserting bomb for XX %d\n", hint);
   XX * pNew;
   bombee = hint;

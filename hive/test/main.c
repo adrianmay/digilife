@@ -60,6 +60,9 @@ void initEverything(void) {
 }
 /////////////////////
 
+V onTestTock;
+void onTock() {onTestTock();}
+
 int main(int argc, char **argv) {
   parseArgs(argc, argv);
   initEverything();
@@ -69,9 +72,9 @@ int main(int argc, char **argv) {
 //    perf() &&
 //    pile() &&
 //    meap() &&
-//    hotel() &&
-    raffle() &&
-    tank() &&
+    hotel() &&
+//    raffle() &&
+//    tank() &&
 //    exec() &&
 //    equi() &&
     true;

@@ -33,14 +33,14 @@ SYSTEM DIAGRAM
 |         |                    |                   |   true if head changed.       |                   |                        |
 |         |                    |                   |                               |                   |                        |
 +---------+--------------------+-------------------+-------------------------------------------------------------------------------------------------------
-|         |                    |                   | rent(cash, bodyStuffer)      | raid               | payRent        | enrich(cash)      | rob()
+|         |                    |                   | admit(cash, bodyStuffer)     | raid               | payRent        | enrich(cash)      | rob()
 | hotel   | Combines a main    | Guest=nick,cash,  |                              |                    |                |   (maybe -ve)     |
 |         | pile and a meap    |   bombix,         | alloc.                       | loop:              | Update cash    |                   | (payRent???)
 |         | of bombs to        |                   | set nick, cash & lastPaid.   |   chomp            | and lastPaid.  | (payRent???)      | enrich(-cash)
 |         | charge memory      | Main pile:        | calc expiry. bodyStuffer.    |   onRentDefault    | onRentPaid.    | Add to cash.      | 
 |         | rent.              |   Guest,Body      | insert, set bomb ix in main. |   onHotelWillFree  |                | Recalc bomb and   |---------------
 |         |                    |                   | If zero cash, make god (no   |   free             | No need to     |  meap ordering    | chargeIfCan
-|         |                    | Bomb meap: bomb.  | bomb, -ve cash allowed.)     | until idle         | revise bomb.   |  using editTocks. |
+|         | Use tact.          | Bomb meap: bomb.  | bomb, -ve cash allowed.)     | until idle         | revise bomb.   |  using editTocks. |
 |         |                    |                   |                              |  or if exinct call |                |                   | 
 |         |                    | No mutex needed.  |                              |  onXXHotelExtinct  |                | Raid if poorer.   |
 |         |                    |                   |                              |                    |                |                   |

@@ -11,3 +11,4 @@ void notifyCycles(Cycles c);
 Tocks tocksNow(void);
 Cycles cyclesUntilTock(Tocks deadline);
 Cycles cyclesPerTock();
+void  onTock(void);

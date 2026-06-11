@@ -36,7 +36,7 @@
 
  bool setupSingleton(void) {
    setupEmpty();
-   meapOfJunks.insert(&iJunk, &pJunk, 0x88);
+   meapOfJunks.insert(0x88, 1, &iJunk);
    expect(CHOMPNOTHING);
    expectFullChomp(1, (Score []){0x88});
    return true;
@@ -44,28 +44,28 @@
 
  bool setup2Inc(void) {
    setupSingleton();
-   meapOfJunks.insert(&iJunk, &pJunk, 0xc8);
+   meapOfJunks.insert(0xc8, 2, &iJunk);
    expect(CHOMPNOTHING);
    expectFullChomp(2, (Score []){0x88, 0xc8});
    return true;
  }
  bool setup2Dec(void) {
    setupSingleton();
-   meapOfJunks.insert(&iJunk, &pJunk, 0x48);
+   meapOfJunks.insert(0x48, 3, &iJunk);
    expect(CHOMPNOTHING);
    expectFullChomp(2, (Score []){0x48, 0x88});
    return true;
  }
  bool setup2CloseInc(void) {
    setupSingleton();
-   meapOfJunks.insert(&iJunk, &pJunk, 0x89);
+   meapOfJunks.insert(0x89, 4, &iJunk);
    expect(CHOMPNOTHING);
    expectFullChomp(2, (Score []){0x88, 0x89});
    return true;
  }
  bool setup2CloseDec(void) {
    setupSingleton();
-   meapOfJunks.insert(&iJunk, &pJunk, 0x87);
+   meapOfJunks.insert(0x87, 5, &iJunk);
    expectFullChomp(2, (Score []){0x88, 0x87}); // Cos score (/16) is same
    expect(CHOMPNOTHING);
    return true;
@@ -73,9 +73,9 @@
 
  bool setup3(Score a, Score b, Score c) {
    setupEmpty();
-   meapOfJunks.insert(&iJunk, &pJunk, a);
-   meapOfJunks.insert(&iJunk, &pJunk, b);
-   meapOfJunks.insert(&iJunk, &pJunk, c);
+   meapOfJunks.insert(a, 6, &iJunk);
+   meapOfJunks.insert(b, 7, &iJunk);
+   meapOfJunks.insert(c, 8, &iJunk);
    expectFullChomp(3, (Score []){0x18, 0x28, 0x38});
    return true;
  }

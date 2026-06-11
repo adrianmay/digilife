@@ -77,17 +77,16 @@ MobTact
 
 MobTact makeGod() {
   Mob * p;
-  MobIx iChild = hotelOfMobs.admit(0, &p, 0);
+  MobIx iChild = hotelOfMobs.admit(0, 0, &p, 0);
   return (MobTact){iChild, p->rent.nick};
 }
 
-MobTact spawn(Cash cash, MobTact tParent, WithBody train) {
+MobTact spawn(Cash cash, MobTact tParent, WithMobBody train) {
   MobIx iChild = badMobIx;
   if (   checkTact(tParent) 
       && hotelOfMobs.chargeIfCan(tParent.i, cash)) {
     Mob * pMob;
-    iChild = hotelOfMobs.admit(cash, &pMob, 0);
-    train(&pMob->body);
+    iChild = hotelOfMobs.admit(cash, train, &pMob, 0);
     return tact(iChild);
   } else {
     return (MobTact) {badMobIx, BAD_INDEX};
@@ -107,7 +106,7 @@ MsgIx post(Cash cash, CpuBid bid, MobTact tS, MobTact tR, WithPayload stuffPaylo
   }
   if (checkTact(tS) && hotelOfMobs.chargeIfCan(tS.i, cash)) {
     //WithMsgTicket s = stuffit(bid, tS, tR, stuffPayload);
-    MsgIx iMsg = raffleOfMsgs.enter(cash, bidToWeight(bid), st);
+    MsgIx iMsg = raffleOfMsgs.play(cash, bidToWeight(bid), st);
     return iMsg;
   }
   return badMsgIx;

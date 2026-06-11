@@ -11,6 +11,7 @@ typedef void (*V)(void);
 typedef bool  (*B)(void);
 typedef bool (*BV)(void);
 
+extern V onTestTock;
 
 bool bkt(const char * name, B up, B along, V down);
 bool nowt(void);

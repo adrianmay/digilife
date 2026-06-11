@@ -112,26 +112,24 @@ static bool empty() {
   return false;
 }
 
-static XXIx enter(Cash cash, Weight w, WithXXTicket stuff) {
+static XXIx play(Cash cash, Weight w, WithXXTicket stuffTicket) {
   char blah[40];
-  lock();
   checkM("enter1");
   bool wasEmpty = empty();
   XX * p;
   bool recycled;
-  XXIx i = hotelOfXXs.admit(cash, &p, &recycled);
+  void stuffBody(XXBody * pBody, bool recycled) {
+    if (!recycled) { 
+      XXRafle * pRaf = &pBody->raffle;
+      pRaf->s = pRaf->l= pRaf->r = 0;
+    }
+    stuffTicket(&pBody->ticket);
+  }
+  XXIx i = hotelOfXXs.admit(cash, stuffBody, &p, &recycled);
   //if (p->rent.cash>10000) { printf("Overrich 1 %d has %'ld from %'ld\n", i.i, p->rent.cash, cash); exit(1); }
-
-  stuf(&p->body.ticket);
-  XXRafle * pRaf = &p->body.raffle;
-  sprintf(blah, "enter2 i=%d recyc=%b", i.i, recycled);
   checkM(blah);
-  if (recycled) {
-    //pRaf->l = totWeightI(left(i));
-    //pRaf->r = totWeightI(right(i));
-  } else pRaf->l = pRaf->r = 0;
-  sprintf(blah, "enter3 i=%d recyc=%b", i.i, recycled);
-  pRaf->s = w;
+  lock();
+  p->body.raffle.s = w;
   propagateWeightUp(i, w);
   //if (p->rent.cash>10000) { printf("Overrich 2 %d has %'ld\n", i.i, p->rent.cash); exit(1); }
   sprintf(blah, "enter4 i=%d recyc=%b", i.i, recycled);
@@ -241,7 +239,7 @@ static void quitNow() {
   pthread_cond_signal(&cond);
 }
 
-XXRaffle raffleOfXXs = { open, enter, cancel, empty, draw, close, show, count, check, kill, quitNow };
+XXRaffle raffleOfXXs = { open, play, cancel, empty, draw, close, show, count, check, kill, quitNow };
 
 void showXXBody(XXIx i, XXBody * p) {
   printf("l=%'ld,s=%'ld,r=%'ld,⇑=%d,⇙=%d,⇘=%d,", p->raffle.l, p->raffle.s, p->raffle.r, parent(i).i, left(i).i, right(i).i);

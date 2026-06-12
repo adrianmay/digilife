@@ -73,8 +73,8 @@ int main(int argc, char **argv) {
 //    pile() &&
 //    meap() &&
 //    hotel() &&
-    raffle() &&
-//    tank() &&
+//    raffle() &&
+    tank() &&
 //    exec() &&
 //    equi() &&
     true;

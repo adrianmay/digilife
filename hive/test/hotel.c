@@ -14,8 +14,6 @@
 #define NOTIFY_TOCKS 150
 
 static bool extinct=true;
-void onMobsExtinct() {}
-void onMsgsExtinct() {}
 void onThingsExtinct(void) { extinct = true; }
 void onThingHotelGoDie(ThingIx i) { pileOfThings.free(i);}
 void onThingRentCollected(Cash cash) { }
@@ -66,7 +64,7 @@ bool testNoPop(void) {
 
 void make(Ix name, Cash cash) {
   bool recycledSlot;
-  void stuff(ThingBody * p, bool recyc) { p->name = name; }
+  void stuff(ThingBody * p) { p->name = name; }
   iThing = hotelOfThings.admit(cash, stuff, &pThing, &recycledSlot);
   extinct=false;
 }

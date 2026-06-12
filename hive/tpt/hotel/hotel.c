@@ -86,7 +86,8 @@ static void raid(void) {
       //bombee = bomb.who;
       //meapOfXXBombs.forAll(bombeeSafe);
       meapOfXXBombs.check();
-      if (hotelOfXXs.get(bomb.who)->rent.cash<0) abort();
+      XX * pXX = hotelOfXXs.get(bomb.who);
+      if (pXX->rent.cash<0) abort();
       onXXHotelGoDie(bomb.who); // DOES need to free the block
       continue;
     }
@@ -184,13 +185,13 @@ static XXIx admit(Cash cash, WithXXBody stuff, XX ** pp, bool * pRecycled) {
   if (cash == 0) { //God
     p->rent.cash = 0;
     p->rent.lastPaidRent = tocksNow();
-    if (stuff) stuff(&p->body, *pRecycled);
+    if (stuff) stuff(&p->body);
     p->rent.bomb = badXXBombIx;
     pileOfXXs.modUsr(1);
   } else {
     p->rent.cash = cash;
     p->rent.lastPaidRent = tocksNow();
-    if (stuff) stuff(&p->body, *pRecycled);
+    if (stuff) stuff(&p->body);
     Tocks expiry = p->rent.lastPaidRent + cash / (billableXXSize * tockPrice());
     meapOfXXBombs.insert(expiry, i.i, &p->rent.bomb); // Do we need the return value?
     meapOfXXBombs.check();

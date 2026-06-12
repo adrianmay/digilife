@@ -4,7 +4,7 @@
 //#include "XX_hotel/h.h"
 #include "XX_pile/2.h"
 
-typedef void (*WithXXBody)(XXBody *, bool recycled);
+typedef void (*WithXXBody)(XXBody *);
 
 extern void onXXRentCollected(Cash rent); // Provide this
 extern void onXXRentDefaulted(Cash rent); // Provide this

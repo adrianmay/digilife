@@ -3,7 +3,7 @@
 #include "Mob_pile/1.h"
 
 
-typedef struct {MobIx i; Ix n; } MobTact;
+typedef struct {MobIx i; Nick n; } MobTact;
 
 typedef struct {
 } MsgPayload;

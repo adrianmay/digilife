@@ -11,12 +11,12 @@ CostAndResult runner(Mob * pMob) {
   return (CostAndResult) {1, 0};
 }
 
-void train1(MobBody * pMB, bool recyc) {
+void train1(MobBody * pMB) {
   pMB->phylum = 'a';
   strcpy(pMB->p.a.code,"1");
 }
 
-void train2(MobBody * pMB, bool recyc) {
+void train2(MobBody * pMB) {
   pMB->phylum = 'a';
   strcpy(pMB->p.a.code,"2");
 }

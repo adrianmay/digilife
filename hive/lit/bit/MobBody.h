@@ -19,9 +19,14 @@ typedef  union {
   PhyB b;
 } PhyData;
 
+#define MOB_FLAG_RUNME    1
+#define MOB_FLAG_BUSY     2
+#define MOB_FLAG_BANKRUPT 4
+
 typedef struct {
-  Ix nick;
-  char phylum;
+  Nick nick;
+  uint8_t flags;
+  uint8_t phylum;
   PhyData p;
 } MobBody;
 

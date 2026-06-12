@@ -118,18 +118,16 @@ static XXIx play(Cash cash, Weight w, WithXXTicket stuffTicket) {
   bool wasEmpty = empty();
   XX * p;
   bool recycled;
-  void stuffBody(XXBody * pBody, bool recycled) {
-    if (!recycled) { 
-      XXRafle * pRaf = &pBody->raffle;
-      pRaf->s = pRaf->l= pRaf->r = 0;
-    }
+  void stuffBody(XXBody * pBody) {
     stuffTicket(&pBody->ticket);
   }
   XXIx i = hotelOfXXs.admit(cash, stuffBody, &p, &recycled);
   //if (p->rent.cash>10000) { printf("Overrich 1 %d has %'ld from %'ld\n", i.i, p->rent.cash, cash); exit(1); }
+  XXRafle * pRaf = &p->body.raffle; 
+  if (!recycled) pRaf->s = pRaf->l = pRaf->r = 0; // Don't really need to zero s
   checkM(blah);
   lock();
-  p->body.raffle.s = w;
+  pRaf->s = w;
   propagateWeightUp(i, w);
   //if (p->rent.cash>10000) { printf("Overrich 2 %d has %'ld\n", i.i, p->rent.cash); exit(1); }
   sprintf(blah, "enter4 i=%d recyc=%b", i.i, recycled);

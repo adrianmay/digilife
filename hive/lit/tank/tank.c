@@ -5,9 +5,12 @@
 #include "Msg_pile/2.h"
 #include "Msg_raffle/h.h"
 #include "globals/h.h"
+#include "misc/h.h"
 #include "h.h"
 
-extern void onMsgRaffleGoDie(MsgIx i) { (void)i; }
+extern void onMsgRaffleGoDie(MsgIx i) { 
+  Msg * pMsg = pileOfMsgs.get(i);  
+}
 
 void onMobHotelGoDie(MobIx i) {
   pileOfMobs.free(i);
@@ -42,8 +45,7 @@ void showTank() {
 
 MobTact tact(MobIx i) {
   Mob * pMob = hotelOfMobs.get(i);
-  Ix nick = pMob->body.nick;
-  if (nick & 0x80000000) abort();
+  Nick nick = pMob->body.nick;
   return (MobTact) {i, nick};
 }
 
@@ -83,27 +85,30 @@ MobTact makeGod() {
   return (MobTact){iChild, p->body.nick};
 }
 
-MobTact spawn(Cash cash, MobTact tParent, WithMobBody train) {
+MobTact spawn(Cash cash, MobTact tBenefactor, WithMobBody stuffBody) {
+  void stuff(MobBody * pB) {
+    pB->nick = randIntBelow(0xFFFF);
+    stuffBody(pB);
+  }
   MobIx iChild = badMobIx;
-  if (   checkTact(tParent) 
-      && hotelOfMobs.chargeIfCan(tParent.i, cash)) {
+  if (checkTact(tBenefactor) && hotelOfMobs.chargeIfCan(tBenefactor.i, cash)) {
     Mob * pMob;
-    iChild = hotelOfMobs.admit(cash, train, &pMob, 0);
+    iChild = hotelOfMobs.admit(cash, stuff, &pMob, 0);
     return tact(iChild);
   } else {
-    return (MobTact) {badMobIx, BAD_INDEX};
+    return (MobTact) {badMobIx};
   }
 }
 
 MsgIx post(Cash cash, CpuBid bid, MobTact tS, MobTact tR, WithPayload stuffPayload) {
-  void st(MsgTicket * pT) {
+  void stuff(MsgTicket * pT) {
     pT->cpuBid = bid;
     pT->rcvr = tR;
     pT->sndr = tS;
     stuffPayload(&pT->payload);
   }
   if (checkTact(tS) && hotelOfMobs.chargeIfCan(tS.i, cash)) {
-    MsgIx iMsg = raffleOfMsgs.play(cash, bidToWeight(bid), st);
+    MsgIx iMsg = raffleOfMsgs.play(cash, bidToWeight(bid), stuff);
     return iMsg;
   }
   return badMsgIx;
@@ -144,3 +149,9 @@ void closeTank(FATE f) {
   closeGlobals(f);
 }
 
+void onMobsExtinct() {}
+void onMsgsExtinct() {}
+
+void workerThread() {
+  
+}

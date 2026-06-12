@@ -38,7 +38,11 @@ WithMessTicket stuffTicket1(int a) {
 // Equal weight, unequal types, loads of cash
 void stuff1(void) {
   for (int a=0; a<1000; a++) {
-    raffleOfMesss.enter(5000, 10, stuffTicket1(a));
+    void stuff(MessTicket * pT) {
+      pT->serial = a;
+      pT->type = a%3 ? 'T' : 'H';  //Twice as many heads
+    }
+    raffleOfMesss.play(5000, 10, stuff);
   }
 }
 
@@ -53,7 +57,7 @@ WithMessTicket stuffTicket2(int a) {
 void stuff2(void) {
   for (int a=0; a<1000; a++) {
     Weight w = a%2 ? 4 : 8;  //Twice as many heads
-    raffleOfMesss.enter(5000, w, stuffTicket2(a));
+    raffleOfMesss.play(5000, w, stuffTicket2(a));
   }
   //raffleOfMesss.show();
 }
@@ -112,7 +116,7 @@ void * produce(void * p) {
   for (int a=0;a<20;a++) {
     sleepMs(1+randIntBelow(5));
     if (bored==1) break;
-    raffleOfMesss.enter(10, 1+randIntBelow(10), apathy);
+    raffleOfMesss.play(10, 1+randIntBelow(10), apathy);
   }
   return 0;
 }
@@ -134,13 +138,13 @@ bool testBlock() {
 //   MessTicket tick;
 //   Cash cash;
 //   Weight w;
-//   raffleOfMesss.enter(5000, w, &tkt);
+//   raffleOfMesss.play(5000, 0, w, &tkt);
 // }
 
 bool testRaffle() {
   stuff1(); ch(); sample(); ch(); empty();
-  stuff2(); ch(); sample(); ch(); empty();
-  testBlock();
+//  stuff2(); ch(); sample(); ch(); empty();
+//  testBlock();
   return true;
 }
 

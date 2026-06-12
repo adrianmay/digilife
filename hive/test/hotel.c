@@ -30,10 +30,13 @@ Thing * pThing;
 ThingIx iThing;
 ThingIx iGod;
 
+static void tock() {hotelOfThings.raid();}
+
 static bool init(void) {
+  onTestTock = tock;
   openGlobals();
   hotelOfThings.open();
-  iGod = hotelOfThings.alloc(0,0,0); //God
+  iGod = hotelOfThings.admit(0,0,0,0); //God
   return true;
 }
 
@@ -61,8 +64,8 @@ bool testNoPop(void) {
 
 void make(Ix name, Cash cash) {
   bool recycledSlot;
-  iThing = hotelOfThings.alloc(cash, &pThing, &recycledSlot);
-  pThing->body.name = name;
+  void stuff(ThingBody * p, bool recyc) { p->name = name; }
+  iThing = hotelOfThings.admit(cash, stuff, &pThing, &recycledSlot);
 }
 
 bool expectExtinctSoon(Cash cash) {

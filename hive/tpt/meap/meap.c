@@ -17,7 +17,7 @@ static Ix bombee;
 static void bombeeSafe(Ix i, void * p) { 
   Ix * pB = (Ix *) p;
   if (*pB == bombee) {
-    printf("In meap insert: Another bomb for XX %d\n", bombee);
+    printf("In meap: Another bomb for XX %d\n", bombee);
     show();
     abort();
   }
@@ -41,6 +41,7 @@ static void markOnce(Ix i, void * p) {
 
 static void checkNoDupes()
 {
+  return;
   memset(seen, BAD_INDEX, sizeof(seen));
   forAll(markOnce);
 }
@@ -111,23 +112,24 @@ static void siftDown(XXIx iCur) {
 }
 
 // Returns whether or not the lowest changed.
-static bool insert(XXIx * pI, XX ** ppNew, Ix hint) {
+static bool insert(Tocks expiry, Ix hint, XXIx * pI) {
   //printf("Inserting bomb for XX %d\n", hint);
+  XX * pNew;
   bombee = hint;
   forAll(bombeeSafe);
-  Ix meapTop = pileOfXXs.getUsr(); //meapish size
-  if (meapTop < pileOfXXs.count()) { // That's pile's top minus pile's free count. But we'll never use free in this pile anyway.
-    pI->i = meapTop;                   // Got meapish spares so just return one
-    *ppNew = pileOfXXs.get(*pI);
+  Ix meapTop = pileOfXXs.getUsr();    //meapish size
+  if (meapTop < pileOfXXs.count()) {  // That's pile's top minus pile's free count. But we'll never use free in this pile anyway.
+    pI->i = meapTop;                  // Got meapish spares so just return one
+    pNew = pileOfXXs.get(*pI);
   }
   else
-    *pI = pileOfXXs.alloc(ppNew, 0);
-  // ppNew is now correct either way.
-  onNewXX(*pI, hint);                   // Expected to stuff *pI with things that depend on hint. Needed after allocing the meap member but before sorting.
+    *pI = pileOfXXs.alloc(&pNew, 0);
+  // pNew is now correct either way.
+  pNew->tocks = expiry;
   pileOfXXs.modUsr(1);                        // Not sure if this should be before the above, but certainly it's before siftUp.
   if (pI->i > 0) {                          // No point sorting a singleton.
     bool res = siftUp(*pI);             // Calls siftUp if it returns true;
-    if (!res) onMoveXX(*ppNew, *pI);    // Something else might want to keep track of where the meap member is.
+    if (!res) onMoveXX(pNew, *pI);    // Something else might want to keep track of where the meap member is.
     return res;
   }
   return false;

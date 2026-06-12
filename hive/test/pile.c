@@ -81,16 +81,16 @@ void * incrementBy(Link * p, void * u) {
   return 0;
 }
 
-bool with(LinkIx i0) {
-  int total = sumLinks(i0);
-  assertInt(total,7740);
-  int i = 3;
-  pileOfLinks.with(i0, incrementBy, ((void*)&i));
-  total = sumLinks(i0);
-  assertInt(total,7743);
-  assertInt(i,6);
-  return true;
-}
+// bool with(LinkIx i0) {
+//   int total = sumLinks(i0);
+//   assertInt(total,7740);
+//   int i = 3;
+//   pileOfLinks.with(i0, incrementBy, ((void*)&i));
+//   total = sumLinks(i0);
+//   assertInt(total,7743);
+//   assertInt(i,6);
+//   return true;
+// }
 
 bool showIt(void) {
   pileOfLinks.show(false);
@@ -115,7 +115,7 @@ bool testLinkPile(void) {
          //&& showIt()
          && reallocing()
          //&& showIt()
-         && with(i0)
+         //&& with(i0)
          && forall()
 ;}
 

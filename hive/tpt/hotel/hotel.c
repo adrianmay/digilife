@@ -7,14 +7,14 @@
 #include "XX_pile/2.h"
 #include "h.h"
 
-#if ZZ
-static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-static void lock() { pthread_mutex_lock(&mutex); }
-static void unlock() { pthread_mutex_unlock(&mutex); }
-#else
-static void lock() {}
-static void unlock() {}
-#endif
+// #if ZZ
+// static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+// static void lock() { pthread_mutex_lock(&mutex); }
+// static void unlock() { pthread_mutex_unlock(&mutex); }
+// #else
+// static void lock() {}
+// static void unlock() {}
+// #endif
 
 static void show(void) {
   meapOfXXBombs.show();
@@ -80,7 +80,7 @@ static bool updateDeathWithXX_(XX * pXX) {
 //static void bombeeSafe2(Ix i, void * p) { 
 //  XXBomb * pB = (XXBomb *) p;
 //  if (pB->who.i == bombee.i) {
-//    printf("In alloc: Another bomb for XX %d\n", bombee.i);
+//    printf("In admit: Another bomb for XX %d\n", bombee.i);
 //    abort();
 //  }
 //}
@@ -89,24 +89,20 @@ void showXXBomb(XXBombIx i, XXBomb * p) {
   printf("tocks=%d,who=%d\n", p->tocks, p->who.i);
 }
 
-static void kill_(void) {
+static void raid(void) {
   XXBomb bomb; // Bomb copied out to here
   Tocks now = tocksNow();
   while (true) { // Returns when nothing to kill for now
     bomb.who = badXXIx; // Prevent false alarms
-    meapOfXXBombs.check();
     Chomped ch = meapOfXXBombs.chomp(now, &bomb, 0);
-    //showXXBomb(badXXBombIx, &bomb);
-    meapOfXXBombs.check();
     if (ch == Killed ) {
       //bombee = bomb.who;
       //meapOfXXBombs.forAll(bombeeSafe);
       meapOfXXBombs.check();
       // For raffle, we don't free it, so this line is wrong:
-      //pileOfXXs.free(bomb.who); //TODO: funeral and recover cash
-      onXXKilled(bomb.who); // DOES need to free the block
-      meapOfXXBombs.check();
-      //printf("Killed XX %i\n", bomb.who.i);
+      //TODO: funeral and recover cash
+      onXXHotelWillFree(bomb.who); // DOES need to free the block
+      hotelOfXXs.free(bomb.who);
       continue;
     }
     if (ch == Extinct) {
@@ -119,31 +115,31 @@ static void kill_(void) {
   }
 }
 
-static void kill(void) {
-  lock();
-  kill_();
-  unlock();
-}
-
+// static void raid(void) {
+//   lock();
+//   raid_();
+//   unlock();
+// }
+// 
 static bool isGod(XX * pXX) { return pXX->rent.bomb.i == BAD_INDEX; }
 // Kills it if it has non-positive cash
 // Assume rent just collected so cash is up to date
-static void review_(XX * pXX) {
-  //printf("Hotel reviewing i=%d\n", pXX->rent.bomb.i);
-  if (isGod(pXX))
-    return;
-  meapOfXXBombs.check();
-  updateDeathWithXX_(pXX);
-  meapOfXXBombs.check();
-  kill_();
-}
-
-static void review(XXIx i) {
-  lock();
-  XX * pXX = get(i);
-  review_(pXX);
-  unlock();
-}
+// static void review_(XX * pXX) {
+//   //printf("Hotel reviewing i=%d\n", pXX->rent.bomb.i);
+//   if (isGod(pXX))
+//     return;
+//   meapOfXXBombs.check();
+//   updateDeathWithXX_(pXX);
+//   meapOfXXBombs.check();
+//   raid_();
+// }
+// 
+// static void review(XXIx i) {
+//   lock();
+//   XX * pXX = get(i);
+//   review_(pXX);
+//   unlock();
+// }
 
 //Deduct cash and set last paid to now
 static void collectRent_(XX * pXX, Cash * collected, Cash * defaulted) {
@@ -165,12 +161,11 @@ static void collectRent_(XX * pXX, Cash * collected, Cash * defaulted) {
 } // Should now update death in bomb
 
 static void collectRent(XXIx i) {
-  lock();
+//  lock();
   XX * pXX = get(i);
   Cash collected, defaulted;
   collectRent_(pXX, &collected, &defaulted);
-  review_(pXX);
-  unlock();
+//  unlock();
   if (collected) onXXRentCollected(collected);
   if (defaulted) onXXRentDefaulted(defaulted);
 }
@@ -236,37 +231,39 @@ void showXX(XXIx i, XX * p) {
   showXXBody(i, &p->body);
 }
 
-static XXIx alloc_(Cash cash, XX ** pp, bool * pRecycled) {
+static XXIx admit_(Cash cash, WithXXBody stuff, XX ** pp, bool * pRecycled) {
   XX * p;
   XXIx i = pileOfXXs.alloc(&p, pRecycled);
-  if (cash == 0) { 
-    p->rent.lastPaidRent = tocksNow();
+  if (cash == 0) { //God
+    p->rent.nick = randIntBelow(0x80000000);
     p->rent.cash = 0;
+    p->rent.lastPaidRent = tocksNow();
+    if (stuff) stuff(&p->body, *pRecycled);
     p->rent.bomb = badXXBombIx;
     pileOfXXs.modUsr(1);
   } else {
-    p->rent.lastPaidRent = tocksNow();
+    p->rent.nick = randIntBelow(0x80000000);
     p->rent.cash = cash;
-    XXBombIx iBomb;
-    XXBomb * pBomb;
-    meapOfXXBombs.check();
-    meapOfXXBombs.insert(&iBomb, &pBomb, i.i); // onNew should do the rest
+    p->rent.lastPaidRent = tocksNow();
+    if (stuff) stuff(&p->body, *pRecycled);
+    Tocks expiry = p->rent.lastPaidRent + cash / tockPrice();
+    meapOfXXBombs.insert(expiry, i.i, &p->rent.bomb); // Do we need the return value?
     meapOfXXBombs.check();
   }
   if (pp) *pp = p;
   return i;
 }
 
-static XXIx alloc(Cash cash, XX ** pp, bool * pRecycled) {
+static XXIx admit(Cash cash, WithXXBody stuff, XX ** pp, bool * pRecycled) {
   lock();
-  XXIx ret = alloc_(cash, pp, pRecycled);
+  XXIx ret = admit_(cash, stuff, pp, pRecycled);
   unlock();
   return ret;
 }
 
 // Assumes some mutex is held, despite the name
 // That's true because onNewXX only called from meap's insert
-//   which for the hotel is only called from hotel's alloc
+//   which for the hotel is only called from hotel's admit
 // We know it exists, and it doesn't have or need money
 void onNewXXBomb(XXBombIx iBomb, Ix hint) {
   //printf("OnNew: iBomb: %d hint: %d\n", iBomb.i, hint);
@@ -288,7 +285,7 @@ void onMoveXXBomb(XXBomb * pBomb, XXBombIx to) {
 
 static void forAll(XXPileAction act) { pileOfXXs.forAll(false, act); }
 
-XXHotel hotelOfXXs = { open, alloc, get, enrich, chargeIfCan, collectRent, review
-                     , forAll, rob, kill, count, close, show, showXX
+XXHotel hotelOfXXs = { open, admit, get, enrich, chargeIfCan, collectRent, review
+                     , forAll, rob, raid, count, close, show, showXX
                      , sizeof(XX)+sizeof(XXBomb) };
 

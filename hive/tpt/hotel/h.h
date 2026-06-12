@@ -4,18 +4,19 @@
 //#include "XX_hotel/h.h"
 #include "XX_pile/2.h"
 
+typedef void (*WithXXBody)(XXBody *, bool recycled);
+
 extern void onXXRentCollected(Cash rent); // Provide this
 extern void onXXRentDefaulted(Cash rent); // Provide this
                                      
 typedef bool        (*XXHotelOpen)(void);
-typedef XXIx        (*XXHotelAlloc)(Cash cash, XX ** pp, bool * pRecycled); //Cash = 0 -> God
+typedef XXIx        (*XXHotelAdmit)(Cash cash, WithXXBody stuff, XX ** pp, bool * pRecycled); //Cash = 0 -> God
 typedef XX *        (*XXHotelGet)(XXIx i);
 typedef void        (*XXHotelEnrich)(XXIx iWho, Cash amt);
 typedef bool        (*XXHotelChargeIfCan)(XXIx iWho, Cash amt);
 typedef void        (*XXHotelCollectRent)(XXIx iWho);
-typedef void        (*XXHotelReview)(XXIx in);
 typedef Cash        (*XXHotelRobber)(XXIx i);
-typedef void        (*XXHotelKiller)(void);
+typedef void        (*XXHotelRaid)(void);
 typedef Ix          (*XXHotelCount)(void);
 typedef void        (*XXHotelClose)(FATE fate);
 typedef void        (*XXHotelForAll)(XXPileAction);
@@ -24,15 +25,14 @@ typedef void        (*XXHotelShowXX)(XXIx i, XX * p);
 
 typedef struct {
   XXHotelOpen open;
-  XXHotelAlloc alloc;
+  XXHotelAdmit admit;
   XXHotelGet get;
   XXHotelEnrich enrich;
   XXHotelChargeIfCan chargeIfCan;
   XXHotelCollectRent collectRent;
-  XXHotelReview review;
   XXHotelForAll forAll;
   XXHotelRobber rob;
-  XXHotelKiller kill;
+  XXHotelRaid raid;
   XXHotelCount count;
   XXHotelClose close;
   XXHotelShow show;
@@ -41,7 +41,9 @@ typedef struct {
 } XXHotel;
 
 extern void onXXsExtinct(void); // Provide this.
-extern void onXXKilled(XXIx); // Provide this.
+extern void onXXHotelWillFree(XXIx); // Provide this.
+extern void onXXRentCollected(Cash cash); // Provide this.
+extern void onXXRentDefaulted(Cash cash); // Provide this.
 extern XXHotel hotelOfXXs;
 
   

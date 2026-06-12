@@ -75,11 +75,14 @@ TockPrice tockPrice(void) {return pg->groatsPerTockPerByte;}
 void notifyCycles(Cycles worked) {
   printf("Notifying %'ld cycles\n", worked);
   lock();
+  Tocks oldTocks = pg->lastKnownTock;
   Cycles toBill = worked + pg->cyclesNotTocked;
   lldiv_t qr = lldiv(toBill, pg->cyclesPerTock);
   pg->lastKnownTock = pg->lastKnownTock + qr.quot;
   pg->cyclesNotTocked = qr.rem;
   unlock();
+  if (pg->cyclesNotTocked > oldTocks) 
+    onTock();
 }
 
 Tocks tocksNow(void) {return pg->lastKnownTock;}

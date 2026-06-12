@@ -97,7 +97,7 @@ bool showIt(void) {
   return false;
 }
 
-void act(LinkIx i) {
+void act(LinkIx i, Link * p) {
   printf("Foo");
 }
 

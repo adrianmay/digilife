@@ -145,7 +145,7 @@
    if (cnt==0) return true;
    for (int a=0;a<500;a++) {
      JunkIx i = (JunkIx) {a%cnt};
-     meapOfJunks.editTocksTakingLock(i,rand()%0x100);
+     meapOfJunks.editTocks(i,rand()%0x100);
      ordered();
    }
    return true;

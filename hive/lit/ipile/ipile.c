@@ -67,7 +67,7 @@ Pilehead * openPile(const char * basefilename, uint32_t rec, uint32_t stp, Ix li
     ph->res = (PAGE*stp - sizeof(Pilehead))/rec;
     ph->top = 0;
     ph->fri = BAD_INDEX;
-    ph->fro = 0x7FFFFFFF;
+    ph->fro = BAD_INDEX;
     ph->frn = 0;
     ph->usr = 0;
     strncpy(ph->fn, basefilename, MAX_FILENAME);
@@ -127,15 +127,14 @@ Ix allocInPile(Pilehead * ph, void ** ppNew, bool * pRecycled, void * ghost, int
   // nextFree has top bit set   : lower bits are a free block index
   // nextFree has top bit clear : lower bits are the nick of a used block
 
-  if (ph->fro != 0x7FFFFFFF) { // There are free blocks
+  if (ph->fro != BAD_INDEX) { // There are free blocks
     if (pRecycled) *pRecycled = true;
     ph->frn -= 1;
     ret = ph->fro;
-    if (ret & 0x80000000) abort();
     Free * pFree = findFreeInPile(ph,ret);
-    //printf("In allocInPile: Setting fro of %s from %d to %d from nextFree of %d\n", ph->fn, ph->fro, pFree->nextFree & 0x7FFFFFFF, ret);
-    ph->fro = pFree->nextFree & 0x7FFFFFFF;
-    if (ph->fro == 0x7FFFFFFF)
+    //printf("In allocInPile: Setting fro of %s from %d to %d from nextFree of %d\n", ph->fn, ph->fro, pFree->nextFree, ret);
+    ph->fro = pFree->nextFree;
+    if (ph->fro == BAD_INDEX)
       ph->fri = BAD_INDEX;
     if (ghost) { // If desired, save whatever was in the block after nextFree
       void * pGhost = pFree + 1; // while it was free
@@ -148,20 +147,20 @@ Ix allocInPile(Pilehead * ph, void ** ppNew, bool * pRecycled, void * ghost, int
     ret = ph->top-1;
   }
   Free * pNew = findFreeInPile(ph, ret);
-  // Make up a new nick. Anything with MSB set but not BAD_INDEX. In Rent, the nick is declared there.
-  Ix nck = randIntBelow(0x7FFFFFFF);
   //printf("In allocInPile: Setting nextFree of %d in %s to nick %x\n", ret, ph->fn, nck);
-  pNew->nextFree = nck; // Bombs can overwrite it.
   if (ppNew) *ppNew = pNew;
   return ret;
 }
 
+static bool isInFreeList(Pilehead * ph, Ix i) {
+  //TODO: WRITEME
+  return false;
+}
 // Free a block to the free list
 // There's no rent collector thread so this needs MT protection, but higher up
 void freeInPile(Pilehead * ph, Ix i, void * ghost, int ghostlen) {
-  if (i & 0x80000000) abort();
   Free * pFree = findFreeInPile(ph,i); // Get the block
-  if (pFree->nextFree & 0x80000000) {
+  if (isInFreeList(ph, i)) {
     printf("DOUBLE FREE in %s: %d\n", ph->fn, i);
     abort();
   }
@@ -170,14 +169,14 @@ void freeInPile(Pilehead * ph, Ix i, void * ghost, int ghostlen) {
   if (ph->fri != BAD_INDEX) {
     Free * pOldInEnd = findFreeInPile(ph,ph->fri); // Get the block
     //printf("In freeInPile 2: Setting nextFree of %d in %s to %x\n", ph->fri, ph->fn, i | 0x8000000);
-    pOldInEnd->nextFree = i | 0x80000000; // Point old in end at newly freed block
+    pOldInEnd->nextFree = i; // Point old in end at newly freed block
   }
   ph->fri = i; //Set free in end to that block
   if (ghost)  //Stuff something into the free block after nextFree if desired
     memcpy((void*)(pFree+1), ghost, ghostlen); 
-  if (ph->fro==0x7FFFFFFF) {
+  if (ph->fro == BAD_INDEX) {
     //printf("In freeInPile: Setting fro to %x\n", i);
-    ph->fro = i & 0x7FFFFFFF; // Only if this is the first do we mess with the out end
+    ph->fro = i; // Only if this is the first do we mess with the out end
   }
   ph->frn += 1;
   // Should assert that fri and fro have same badness
@@ -190,16 +189,15 @@ Ix getUsr(Pilehead * ph) { return ph->usr; }
 void setUsr(Pilehead * ph, Ix u) { ph->usr = u; }
 void modUsr(Pilehead * ph, int32_t u)  { ph->usr += u; }
 
-
-void forAllPile(Pilehead * ph, bool onlyToUsr, PileAction act) {
+//act needs its own way to detect free blocks
+void forAllPile(Pilehead * ph, bool onlyToUsr, VIP act) {
   if (!ph) {
     printf("Pile is closed\n");
     abort();
   }
   for (Ix i=0;i<(onlyToUsr?ph->usr:ph->top);i++) {
     Free * p = findFreeInPile(ph, i);
-    if (p->nextFree & 0x80000000); 
-    else act(i);
+    act(i, p);
   }
 }
 
@@ -215,8 +213,8 @@ void showPile(Pilehead * ph, VIP showSlot, bool onlyToUsr) {
   for (Ix i=0;i<(onlyToUsr?ph->usr:ph->top);i++) {
     Free * p = findFreeInPile(ph, i);
     printf("%5d | ",i);
-    if (p->nextFree & 0x80000000) 
-      printf("Free: nextFree=%4d | ", p->nextFree & 0x7FFFFFFF);
-    showSlot(i, p);
+    // if (p->nextFree & 0x80000000) 
+    //   printf("Free: nextFree=%4d | ", p->nextFree & 0x7FFFFFFF);
+    showSlot(i, p); // TODO: have this show freeness like the commented out bit above
   }
 }

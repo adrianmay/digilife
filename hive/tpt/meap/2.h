@@ -12,7 +12,7 @@ typedef bool    (*XXMeapEditTocks) (XXIx i, Score when);
 typedef bool    (*XXMeapErase)     (XXIx i);
 typedef Chomped (*XXMeapChomp)     (Score thresh, XX * p, int pseudoAnimals);
 typedef bool    (*XXCheckOrdered)  (void);
-typedef void    (*XXForAll)        (void (*)(Ix, void *));
+//typedef void    (*XXForAll)        (void (*)(Ix, void *));
 typedef Ix      (*XXMeapSize)      (void);
 typedef void    (*XXMeapShow)      (void);
 //
@@ -23,12 +23,11 @@ typedef struct {
   XXMeapOpen open;
   XXMeapClose close;
   XXMeapInsert insert; // New member.
-  XXMeapEditTocks editTocksWhenLocked; // Member's score might have changed.
-  XXMeapEditTocks editTocksTakingLock; // Member's score might have changed.
+  XXMeapEditTocks editTocks; // Member's score might have changed.
   XXMeapErase  erase; // Delete it.
   XXMeapChomp chomp; //Check and eat 0-1 things
   XXCheckOrdered check; //Just for testing.
-  XXForAll forAll; //Just for testing.
+//  XXForAll forAll; //Just for testing.
   XXMeapSize size; // How many members.
   XXMeapShow show;
 } XXMeap;

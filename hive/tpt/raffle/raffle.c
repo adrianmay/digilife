@@ -86,9 +86,9 @@ static Ix count(void) {
   return hotelOfXXs.count();
 }
 
-static void kill(void) {
-  hotelOfXXs.kill();
-  checkM("kill");
+static void raid(void) {
+  hotelOfXXs.raid();
+  checkM("raid");
 }
 
 static void propagateWeightUp(XXIx i, Weight w) {
@@ -139,7 +139,7 @@ static XXIx play(Cash cash, Weight w, WithXXTicket stuffTicket) {
   return i;
 }
 
-void onXXKilled(XXIx i) {
+void onXXHotelGoDie(XXIx i) {
   XX * p = pileOfXXs.get(i);
   XXRafle * pRaf = &p->body.raffle;
   if (pRaf->s == 0) abort();
@@ -180,7 +180,6 @@ static void drawBelow(XXIx i, WithXXTicketAndCash enjoyTicket) {
     //printf("In drawBelow, drew:\n");
     cancel_(i);
     if (pRaf->s != 0) abort();
-    if (pB->rent.nick & 0x80000000) abort();
     //printf("Returning cash=%ld from drawBelow\n", cash);
     return;
   }
@@ -239,7 +238,7 @@ static void quitNow() {
   pthread_cond_signal(&cond);
 }
 
-XXRaffle raffleOfXXs = { open, play, cancel, empty, draw, close, show, count, check, kill, quitNow };
+XXRaffle raffleOfXXs = { open, play, cancel, empty, draw, close, show, count, check, raid, quitNow };
 
 void showXXBody(XXIx i, XXBody * p) {
   printf("l=%'ld,s=%'ld,r=%'ld,⇑=%d,⇙=%d,⇘=%d,", p->raffle.l, p->raffle.s, p->raffle.r, parent(i).i, left(i).i, right(i).i);

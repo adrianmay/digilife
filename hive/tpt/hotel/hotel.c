@@ -7,33 +7,20 @@
 #include "XX_pile/2.h"
 #include "h.h"
 
-// #if ZZ
-// static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-// static void lock() { pthread_mutex_lock(&mutex); }
-// static void unlock() { pthread_mutex_unlock(&mutex); }
-// #else
-// static void lock() {}
-// static void unlock() {}
-// #endif
-
 static void show(void) {
   meapOfXXBombs.show();
   pileOfXXs.show(false);
 }
 
 static bool open() {
-  lock();
   meapOfXXBombs.open();
   bool virgin = pileOfXXs.open();
-  unlock();
   return virgin;
 }
 
 static void close(FATE fate) {
-  lock();
   pileOfXXs.close(fate);
   meapOfXXBombs.close(fate);
-  unlock();
 }
 
 static Ix count(void) {
@@ -50,12 +37,12 @@ static XX * get(XXIx i) {
 // Assumes collectRent was just called.
 static bool updateDeathWithXXAndBomb_(XX* p, XXBomb * pBomb) {
   Cash cash = p->rent.cash;
-  Tocks ttl = cash / ( tockPrice() * (sizeof(XX)+sizeof(XXBomb)) );
+  Tocks ttl = cash / ( tockPrice() * billableXXSize);
   //printf("UpdateDeath: ttl=%d\n", ttl);
   Tocks death = tocksNow() + ttl;
   meapOfXXBombs.check();
   // This changes bomb time and reorders meap:
-  bool res = meapOfXXBombs.editTocksWhenLocked(p->rent.bomb, death);
+  bool res = meapOfXXBombs.editTocks(p->rent.bomb, death);
   meapOfXXBombs.check();
   return res;
   // The meap is now properly reordered but nobody called kill
@@ -99,10 +86,8 @@ static void raid(void) {
       //bombee = bomb.who;
       //meapOfXXBombs.forAll(bombeeSafe);
       meapOfXXBombs.check();
-      // For raffle, we don't free it, so this line is wrong:
-      //TODO: funeral and recover cash
-      onXXHotelWillFree(bomb.who); // DOES need to free the block
-      hotelOfXXs.free(bomb.who);
+      if (hotelOfXXs.get(bomb.who)->rent.cash<0) abort();
+      onXXHotelGoDie(bomb.who); // DOES need to free the block
       continue;
     }
     if (ch == Extinct) {
@@ -115,73 +100,46 @@ static void raid(void) {
   }
 }
 
-// static void raid(void) {
-//   lock();
-//   raid_();
-//   unlock();
-// }
-// 
 static bool isGod(XX * pXX) { return pXX->rent.bomb.i == BAD_INDEX; }
-// Kills it if it has non-positive cash
-// Assume rent just collected so cash is up to date
-// static void review_(XX * pXX) {
-//   //printf("Hotel reviewing i=%d\n", pXX->rent.bomb.i);
-//   if (isGod(pXX))
-//     return;
-//   meapOfXXBombs.check();
-//   updateDeathWithXX_(pXX);
-//   meapOfXXBombs.check();
-//   raid_();
-// }
-// 
-// static void review(XXIx i) {
-//   lock();
-//   XX * pXX = get(i);
-//   review_(pXX);
-//   unlock();
-// }
+
+// Lets raid collect defaults, who aborts
+static void enrich_(XX * pXX, Cash amt) {
+  pXX->rent.cash += amt;
+  if (isGod(pXX)) return;
+  updateDeathWithXX_(pXX);
+  if (amt<0) raid();
+}
+
+static void enrich(XXIx i, Cash amt) {
+  enrich_(get(i), amt);
+}
 
 //Deduct cash and set last paid to now
-static void collectRent_(XX * pXX, Cash * collected, Cash * defaulted) {
+//Catches defaults now
+static void collectRent(XXIx i) {
+  XX * pXX = get(i);
+  Cash collected, defaulted;
   XXRent * pRent = &pXX->rent;
   Tocks now = tocksNow();
-  pRent->lastPaidRent = now;
   Tocks timeUnpaid = now - pRent->lastPaidRent;
-  Cash bill = tockPrice() * (sizeof(XX)+sizeof(XXBomb)) * timeUnpaid;
-  if (pRent->cash >= bill) {
+  pRent->lastPaidRent = now;
+  Cash bill = tockPrice() * billableXXSize * timeUnpaid;
+  if (isGod(pXX) || pRent->cash >= bill) {
     pRent->cash -= bill;
-    *collected = bill;
-    *defaulted = 0;
+    collected = bill;
+    defaulted = 0;
   } else {
     Cash c = pRent->cash;
     pRent->cash = 0;
-    *collected = c;
-    *defaulted = bill-c;
+    collected = c;
+    defaulted = bill-c;
+    updateDeathWithXX_(pXX);
+    raid();
   }
-} // Should now update death in bomb
-
-static void collectRent(XXIx i) {
-//  lock();
-  XX * pXX = get(i);
-  Cash collected, defaulted;
-  collectRent_(pXX, &collected, &defaulted);
-//  unlock();
   if (collected) onXXRentCollected(collected);
   if (defaulted) onXXRentDefaulted(defaulted);
 }
  
-static void enrich_(XX * pXX, Cash amt) {
-  //printf("Transfer: amt=%'ld, iFrom=%d, iTo=%d\n", amt, iFrom.i, iTo.i);
-  XXRent * pRent = &pXX->rent;
-  pRent->cash += amt;
-}
-
-static void enrich(XXIx i, Cash amt) {
-  lock();
-  enrich_(get(i), amt);
-  unlock();
-}
-
 static bool chargeIfCan_(XX * pXX, Cash amt) {
   //printf("Transfer: amt=%'ld, iFrom=%d, iTo=%d\n", amt, iFrom.i, iTo.i);
   XXRent * pRent = &pXX->rent;
@@ -191,62 +149,49 @@ static bool chargeIfCan_(XX * pXX, Cash amt) {
   else { // Not a god
     if (pRent->cash < amt) 
       return false;
-    pRent->cash -= amt;
-    review_(pXX);
+    enrich_(pXX, -amt);
     meapOfXXBombs.check();
   }
   return true;
 }
 
 static bool chargeIfCan(XXIx i, Cash amt) {
-  bool res = false;
-  lock();
-  res = chargeIfCan_(get(i), amt);
-  unlock();
-  return res;
+  return chargeIfCan_(get(i), amt);
 }
 
 static Cash rob_(XX * pXX) {
   if (isGod(pXX))
     return 0;
   Cash c = pXX->rent.cash;
-  if (c>0)
+  if (c<0) abort(); //return 0;
     enrich_(pXX, -c);
-  meapOfXXBombs.check();
-  review_(pXX);
   meapOfXXBombs.check();
   return c;
 }
 
 static Cash rob(XXIx i) {
-  Cash c;
-  lock();
-  c = rob_(get(i));
-  unlock();
-  return c; //TODO: proper accounts
+  return rob_(get(i));
 }
 
 void showXX(XXIx i, XX * p) {
-  printf("ix=%4d|nick=%x,lastPaidRent=%d,cash=%'ld,bomb=%d,", i.i, p->rent.nick, p->rent.lastPaidRent, p->rent.cash, p->rent.bomb.i);
+  printf("ix=%4d|lastPaidRent=%d,cash=%'ld,bomb=%d,", i.i, p->rent.lastPaidRent, p->rent.cash, p->rent.bomb.i);
   showXXBody(i, &p->body);
 }
 
-static XXIx admit_(Cash cash, WithXXBody stuff, XX ** pp, bool * pRecycled) {
+static XXIx admit(Cash cash, WithXXBody stuff, XX ** pp, bool * pRecycled) {
   XX * p;
   XXIx i = pileOfXXs.alloc(&p, pRecycled);
   if (cash == 0) { //God
-    p->rent.nick = randIntBelow(0x80000000);
     p->rent.cash = 0;
     p->rent.lastPaidRent = tocksNow();
     if (stuff) stuff(&p->body, *pRecycled);
     p->rent.bomb = badXXBombIx;
     pileOfXXs.modUsr(1);
   } else {
-    p->rent.nick = randIntBelow(0x80000000);
     p->rent.cash = cash;
     p->rent.lastPaidRent = tocksNow();
     if (stuff) stuff(&p->body, *pRecycled);
-    Tocks expiry = p->rent.lastPaidRent + cash / tockPrice();
+    Tocks expiry = p->rent.lastPaidRent + cash / (billableXXSize * tockPrice());
     meapOfXXBombs.insert(expiry, i.i, &p->rent.bomb); // Do we need the return value?
     meapOfXXBombs.check();
   }
@@ -254,12 +199,6 @@ static XXIx admit_(Cash cash, WithXXBody stuff, XX ** pp, bool * pRecycled) {
   return i;
 }
 
-static XXIx admit(Cash cash, WithXXBody stuff, XX ** pp, bool * pRecycled) {
-  lock();
-  XXIx ret = admit_(cash, stuff, pp, pRecycled);
-  unlock();
-  return ret;
-}
 
 // Assumes some mutex is held, despite the name
 // That's true because onNewXX only called from meap's insert
@@ -283,9 +222,13 @@ void onMoveXXBomb(XXBomb * pBomb, XXBombIx to) {
   meapOfXXBombs.check();
 }
 
-static void forAll(XXPileAction act) { pileOfXXs.forAll(false, act); }
+static void forAll(bool u, XXVIP act) { 
+  pileOfXXs.forAll(false, act); 
+}
 
-XXHotel hotelOfXXs = { open, admit, get, enrich, chargeIfCan, collectRent, review
-                     , forAll, rob, raid, count, close, show, showXX
-                     , sizeof(XX)+sizeof(XXBomb) };
+XXHotel hotelOfXXs = { open, admit, get, enrich, 
+  chargeIfCan, collectRent, forAll, rob, raid, count, 
+  close, show, showXX };
 
+
+const size_t billableXXSize = sizeof(XX)+sizeof(XXBomb);

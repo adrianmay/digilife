@@ -13,11 +13,11 @@
 
 #define NOTIFY_TOCKS 150
 
-static bool extinct;
+static bool extinct=true;
 void onMobsExtinct() {}
 void onMsgsExtinct() {}
 void onThingsExtinct(void) { extinct = true; }
-void onThingKilled(ThingIx i) { pileOfThings.free(i);}
+void onThingHotelGoDie(ThingIx i) { pileOfThings.free(i);}
 void onThingRentCollected(Cash cash) { }
 void onThingRentDefaulted(Cash cash) { }
 void showMobBody(MobIx i, MobBody * p) {
@@ -30,7 +30,9 @@ Thing * pThing;
 ThingIx iThing;
 ThingIx iGod;
 
-static void tock() {hotelOfThings.raid();}
+static void tock() {
+  hotelOfThings.raid();
+}
 
 static bool init(void) {
   onTestTock = tock;
@@ -44,18 +46,18 @@ Tocks killTilExtinct(void) {
   Tocks started = tocksNow();
   while (true) {
 //    printf("killTilExtinct: tocks=%d, processCycles=%'ld\n", tocksNow(), readProcessCycles());
-    hotelOfThings.forAll(hotelOfThings.review);
-    hotelOfThings.kill();
+    //hotelOfThings.forAll(hotelOfThings.review);
+    //hotelOfThings.kill();
     if (extinct) break;
     //hotelOfThings.show();
     notifyCycles(NOTIFY_TOCKS*GUESS_CYCLES_PER_TOCK);
+    sleepNs(1000000);
   }
   Tocks ended = tocksNow();
   return ended - started;
 }
 
 bool testNoPop(void) {
-  extinct = false;
   Tocks dur = killTilExtinct();
   printf("testNoPop: %d\n", dur);
   assertCond(dur, ==0);
@@ -66,6 +68,7 @@ void make(Ix name, Cash cash) {
   bool recycledSlot;
   void stuff(ThingBody * p, bool recyc) { p->name = name; }
   iThing = hotelOfThings.admit(cash, stuff, &pThing, &recycledSlot);
+  extinct=false;
 }
 
 bool expectExtinctSoon(Cash cash) {
@@ -75,7 +78,7 @@ bool expectExtinctSoon(Cash cash) {
   if (cash==0) 
     expect = 0;
   else {
-    Tocks expectIdeal = cash / (hotelOfThings.billableSize*tockPrice());
+    Tocks expectIdeal = cash / ( billableThingSize * tockPrice() );
      expect = ((expectIdeal - 1) / NOTIFY_TOCKS + 1) * NOTIFY_TOCKS ;
   }
   assertInt(dur, expect);
@@ -84,10 +87,9 @@ bool expectExtinctSoon(Cash cash) {
 
 bool test1(void) {
   Cash cash = 4000;
-  extinct = false;
   make(3, cash);
-  expectExtinctSoon(cash);
   printf("Made in test1\n");
+  expectExtinctSoon(cash);
   return true;
 }
 
@@ -97,7 +99,6 @@ void * earn(void *) {
 }
 
 bool testEarn(void) {
-  extinct = false;
   printf("testEarn\n");
   make(4, 3000);
   hotelOfThings.enrich(iThing, 2000);
@@ -108,7 +109,6 @@ bool testEarn(void) {
 }
 
 bool testRob(void) {
-  extinct = false;
   printf("testRob\n");
   make(5, 9000);
   hotelOfThings.rob(iThing);
@@ -117,13 +117,13 @@ bool testRob(void) {
 }
 
 bool testGod(void) {
-  extinct = false;
   printf("testGod\n");
   make(6, 1000);
   make(5, 0);
   expectExtinctSoon(1000);
+  hotelOfThings.collectRent(iThing);
   Cash godsCash = hotelOfThings.get(iThing)->rent.cash;
-  assertLong(godsCash, -1200l);
+  assertLong(godsCash, -1080l);
   return true;
 }
 
@@ -131,7 +131,7 @@ void cleanupHotel(void) { hotelOfThings.close(HIDE); closeGlobals(HIDE); }
 
 bool testHotel(void) {
   printf("Tock price: %f\n", tockPrice());
-  printf("Billable size: %ld\n", hotelOfThings.billableSize);
+  printf("Billable size: %ld\n", billableThingSize);
   return
     testNoPop() &&
     test1() &&

@@ -73,7 +73,7 @@ void closeGlobals(bool rm) {  // And that param should be enum
 TockPrice tockPrice(void) {return pg->groatsPerTockPerByte;}
 
 void notifyCycles(Cycles worked) {
-  printf("Notifying %'ld cycles\n", worked);
+  //printf("Notifying %'ld cycles\n", worked);
   lock();
   Tocks oldTocks = pg->lastKnownTock;
   Cycles toBill = worked + pg->cyclesNotTocked;
@@ -81,8 +81,9 @@ void notifyCycles(Cycles worked) {
   pg->lastKnownTock = pg->lastKnownTock + qr.quot;
   pg->cyclesNotTocked = qr.rem;
   unlock();
-  if (pg->cyclesNotTocked > oldTocks) 
+  if (pg->lastKnownTock > oldTocks) {
     onTock();
+  }
 }
 
 Tocks tocksNow(void) {return pg->lastKnownTock;}

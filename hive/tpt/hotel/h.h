@@ -19,7 +19,7 @@ typedef Cash        (*XXHotelRobber)(XXIx i);
 typedef void        (*XXHotelRaid)(void);
 typedef Ix          (*XXHotelCount)(void);
 typedef void        (*XXHotelClose)(FATE fate);
-typedef void        (*XXHotelForAll)(XXPileAction);
+typedef void        (*XXHotelForAll)(bool u, XXVIP);
 typedef void        (*XXHotelShow)(void);
 typedef void        (*XXHotelShowXX)(XXIx i, XX * p);
 
@@ -37,13 +37,13 @@ typedef struct {
   XXHotelClose close;
   XXHotelShow show;
   XXHotelShowXX showXX;
-  size_t billableSize; 
 } XXHotel;
 
 extern void onXXsExtinct(void); // Provide this.
-extern void onXXHotelWillFree(XXIx); // Provide this.
+extern void onXXHotelGoDie(XXIx); // Provide this.
 extern void onXXRentCollected(Cash cash); // Provide this.
 extern void onXXRentDefaulted(Cash cash); // Provide this.
 extern XXHotel hotelOfXXs;
 
-  
+extern const size_t billableXXSize;
+

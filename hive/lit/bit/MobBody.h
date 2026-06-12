@@ -20,6 +20,7 @@ typedef  union {
 } PhyData;
 
 typedef struct {
+  Ix nick;
   char phylum;
   PhyData p;
 } MobBody;

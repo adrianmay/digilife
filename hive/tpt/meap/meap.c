@@ -39,9 +39,9 @@ static void markOnce(Ix i, void * p) {
   seen[*pB]=i;
 }
 
-static void checkNoDupes()
+static void checkNoDupes() //TODO: reinstate this
 {
-  return;
+  return; 
   memset(seen, BAD_INDEX, sizeof(seen));
   forAll(markOnce);
 }
@@ -135,17 +135,12 @@ static bool insert(Tocks expiry, Ix hint, XXIx * pI) {
   return false;
 }
 
-static bool editTocksWhenLocked(XXIx iCur, Score when) {
+static bool editTocks(XXIx iCur, Score when) {
   //printf("editTocksWhenLocked: i=%d, when=%d\n", iCur.i, when);
   pileOfXXs.get(iCur)->tocks = when;
   siftDown(iCur);
   bool res = siftUp(iCur);
   checkNoDupes();
-  return res;
-}
-
-static bool editTocksTakingLock(XXIx iCur, Score when) {
-  bool res = editTocksWhenLocked(iCur, when);
   return res;
 }
 
@@ -229,5 +224,4 @@ static Ix size(void) {  return pileOfXXs.getUsr(); }
 static bool open(void) { return pileOfXXs.open(); }
 static void close(FATE f) { pileOfXXs.close(f); }
 
-XXMeap meapOfXXs = { open, close, insert, editTocksWhenLocked, editTocksTakingLock
-                   , erase, chomp, checkOrdered, forAll, size, show };
+XXMeap meapOfXXs = {open, close, insert, editTocks ,erase, chomp, checkOrdered,size, show };

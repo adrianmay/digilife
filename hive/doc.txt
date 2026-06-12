@@ -5,75 +5,78 @@ SYSTEM DIAGRAM
 <mutex>
 
 
-| LEVEL   | DESCRIPTION        | DATA/HEADER       | FUNCTIONS     
-+---------+--------------------+-------------------+-------------------------------------------------------------------------------------------------------
-|         |                    | cyclesPerTock     | nofifyCycles              
-| globals |                    | tockPrice         |               
-|         |                    | tocksNow          |   If tocks advanced 
-|         |                    | untockedCycles    |     then call raid 
-|         |                    |                   |      on both hotels                               
-|         |                    |                   |               
-+---------+--------------------+-------------------+-------------------------------------------------------------------------------------------------------
-|         |                    |                   | <alloc>                       | <free>                     |
-|         | Allocator with     | Any, but first 32 |                               |                            |
-| pile    | fixed block        | bits have rules.  | Returns ix and pointer        | Takes ix.                  |
-|         | size. Has          |                   | and whether recycled or not.  | Sets first bit to 1.       |
-|         | GP "usr" field.    |                   | Sets first 32 bits to 0.      | Uses rest of first 32 bits |
-|         |                    |                   | Caller must keep first bit =0 | for free list.             |
-|         |                    |                   | cos =1 means free block.      |                            |
-|         |                    |                   |                               |                            |
-+---------+--------------------+-------------------+-------------------------------------------------------------------------------------------------------
-|         |                    |                   | <insert(expiry, idx)>         | remove_           | <chomp(threshold)>     | editTocks
-|         | Min heap in a      | Bomb:             |                               |                   |                        |           
-| meap    | pile. Doesn't      |   expiry time     | Might alloc (in bulk?).       | Swap with last.   | If extinct return so.  | Reorder meap                
-|         | call free. Dense.  |   Index (of block | usr++.                        | usr--.            | If head < threshold:   |
-|         | Uses usr as len.   |   in related      | Put new element at end.       | Sift.             |   remove_              |
-|         |                    |   pile.)          | Sift.                         | Don't free!       |   return idx           |
-|         |                    |                   | Return final idx and          |                   | Else return idle.      |
-|         |                    |                   |   true if head changed.       |                   |                        |
-|         |                    |                   |                               |                   |                        |
-+---------+--------------------+-------------------+-------------------------------------------------------------------------------------------------------
-|         |                    |                   | admit(cash, bodyStuffer)     | raid               | payRent        | enrich(cash)      | rob()
-| hotel   | Combines a main    | Guest=nick,cash,  |                              |                    |                |   (maybe -ve)     |
-|         | pile and a meap    |   bombix,         | alloc.                       | loop:              | Update cash    |                   | (payRent???)
-|         | of bombs to        |                   | set nick, cash & lastPaid.   |   chomp            | and lastPaid.  | (payRent???)      | enrich(-cash)
-|         | charge memory      | Main pile:        | calc expiry. bodyStuffer.    |   onRentDefault    | onRentPaid.    | Add to cash.      | 
-|         | rent.              |   Guest,Body      | insert, set bomb ix in main. |   onHotelWillFree  |                | Recalc bomb and   |---------------
-|         |                    |                   | If zero cash, make god (no   |   free             | No need to     |  meap ordering    | chargeIfCan
-|         | Use tact.          | Bomb meap: bomb.  | bomb, -ve cash allowed.)     | until idle         | revise bomb.   |  using editTocks. |
-|         |                    |                   |                              |  or if exinct call |                |                   | 
-|         |                    | No mutex needed.  |                              |  onXXHotelExtinct  |                | Raid if poorer.   |
-|         |                    |                   |                              |                    |                |                   |
-|         |                    |                   |                              |                    |                |                   |
-+---------+--------------------+-------------------+-------------------------------------------------------------------------------------------------------
-|         |                    |                   | play(cash, weight,            | choose         | onHotelWillFree   | no need to cancel
-| raffle  | Holds tickets of   | Rafle: weights:   |      ticketStuffer)           |                |                   |
-|         | different weights  |   self            |                               | <roll, find,   | onRaffleWillFree  |
-|         | in a hotel         |   left subtree    | rent(cash,                    |   idle check   |                   |
-|         | and chooses at     |   right subtree   |      {if ! recycled:          |   or choose    |                   |
-|         | random.            |                   |         l=r=s=0               |   again.       |                   |
-|         |                    | hotel body =      |       ticketStuffer})         |   set s=0,     |                   |
-|         |                    |   Rafle,Ticket    | <set weight, propUp>          |   propUp>      |                   |
-|         |                    |                   |                               |  onChosen.     |                   |
-|         |                    |                   |                               |  rob.          |                   |
-|         |                    |                   |                               |                |                   |
-+---------+--------------------+-------------------+-------------------------------------------------------------------------------------------------------
-|         |                    |                 | spawn(cash, benefactor,   | post(cash, bid, rcvr, sndr, |  onMsgRaffleWillFree       | workerThread
-| tank    | Combines a hotel   | (Tact=Ix,Nick)  |       bodyStuffer)        |      payloadStuffer)        |                            |
-|         | of mobs and        |                 |                           |                             |  if !runMe return          | until shouldQuit:
-|         | a raffle of        |                 |                           | chargeIfCan(sndr, cash):    |  payRent                   |   choose
-|         | messages. Asserts  | Mob: code       | chargeIfCan(bftr):        |   calcWeight                |  <Make sure rent won't be  |
-|         | double entry       |                 |   rent(cash, bodyStuffer) |   play(cash, weight,        |  exhausted before bid is.  |
-|         | accounting and     | Msg: cpuBid,    |                           |        {set bid,rcvr,sndr   |  Atomically mark running   |
-|         | access rights.     |   tacts: sndr   |---------------------------|         payloadStuffer})    |  which blocks enrich.>     |
-|         | Makes some gods    |   & rcvr        | transfer                  |                             |                            |
-|         | if virgin.         |                 |                           |                             |                            |
-|         |                    |                 |---------------------------|                             |                            |
-|         |                    |                 | onChosen                  |                             |----------------------------|
-|         |                    |                 |                           |                             |  onMobHotelWillFree        |    
-|         |                    |                 | set runMe                 |                             |    terminate               |    
-|         |                    |                 |                           |                             |                            |
-+---------+--------------------+-------------------+-------------------------------------------------------------------------------------------------------
+| LEVEL   | DESCRIPTION       | DATA/HEADER       | THREADING           | FUNCTIONS     
++---------+-------------------+-------------------+---------------------+-------------------------------------------------------------------------------------------------------
+|         |                   | cyclesPerTock     |                     | nofifyCycles              
+| globals |                   | tockPrice         |                     |               
+|         |                   | tocksNow          |                     |   If tocks advanced 
+|         |                   | untockedCycles    |                     |     then call onTocks 
+|         |                   |                   |                     |     which will raid
+|         |                   |                   |                     |     both hotels.
+|         |                   |                   |                     |               
++---------+-------------------+-------------------+---------------------+-------------------------------------------------------------------------------------------------------
+|         |                   |                   |                     | <alloc>                       | <free>                     | XX * get(Ix)
+|         | Allocator with    |                   |  Not having a       |                               |                            |
+| pile    | fixed block       |                   |  locked `with` cos  | Returns ix and pointer        | Takes ix.                  | 
+|         | size. Has         |                   |  of efficiency. So  | and whether recycled or not.  |                            | 
+|         | GP "usr" field.   |                   |  caller beware.     |                               | Uses first 32 bits         | 
+|         |                   |                   |                     |                               | for free list.             | 
+|         |                   |                   |                     |                               |                            |
+|         |                   |                   |                     |                               |                            |
++---------+-------------------+-------------------+---------------------+-------------------------------------------------------------------------------------------------------
+|         |                   |                   |                     | <insert(expiry, idx)>         | remove_           | <chomp(threshold)>     | <editTocks>
+|         | Min heap in a     | Bomb:             | Remove is private.  |                               |                   |                        |           
+| meap    | pile. Doesn't     |   expiry time     | insert, chomp and   | Might alloc (in bulk?).       | Swap with last.   | If extinct return so.  | Reorder meap                
+|         | call free. Dense. |   Index (of block |  editTocks are      | usr++.                        | usr--.            | If head < threshold:   |
+|         | Uses usr as len.  |   in related      |  locked.            | Put new element at end.       | Sift.             |   remove_              |
+|         |                   |   pile.)          |                     | Sift.                         | Don't free!       |   return idx           |
+|         |                   |                   |                     | Return final idx and          |                   | Else return idle.      |
+|         |                   |                   |                     |   true if head changed.       |                   |                        |
+|         |                   |                   |                     |                               |                   |                        |
++---------+-------------------+-------------------+---------------------+-------------------------------------------------------------------------------------------------------
+|         |                   |                   |                     | admit(cash, bodyStuffer)     | raid                | collectRent   | enrich(cash)      | rob()
+| hotel   | Combines a main   | Guest=nick,cash,  | No mutex here.      |                              |                     |               |   (maybe -ve)     |
+|         | pile and a meap   |   bombix,         | Can safely add      | alloc.                       | Loop:               | Update cash   |                   | (payRent???)
+|         | of bombs to       |                   | something "passive" | Set nick, cash & lastPaid.   |   chomp             | and lastPaid. | (payRent???)      | enrich(-cash)
+|         | charge memory     | Main pile:        | to the main pile    | Calc expiry. bodyStuffer.    |   abort if cash<0   | onRentPaid or | Add to cash.      | 
+|         | rent.             |   Guest,Body      | before the meap.    | insert, set bomb ix in main. |   onXXHotelGoDie    |   defaulted.  | Recalc bomb and   |---------------
+|         |                   |                   |                     | If zero cash, make god (no   |    nXXHotelGoDie    | No need to    |  meap ordering    | chargeIfCan
+|         | Use tact.         | Bomb meap: bomb.  |                     | bomb, -ve cash allowed.)     | until idle          | revise bomb.  |  using editTocks. |
+|         |                   |                   |                     |                              |  or if exinct call  |               |                   | 
+|         |                   | No mutex needed.  |                     |                              |  onXXHotelExtinct   |               | Raid if poorer.   |
+|         |                   |                   |                     |                              |                     |               |                   |
+|         |                   |                   |                     |                              |                     |               |                   |
++---------+-------------------+-------------------+---------------------+-------------------------------------------------------------------------------------------------------
+|         |                   |                   |                     | play(cash, weight,      | choose          | onXXHotelGoDie    | no need to cancel
+| raffle  | Holds tickets of  | Rafle: weights:   | admit is safe cos   |      ticketStuffer)     |                 |                   |
+|         | different weights |   self            |  recycled has s=0   |                         | <roll, find,    | onXXRaffleGoDie   |
+|         | in a hotel        |   left subtree    |  and virgin isn't   | admit(cash,             |   if onChosen:  |                   |
+|         | and chooses at    |   right subtree   |  seen before propUp |      {if ! recycled:    |     set s=0     |                   |
+|         | random.           |                   |                     |         l=r=s=0         |     propUp>     |                   |
+|         |                   | hotel body =      |                     |       ticketStuffer})   |     rob         |                   |
+|         | Free blocks are   |   Rafle,Ticket    |                     | <set s, propUp>         |                 |                   |
+|         | nodes! s=0 and    |                   |                     |                         |                 |                   |
+|         | l,r are preserved.|                   |                     | Or, can set l,r=0 after |                 |                   |
+|         |                   |                   |                     | bodyStuffer but before  |                 |                   |
+|         |                   |                   |                     | propUp & s>0 if virgin. |                 |                   |
+|         |                   |                   |                     |                         |                 |                   |
++---------+-------------------+-------------------+---------------------+-------------------------------------------------------------------------------------------------------
+|         |                   |                   |                     | spawn(cash, benefactor,   | post(cash, bid, rcvr, sndr, | onMsgRaffleGoDie            | workerThread
+| tank    | Combines a hotel  | (Tact=Ix,Nick)    |                     |       bodyStuffer)        |      payloadStuffer)        |                             |
+|         | of mobs and       |                   |                     |                           |                             | if runMe:                   | until shouldQuit:
+|         | a raffle of       |                   |                     |                           | chargeIfCan(sndr, cash):    |   payRent                   |   choose
+|         | messages. Asserts | Mob: code         | Mob busy/bankrupt   | chargeIfCan(bftr):        |   calcWeight                |   <Mark busy, not bankrupt> |
+|         | double entry      |                   |   atomic.           |   admit(cash, bodyStuffer)|   play(cash, weight,        |   run mob                   |
+|         | accounting and    | Msg: cpuBid,      |                     |                           |        {set bid,rcvr,sndr   |   if mob <set idle,         |
+|         | access rights.    |   tacts: sndr     |                     |---------------------------|         payloadStuffer})    |           ret bankrupt>:    |
+|         | Makes some gods   |   & rcvr          |                     | ShouldRob onChosen(msg)   |                             |       free it               |
+|         | if virgin.        |                   |                     |                           |-----------------------------| free msg                    |
+|         |                   |                   |                     | If nick mismatch:         | transfer                    |                             |
+|         |                   |                   |                     |   return true             |                             |-----------------------------|
+|         |                   |                   |                     | If mob busy: return false |                             | onMobHotelGoDie             |
+|         |                   |                   |                     | Set runMe, return true    |                             |   <If idle: free self       |
+|         |                   |                   |                     |                           |                             |   Else: mark bankrupt>      |
++---------+-------------------+-------------------+---------------------+-------------------------------------------------------------------------------------------------------
 
 How to read this code.
 

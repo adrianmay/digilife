@@ -7,7 +7,7 @@
 #include "globals/h.h"
 #include "h.h"
 
-void onMobKilled(MobIx i) {
+void onMobHotelGoDie(MobIx i) {
   pileOfMobs.free(i);
 }
 
@@ -40,7 +40,7 @@ void showTank() {
 
 MobTact tact(MobIx i) {
   Mob * pMob = hotelOfMobs.get(i);
-  Ix nick = pMob->rent.nick;
+  Ix nick = pMob->body.nick;
   if (nick & 0x80000000) abort();
   return (MobTact) {i, nick};
 }
@@ -51,9 +51,9 @@ bool checkTact(MobTact t) {
     return false;
   }
   Mob * p = hotelOfMobs.get(t.i);
-  bool res = t.n == p->rent.nick;
+  bool res = t.n == p->body.nick;
   if (!res) {
-    printf("Tact doesn't match mob's nick: %d\n", p->rent.nick);
+    printf("Tact doesn't match mob's nick: %d\n", p->body.nick);
     showMobTact(t);
   }
   return res;
@@ -65,7 +65,7 @@ void checkTactAbort(MobTact t) {
 
 Mob * derefTact(MobTact t) {
   Mob * p = hotelOfMobs.get(t.i);
-  if (p->rent.nick == t.n)
+  if (p->body.nick == t.n)
     return p;
   else 
     return 0;
@@ -78,7 +78,7 @@ MobTact
 MobTact makeGod() {
   Mob * p;
   MobIx iChild = hotelOfMobs.admit(0, 0, &p, 0);
-  return (MobTact){iChild, p->rent.nick};
+  return (MobTact){iChild, p->body.nick};
 }
 
 MobTact spawn(Cash cash, MobTact tParent, WithMobBody train) {

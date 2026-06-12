@@ -5,14 +5,14 @@
 #include "ZZ_pile/1.h"
 
 typedef void (*WithXXTicket)(XXTicket * pTicket);
-typedef void (*WithXXTicketAndCash)(XXTicket * pTicket, Cash cash);
+typedef bool (*OnChosen)(XXTicket * pTicket);
 
 typedef bool   (*XXRaffleOpen)   (void);
 typedef void   (*XXRaffleClose)  (FATE fate);
 typedef XXIx   (*XXRafflePlay)  (Cash cash, Weight w, WithXXTicket stuff);
 typedef Cash   (*XXRaffleCancel) (XXIx i);
 typedef bool   (*XXRaffleEmpty)  (void);
-typedef bool   (*XXRaffleDraw)   (WithXXTicketAndCash enjoyTicket);
+typedef bool   (*XXRaffleDraw)   (OnChosen);
 typedef void   (*XXRaffleShow)   (void);
 typedef Ix     (*XXRaffleCount)  (void);
 typedef bool   (*XXRaffleCheck)  (void);
@@ -33,6 +33,8 @@ typedef struct {
   XXRaffleQuit quit;
 } XXRaffle;
 
+extern void onXXRaffleGoDie(XXIx); // Provide this.
+                                  
 extern XXRaffle raffleOfXXs;
 
 

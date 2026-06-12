@@ -7,6 +7,8 @@
 #include "globals/h.h"
 #include "h.h"
 
+extern void onMsgRaffleGoDie(MsgIx i) { (void)i; }
+
 void onMobHotelGoDie(MobIx i) {
   pileOfMobs.free(i);
 }

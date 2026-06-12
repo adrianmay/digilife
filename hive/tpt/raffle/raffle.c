@@ -140,12 +140,13 @@ static XXIx play(Cash cash, Weight w, WithXXTicket stuffTicket) {
 }
 
 void onXXHotelGoDie(XXIx i) {
-  XX * p = pileOfXXs.get(i);
-  XXRafle * pRaf = &p->body.raffle;
-  if (pRaf->s == 0) abort();
-  Weight w = pRaf->s;
-  pRaf->s = 0;
-  propagateWeightUp(i, -w);
+  onXXRaffleGoDie(i);
+  //XX * p = pileOfXXs.get(i);
+  //XXRafle * pRaf = &p->body.raffle;
+  //if (pRaf->s == 0) abort();
+  //Weight w = pRaf->s;
+  //pRaf->s = 0;
+  //propagateWeightUp(i, -w);
 }
 
 static Cash cancel_(XXIx i) {
@@ -163,23 +164,26 @@ static Cash cancel(XXIx i) {
 }
 
 // Assumes there are tickets. Look out of onXXsExtinct
-static void drawBelow(XXIx i, WithXXTicketAndCash enjoyTicket) {
+static void drawBelow(XXIx i, OnChosen onChosen) {
   XX * pB = pileOfXXs.get(i);
   XXRafle * pRaf = &pB->body.raffle;
   Weight target = peep();
   if (pRaf->l > 0 && target < pRaf->l) {
     push(target); 
-    drawBelow(left(i), enjoyTicket);
+    drawBelow(left(i), onChosen);
     pop();
     return; 
   }
   target -= pRaf->l;
   if (target < pRaf->s) {
-    enjoyTicket(&pB->body.ticket, pB->rent.cash);
-    if (pRaf->s == 0) abort();
+    if (onChosen(&pB->body.ticket)) {
+      Weight w = pRaf->s;
+      pRaf->s = 0;
+      propagateWeightUp(i, -w);
+      unlock();  
+      hotelOfXXs.rob(i);
+    }
     //printf("In drawBelow, drew:\n");
-    cancel_(i);
-    if (pRaf->s != 0) abort();
     //printf("Returning cash=%ld from drawBelow\n", cash);
     return;
   }
@@ -190,23 +194,23 @@ static void drawBelow(XXIx i, WithXXTicketAndCash enjoyTicket) {
     exit(10);
   }
   push(target);
-  drawBelow(right(i), enjoyTicket);
+  drawBelow(right(i), onChosen);
   pop();
 }
 
-static void drawAssumeNotEmpty(WithXXTicketAndCash enjoyTicket) {
+static void drawAssumeNotEmpty(OnChosen onChosen) {
   XXIx i0 = (XXIx){0};
   check(); 
   Weight tw = totWeightI(i0);
   uint64_t w = randIntBelow(tw);
   //printf("Rolled w=%ld of %ld\n", w, tw);
   push(w);
-  drawBelow(i0, enjoyTicket);
+  drawBelow(i0, onChosen);
   pop();
 }
 
 // If this returns false we're closing down the program
-static bool draw(WithXXTicketAndCash enjoyTicket) {
+static bool draw(OnChosen onChosen) {
   lock();
   checkM("draw 1");
   if (gottaQuitXX)    { gottaQuitXX=false; unlock(); return false; }
@@ -215,9 +219,8 @@ static bool draw(WithXXTicketAndCash enjoyTicket) {
   }
   if (gottaQuitXX)    { gottaQuitXX=false; unlock(); return false; }
   // Can't be empty
-  drawAssumeNotEmpty(enjoyTicket);
+  drawAssumeNotEmpty(onChosen); //unlocks
   checkM("draw 2");
-  unlock();
   return true;
 }
 

@@ -72,8 +72,8 @@ int main(int argc, char **argv) {
 //    perf() &&
 //    pile() &&
 //    meap() &&
-    hotel() &&
-//    raffle() &&
+//    hotel() &&
+    raffle() &&
 //    tank() &&
 //    exec() &&
 //    equi() &&

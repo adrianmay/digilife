@@ -9,6 +9,7 @@
 
 void onMessRentCollected(Cash cash) { }
 void onMessRentDefaulted(Cash cash) { }
+extern void onMessRaffleGoDie(MessIx i) { (void)i; }
 
 void showMessTicket(MessTicket * p) {
   printf("type=%c\n", p->type);
@@ -62,8 +63,9 @@ void stuff2(void) {
   //raffleOfMesss.show();
 }
 
-void enjoy1(MessTicket * pTicket, Cash remaining) {
-  (void)pTicket; (void)remaining;
+bool enjoy1(MessTicket * pTicket) {
+  (void)pTicket;
+  return true;
 }
 
 void empty(void) {
@@ -80,13 +82,12 @@ bool ch() {
 }
 
 int h, t, v, e;
-void enjoy2(MessTicket * pT, Cash remaining) {
-  (void)remaining;
+bool enjoy2(MessTicket * pT) {
   if (pT->type=='H') h++;
   else if (pT->type=='T') t++;
   else if (pT->type=='V') v++;
   else e++;
-
+  return true;
 }
 
 void sample(void) {
@@ -134,17 +135,10 @@ bool testBlock() {
   return true;
 }
 
-// bool testRecycling() {
-//   MessTicket tick;
-//   Cash cash;
-//   Weight w;
-//   raffleOfMesss.play(5000, 0, w, &tkt);
-// }
-
 bool testRaffle() {
   stuff1(); ch(); sample(); ch(); empty();
-//  stuff2(); ch(); sample(); ch(); empty();
-//  testBlock();
+  stuff2(); ch(); sample(); ch(); empty();
+  testBlock();
   return true;
 }
 

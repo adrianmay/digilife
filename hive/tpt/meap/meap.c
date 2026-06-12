@@ -15,6 +15,7 @@ static void show(void) {
 static Ix bombee;
 
 static void bombeeSafe(Ix i, void * p) { 
+  return;
   Ix * pB = (Ix *) p;
   if (*pB == bombee) {
     printf("In meap: Another bomb for XX %d\n", bombee);

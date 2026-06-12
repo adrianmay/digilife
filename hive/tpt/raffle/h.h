@@ -5,7 +5,7 @@
 #include "ZZ_pile/1.h"
 
 typedef void (*WithXXTicket)(XXTicket * pTicket);
-typedef bool (*OnChosen)(XXTicket * pTicket);
+typedef bool (*OnChosen)(XXIx i, XXTicket * pTicket);
 
 typedef bool   (*XXRaffleOpen)   (void);
 typedef void   (*XXRaffleClose)  (FATE fate);

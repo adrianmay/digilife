@@ -51,7 +51,7 @@ SYSTEM DIAGRAM
 | raffle  | Holds tickets of  | Rafle: weights:   | admit is safe cos   |      ticketStuffer)     |                 |                   |
 |         | different weights |   self            |  recycled has s=0   |                         | <roll, find,    | onXXRaffleGoDie   |
 |         | in a hotel        |   left subtree    |  and virgin isn't   | admit(cash,             |   if onChosen:  |                   |
-|         | and chooses at    |   right subtree   |  seen before propUp |      {if ! recycled:    |     set s=0     |                   |
+|         | and chooses at    |   right subtree   |  seen before propUp |       {if ! recycled:   |     set s=0     |                   |
 |         | random.           |                   |                     |         l=r=s=0         |     propUp>     |                   |
 |         |                   | hotel body =      |                     |       ticketStuffer})   |     rob         |                   |
 |         | Free blocks are   |   Rafle,Ticket    |                     | <set s, propUp>         |                 |                   |
@@ -69,14 +69,24 @@ SYSTEM DIAGRAM
 |         | double entry      |                   |   atomic.           |   admit(cash, bodyStuffer)|   play(cash, weight,        |   run mob                   |
 |         | accounting and    | Msg: cpuBid,      |                     |                           |        {set bid,rcvr,sndr   |   if mob <set idle,         |
 |         | access rights.    |   tacts: sndr     |                     |---------------------------|         payloadStuffer})    |           ret bankrupt>:    |
-|         | Makes some gods   |   & rcvr          |                     | ShouldRob onChosen(msg)   |                             |       free it               |
+|         | Makes some gods   |   & rcvr          |                     | onChosen(msg) ->shouldRob |                             |       free it               |
 |         | if virgin.        |                   |                     |                           |-----------------------------| free msg                    |
 |         |                   |                   |                     | If nick mismatch:         | transfer                    |                             |
-|         |                   |                   |                     |   return true             |                             |-----------------------------|
-|         |                   |                   |                     | If mob busy: return false |                             | onMobHotelGoDie             |
-|         |                   |                   |                     | Set runMe, return true    |                             |   <If idle: free self       |
-|         |                   |                   |                     |                           |                             |   Else: mark bankrupt>      |
-+---------+-------------------+-------------------+---------------------+-------------------------------------------------------------------------------------------------------
+|         |                   |                   |                     |   return true             |                             |----------------------------------------+
+|         |                   |                   |                     | If mob busy: return false |                             | onMobHotelGoDie                        |
+|         |                   |                   |                     | Set runMe, return true    |                             |   <If idle: mark busy, free self       |
+|         |                   |                   |                     |                           |                             |   Else: mark bankrupt>                 |
++---------+-------------------+-------------------+---------------------+--------------------------------------------------------------------------------------------------+
+
+RUN SIGNALLING:
+  Mob has atomic MsgIx toRun = BAD_INDEX
+  onChosen: return comp_exch(torun, BAD_INDEX, iMsg) so if it fails the msg is presered
+  onMobDie: old = exch(torun, BAD_INDEX-1) 
+            if old==BAD_INDEX: free mob
+  onMsgDie: if load(torun):
+              run mob
+              comp_exch(torun, iMsg, BAD_INDEX) || { assert iMsg==BAD_INDEX-1; free mob }
+            free msg
 
 How to read this code.
 

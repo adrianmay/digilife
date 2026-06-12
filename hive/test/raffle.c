@@ -63,7 +63,7 @@ void stuff2(void) {
   //raffleOfMesss.show();
 }
 
-bool enjoy1(MessTicket * pTicket) {
+bool enjoy1(MessIx i, MessTicket * pTicket) {
   (void)pTicket;
   return true;
 }
@@ -82,7 +82,7 @@ bool ch() {
 }
 
 int h, t, v, e;
-bool enjoy2(MessTicket * pT) {
+bool enjoy2(MessIx i, MessTicket * pT) {
   if (pT->type=='H') h++;
   else if (pT->type=='T') t++;
   else if (pT->type=='V') v++;

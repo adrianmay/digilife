@@ -3,20 +3,16 @@
 #include "bit/MsgTicket.h"
 #include "bit/MobBody.h"
 
-void onMobsExtinct(void) {}
-void onMsgsExtinct(void) {}
 void onThingsExtinct(void) {}
 void onTock() {}
 
 void showMobBody(MobIx i, MobBody * p) {
   printf("code=<binary>\n");
-
 }
 
 void showMsgTicket(MsgTicket * p) {
   printf("cpuBid=%lf, rcvr=%d\n", p->cpuBid, p->rcvr.i.i);
 }
-
 
 int main(int argc, char **argv) {
   int res = parseArgs(argc, argv);

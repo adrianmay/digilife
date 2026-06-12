@@ -174,7 +174,7 @@ static void drawBelow(XXIx i, OnChosen onChosen) {
   }
   target -= pRaf->l;
   if (target < pRaf->s) {
-    if (onChosen(&pB->body.ticket)) {
+    if (onChosen(i, &pB->body.ticket)) {
       Weight w = pRaf->s;
       pRaf->s = 0;
       propagateWeightUp(i, -w);

@@ -8,39 +8,8 @@
 #include "misc/h.h"
 #include "h.h"
 
-extern void onMsgRaffleGoDie(MsgIx i) { 
-  Msg * pMsg = pileOfMsgs.get(i);  
-}
-
-void onMobHotelGoDie(MobIx i) {
-  pileOfMobs.free(i);
-}
-
-void onMobRentCollected(Cash cash) {
-  hotelOfMobs.enrich(tCostsMem.i, cash);
-}
-
-void onMobRentDefaulted(Cash cash) {
-  hotelOfMobs.enrich(tRentDefaults.i, cash);
-}
-
-void onMsgRentCollected(Cash cash) {
-  hotelOfMobs.enrich(tCostsMem.i, cash);
-}
-
-void onMsgRentDefaulted(Cash cash) {
-  hotelOfMobs.enrich(tRentDefaults.i, cash);
-}
-
-Weight bidToWeight(CpuBid bid) {return 10000000*bid;}
-
 void showMobTact(MobTact t) {
   printf("Tact {%d,%x}\n", t.i.i, t.n);
-}
-
-void showTank() {
-  hotelOfMobs.show();
-  raffleOfMsgs.show();
 }
 
 MobTact tact(MobIx i) {
@@ -78,6 +47,29 @@ Mob * derefTact(MobTact t) {
 MobTact 
   tInvestor, tSales, tCostsCpu, tCostsMem,
   tRentDefaults, tUndeliverables;
+
+void onMobRentCollected(Cash cash) {
+  hotelOfMobs.enrich(tCostsMem.i, cash);
+}
+
+void onMobRentDefaulted(Cash cash) {
+  hotelOfMobs.enrich(tRentDefaults.i, cash);
+}
+
+void onMsgRentCollected(Cash cash) {
+  hotelOfMobs.enrich(tCostsMem.i, cash);
+}
+
+void onMsgRentDefaulted(Cash cash) {
+  hotelOfMobs.enrich(tRentDefaults.i, cash);
+}
+
+Weight bidToWeight(CpuBid bid) {return 10000000*bid;}
+
+void showTank() {
+  hotelOfMobs.show();
+  raffleOfMsgs.show();
+}
 
 MobTact makeGod() {
   Mob * p;
@@ -149,9 +141,48 @@ void closeTank(FATE f) {
   closeGlobals(f);
 }
 
-void onMobsExtinct() {}
+static bool shouldQuit = false;
+void onMobsExtinct() { shouldQuit = true; }
 void onMsgsExtinct() {}
 
-void workerThread() {
-  
+
+bool onChosen(MsgIx i, MsgTicket * pTicket) {
+  MobTact tMob = pTicket->rcvr;
+  Mob * pMob = derefTact(tMob);
+  MsgIx exp = badMsgIx;
+  return atomic_compare_exchange_strong(&pMob->body.todo, &exp, i);
 }
+
+extern void onMsgRaffleGoDie(MsgIx i) { 
+  Msg * pMsg = pileOfMsgs.get(i);  
+  MobTact tMob = pMsg->body.ticket.rcvr;
+  Mob * pMob = derefTact(tMob);
+  if (pMob) {
+    MsgIx todo = atomic_load(&pMob->body.todo);
+    if (todo.i == i.i) {
+      hotelOfMobs.collectRent(tMob.i);
+      run(pMob, pMsg);
+      MsgIx exp = i;
+      if (!atomic_compare_exchange_strong(&pMob->body.todo, &exp, badMsgIx)) {
+        if (exp.i != BAD_INDEX-1) abort();  
+        pileOfMobs.free(tMob.i);
+      }
+    } 
+  }
+  pileOfMsgs.free(i);
+}
+
+void onMobHotelGoDie(MobIx i) {
+  Mob * pMob = pileOfMobs.get(i);
+  MsgIx todo = atomic_exchange(&pMob->body.todo, (MsgIx){BAD_INDEX-1});
+  if (todo.i == BAD_INDEX) 
+    pileOfMobs.free(i);
+}
+
+void workerThread() {
+  while (!shouldQuit) raffleOfMsgs.draw(onChosen);
+
+}
+
+
+

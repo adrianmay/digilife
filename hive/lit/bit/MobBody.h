@@ -1,4 +1,6 @@
+#include <stdatomic.h>
 #include "Mob_pile/1.h"
+#include "Msg_pile/1.h"
 
 typedef struct {
   int effort; // Old thing for testing
@@ -25,7 +27,7 @@ typedef  union {
 
 typedef struct {
   Nick nick;
-  uint8_t flags;
+  _Atomic MsgIx todo; // Msg running now or soon; BAD_INDEX when idle; BAD_INDEX-1 to free mob when msg finishes
   uint8_t phylum;
   PhyData p;
 } MobBody;

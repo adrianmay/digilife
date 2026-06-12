@@ -83,7 +83,7 @@ RUN SIGNALLING:
   onChosen: return comp_exch(torun, BAD_INDEX, iMsg) so if it fails the msg is presered
   onMobDie: old = exch(torun, BAD_INDEX-1) 
             if old==BAD_INDEX: free mob
-  onMsgDie: if load(torun):
+  onMsgDie: if load(torun)==MsgIx:
               run mob
               comp_exch(torun, iMsg, BAD_INDEX) || { assert iMsg==BAD_INDEX-1; free mob }
             free msg

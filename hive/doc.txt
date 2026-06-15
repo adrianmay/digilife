@@ -1,6 +1,15 @@
 
 Main loop:
-
+  Start worker threads which:
+    declare a core on the stack
+    loop:
+      reset the core
+      tell tank to choose a message, passing a runner function which:
+        already knows the core
+        takes an api plus mob, msg and global details
+        does whatever the mob code says with a time limit
+        returns the authorised and unauthorised cycles used
+      
 
 SYSTEM DIAGRAM
 ==============

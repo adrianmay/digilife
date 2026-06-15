@@ -1,3 +1,13 @@
+#include "h.h"
+
+void run(Mob * pMob, Msg * pMsg) {
+  (void)pMob;
+  (void)pMsg;
+}
+
+
+
+
 //     #include <stdatomic.h>
 //     #include <math.h>
 //     #include <string.h>

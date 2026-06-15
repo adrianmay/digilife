@@ -18,6 +18,6 @@ typedef void (*WithPayload)(MsgPayload * pPayload);
 bool openTank();
 void closeTank(FATE);
 void showTank(void);
+
 MobTact spawn(Cash cash, MobTact iParent, WithMobBody train);
 MsgIx post(Cash cash, CpuBid bid, MobTact sndr, MobTact rcvr, WithPayload stuff);
-DeliverResult deliver(Runner runner, Msg * pMsg);

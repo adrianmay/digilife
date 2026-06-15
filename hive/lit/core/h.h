@@ -1,4 +1,6 @@
+#include "Msg_raffle/h.h"
 
+void run(Mob * pMob, Msg * pMsg);
 // #include "bit/MsgTicket.h"
 // 
 // extern FILE * outfile; // Open and close this

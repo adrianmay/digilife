@@ -1,5 +1,8 @@
-###################################################
 
+Hide all but tank from core. No callbacks into pile or raffle.  
+Better double entry enforcement
+Core, equilibria
+Test tank inc. double entry.
 
 ERAS
 

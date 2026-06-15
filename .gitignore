@@ -2,7 +2,7 @@
 Hive
 Test
 tags
-core.*
+./core.*
 tmp
 *.pile
 *.vim

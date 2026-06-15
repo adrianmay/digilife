@@ -6,6 +6,7 @@
 #include "Msg_raffle/h.h"
 #include "globals/h.h"
 #include "misc/h.h"
+#include "core/h.h"
 #include "h.h"
 
 void showMobTact(MobTact t) {

@@ -1,14 +1,14 @@
-#pragma GCC diagnostic ignored "-Wunused-function"
-#include <unistd.h>
-#include <stdio.h>
-#include <string.h>
-#include "types.h"
-#include "test.h"
-#include "misc/h.h"
-#include "globals/h.h"
-#include "exec/h.h"
-#include "Msg_raffle/h.h"
-#include "Mob_hotel/h.h"
+// #pragma GCC diagnostic ignored "-Wunused-function"
+// #include <unistd.h>
+// #include <stdio.h>
+// #include <string.h>
+// #include "types.h"
+// #include "test.h"
+// #include "misc/h.h"
+// #include "globals/h.h"
+// #include "core/h.h"
+// #include "Msg_raffle/h.h"
+// #include "Mob_hotel/h.h"
 
 // typedef struct {
 //   char name[100]; B setup;

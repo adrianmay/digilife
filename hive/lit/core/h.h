@@ -1,6 +1,16 @@
-#include "Msg_raffle/h.h"
+#include "bit/MobBody.h"
+#include "bit/MsgTicket.h"
+#include "tank/h.h"
 
-void run(Mob * pMob, Msg * pMsg);
+typedef MobTact (*Spawn)(Cash cash, WithMobBody stuffBody);
+typedef MsgIx (*Post)(Cash cash, CpuBid bid, MobTact tR, WithPayload stuffPayload);
+typedef struct {
+  Spawn spawn;
+  Post post;
+} Api;
+
+void run(Api api, MobTact tMe, Cash mobCash, Cash MsgCash, MobBody * pMob, MsgTicket * pMsg);
+
 // #include "bit/MsgTicket.h"
 // 
 // extern FILE * outfile; // Open and close this

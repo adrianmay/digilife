@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdatomic.h>
 #include "Mob_pile/1.h"
 #include "Msg_pile/1.h"
@@ -8,12 +10,10 @@ typedef struct {
 } PhyA;
 
 typedef struct {
-  int spawnThresh; // ito cash
-  Cash pay; 
+  Cash spawnThresh; // ito cash
+  Cash payMsg; 
   double bid; 
-  double fractionMsgOfMobSize;
   char pad[96];
-  // Children start with same cash as Adam. 
 } PhyB;
 
 typedef  union {
@@ -21,9 +21,7 @@ typedef  union {
   PhyB b;
 } PhyData;
 
-#define MOB_FLAG_RUNME    1
-#define MOB_FLAG_BUSY     2
-#define MOB_FLAG_BANKRUPT 4
+enum {PHY_ERROR, PHY_A, PHY_B};
 
 typedef struct {
   Nick nick;

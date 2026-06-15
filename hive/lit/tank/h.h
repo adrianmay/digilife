@@ -4,15 +4,17 @@
 #include "Msg_raffle/h.h"
 #include "bit/MsgTicket.h"
 
+//typedef WithXXBody WithXXBody;
+
 extern MobTact 
   tInvestor, tSales, tCostsCpu, tCostsMem,
   tRentDefaults, tUndeliverables;
 
-typedef int RunResult;
-typedef struct { bool ran; RunResult res; } DeliverResult;
-typedef struct { Cash cost; RunResult res; } CostAndResult;
+//typedef int RunResult;
+//typedef struct { bool ran; RunResult res; } DeliverResult;
+//typedef struct { Cash cost; RunResult res; } CostAndResult;
 
-typedef CostAndResult (*Runner)(Mob * pMob);
+//typedef CostAndResult (*Runner)(Mob * pMob);
 typedef void (*WithPayload)(MsgPayload * pPayload);
 
 bool openTank();

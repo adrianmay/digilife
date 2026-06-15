@@ -7,9 +7,9 @@ static bool init(void) { openTank();  return true; }
 
 static void cleanup(void) { closeTank(HIDE); }
 
-CostAndResult runner(Mob * pMob) {
-  return (CostAndResult) {1, 0};
-}
+//CostAndResult runner(Mob * pMob) {
+//  return (CostAndResult) {1, 0};
+//}
 
 void train1(MobBody * pMB) {
   pMB->phylum = 'a';

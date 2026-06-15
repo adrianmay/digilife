@@ -107,19 +107,19 @@ MsgIx post(Cash cash, CpuBid bid, MobTact tS, MobTact tR, WithPayload stuffPaylo
   return badMsgIx;
 }
 
-DeliverResult deliver(Runner runner, Msg * pMsg) {
-  MobTact tMob = pMsg->body.ticket.rcvr;
-  Mob * pMob = derefTact(tMob);
-  if (!pMob) { 
-    // TODO: Pay to intestate msg death account
-    return (DeliverResult) {false}; 
-  }
-  CostAndResult car = runner(pMob);
-  if (car.cost>0) { // Not overworked so give change to rcvr
-    hotelOfMobs.enrich(tMob.i, pMsg->rent.cash - car.cost);
-  }
-  return (DeliverResult){true, car.res};
-}
+// DeliverResult deliver(Runner runner, Msg * pMsg) {
+//   MobTact tMob = pMsg->body.ticket.rcvr;
+//   Mob * pMob = derefTact(tMob);
+//   if (!pMob) { 
+//     // TODO: Pay to intestate msg death account
+//     return (DeliverResult) {false}; 
+//   }
+//   CostAndResult car = runner(pMob);
+//   if (car.cost>0) { // Not overworked so give change to rcvr
+//     hotelOfMobs.enrich(tMob.i, pMsg->rent.cash - car.cost);
+//   }
+//   return (DeliverResult){true, car.res};
+// }
 
 void makeVirginTank() {
   tInvestor = makeGod();
@@ -158,11 +158,16 @@ extern void onMsgRaffleGoDie(MsgIx i) {
   Msg * pMsg = pileOfMsgs.get(i);  
   MobTact tMob = pMsg->body.ticket.rcvr;
   Mob * pMob = derefTact(tMob);
+  MobBody * pB = &pMob->body;
   if (pMob) {
     MsgIx todo = atomic_load(&pMob->body.todo);
     if (todo.i == i.i) {
       hotelOfMobs.collectRent(tMob.i);
-      run(pMob, pMsg);
+      MobTact spawn_(Cash c, WithMobBody st) { return spawn(c, tMob, st); }
+      MsgIx post_(Cash c, CpuBid bid, MobTact tR, WithPayload st) { return post(c, bid, tMob, tR, st); }
+      run( (Api){spawn_, post_}, tMob, 
+           pMob->rent.cash, pMsg->rent.cash, 
+           pB, &pMsg->body.ticket );
       MsgIx exp = i;
       if (!atomic_compare_exchange_strong(&pMob->body.todo, &exp, badMsgIx)) {
         if (exp.i != BAD_INDEX-1) abort();  
@@ -182,7 +187,6 @@ void onMobHotelGoDie(MobIx i) {
 
 void workerThread() {
   while (!shouldQuit) raffleOfMsgs.draw(onChosen);
-
 }
 
 

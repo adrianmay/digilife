@@ -1,12 +1,84 @@
+#include <setjmp.h>
+#include "misc/h.h"
 #include "h.h"
 
-void run(Mob * pMob, Msg * pMsg) {
-  (void)pMob;
-  (void)pMsg;
+
+typedef struct {
+//  pthread_t pid;
+  Cycles used;
+  Cycles limit;
+  jmp_buf jmpbuf;
+  int output;
+} Core;
+
+void stuffMsgPayload(MsgPayload * p) { (void)p; }
+
+
+Cash mutCashThresh(Cash c) {
+  double g = gaussian_random(1, 0.1);
+  return c * g;
+}
+
+CpuBid mutCpuBid(CpuBid bid) {
+  double g = gaussian_random(1, 0.1);
+  return bid * g;
+}
+
+Weight bidToWeight(CpuBid bid) {return 10000000*bid;}
+
+#define SLOWNESS 100
+
+void burn(Core * pC, Cycles c) {
+  pC->used += SLOWNESS*c;
+  CycleDiff remaining = pC->limit - pC->used;
+  if (remaining < 0)
+    longjmp(pC->jmpbuf, pC->used);
+}
+
+void runMob(Api api, MobTact tMe, Cash mobCash, Cash MsgCash, MobBody * pMB, MsgTicket * pMsg) {
+  if (pMB->phylum != PHY_B) abort();
+  PhyB * pB = &pMB->p.b;
+  burn(2);
+  if (mobCash > pB->spawnThresh) {
+    void stuffMobBody(MobBody * pCh) {
+      PhyB * pCB = &pCh->p.b;
+      pCB->spawnThresh = mutCashThresh(pB->spawnThresh);
+      burn(2);
+      pCB->payMsg = mutCashThresh(pB->payMsg);
+      burn(2);
+      pCB->bid = mutCpuBid(pB->bid);
+      burn(2);
+    }
+    MobTact tCh = api.spawn(mobCash/2 - pB->payMsg, stuffMobBody);
+    burn(20);
+    api.post(pB->payMsg, pB->bid, tCh, stuffMsgPayload);
+    burn(10);
+  }
+  api.post(pB->payMsg, pB->bid, tMe, stuffMsgPayload);
+  burn(10);
 }
 
 
 
+static bool shouldQuit = false;
+
+resetCore(Core * p) {
+  p->used = p->limit = p->output = 0;
+}
+
+void * workerThread(void * p) {
+  Core core;
+  while (!shouldQuit) {
+    draw
+    resetCore(&core);
+    int jmp = setjmp(core.jmpbuf);
+    if (jmp == 0) { //Try
+      runMob_(pC, pMob, iMob, pEnv);
+      notifyCycles(pC->used);
+    } else {  //Catch
+    }
+  }
+}
 
 //     #include <stdatomic.h>
 //     #include <math.h>

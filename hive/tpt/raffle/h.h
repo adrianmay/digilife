@@ -5,7 +5,7 @@
 #include "ZZ_pile/1.h"
 
 typedef void (*WithXXTicket)(XXTicket * pTicket);
-typedef bool (*OnChosen)(XXIx i, XXTicket * pTicket);
+typedef bool (*XXBIP)(XXIx i, XXTicket * pTicket);
 
 typedef bool   (*XXRaffleOpen)   (void);
 typedef XXIx   (*XXRafflePlay)   (Cash cash, Weight w, WithXXTicket stuff);
@@ -13,7 +13,7 @@ typedef void   (*XXRaffleEnrich) (XXIx iWho, Cash amt);
 typedef Cash   (*XXRaffleRob)    (XXIx i);
 typedef Cash   (*XXRaffleCancel) (XXIx i);
 typedef bool   (*XXRaffleEmpty)  (void);
-typedef bool   (*XXRaffleDraw)   (OnChosen);
+typedef bool   (*XXRaffleDraw)   (void);
 typedef void   (*XXRaffleClose)  (FATE fate);
 typedef void   (*XXRaffleShow)   (void);
 typedef Ix     (*XXRaffleCount)  (void);
@@ -38,6 +38,8 @@ typedef struct {
 } XXRaffle;
 
 extern void onXXRaffleGoDie(XXIx); // Provide this.
+extern bool onXXRaffleApprove(XXIx i, XXTicket * pTicket);
+extern void onXXRaffleConsume(XXIx i, XXTicket * pTicket);
                                   
 extern XXRaffle raffleOfXXs;
 

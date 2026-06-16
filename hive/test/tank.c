@@ -22,6 +22,7 @@ static bool init(void) {
 
 void survey() {
   printf("Mobs=%d, Msgs=%d\n", hotelOfMobs.count(), raffleOfMsgs.count());
+  //raffleOfMsgs.show();
 }
 static void cleanup(void) { closeTank(HIDE); }
 
@@ -29,7 +30,7 @@ void train(MobBody * pMB) {
   pMB->phylum = PHY_B;
   pMB->p.b.spawnThresh = randIntBelow(500);
   pMB->p.b.payMsg = randIntBelow(100);
-  pMB->p.b.bid = 0.01 * pow(1.4, (randIntBelow(10)-5));
+  pMB->p.b.bid = 1; //0.01 * pow(1.4, (randIntBelow(10)-5));
 }
 
 static MsgIx postie(Cash cash, CpuBid bid, MobTact tSndr, MobTact tRcvr) {
@@ -44,9 +45,8 @@ static bool test1(void) {
   survey();
   postie(2000, 1, t, t);
   survey();
-  //}
   while (!shouldQuit) {
-    raffleOfMsgs.show();
+    //raffleOfMsgs.show();
     choose();
     survey();
   }

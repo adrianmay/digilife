@@ -6,6 +6,10 @@
 #include "globals/h.h"
 #include "Mess_raffle/h.h"
 
+bool onMessRaffleApprove(MessIx i, MessTicket * pTicket) {
+  return true;
+}
+
 
 void onMessRentCollected(Cash cash) { }
 void onMessRentDefaulted(Cash cash) { }
@@ -63,13 +67,8 @@ void stuff2(void) {
   //raffleOfMesss.show();
 }
 
-bool enjoy1(MessIx i, MessTicket * pTicket) {
-  (void)pTicket;
-  return true;
-}
-
 void empty(void) {
-  while (!raffleOfMesss.empty()) { raffleOfMesss.draw(enjoy1); };
+  while (!raffleOfMesss.empty()) { raffleOfMesss.draw(); };
 }
 
 bool ch() {
@@ -82,20 +81,21 @@ bool ch() {
 }
 
 int h, t, v, e;
-bool enjoy2(MessIx i, MessTicket * pT) {
+
+void onMessRaffleConsume(MessIx i, MessTicket * pT) {
   if (pT->type=='H') h++;
   else if (pT->type=='T') t++;
   else if (pT->type=='V') v++;
   else e++;
-  return true;
 }
+
 
 void sample(void) {
   h=0; t=0; v=0; e=0;
   for (int a=0;a<100;a++) {
     //notifyCycles(1);
     ch();
-    bool res = raffleOfMesss.draw(enjoy2);
+    bool res = raffleOfMesss.draw();
     //printf("In sample after draw: %d\n", res);
     if (!res) {
       printf("Sampled %d H, %d T, %d virgins and %d errors.\n", h, t, v, e);
@@ -128,7 +128,7 @@ bool testBlock() {
   //sleepMs(200);
   for (int a=0;a<10;a++) {
     sleepMs(1+randIntBelow(5));
-    raffleOfMesss.draw(enjoy1);
+    raffleOfMesss.draw();
   }
   bored = 1;
   pthread_join(pid, 0);

@@ -73,8 +73,12 @@ Cash costOfCycles(CpuBid bid, Cycles cyc) {
 }
 
 bool msgPayMob(MsgIx iMsg, MobTact tMob, Cash amt) {
+  //printf("Start of msgPayMob %ld: ", amt);
+  //raffleOfMsgs.show();
   raffleOfMsgs.enrich(iMsg, -amt);
   hotelOfMobs.enrich(tMob.i, amt);
+  //printf("End of msgPayMob: ");
+  //raffleOfMsgs.show();
   return true;
 }
 
@@ -86,11 +90,13 @@ Cash mobPayMob(MobTact tFrom, MobTact tTo, Cash amt) {
 
 Cash msgPayMobAll(MsgIx iMsg, MobTact tMob) {
   Cash c = raffleOfMsgs.rob(iMsg);
+  //printf("Start of msgPayMobAll: ");
+  //raffleOfMsgs.show();
   hotelOfMobs.enrich(tMob.i, c);
   return c;
 }
 
-Weight bidToWeight(CpuBid bid) {return 10000000*bid;}
+Weight bidToWeight(CpuBid bid) {return 1000*bid;}
 
 void showTank() {
   hotelOfMobs.show();
@@ -123,6 +129,7 @@ MobTact spawn(Cash cash, MobTact tBenefactor, WithMobBody stuffBody) {
 }
 
 MsgIx post(Cash cash, CpuBid bid, MobTact tS, MobTact tR, WithPayload stuffPayload) {
+  //printf("post: bid=%f\n", bid);
   void stuff(MsgTicket * pT) {
     pT->cpuBid = bid;
     pT->rcvr = tR;
@@ -180,15 +187,21 @@ void closeTank(FATE f) {
 //void onMsgsExtinct() {}
 
 
-bool onChosen(MsgIx i, MsgTicket * pTicket) {
+bool onMsgRaffleApprove(MsgIx i, MsgTicket * pTicket) {
   MobTact tMob = pTicket->rcvr;
   Mob * pMob = derefTact(tMob);
   MsgIx exp = badMsgIx;
   bool res = atomic_compare_exchange_strong(&pMob->body.todo, &exp, i);
+
   return res;
 }
 
+
 extern void onMsgRaffleGoDie(MsgIx i) { 
+}
+
+void onMsgRaffleConsume(MsgIx i, MsgTicket * pTicket) {
+  (void)pTicket;
   Msg * pMsg = pileOfMsgs.get(i);  
   MobTact tMob = pMsg->body.ticket.rcvr;
   Mob * pMob = derefTact(tMob);
@@ -198,8 +211,7 @@ extern void onMsgRaffleGoDie(MsgIx i) {
     if (todo.i == i.i) {
       hotelOfMobs.collectRent(tMob.i);
       MobTact spawn_(Cash c, WithMobBody st) { return spawn(c, tMob, st); }
-      MsgIx post_(Cash c, CpuBid bid, MobTact tR, WithPayload st) { return post(c, bid, tMob, tR, st); }
-      Burned brnd = run( 
+      MsgIx post_(Cash c, CpuBid bid, MobTact tR, WithPayload st) { return post(c, bid, tMob, tR, st); } Burned brnd = run( 
           (Api){spawn_, post_}, tMob, 
           pMob->rent.cash, pMsg->rent.cash, 
           pB, &pMsg->body.ticket );
@@ -210,9 +222,10 @@ extern void onMsgRaffleGoDie(MsgIx i) {
         pileOfMobs.free(tMob.i);
         alive = false;
       }
-      Cash costUsed  = costOfCycles(pMsg->body.ticket.cpuBid, brnd.used);
+      Cash costUsed = costOfCycles(pMsg->body.ticket.cpuBid, brnd.used);
       if (alive) {
         if (brnd.overran <= 0) {
+          //printf("Normal flow\n");
           msgPayMob(i, tCpuCosts, costUsed); // Pay for cpu used
           msgPayMobAll(i, tMob); // Change goes to rcvr
           // Give change to mob
@@ -235,7 +248,6 @@ extern void onMsgRaffleGoDie(MsgIx i) {
       }
     } 
   }
-  pileOfMsgs.free(i);
 }
 
 void onMobHotelGoDie(MobIx i) {
@@ -245,6 +257,6 @@ void onMobHotelGoDie(MobIx i) {
     pileOfMobs.free(i);
 }
 
-void choose() {raffleOfMsgs.draw(onChosen);}
+void choose() {raffleOfMsgs.draw();}
 
 

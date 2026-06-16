@@ -52,7 +52,7 @@ SYSTEM DIAGRAM
 |         | of bombs to       |                   | something "passive" | Set nick, cash & lastPaid.   |   chomp             | and lastPaid. | (payRent???)      | enrich(-cash)
 |         | charge memory     | Main pile:        | to the main pile    | Calc expiry. bodyStuffer.    |   abort if cash<0   | onRentPaid or | Add to cash.      | 
 |         | rent.             |   Guest,Body      | before the meap.    | insert, set bomb ix in main. |   onXXHotelGoDie    |   defaulted.  | Recalc bomb and   |---------------
-|         |                   |                   |                     | If zero cash, make god (no   |    nXXHotelGoDie    | No need to    |  meap ordering    | chargeIfCan
+|         |                   |                   |                     | If zero cash, make god (no   |                     | No need to    |  meap ordering    | chargeIfCan
 |         | Use tact.         | Bomb meap: bomb.  |                     | bomb, -ve cash allowed.)     | until idle          | revise bomb.  |  using editTocks. |
 |         |                   |                   |                     |                              |  or if exinct call  |               |                   | 
 |         |                   | No mutex needed.  |                     |                              |  onXXHotelExtinct   |               | Raid if poorer.   |

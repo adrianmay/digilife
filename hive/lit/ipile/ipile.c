@@ -160,6 +160,7 @@ static bool isInFreeList(Pilehead * ph, Ix i) {
 // There's no rent collector thread so this needs MT protection, but higher up
 void freeInPile(Pilehead * ph, Ix i, void * ghost, int ghostlen) {
   Free * pFree = findFreeInPile(ph,i); // Get the block
+  printf("FREE in %s: %d\n", ph->fn, i);
   if (isInFreeList(ph, i)) {
     printf("DOUBLE FREE in %s: %d\n", ph->fn, i);
     abort();

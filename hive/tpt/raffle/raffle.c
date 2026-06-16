@@ -114,6 +114,7 @@ static bool empty() {
 }
 
 static XXIx play(Cash cash, Weight w, WithXXTicket stuffTicket) {
+  //printf("Play, weight=%ld\n", w);
   char blah[40];
   checkM("enter1");
   bool wasEmpty = empty();
@@ -163,24 +164,24 @@ static Cash cancel(XXIx i) {
 }
 
 // Assumes there are tickets. Look out of onXXsExtinct
-static void drawBelow(XXIx i, OnChosen onChosen) {
+static void drawBelow(XXIx i) {
   XX * pB = pileOfXXs.get(i);
   XXRafle * pRaf = &pB->body.raffle;
   Weight target = peep();
   if (pRaf->l > 0 && target < pRaf->l) {
     push(target); 
-    drawBelow(left(i), onChosen);
+    drawBelow(left(i));
     pop();
     return; 
   }
   target -= pRaf->l;
   if (target < pRaf->s) {
-    if (onChosen(i, &pB->body.ticket)) {
+    if (onXXRaffleApprove(i, &pB->body.ticket)) {
       Weight w = pRaf->s;
       pRaf->s = 0;
       propagateWeightUp(i, -w);
       unlock();  
-      hotelOfXXs.rob(i);
+      onXXRaffleConsume(i, &pB->body.ticket); // Should leave ticket bankrupt
     }
     //printf("In drawBelow, drew:\n");
     //printf("Returning cash=%ld from drawBelow\n", cash);
@@ -193,23 +194,23 @@ static void drawBelow(XXIx i, OnChosen onChosen) {
     exit(10);
   }
   push(target);
-  drawBelow(right(i), onChosen);
+  drawBelow(right(i));
   pop();
 }
 
-static void drawAssumeNotEmpty(OnChosen onChosen) {
+static void drawAssumeNotEmpty() {
   XXIx i0 = (XXIx){0};
   check(); 
   Weight tw = totWeightI(i0);
   uint64_t w = randIntBelow(tw);
   //printf("Rolled w=%ld of %ld\n", w, tw);
   push(w);
-  drawBelow(i0, onChosen);
+  drawBelow(i0);
   pop();
 }
 
 // If this returns false we're closing down the program
-static bool draw(OnChosen onChosen) {
+static bool draw() {
   lock();
   checkM("draw 1");
   if (gottaQuitXX)    { gottaQuitXX=false; unlock(); return false; }
@@ -218,7 +219,7 @@ static bool draw(OnChosen onChosen) {
   }
   if (gottaQuitXX)    { gottaQuitXX=false; unlock(); return false; }
   // Can't be empty
-  drawAssumeNotEmpty(onChosen); //unlocks
+  drawAssumeNotEmpty(); //unlocks
   checkM("draw 2");
   return true;
 }

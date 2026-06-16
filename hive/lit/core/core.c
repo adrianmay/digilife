@@ -1,5 +1,6 @@
 #include <setjmp.h>
 #include "misc/h.h"
+#include "globals/h.h"
 #include "h.h"
 
 
@@ -13,7 +14,6 @@ typedef struct {
 
 void stuffMsgPayload(MsgPayload * p) { (void)p; }
 
-
 Cash mutCashThresh(Cash c) {
   double g = gaussian_random(1, 0.1);
   return c * g;
@@ -24,8 +24,6 @@ CpuBid mutCpuBid(CpuBid bid) {
   return bid * g;
 }
 
-Weight bidToWeight(CpuBid bid) {return 10000000*bid;}
-
 #define SLOWNESS 100
 
 void burn(Core * pC, Cycles c) {
@@ -35,51 +33,47 @@ void burn(Core * pC, Cycles c) {
     longjmp(pC->jmpbuf, pC->used);
 }
 
-void runMob(Api api, MobTact tMe, Cash mobCash, Cash MsgCash, MobBody * pMB, MsgTicket * pMsg) {
+void runMob(Core * pC, Api api, MobTact tMe, Cash mobCash, Cash msgCash, MobBody * pMB, MsgTicket * pTicket) {
   if (pMB->phylum != PHY_B) abort();
   PhyB * pB = &pMB->p.b;
-  burn(2);
+  burn(pC, 2);
   if (mobCash > pB->spawnThresh) {
     void stuffMobBody(MobBody * pCh) {
       PhyB * pCB = &pCh->p.b;
       pCB->spawnThresh = mutCashThresh(pB->spawnThresh);
-      burn(2);
+      burn(pC, 2);
       pCB->payMsg = mutCashThresh(pB->payMsg);
-      burn(2);
+      burn(pC, 2);
       pCB->bid = mutCpuBid(pB->bid);
-      burn(2);
+      burn(pC, 2);
     }
     MobTact tCh = api.spawn(mobCash/2 - pB->payMsg, stuffMobBody);
-    burn(20);
+    burn(pC, 20);
     api.post(pB->payMsg, pB->bid, tCh, stuffMsgPayload);
-    burn(10);
+    burn(pC, 10);
   }
   api.post(pB->payMsg, pB->bid, tMe, stuffMsgPayload);
-  burn(10);
+  burn(pC, 10);
 }
 
-
-
-static bool shouldQuit = false;
-
-resetCore(Core * p) {
-  p->used = p->limit = p->output = 0;
+void resetCore(Core * p) {
 }
 
-void * workerThread(void * p) {
+Burned run(Api api, MobTact tMe, Cash mobCash, Cash msgCash, MobBody * pMB, MsgTicket * pTicket) {
   Core core;
-  while (!shouldQuit) {
-    draw
-    resetCore(&core);
-    int jmp = setjmp(core.jmpbuf);
-    if (jmp == 0) { //Try
-      runMob_(pC, pMob, iMob, pEnv);
-      notifyCycles(pC->used);
-    } else {  //Catch
-    }
+  core.used = core.output = 0;
+  core.limit = msgCash / pTicket->cpuBid;
+  int jmp = setjmp(core.jmpbuf);
+  if (jmp == 0) { //Try
+    runMob(&core, api, tMe, mobCash, msgCash, pMB, pTicket);
+  } else {  //Catch
   }
+  notifyCycles(core.used);
+  if (core.used > core.limit)
+    return (Burned){core.used, core.used - core.limit};
+  else
+    return (Burned){core.used, 0};
 }
-
 //     #include <stdatomic.h>
 //     #include <math.h>
 //     #include <string.h>

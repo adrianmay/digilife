@@ -3,6 +3,8 @@
 #define GUESS_CYCLES_PER_TOCK 1000
 #define GUESS_GROATS_PER_TOCK_PER_BYTE 0.1
 
+#define FINE_FACTOR 5
+
 bool openGlobals(void);
 void closeGlobals(bool rm);
 

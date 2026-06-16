@@ -55,7 +55,8 @@ static Weight totWeightI(XXIx i) {
 }
 
 static bool check_(const char * ctx, XXIx i) {
-  XXRafle * pP = &pileOfXXs.get(      i )->body.raffle;
+  if (pileOfXXs.count()==0) return true;
+  XXRafle * pP = &pileOfXXs.get(i)->body.raffle;
   if (left(i).i < pileOfXXs.count()) {
     XXRafle * p = &pileOfXXs.get(left (i))->body.raffle;
     if (totWeightP(p) != pP->l) 
@@ -239,7 +240,15 @@ static void quitNow() {
   pthread_cond_signal(&cond);
 }
 
-XXRaffle raffleOfXXs = { open, play, cancel, empty, draw, close, show, count, check, raid, quitNow };
+static void enrich(XXIx who, Cash amt) {
+  hotelOfXXs.enrich(who, amt);
+}
+
+static Cash rob(XXIx who) {
+  return hotelOfXXs.rob(who);
+}
+
+XXRaffle raffleOfXXs = { open, play, enrich, rob, cancel, empty, draw, close, show, count, check, raid, quitNow };
 
 void showXXBody(XXIx i, XXBody * p) {
   printf("l=%'ld,s=%'ld,r=%'ld,⇑=%d,⇙=%d,⇘=%d,", p->raffle.l, p->raffle.s, p->raffle.r, parent(i).i, left(i).i, right(i).i);

@@ -160,18 +160,24 @@ static bool chargeIfCan(XXIx i, Cash amt) {
   return chargeIfCan_(get(i), amt);
 }
 
-static Cash rob_(XX * pXX) {
+static Cash robUpTo_(XX * pXX, Cash * pMax) {
   if (isGod(pXX))
     return 0;
-  Cash c = pXX->rent.cash;
-  if (c<0) abort(); //return 0;
-    enrich_(pXX, -c);
+  Cash got = pXX->rent.cash;
+  if (got<0) abort(); //return 0;
+  if (pMax && got > *pMax)
+    got = *pMax;
+  enrich_(pXX, -got);
   meapOfXXBombs.check();
-  return c;
+  return got;
 }
 
 static Cash rob(XXIx i) {
-  return rob_(get(i));
+  return robUpTo_(get(i), 0);
+}
+
+static Cash robUpTo(XXIx i, Cash max) {
+  return robUpTo_(get(i), &max);
 }
 
 void showXX(XXIx i, XX * p) {
@@ -209,10 +215,10 @@ void onNewXXBomb(XXBombIx iBomb, Ix hint) {
   //printf("OnNew: iBomb: %d hint: %d\n", iBomb.i, hint);
   XXBomb * pBomb = pileOfXXBombs.get(iBomb);
   pBomb->who = (XXIx){hint};
-  XX * p = pileOfXXs.get(pBomb->who);
-  p->rent.bomb = iBomb;
-  updateDeathWithXXAndBomb_(p, pBomb);
-  meapOfXXBombs.check();
+//  XX * p = pileOfXXs.get(pBomb->who);
+//  p->rent.bomb = iBomb;
+//  updateDeathWithXXAndBomb_(p, pBomb);
+//  meapOfXXBombs.check();
 }
 
 // Similarly thread safe already, I think?
@@ -228,8 +234,8 @@ static void forAll(bool u, XXVIP act) {
 }
 
 XXHotel hotelOfXXs = { open, admit, get, enrich, 
-  chargeIfCan, collectRent, forAll, rob, raid, count, 
-  close, show, showXX };
+  chargeIfCan, collectRent, forAll, rob, robUpTo, raid, 
+  count, close, show, showXX };
 
 
 const size_t billableXXSize = sizeof(XX)+sizeof(XXBomb);

@@ -8,7 +8,7 @@ static XXIx left  (XXIx i) {return ( XXIx ){ 2*i.i + 1 };}
 static XXIx right (XXIx i) {return ( XXIx ){ 2*i.i + 2 };}
 
 static void show(void) {
-  printf("MEAP:\n");
+  printf("MEAP:");
   pileOfXXs.show(true);
 }
 
@@ -127,10 +127,11 @@ static bool insert(Tocks expiry, Ix hint, XXIx * pI) {
     *pI = pileOfXXs.alloc(&pNew, 0);
   // pNew is now correct either way.
   pNew->tocks = expiry;
+  onNewXX(*pI, hint);
   pileOfXXs.modUsr(1);                        // Not sure if this should be before the above, but certainly it's before siftUp.
   if (pI->i > 0) {                          // No point sorting a singleton.
     bool res = siftUp(*pI);             // Calls siftUp if it returns true;
-    if (!res) onMoveXX(pNew, *pI);    // Something else might want to keep track of where the meap member is.
+    onMoveXX(pNew, *pI);    // Something else might want to keep track of where the meap member is.
     return res;
   }
   return false;

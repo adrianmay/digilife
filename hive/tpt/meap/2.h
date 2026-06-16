@@ -37,4 +37,5 @@ extern XXMeap meapOfXXs;
 
 // The caller should define this:
 extern void  onMoveXX(XX * p, XXIx to); // Update records of where p's meap is.
+extern void  onNewXX(XXIx i, Ix hint); // Update records of where p's meap is.
 

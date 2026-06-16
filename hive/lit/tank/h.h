@@ -7,8 +7,10 @@
 //typedef WithXXBody WithXXBody;
 
 extern MobTact 
-  tInvestor, tSales, tCostsCpu, tCostsMem,
-  tRentDefaults, tUndeliverables;
+  tInvestor, tSales, 
+  tMemCosts, tMemLost, 
+  tCpuCosts, tCpuLost, tCpuFines, 
+  tUndeliverables;
 
 //typedef int RunResult;
 //typedef struct { bool ran; RunResult res; } DeliverResult;
@@ -20,6 +22,8 @@ typedef void (*WithPayload)(MsgPayload * pPayload);
 bool openTank();
 void closeTank(FATE);
 void showTank(void);
+void showMobTact(MobTact t);
 
 MobTact spawn(Cash cash, MobTact iParent, WithMobBody train);
 MsgIx post(Cash cash, CpuBid bid, MobTact sndr, MobTact rcvr, WithPayload stuff);
+void choose(void);

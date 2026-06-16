@@ -19,7 +19,7 @@ MobTact tact(MobIx i) {
   return (MobTact) {i, nick};
 }
 
-bool checkTact(MobTact t) {
+bool checkTact_(MobTact t) {
   if (t.i.i == BAD_INDEX)  {
     showMobTact(t);
     return false;
@@ -33,8 +33,9 @@ bool checkTact(MobTact t) {
   return res;
 }
 
-void checkTactAbort(MobTact t) {
-  if (!checkTact(t)) abort();
+bool checkTact(MobTact t) {
+  if (!checkTact_(t)) abort();
+  return true;
 }
 
 Mob * derefTact(MobTact t) {
@@ -46,23 +47,47 @@ Mob * derefTact(MobTact t) {
 }
 
 MobTact 
-  tInvestor, tSales, tCostsCpu, tCostsMem,
-  tRentDefaults, tUndeliverables;
+  tInvestor, tSales, 
+  tMemCosts, tMemLost, 
+  tCpuCosts, tCpuLost, tCpuFines, 
+  tUndeliverables;
 
 void onMobRentCollected(Cash cash) {
-  hotelOfMobs.enrich(tCostsMem.i, cash);
+  hotelOfMobs.enrich(tMemCosts.i, cash);
 }
 
 void onMobRentDefaulted(Cash cash) {
-  hotelOfMobs.enrich(tRentDefaults.i, cash);
+  hotelOfMobs.enrich(tMemLost.i, cash);
 }
 
 void onMsgRentCollected(Cash cash) {
-  hotelOfMobs.enrich(tCostsMem.i, cash);
+  hotelOfMobs.enrich(tMemCosts.i, cash);
 }
 
 void onMsgRentDefaulted(Cash cash) {
-  hotelOfMobs.enrich(tRentDefaults.i, cash);
+  hotelOfMobs.enrich(tMemLost.i, cash);
+}
+
+Cash costOfCycles(CpuBid bid, Cycles cyc) {
+  return cyc * bid;
+}
+
+bool msgPayMob(MsgIx iMsg, MobTact tMob, Cash amt) {
+  raffleOfMsgs.enrich(iMsg, -amt);
+  hotelOfMobs.enrich(tMob.i, amt);
+  return true;
+}
+
+Cash mobPayMob(MobTact tFrom, MobTact tTo, Cash amt) {
+  Cash ret = hotelOfMobs.robUpTo(tFrom.i, amt);
+  hotelOfMobs.enrich(tTo.i, ret);
+  return ret;
+}
+
+Cash msgPayMobAll(MsgIx iMsg, MobTact tMob) {
+  Cash c = raffleOfMsgs.rob(iMsg);
+  hotelOfMobs.enrich(tMob.i, c);
+  return c;
 }
 
 Weight bidToWeight(CpuBid bid) {return 10000000*bid;}
@@ -81,16 +106,20 @@ MobTact makeGod() {
 MobTact spawn(Cash cash, MobTact tBenefactor, WithMobBody stuffBody) {
   void stuff(MobBody * pB) {
     pB->nick = randIntBelow(0xFFFF);
+    pB->todo = (MsgIx){BAD_INDEX};
     stuffBody(pB);
   }
   MobIx iChild = badMobIx;
-  if (checkTact(tBenefactor) && hotelOfMobs.chargeIfCan(tBenefactor.i, cash)) {
-    Mob * pMob;
-    iChild = hotelOfMobs.admit(cash, stuff, &pMob, 0);
-    return tact(iChild);
-  } else {
-    return (MobTact) {badMobIx};
+  if (checkTact(tBenefactor)) {
+    if (hotelOfMobs.chargeIfCan(tBenefactor.i, cash)) {
+      Mob * pMob;
+      iChild = hotelOfMobs.admit(cash, stuff, &pMob, 0);
+      return tact(iChild);
+    } else {
+      return (MobTact) {badMobIx};
+    }
   }
+  return (MobTact) {badMobIx};
 }
 
 MsgIx post(Cash cash, CpuBid bid, MobTact tS, MobTact tR, WithPayload stuffPayload) {
@@ -122,10 +151,14 @@ MsgIx post(Cash cash, CpuBid bid, MobTact tS, MobTact tR, WithPayload stuffPaylo
 // }
 
 void makeVirginTank() {
-  tInvestor = makeGod();
-  tSales    = makeGod();
-  tCostsCpu = makeGod();
-  tCostsMem = makeGod();
+  tInvestor       = makeGod(); 
+  tSales          = makeGod(); 
+  tMemCosts       = makeGod(); 
+  tMemLost        = makeGod(); 
+  tCpuCosts       = makeGod(); 
+  tCpuLost        = makeGod(); 
+  tCpuFines       = makeGod(); 
+  tUndeliverables = makeGod();
 }
 
 bool openTank() {
@@ -142,16 +175,17 @@ void closeTank(FATE f) {
   closeGlobals(f);
 }
 
-static bool shouldQuit = false;
-void onMobsExtinct() { shouldQuit = true; }
-void onMsgsExtinct() {}
+//static bool shouldQuit = false;
+//void onMobsExtinct() { shouldQuit = true; }
+//void onMsgsExtinct() {}
 
 
 bool onChosen(MsgIx i, MsgTicket * pTicket) {
   MobTact tMob = pTicket->rcvr;
   Mob * pMob = derefTact(tMob);
   MsgIx exp = badMsgIx;
-  return atomic_compare_exchange_strong(&pMob->body.todo, &exp, i);
+  bool res = atomic_compare_exchange_strong(&pMob->body.todo, &exp, i);
+  return res;
 }
 
 extern void onMsgRaffleGoDie(MsgIx i) { 
@@ -165,13 +199,39 @@ extern void onMsgRaffleGoDie(MsgIx i) {
       hotelOfMobs.collectRent(tMob.i);
       MobTact spawn_(Cash c, WithMobBody st) { return spawn(c, tMob, st); }
       MsgIx post_(Cash c, CpuBid bid, MobTact tR, WithPayload st) { return post(c, bid, tMob, tR, st); }
-      run( (Api){spawn_, post_}, tMob, 
-           pMob->rent.cash, pMsg->rent.cash, 
-           pB, &pMsg->body.ticket );
+      Burned brnd = run( 
+          (Api){spawn_, post_}, tMob, 
+          pMob->rent.cash, pMsg->rent.cash, 
+          pB, &pMsg->body.ticket );
       MsgIx exp = i;
+      bool alive = true;
       if (!atomic_compare_exchange_strong(&pMob->body.todo, &exp, badMsgIx)) {
         if (exp.i != BAD_INDEX-1) abort();  
         pileOfMobs.free(tMob.i);
+        alive = false;
+      }
+      Cash costUsed  = costOfCycles(pMsg->body.ticket.cpuBid, brnd.used);
+      if (alive) {
+        if (brnd.overran <= 0) {
+          msgPayMob(i, tCpuCosts, costUsed); // Pay for cpu used
+          msgPayMobAll(i, tMob); // Change goes to rcvr
+          // Give change to mob
+        } else {
+          Cash c = msgPayMobAll(i, tCpuCosts); // Msg pays what it can
+          Cash unpaidByMsg = costUsed - c;
+          Cash unpaid = unpaidByMsg - mobPayMob(tMob, tCpuCosts, unpaidByMsg); // Mob pays what it can
+          mobPayMob(tCpuLost, tCpuCosts, unpaid); // Losses account pays the rest
+          mobPayMob(tMob, tCpuFines, unpaidByMsg*FINE_FACTOR); //Potentially lethal
+        }
+      } else { // Mob is dead
+        if (brnd.overran <= 0) {
+          msgPayMob(i, tCpuCosts, costUsed); // Pay for cpu used
+          msgPayMobAll(i, tUndeliverables); // Died intestate - king gets the spoils
+        } else {
+          Cash c = msgPayMobAll(i, tCpuCosts); // Msg pays what it can
+          Cash unpaid = costUsed - c;
+          mobPayMob(tCpuLost, tCpuCosts, unpaid); // Losses account pays the rest
+        }
       }
     } 
   }
@@ -185,9 +245,6 @@ void onMobHotelGoDie(MobIx i) {
     pileOfMobs.free(i);
 }
 
-void workerThread() {
-  while (!shouldQuit) raffleOfMsgs.draw(onChosen);
-}
-
+void choose() {raffleOfMsgs.draw(onChosen);}
 
 

@@ -3,6 +3,9 @@
 #include "bit/MsgTicket.h"
 #include "bit/MobBody.h"
 
+void onMobsExtinct() {}
+void onMsgsExtinct() {}
+
 void onThingsExtinct(void) {}
 void onTock() {}
 

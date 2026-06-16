@@ -9,7 +9,9 @@ typedef struct {
   Post post;
 } Api;
 
-void run(Api api, MobTact tMe, Cash mobCash, Cash MsgCash, MobBody * pMob, MsgTicket * pMsg);
+typedef struct { Cycles used; Cycles overran; } Burned;
+
+Burned run(Api api, MobTact tMe, Cash mobCash, Cash msgCash, MobBody * pMB, MsgTicket * pTicket);
 
 // #include "bit/MsgTicket.h"
 // 

@@ -29,7 +29,7 @@ static void cleanup(void) { closeTank(HIDE); }
 void train(MobBody * pMB) {
   pMB->phylum = PHY_B;
   pMB->p.b.spawnThresh = randIntBelow(500);
-  pMB->p.b.payMsg = randIntBelow(100);
+  pMB->p.b.payMsg = 500 + randIntBelow(100);
   pMB->p.b.bid = 1; //0.01 * pow(1.4, (randIntBelow(10)-5));
 }
 

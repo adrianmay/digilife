@@ -124,6 +124,7 @@ static XXIx play(Cash cash, Weight w, WithXXTicket stuffTicket) {
     stuffTicket(&pBody->ticket);
   }
   XXIx i = hotelOfXXs.admit(cash, stuffBody, &p, &recycled);
+  //printf("After admit:\n"); show();
   //if (p->rent.cash>10000) { printf("Overrich 1 %d has %'ld from %'ld\n", i.i, p->rent.cash, cash); exit(1); }
   XXRafle * pRaf = &p->body.raffle; 
   if (!recycled) pRaf->s = pRaf->l = pRaf->r = 0; // Don't really need to zero s
@@ -131,6 +132,7 @@ static XXIx play(Cash cash, Weight w, WithXXTicket stuffTicket) {
   lock();
   pRaf->s = w;
   propagateWeightUp(i, w);
+  //printf("Further after admit:\n"); show();
   //if (p->rent.cash>10000) { printf("Overrich 2 %d has %'ld\n", i.i, p->rent.cash); exit(1); }
   sprintf(blah, "enter4 i=%d recyc=%b", i.i, recycled);
   checkM(blah);
@@ -177,11 +179,16 @@ static void drawBelow(XXIx i) {
   target -= pRaf->l;
   if (target < pRaf->s) {
     if (onXXRaffleApprove(i, &pB->body.ticket)) {
+      //hotelOfXXs.show();
       Weight w = pRaf->s;
       pRaf->s = 0;
       propagateWeightUp(i, -w);
       unlock();  
+      //hotelOfXXs.show();
       onXXRaffleConsume(i, &pB->body.ticket); // Should leave ticket bankrupt
+      //hotelOfXXs.show();
+      pileOfXXs.free(i);
+      hotelOfXXs.show();
     }
     //printf("In drawBelow, drew:\n");
     //printf("Returning cash=%ld from drawBelow\n", cash);

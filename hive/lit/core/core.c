@@ -24,36 +24,42 @@ CpuBid mutCpuBid(CpuBid bid) {
   return bid * g;
 }
 
-#define SLOWNESS 100
+#define SLOWNESS 0.1
 
-void burn(Core * pC, Cycles c) {
+void burn(Core * pC, Cycles c, int line) {
   pC->used += SLOWNESS*c;
+  //printf("burn: ")
   CycleDiff remaining = pC->limit - pC->used;
-  if (remaining < 0)
+  if (remaining < 0) {
+    printf("Burning out from line %d\n", line);
     longjmp(pC->jmpbuf, pC->used);
+  }
 }
 
 void runMob(Core * pC, Api api, MobTact tMe, Cash mobCash, Cash msgCash, MobBody * pMB, MsgTicket * pTicket) {
   if (pMB->phylum != PHY_B) abort();
   PhyB * pB = &pMB->p.b;
-  burn(pC, 2);
-  if (mobCash > pB->spawnThresh) {
-    void stuffMobBody(MobBody * pCh) {
-      PhyB * pCB = &pCh->p.b;
-      pCB->spawnThresh = mutCashThresh(pB->spawnThresh);
-      burn(pC, 2);
-      pCB->payMsg = mutCashThresh(pB->payMsg);
-      burn(pC, 2);
-      pCB->bid = mutCpuBid(pB->bid);
-      burn(pC, 2);
-    }
-    MobTact tCh = api.spawn(mobCash/2 - pB->payMsg, stuffMobBody);
-    burn(pC, 20);
-    api.post(pB->payMsg, pB->bid, tCh, stuffMsgPayload);
-    burn(pC, 10);
+  printf("runMob: cash=%ld, thresh=%ld\n", mobCash, pB->spawnThresh);
+  burn(pC, 2, __LINE__);
+  if (false && mobCash > pB->spawnThresh) {
+    // void stuffMobBody(MobBody * pCh) {
+    //   PhyB * pCB = &pCh->p.b;
+    //   pCB->spawnThresh = mutCashThresh(pB->spawnThresh);
+    //   burn(pC, 2, __LINE__);
+    //   pCB->payMsg = mutCashThresh(pB->payMsg);
+    //   burn(pC, 2, __LINE__);
+    //   pCB->bid = mutCpuBid(pB->bid);
+    //   burn(pC, 2, __LINE__);
+    // }
+    //MobTact tCh = api.spawn(mobCash/2 - pB->payMsg, stuffMobBody);
+    burn(pC, 2, __LINE__);
+    //api.post(pB->payMsg, pB->bid, tCh, stuffMsgPayload);
+    burn(pC, 1, __LINE__);
   }
-  api.post(pB->payMsg, pB->bid, tMe, stuffMsgPayload);
-  burn(pC, 10);
+  //MsgIx i = api.post(pB->payMsg, pB->bid, tMe, stuffMsgPayload);
+  raffleOfMsgs.show();
+  //printf("Posted %d\n", i.i);
+  burn(pC, 1, __LINE__);
 }
 
 void resetCore(Core * p) {

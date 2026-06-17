@@ -38,7 +38,6 @@ static XX * get(XXIx i) {
 static bool updateDeathWithXXAndBomb_(XX* p, XXBomb * pBomb) {
   Cash cash = p->rent.cash;
   Tocks ttl = cash / ( tockPrice() * billableXXSize);
-  //printf("UpdateDeath: ttl=%d\n", ttl);
   Tocks death = tocksNow() + ttl;
   meapOfXXBombs.check();
   // This changes bomb time and reorders meap:
@@ -88,7 +87,8 @@ static void raid(void) {
       meapOfXXBombs.check();
       XX * pXX = hotelOfXXs.get(bomb.who);
       if (pXX->rent.cash<0) abort();
-      onXXHotelGoDie(bomb.who); // DOES need to free the block
+      onXXHotelGoDie(bomb.who); // does NOt need to free the block
+      pileOfXXs.free(bomb.who);
       continue;
     }
     if (ch == Extinct) {
@@ -108,7 +108,8 @@ static void enrich_(XX * pXX, Cash amt) {
   pXX->rent.cash += amt;
   if (isGod(pXX)) return;
   updateDeathWithXX_(pXX);
-  if (amt<0) raid();
+  if (amt<0) 
+    raid();
 }
 
 static void enrich(XXIx i, Cash amt) {
@@ -142,7 +143,6 @@ static void collectRent(XXIx i) {
 }
  
 static bool chargeIfCan_(XX * pXX, Cash amt) {
-  //printf("Transfer: amt=%'ld, iFrom=%d, iTo=%d\n", amt, iFrom.i, iTo.i);
   XXRent * pRent = &pXX->rent;
   bool g = isGod(pXX);
   if (g) 
@@ -212,7 +212,6 @@ static XXIx admit(Cash cash, WithXXBody stuff, XX ** pp, bool * pRecycled) {
 //   which for the hotel is only called from hotel's admit
 // We know it exists, and it doesn't have or need money
 void onNewXXBomb(XXBombIx iBomb, Ix hint) {
-  //printf("OnNew: iBomb: %d hint: %d\n", iBomb.i, hint);
   XXBomb * pBomb = pileOfXXBombs.get(iBomb);
   pBomb->who = (XXIx){hint};
 //  XX * p = pileOfXXs.get(pBomb->who);
@@ -223,7 +222,6 @@ void onNewXXBomb(XXBombIx iBomb, Ix hint) {
 
 // Similarly thread safe already, I think?
 void onMoveXXBomb(XXBomb * pBomb, XXBombIx to) {
-  //printf("Moving bomb for bulk %d from %d to %d\n", pBomb->who.i, p->rent.bomb.i, to.i);
   XX * p = pileOfXXs.get(pBomb->who);
   p->rent.bomb = to;
   meapOfXXBombs.check();

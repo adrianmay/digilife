@@ -30,6 +30,7 @@ typedef struct {
   XXPileClose close;
   XXPileIxValid indexValid;
   XXPileCount count;
+  XXPileCount top;
   XXGetUsr getUsr;
   XXSetUsr setUsr;
   XXModUsr modUsr;

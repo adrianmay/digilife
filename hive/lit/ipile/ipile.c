@@ -160,7 +160,6 @@ static bool isInFreeList(Pilehead * ph, Ix i) {
 // There's no rent collector thread so this needs MT protection, but higher up
 void freeInPile(Pilehead * ph, Ix i, void * ghost, int ghostlen) {
   Free * pFree = findFreeInPile(ph,i); // Get the block
-  printf("FREE in %s: %d\n", ph->fn, i);
   if (isInFreeList(ph, i)) {
     printf("DOUBLE FREE in %s: %d\n", ph->fn, i);
     abort();
@@ -186,6 +185,7 @@ void freeInPile(Pilehead * ph, Ix i, void * ghost, int ghostlen) {
 // Sundry utils:
 Ix countFree(Pilehead * ph ) { return ph->frn; }
 Ix countPop(Pilehead * ph ) { return ph->top - ph->frn; }
+Ix topInPile(Pilehead * ph ) { return ph->top; }
 Ix getUsr(Pilehead * ph) { return ph->usr; }
 void setUsr(Pilehead * ph, Ix u) { ph->usr = u; }
 void modUsr(Pilehead * ph, int32_t u)  { ph->usr += u; }

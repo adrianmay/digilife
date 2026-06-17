@@ -73,12 +73,8 @@ Cash costOfCycles(CpuBid bid, Cycles cyc) {
 }
 
 bool msgPayMob(MsgIx iMsg, MobTact tMob, Cash amt) {
-  //printf("Start of msgPayMob %ld: ", amt);
-  //raffleOfMsgs.show();
   raffleOfMsgs.enrich(iMsg, -amt);
   hotelOfMobs.enrich(tMob.i, amt);
-  //printf("End of msgPayMob: ");
-  //raffleOfMsgs.show();
   return true;
 }
 
@@ -90,8 +86,6 @@ Cash mobPayMob(MobTact tFrom, MobTact tTo, Cash amt) {
 
 Cash msgPayMobAll(MsgIx iMsg, MobTact tMob) {
   Cash c = raffleOfMsgs.rob(iMsg);
-  //printf("Start of msgPayMobAll: ");
-  //raffleOfMsgs.show();
   hotelOfMobs.enrich(tMob.i, c);
   return c;
 }
@@ -129,7 +123,6 @@ MobTact spawn(Cash cash, MobTact tBenefactor, WithMobBody stuffBody) {
 }
 
 MsgIx post(Cash cash, CpuBid bid, MobTact tS, MobTact tR, WithPayload stuffPayload) {
-  //printf("post: bid=%f\n", bid);
   void stuff(MsgTicket * pT) {
     pT->cpuBid = bid;
     pT->rcvr = tR;
@@ -196,9 +189,7 @@ bool onMsgRaffleApprove(MsgIx i, MsgTicket * pTicket) {
   return res;
 }
 
-
-extern void onMsgRaffleGoDie(MsgIx i) { 
-}
+extern void onMsgRaffleGoDie(MsgIx i) { }
 
 void onMsgRaffleConsume(MsgIx i, MsgTicket * pTicket) {
   (void)pTicket;
@@ -222,6 +213,10 @@ void onMsgRaffleConsume(MsgIx i, MsgTicket * pTicket) {
           pB, &pMsg->body.ticket );
       MsgIx exp = i;
       bool alive = true;
+      // Try to set todo to nothing assuming it's currently i.
+      // But if it isn't, that means it went backrupt for other reasons
+      // but was not immediately freed cos we were using it, so now we
+      // free it.
       if (!atomic_compare_exchange_strong(&pMob->body.todo, &exp, badMsgIx)) {
         if (exp.i != BAD_INDEX-1) abort();  
         pileOfMobs.free(tMob.i);
@@ -230,10 +225,8 @@ void onMsgRaffleConsume(MsgIx i, MsgTicket * pTicket) {
       Cash costUsed = costOfCycles(pMsg->body.ticket.cpuBid, brnd.used);
       if (alive) {
         if (brnd.overran <= 0) {
-          //printf("Normal flow\n");
           msgPayMob(i, tCpuCosts, costUsed); // Pay for cpu used
           msgPayMobAll(i, tMob); // Change goes to rcvr
-          // Give change to mob
         } else {
           Cash c = msgPayMobAll(i, tCpuCosts); // Msg pays what it can
           Cash unpaidByMsg = costUsed - c;

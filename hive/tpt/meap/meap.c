@@ -114,7 +114,6 @@ static void siftDown(XXIx iCur) {
 
 // Returns whether or not the lowest changed.
 static bool insert(Tocks expiry, Ix hint, XXIx * pI) {
-  //printf("Inserting bomb for XX %d\n", hint);
   XX * pNew;
   bombee = hint;
   forAll(bombeeSafe);
@@ -131,14 +130,12 @@ static bool insert(Tocks expiry, Ix hint, XXIx * pI) {
   pileOfXXs.modUsr(1);                        // Not sure if this should be before the above, but certainly it's before siftUp.
   if (pI->i > 0) {                          // No point sorting a singleton.
     bool res = siftUp(*pI);             // Calls siftUp if it returns true;
-    onMoveXX(pNew, *pI);    // Something else might want to keep track of where the meap member is.
     return res;
   }
   return false;
 }
 
 static bool editTocks(XXIx iCur, Score when) {
-  //printf("editTocksWhenLocked: i=%d, when=%d\n", iCur.i, when);
   pileOfXXs.get(iCur)->tocks = when;
   siftDown(iCur);
   bool res = siftUp(iCur);
@@ -154,7 +151,6 @@ static bool erase(XXIx iCur) {
   }
   XX * p = pileOfXXs.get(iCur);
   Ix * pI = (Ix *) p;
-  //printf("Erasing bomb for XX %d\n", pI[0]);
   bombee = pI[0];
   Ix iLast = cnt-1;
   swap((XXIx){iLast}, iCur);
@@ -176,10 +172,8 @@ static Chomped chomp(Score thresh, XX * pCopyOut, int pseudoAnimals) {
     memcpy(pCopyOut, p, sizeof(XX));
     Score lowestScoreInMeap = p->tocks;
     ScoreDiff sd = wrapSub32S(lowestScoreInMeap, thresh);
-    //printf("chomped: lowest=%d, thresh=%d, sd=%d\n", lowestScoreInMeap, thresh, sd);
     if (sd <= 0) {
       erase(i);
-      //show();
       res = Killed;
     } else {
       res = Idle;

@@ -18,6 +18,7 @@ void * findInPile(Pilehead * ph, Ix i); // Just deref the index
 void * withInPile(Pilehead * ph, Ix i, F f, void * u); // With derefed index
 void freeInPile(Pilehead * ph, Ix i, void * ghost, int ghostlen); // Ghost gets inserted into free block for debugging
 Ix countPop(Pilehead * ph );
+Ix topInPile(Pilehead * ph );
 Ix getUsr(Pilehead * ph); // Misc number
 void setUsr(Pilehead * ph, Ix u);
 void modUsr(Pilehead * ph, IxDiff u);

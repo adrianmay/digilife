@@ -87,7 +87,10 @@ static void raid(void) {
       //printf("XX Chomped with who=%d\n", bomb.who.i);
       meapOfXXBombs.check();
       XX * pXX = hotelOfXXs.get(bomb.who);
-      if (pXX->rent.cash<0) abort(); // Should actually charged tLostMem
+      if (pXX->rent.cash<0) {
+        onXXRentDefaulted(-pXX->rent.cash);
+        pXX->rent.cash = 0;
+      }
       if (onXXHotelGoDie(bomb.who)) {
         pileOfXXs.free(bomb.who);
       }

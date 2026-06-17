@@ -51,7 +51,7 @@ static bool test1(void) {
     //survey();
     choose();
   }
-  //survey();
+  survey();
   return true;
 }
 static bool test(void) {

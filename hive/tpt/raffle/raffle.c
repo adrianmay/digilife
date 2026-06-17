@@ -41,20 +41,21 @@ static void panicDump_(XXIx i) {
 
 static void panicDump(XXIx i) {
   panicDump_(i);
+  show();
   abort();
 }
 
 static Weight totWeightP(XXRafle * p) { return p->l + p->s + p->r; }
 
 static Weight totWeightI(XXIx i) {
-  if (i.i >= hotelOfXXs.count()) return 0;
+  if (i.i >= pileOfXXs.top()) return 0;
   XX * pB = hotelOfXXs.get(i);
   XXRafle * pRaf = &pB->body.raffle;
   return totWeightP(pRaf);
 }
 
 static bool check_(const char * ctx, XXIx i) {
-  if (pileOfXXs.count()==0) return true;
+  if (pileOfXXs.top()==0) return true;
   XXRafle * pP = &pileOfXXs.get(i)->body.raffle;
   if (left(i).i < pileOfXXs.top()) {
     XXRafle * p = &pileOfXXs.get(left (i))->body.raffle;
@@ -64,7 +65,7 @@ static bool check_(const char * ctx, XXIx i) {
     if (pP->l != 0)
       panicDump(i);
   }
-  if (right(i).i < pileOfXXs.count()) {
+  if (right(i).i < pileOfXXs.top()) {
     XXRafle * p = &pileOfXXs.get(right(i))->body.raffle;
     if (totWeightP(p) != pP->r) 
       panicDump(i);

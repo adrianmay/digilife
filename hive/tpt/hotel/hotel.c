@@ -87,8 +87,8 @@ static void raid(void) {
       meapOfXXBombs.check();
       XX * pXX = hotelOfXXs.get(bomb.who);
       if (pXX->rent.cash<0) abort();
-      onXXHotelGoDie(bomb.who); // does NOt need to free the block
-      pileOfXXs.free(bomb.who);
+      onXXHotelGoDie(bomb.who); // DOES need to free the block
+      //pileOfXXs.free(bomb.who);
       continue;
     }
     if (ch == Extinct) {

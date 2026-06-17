@@ -22,7 +22,6 @@ static bool init(void) {
 
 void survey() {
   printf("Mobs=%d, Msgs=%d\n", hotelOfMobs.count(), raffleOfMsgs.count());
-  //raffleOfMsgs.show();
 }
 static void cleanup(void) { closeTank(HIDE); }
 
@@ -50,6 +49,7 @@ static bool test1(void) {
     choose();
     survey();
   }
+  hotelOfMobs.show();
   return true;
 }
 static bool test(void) {

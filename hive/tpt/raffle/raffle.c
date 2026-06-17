@@ -139,6 +139,8 @@ static XXIx play(Cash cash, Weight w, WithXXTicket stuffTicket) {
 
 void onXXHotelGoDie(XXIx i) {
   onXXRaffleGoDie(i);
+  pileOfXXs.free(i);
+
   //XX * p = pileOfXXs.get(i);
   //XXRafle * pRaf = &p->body.raffle;
   //if (pRaf->s == 0) abort();

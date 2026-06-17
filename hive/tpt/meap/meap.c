@@ -9,7 +9,8 @@ static XXIx right (XXIx i) {return ( XXIx ){ 2*i.i + 2 };}
 
 static void show(void) {
   printf("MEAP:");
-  pileOfXXs.show(true);
+  //pileOfXXs.show(true);
+  pileOfXXs.show(false);
 }
 
 static Ix bombee;

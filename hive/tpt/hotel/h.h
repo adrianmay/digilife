@@ -42,7 +42,7 @@ typedef struct {
 } XXHotel;
 
 extern void onXXsExtinct(void); // Provide this.
-extern void onXXHotelGoDie(XXIx); // Provide this.
+extern bool onXXHotelGoDie(XXIx); // Provide this.
 extern void onXXRentCollected(Cash cash); // Provide this.
 extern void onXXRentDefaulted(Cash cash); // Provide this.
 extern XXHotel hotelOfXXs;

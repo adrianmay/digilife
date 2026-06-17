@@ -84,11 +84,13 @@ static void raid(void) {
     if (ch == Killed ) {
       //bombee = bomb.who;
       //meapOfXXBombs.forAll(bombeeSafe);
+      //printf("XX Chomped with who=%d\n", bomb.who.i);
       meapOfXXBombs.check();
       XX * pXX = hotelOfXXs.get(bomb.who);
-      if (pXX->rent.cash<0) abort();
-      onXXHotelGoDie(bomb.who); // DOES need to free the block
-      //pileOfXXs.free(bomb.who);
+      if (pXX->rent.cash<0) abort(); // Should actually charged tLostMem
+      if (onXXHotelGoDie(bomb.who)) {
+        pileOfXXs.free(bomb.who);
+      }
       continue;
     }
     if (ch == Extinct) {
@@ -105,11 +107,13 @@ static bool isGod(XX * pXX) { return pXX->rent.bomb.i == BAD_INDEX; }
 
 // Lets raid collect defaults, who aborts
 static void enrich_(XX * pXX, Cash amt) {
+  if (amt==0) return;
   pXX->rent.cash += amt;
   if (isGod(pXX)) return;
   updateDeathWithXX_(pXX);
-  if (amt<0) 
+  if (amt<0) {
     raid();
+  }
 }
 
 static void enrich(XXIx i, Cash amt) {

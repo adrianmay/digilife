@@ -15,7 +15,7 @@
 
 static bool extinct=true;
 void onThingsExtinct(void) { extinct = true; }
-void onThingHotelGoDie(ThingIx i) { pileOfThings.free(i);}
+bool onThingHotelGoDie(ThingIx i) { return true;}
 void onThingRentCollected(Cash cash) { }
 void onThingRentDefaulted(Cash cash) { }
 void showMobBody(MobIx i, MobBody * p) {

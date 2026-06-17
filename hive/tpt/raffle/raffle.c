@@ -137,9 +137,7 @@ static XXIx play(Cash cash, Weight w, WithXXTicket stuffTicket) {
   return i;
 }
 
-void onXXHotelGoDie(XXIx i) {
-  onXXRaffleGoDie(i);
-  pileOfXXs.free(i);
+bool onXXHotelGoDie(XXIx i) { return true; }
 
   //XX * p = pileOfXXs.get(i);
   //XXRafle * pRaf = &p->body.raffle;
@@ -147,7 +145,6 @@ void onXXHotelGoDie(XXIx i) {
   //Weight w = pRaf->s;
   //pRaf->s = 0;
   //propagateWeightUp(i, -w);
-}
 
 static Cash cancel_(XXIx i) {
   Cash c = hotelOfXXs.rob(i); //Take all money so it soon gets freed...
@@ -247,7 +244,11 @@ static Cash rob(XXIx who) {
   return hotelOfXXs.rob(who);
 }
 
-XXRaffle raffleOfXXs = { open, play, enrich, rob, cancel, empty, draw, close, show, count, check, raid, quitNow };
+static Cash robUpTo(XXIx who, Cash limit) {
+  return hotelOfXXs.robUpTo(who, limit);
+}
+
+XXRaffle raffleOfXXs = { open, play, enrich, rob, robUpTo, cancel, empty, draw, close, show, count, check, raid, quitNow };
 
 void showXXBody(XXIx i, XXBody * p) {
   printf("l=%'ld,s=%'ld,r=%'ld,⇑=%d,⇙=%d,⇘=%d,", p->raffle.l, p->raffle.s, p->raffle.r, parent(i).i, left(i).i, right(i).i);

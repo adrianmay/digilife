@@ -72,10 +72,10 @@ Cash costOfCycles(CpuBid bid, Cycles cyc) {
   return cyc * bid;
 }
 
-bool msgPayMob(MsgIx iMsg, MobTact tMob, Cash amt) {
-  raffleOfMsgs.enrich(iMsg, -amt);
-  hotelOfMobs.enrich(tMob.i, amt);
-  return true;
+Cash msgPayMob(MsgIx iMsg, MobTact tMob, Cash amt) {
+  Cash ret = raffleOfMsgs.robUpTo(iMsg, amt);
+  hotelOfMobs.enrich(tMob.i, ret);
+  return ret;
 }
 
 Cash mobPayMob(MobTact tFrom, MobTact tTo, Cash amt) {
@@ -129,10 +129,12 @@ MsgIx post(Cash cash, CpuBid bid, MobTact tS, MobTact tR, WithPayload stuffPaylo
     pT->sndr = tS;
     stuffPayload(&pT->payload);
   }
-  if (checkTact(tS) && hotelOfMobs.chargeIfCan(tS.i, cash)) {
-    MsgIx iMsg = raffleOfMsgs.play(cash, bidToWeight(bid), stuff);
-    return iMsg;
-  }
+  if (checkTact(tS)) {
+    if (hotelOfMobs.chargeIfCan(tS.i, cash)) {
+      MsgIx iMsg = raffleOfMsgs.play(cash, bidToWeight(bid), stuff);
+      return iMsg;
+    } else printf("Mob %d couldn't afford %ld to post\n", tS.i.i, cash);
+  } else printf("Tact unreal\n");
   return badMsgIx;
 }
 
@@ -189,8 +191,6 @@ bool onMsgRaffleApprove(MsgIx i, MsgTicket * pTicket) {
   return res;
 }
 
-extern void onMsgRaffleGoDie(MsgIx i) { }
-
 void onMsgRaffleConsume(MsgIx i, MsgTicket * pTicket) {
   (void)pTicket;
   Msg * pMsg = pileOfMsgs.get(i);  
@@ -220,7 +220,8 @@ void onMsgRaffleConsume(MsgIx i, MsgTicket * pTicket) {
       if (!atomic_compare_exchange_strong(&pMob->body.todo, &exp, badMsgIx)) {
         if (exp.i != BAD_INDEX-1) abort();  
         pileOfMobs.free(tMob.i);
-        alive = false;
+        alive = false; //If the mob is financed now and proceeds to the below, another thread
+                       //could rob the mob and crash the code below
       }
       Cash costUsed = costOfCycles(pMsg->body.ticket.cpuBid, brnd.used);
       if (alive) {
@@ -248,11 +249,10 @@ void onMsgRaffleConsume(MsgIx i, MsgTicket * pTicket) {
   }
 }
 
-void onMobHotelGoDie(MobIx i) {
+bool onMobHotelGoDie(MobIx i) {
   Mob * pMob = pileOfMobs.get(i);
   MsgIx todo = atomic_exchange(&pMob->body.todo, (MsgIx){BAD_INDEX-1});
-  if (todo.i == BAD_INDEX) 
-    pileOfMobs.free(i);
+  return (todo.i == BAD_INDEX);
 }
 
 void choose() {raffleOfMsgs.draw();}

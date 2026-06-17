@@ -56,10 +56,9 @@ void runMob(Core * pC, Api api, MobTact tMe, Cash mobCash, Cash msgCash, MobBody
     //api.post(pB->payMsg, pB->bid, tCh, stuffMsgPayload);
     burn(pC, 1, __LINE__);
   }
-  //MsgIx i =
-  api.post(pB->payMsg, pB->bid, tMe, stuffMsgPayload);
-  //printf("Posted %d\n", i.i);
-  burn(pC, 1, __LINE__);
+  MsgIx i = api.post(pB->payMsg, pB->bid, tMe, stuffMsgPayload);
+  printf("Posted %d\n", i.i);
+  burn(pC, 10, __LINE__);
   //printf("End of runMob: \n");
   //raffleOfMsgs.show();
 }

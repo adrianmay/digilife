@@ -11,6 +11,7 @@ typedef bool   (*XXRaffleOpen)   (void);
 typedef XXIx   (*XXRafflePlay)   (Cash cash, Weight w, WithXXTicket stuff);
 typedef void   (*XXRaffleEnrich) (XXIx iWho, Cash amt);
 typedef Cash   (*XXRaffleRob)    (XXIx i);
+typedef Cash   (*XXRaffleRobUpTo) (XXIx i, Cash limit);
 typedef Cash   (*XXRaffleCancel) (XXIx i);
 typedef bool   (*XXRaffleEmpty)  (void);
 typedef bool   (*XXRaffleDraw)   (void);
@@ -26,6 +27,7 @@ typedef struct {
   XXRafflePlay play;
   XXRaffleEnrich enrich;
   XXRaffleRob rob;
+  XXRaffleRobUpTo robUpTo;
   XXRaffleCancel cancel;
   XXRaffleEmpty empty;
   XXRaffleDraw draw;
@@ -37,7 +39,6 @@ typedef struct {
   XXRaffleQuit quit;
 } XXRaffle;
 
-extern void onXXRaffleGoDie(XXIx); // Provide this.
 extern bool onXXRaffleApprove(XXIx i, XXTicket * pTicket);
 extern void onXXRaffleConsume(XXIx i, XXTicket * pTicket);
                                   

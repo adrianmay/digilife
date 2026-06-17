@@ -21,14 +21,16 @@ static bool init(void) {
 }
 
 void survey() {
-  printf("Mobs=%d, Msgs=%d\n", hotelOfMobs.count(), raffleOfMsgs.count());
+  printf("##############################################\nMobs=%d, Msgs=%d\n", hotelOfMobs.count(), raffleOfMsgs.count());
+  hotelOfMobs.show();
+  raffleOfMsgs.show();
 }
 static void cleanup(void) { closeTank(HIDE); }
 
 void train(MobBody * pMB) {
   pMB->phylum = PHY_B;
   pMB->p.b.spawnThresh = randIntBelow(500);
-  pMB->p.b.payMsg = 500 + randIntBelow(100);
+  pMB->p.b.payMsg = 100 + randIntBelow(100);
   pMB->p.b.bid = 1; //0.01 * pow(1.4, (randIntBelow(10)-5));
 }
 
@@ -39,17 +41,17 @@ static MsgIx postie(Cash cash, CpuBid bid, MobTact tSndr, MobTact tRcvr) {
 
 static bool test1(void) {
   //for (int i=0;i<500;i++) {
-  survey();
-  MobTact t = spawn(5000, tInvestor, train);
-  survey();
-  postie(2000, 1, t, t);
-  survey();
+  //survey();
+  MobTact t = spawn(2000, tInvestor, train);
+  //survey();
+  postie(100, 1, t, t);
+  //printf("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n");
   while (!shouldQuit) {
     //raffleOfMsgs.show();
+    //survey();
     choose();
-    survey();
   }
-  hotelOfMobs.show();
+  //survey();
   return true;
 }
 static bool test(void) {

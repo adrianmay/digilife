@@ -13,7 +13,6 @@ bool onMessRaffleApprove(MessIx i, MessTicket * pTicket) {
 
 void onMessRentCollected(Cash cash) { }
 void onMessRentDefaulted(Cash cash) { }
-extern void onMessRaffleGoDie(MessIx i) { (void)i; }
 
 void showMessTicket(MessTicket * p) {
   printf("type=%c\n", p->type);

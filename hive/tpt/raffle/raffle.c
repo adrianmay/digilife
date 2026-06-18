@@ -180,7 +180,7 @@ static void drawBelow(XXIx i) {
       propagateWeightUp(i, -w);
       unlock();  
       onXXRaffleConsume(i, &pB->body.ticket); // Should leave ticket bankrupt
-    }
+    } else unlock();
     return;
   }
   target -= pRaf->s;

@@ -49,6 +49,7 @@ static bool test1(void) {
   while (!shouldQuit) {
     //raffleOfMsgs.show();
     //survey();
+  survey();
     choose();
   }
   survey();

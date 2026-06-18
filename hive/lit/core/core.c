@@ -52,10 +52,13 @@ void runMob(Core * pC, Api api, MobTact tMe, Cash mobCash, Cash msgCash, MobBody
       pCB->bid = mutCpuBid(pB->bid);
       //burn(pC, 2, __LINE__);
     }
-    MobTact tCh = api.spawn(mobCash/2 - pB->payMsg, stuffMobBody);
-    burn(pC, 2, __LINE__);
-    api.post(pB->payMsg, pB->bid, tCh, stuffMsgPayload);
-    burn(pC, 1, __LINE__);
+    Cash forChild = mobCash/2 - pB->payMsg;
+    if (forChild>0) {
+      MobTact tCh = api.spawn(forChild, stuffMobBody);
+      burn(pC, 2, __LINE__);
+      api.post(pB->payMsg, pB->bid, tCh, stuffMsgPayload);
+      burn(pC, 1, __LINE__);
+    }
   }
   MsgIx i = api.post(pB->payMsg, pB->bid, tMe, stuffMsgPayload);
   printf("Posted msg %d to mob %d\n", i.i, tMe.i.i);

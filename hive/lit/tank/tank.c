@@ -124,13 +124,17 @@ MobTact spawn_(Cash cash, MobTact tBenefactor, WithMobBody stuffBody) {
 }
 
 MobTact spawn(Cash cash, MobTact tBenefactor, WithMobBody stuffBody) {
+  if (cash<=0) return (MobTact) {badMobIx};
+  printf("Spawning with cash %ld\n from mob:\n", cash);
+  showMobTact(tBenefactor);
   MobTact ret = spawn_(cash, tBenefactor, stuffBody);
-  printf("Spawned: ");
   showMobTact(ret);
+  hotelOfMobs.showMob(ret.i, hotelOfMobs.get(ret.i));
   return ret;
 }
 
 MsgIx post(Cash cash, CpuBid bid, MobTact tS, MobTact tR, WithPayload stuffPayload) {
+  if (tR.i.i == BAD_INDEX) abort();
   void stuff(MsgTicket * pT) {
     pT->cpuBid = bid;
     pT->rcvr = tR;
@@ -196,7 +200,7 @@ void closeTank(FATE f) {
 bool onMsgRaffleApprove(MsgIx i, MsgTicket * pTicket) {
   MobTact tMob = pTicket->rcvr;
   Mob * pMob = derefTact(tMob);
-  if (!pMob) return false;
+  if (!pMob) return true; // True to have it deleted
   //printf("Approving msg %d\n", i.i); 
   //raffleOfMsgs.show();
   MsgIx exp = badMsgIx;
@@ -211,6 +215,7 @@ void onMsgRaffleConsume(MsgIx i, MsgTicket * pTicket) {
   //showMobTact(tMob);
   //hotelOfMobs.show();
   Mob * pMob = derefTact(tMob);
+  if (!pMob) return; 
   MobBody * pB = &pMob->body;
   if (pMob) {
     MsgIx todo = atomic_load(&pMob->body.todo);

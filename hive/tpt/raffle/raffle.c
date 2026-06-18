@@ -30,7 +30,6 @@ static void show(void) {
 }
 
 static void panicDump_(XXIx i) {
-  printf("count: %d\n", pileOfXXs.count());
   XX * pB = pileOfXXs.get(i);
   XXRafle * pRaf = &pB->body.raffle;
   printf("In panic: w=%'ld, i=%d, l=%'ld, s=%'ld, r=%'ld\n", peep(), i.i, pRaf->l, pRaf->s, pRaf->r );
@@ -40,6 +39,7 @@ static void panicDump_(XXIx i) {
 }
 
 static void panicDump(XXIx i) {
+  printf("count: %d\n", pileOfXXs.count());
   panicDump_(i);
   show();
   abort();
@@ -138,7 +138,15 @@ static XXIx play(Cash cash, Weight w, WithXXTicket stuffTicket) {
   return i;
 }
 
-bool onXXHotelGoDie(XXIx i, XX * pXX) { return true; }
+bool onXXHotelGoDie(XXIx i, XX * pXX) { 
+  XXRafle * pRaf = &pXX->body.raffle;
+  Weight w = pRaf->s;
+  if (w) {
+    pRaf->s = 0;
+    propagateWeightUp(i, -w);
+  }
+  return true; 
+}
 
   //XX * p = pileOfXXs.get(i);
   //XXRafle * pRaf = &p->body.raffle;
@@ -148,7 +156,7 @@ bool onXXHotelGoDie(XXIx i, XX * pXX) { return true; }
   //propagateWeightUp(i, -w);
 
 static Cash cancel_(XXIx i) {
-  Cash c = hotelOfXXs.rob(i); //Take all money so it soon gets freed...
+  Cash c = hotelOfXXs.poorer(i,0,Rob); //Take all money so it soon gets freed...
   if (pileOfXXs.get(i)->body.raffle.s != 0) abort();
   return c;
 }
@@ -156,6 +164,8 @@ static Cash cancel_(XXIx i) {
 static Cash cancel(XXIx i) {
   lock();
   Cash c = cancel_(i);
+  checkM("cancel");
+  raid();
   checkM("cancel");
   unlock();
   return c;
@@ -187,6 +197,7 @@ static void drawBelow(XXIx i) {
   if (pRaf->r == 0) {
     printf("Bailing from drawBelow\n");
     panicDump(i);
+    show();
     exit(10);
   }
   push(target);
@@ -238,21 +249,23 @@ static void quitNow() {
 }
 
 static void enrich(XXIx who, Cash amt) {
-  hotelOfXXs.enrich(who, amt);
+  hotelOfXXs.richer(who, amt);
 }
 
 static Cash rob(XXIx who) {
-  return hotelOfXXs.rob(who);
+  return hotelOfXXs.poorer(who,0,Rob);
 }
 
 static Cash robUpTo(XXIx who, Cash limit) {
-  return hotelOfXXs.robUpTo(who, limit);
+  return hotelOfXXs.poorer(who, limit, Ono);
 }
 
 XXRaffle raffleOfXXs = { open, play, enrich, rob, robUpTo, cancel, empty, draw, close, show, count, check, raid, quitNow };
 
 void showXXBody(XXIx i, XXBody * p) {
-  printf("l=%'ld,s=%'ld,r=%'ld,⇑=%d,⇙=%d,⇘=%d,", p->raffle.l, p->raffle.s, p->raffle.r, parent(i).i, left(i).i, right(i).i);
+  printf("l=%-4ld s=%-4ld r=%-4ld ⇑=%-3d ⇙=%-3d ⇘=%-3d ", 
+         p->raffle.l, p->raffle.s, p->raffle.r, 
+         (i.i==0)?(-1):(parent(i).i), left(i).i, right(i).i);
   showXXTicket(&p->ticket);
 }
 

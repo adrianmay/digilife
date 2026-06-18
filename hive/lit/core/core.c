@@ -3,6 +3,7 @@
 #include "globals/h.h"
 #include "h.h"
 
+#define PAY 2000
 
 typedef struct {
 //  pthread_t pid;
@@ -36,32 +37,36 @@ void burn(Core * pC, Cycles c, int line) {
   }
 }
 
-void runMob(Core * pC, Api api, MobTact tMe, Cash mobCash, Cash msgCash, MobBody * pMB, MsgTicket * pTicket) {
+void runMob(Core * pC, Api api, MobTact tMe, 
+            Cash mobCash, Cash msgCash, 
+            MobBody * pMB, MsgTicket * pTicket) {
   if (pMB->phylum != PHY_B) abort();
   PhyB * pB = &pMB->p.b;
   //printf("runMob: mobcash=%ld, msgcash=%ld, thresh=%ld\n", mobCash, msgCash, pB->spawnThresh);
+  mobPayMob(tSales, tMe, randIntBelow(PAY));
   burn(pC, 2, __LINE__);
-  if (mobCash > pB->spawnThresh) {
+  if ((mobCash) > pB->spawnThresh) {
     void stuffMobBody(MobBody * pCh) {
       pCh->phylum = PHY_B;
       PhyB * pCB = &pCh->p.b;
       pCB->spawnThresh = mutCashThresh(pB->spawnThresh);
-      //burn(pC, 2, __LINE__);
+      burn(pC, 2, __LINE__);
       pCB->payMsg = mutCashThresh(pB->payMsg);
-      //burn(pC, 2, __LINE__);
+      burn(pC, 2, __LINE__);
       pCB->bid = mutCpuBid(pB->bid);
-      //burn(pC, 2, __LINE__);
+      burn(pC, 1, __LINE__);
     }
-    Cash forChild = mobCash/2 - pB->payMsg;
+    Cash forChild = (mobCash)/2 - pB->payMsg;
     if (forChild>0) {
       MobTact tCh = api.spawn(forChild, stuffMobBody);
-      burn(pC, 2, __LINE__);
+      burn(pC, 3, __LINE__);
       api.post(pB->payMsg, pB->bid, tCh, stuffMsgPayload);
       burn(pC, 1, __LINE__);
     }
   }
-  MsgIx i = api.post(pB->payMsg, pB->bid, tMe, stuffMsgPayload);
-  printf("Posted msg %d to mob %d\n", i.i, tMe.i.i);
+  //MsgIx i = 
+  api.post(pB->payMsg, pB->bid, tMe, stuffMsgPayload);
+  //printf("Posted msg %d to mob %d\n", i.i, tMe.i.i);
   burn(pC, 1, __LINE__);
   //printf("End of runMob: \n");
   //raffleOfMsgs.show();

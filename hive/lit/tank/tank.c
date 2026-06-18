@@ -53,19 +53,19 @@ MobTact
   tUndeliverables;
 
 void onMobRentCollected(Cash cash) {
-  hotelOfMobs.enrich(tMemCosts.i, cash);
+  hotelOfMobs.richer(tMemCosts.i, cash);
 }
 
 void onMobRentDefaulted(Cash cash) {
-  hotelOfMobs.enrich(tMemLost.i, cash);
+  hotelOfMobs.richer(tMemLost.i, cash);
 }
 
 void onMsgRentCollected(Cash cash) {
-  hotelOfMobs.enrich(tMemCosts.i, cash);
+  hotelOfMobs.richer(tMemCosts.i, cash);
 }
 
 void onMsgRentDefaulted(Cash cash) {
-  hotelOfMobs.enrich(tMemLost.i, cash);
+  hotelOfMobs.richer(tMemLost.i, cash);
 }
 
 Cash costOfCycles(CpuBid bid, Cycles cyc) {
@@ -74,19 +74,19 @@ Cash costOfCycles(CpuBid bid, Cycles cyc) {
 
 Cash msgPayMob(MsgIx iMsg, MobTact tMob, Cash amt) {
   Cash ret = raffleOfMsgs.robUpTo(iMsg, amt);
-  hotelOfMobs.enrich(tMob.i, ret);
+  hotelOfMobs.richer(tMob.i, ret);
   return ret;
 }
 
 Cash mobPayMob(MobTact tFrom, MobTact tTo, Cash amt) {
-  Cash ret = hotelOfMobs.robUpTo(tFrom.i, amt);
-  hotelOfMobs.enrich(tTo.i, ret);
+  Cash ret = hotelOfMobs.poorer(tFrom.i, amt, Ono);
+  hotelOfMobs.richer(tTo.i, ret);
   return ret;
 }
 
 Cash msgPayMobAll(MsgIx iMsg, MobTact tMob) {
   Cash c = raffleOfMsgs.rob(iMsg);
-  hotelOfMobs.enrich(tMob.i, c);
+  hotelOfMobs.richer(tMob.i, c);
   return c;
 }
 
@@ -112,7 +112,7 @@ MobTact spawn_(Cash cash, MobTact tBenefactor, WithMobBody stuffBody) {
   }
   MobIx iChild = badMobIx;
   if (checkTact(tBenefactor)) {
-    if (hotelOfMobs.chargeIfCan(tBenefactor.i, cash)) {
+    if (hotelOfMobs.poorer(tBenefactor.i, cash, Exact)) {
       Mob * pMob;
       iChild = hotelOfMobs.admit(cash, stuff, &pMob, 0);
       return tact(iChild);
@@ -125,11 +125,11 @@ MobTact spawn_(Cash cash, MobTact tBenefactor, WithMobBody stuffBody) {
 
 MobTact spawn(Cash cash, MobTact tBenefactor, WithMobBody stuffBody) {
   if (cash<=0) return (MobTact) {badMobIx};
-  printf("Spawning with cash %ld\n from mob:\n", cash);
-  showMobTact(tBenefactor);
+  //showMobTact(tBenefactor);
   MobTact ret = spawn_(cash, tBenefactor, stuffBody);
-  showMobTact(ret);
-  hotelOfMobs.showMob(ret.i, hotelOfMobs.get(ret.i));
+  //showMobTact(ret);
+  //if (ret.i.i != BAD_INDEX) 
+  //  hotelOfMobs.showMob(ret.i, hotelOfMobs.get(ret.i));
   return ret;
 }
 
@@ -142,7 +142,7 @@ MsgIx post(Cash cash, CpuBid bid, MobTact tS, MobTact tR, WithPayload stuffPaylo
     stuffPayload(&pT->payload);
   }
   if (checkTact(tS)) {
-    Cash canAfford = hotelOfMobs.robUpTo(tS.i, cash);
+    Cash canAfford = hotelOfMobs.poorer(tS.i, cash, Ono);
     if (canAfford>0) {
       MsgIx iMsg = raffleOfMsgs.play(canAfford, bidToWeight(bid), stuff);
       return iMsg;
@@ -208,7 +208,7 @@ bool onMsgRaffleApprove(MsgIx i, MsgTicket * pTicket) {
   return res;
 }
 
-void onMsgRaffleConsume(MsgIx i, MsgTicket * pTicket) {
+void onMsgRaffleConsume_(MsgIx i, MsgTicket * pTicket) {
   (void)pTicket;
   Msg * pMsg = pileOfMsgs.get(i);  
   MobTact tMob = pMsg->body.ticket.rcvr;
@@ -267,6 +267,11 @@ void onMsgRaffleConsume(MsgIx i, MsgTicket * pTicket) {
       }
     } 
   }
+}
+
+void onMsgRaffleConsume(MsgIx i, MsgTicket * pTicket) {
+  onMsgRaffleConsume_(i, pTicket);
+  raffleOfMsgs.cancel(i);
 }
 
 bool onMobHotelGoDie(MobIx i, Mob * pMob) {

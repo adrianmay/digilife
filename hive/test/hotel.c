@@ -87,14 +87,14 @@ bool test1(void) {
 }
 
 void * earn(void *) {
-  hotelOfThings.enrich(iThing, 2000);
+  hotelOfThings.richer(iThing, 2000);
   return 0;
 }
 
 bool testEarn(void) {
   printf("testEarn\n");
   make(4, 3000);
-  hotelOfThings.enrich(iThing, 2000);
+  hotelOfThings.richer(iThing, 2000);
   //hotelOfThings.show();
   //earn(0);
   expectExtinctSoon(5000);
@@ -104,7 +104,7 @@ bool testEarn(void) {
 bool testRob(void) {
   printf("testRob\n");
   make(5, 9000);
-  hotelOfThings.rob(iThing);
+  hotelOfThings.poorer(iThing, 0, Rob);
   expectExtinctSoon(0);
   return true;
 }

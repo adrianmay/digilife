@@ -27,3 +27,8 @@ void showMobTact(MobTact t);
 MobTact spawn(Cash cash, MobTact iParent, WithMobBody train);
 MsgIx post(Cash cash, CpuBid bid, MobTact sndr, MobTact rcvr, WithPayload stuff);
 void choose(void);
+
+
+Cash mobPayMob(MobTact tFrom, MobTact tTo, Cash amt);
+Cash msgPayMob(MsgIx iMsg, MobTact tMob, Cash amt);
+Cash msgPayMobAll(MsgIx iMsg, MobTact tMob);

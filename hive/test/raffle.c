@@ -6,22 +6,23 @@
 #include "globals/h.h"
 #include "Mess_raffle/h.h"
 
-bool onMessRaffleApprove(MessIx i, MessTicket * pTicket) {
-  return true;
-}
-
 
 void onMessRentCollected(Cash cash) { }
 void onMessRentDefaulted(Cash cash) { }
 
 void showMessTicket(MessTicket * p) {
-  printf("type=%c\n", p->type);
+  printf("type=%c serial=%-3d\n", p->type, p->serial);
 }
 
 static bool extinct = false;
 void onMesssExtinct(void) { extinct = true; }
 
+void tock() { 
+//  printf("Tock: %d\n", tocksNow()); 
+}
+
 static bool init(void) {
+  onTestTock = tock;
   openGlobals();
   raffleOfMesss.open();
   return true;
@@ -81,11 +82,20 @@ bool ch() {
 
 int h, t, v, e;
 
+void apathy(MessTicket * pT) { (void)pT; }
+
+bool onMessRaffleApprove(MessIx i, MessTicket * pTicket) {
+  return randIntBelow(3)!=0;
+}
+
 void onMessRaffleConsume(MessIx i, MessTicket * pT) {
   if (pT->type=='H') h++;
   else if (pT->type=='T') t++;
   else if (pT->type=='V') v++;
   else e++;
+  if (randIntBelow(2)==0) 
+    raffleOfMesss.play(10, 1+randIntBelow(10), apathy);
+  raffleOfMesss.cancel(i);
 }
 
 
@@ -109,15 +119,24 @@ void cleanupRaffle(void) { closeGlobals(DELETE); raffleOfMesss.close(DELETE); }
 int bored = 0;
 
 
-void apathy(MessTicket * pT) { (void)pT; }
+
+#define BLOCKS 20000
+
+void stuffSerial(MessTicket * pT) { 
+  static int ser=1;
+  pT->type='m';
+  pT->serial=ser++; 
+}
 
 void * produce(void * p) {
   (void)p;
-  for (int a=0;a<20;a++) {
-    sleepMs(1+randIntBelow(5));
+  for (int a=0;a<BLOCKS;a++) {
+    notifyCycles(300);
+    sleepMs(randIntBelow(5));
     if (bored==1) break;
-    raffleOfMesss.play(10, 1+randIntBelow(10), apathy);
+    raffleOfMesss.play(10, 1+randIntBelow(10), stuffSerial);
   }
+  bored = 1;
   return 0;
 }
 
@@ -125,18 +144,20 @@ bool testBlock() {
   pthread_t pid;
   pthread_create(&pid, 0, produce, 0);
   //sleepMs(200);
-  for (int a=0;a<10;a++) {
+  //for (int a=0;a<BLOCKS;a++) {
+  while (!bored) {
     sleepMs(1+randIntBelow(5));
     raffleOfMesss.draw();
+    //raffleOfMesss.show();
   }
-  bored = 1;
   pthread_join(pid, 0);
   return true;
 }
 
 bool testRaffle() {
-  stuff1(); ch(); sample(); ch(); empty();
-  stuff2(); ch(); sample(); ch(); empty();
+  //stuff1(); ch(); sample(); ch(); empty();
+  //stuff2(); ch(); sample(); ch(); empty();
+  raffleOfMesss.show();
   testBlock();
   return true;
 }

@@ -21,9 +21,9 @@ static bool init(void) {
 }
 
 void survey() {
-  printf("##############################################\nMobs=%d, Msgs=%d\n", hotelOfMobs.count(), raffleOfMsgs.count());
-  hotelOfMobs.show();
-  raffleOfMsgs.show();
+  printf("Mobs=%d, Msgs=%d\n", hotelOfMobs.count(), raffleOfMsgs.count());
+  //hotelOfMobs.show();
+  //raffleOfMsgs.show();
 }
 static void cleanup(void) { closeTank(HIDE); }
 
@@ -46,10 +46,9 @@ static bool test1(void) {
   //survey();
   postie(100, 1, t, t);
   //printf("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n");
+//  for (int a=0;a<10;a++) {
   while (!shouldQuit) {
-    //raffleOfMsgs.show();
-    //survey();
-  survey();
+    survey();
     choose();
   }
   survey();

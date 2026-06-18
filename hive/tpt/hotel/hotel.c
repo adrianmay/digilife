@@ -75,6 +75,8 @@ void showXXBomb(XXBombIx i, XXBomb * p) {
   printf("tocks=%d,who=%d\n", p->tocks, p->who.i);
 }
 
+static bool isGod(XX * pXX) { return pXX->rent.bomb.i == BAD_INDEX; }
+
 static void raid(void) {
   XXBomb bomb; // Bomb copied out to here
   Tocks now = tocksNow();
@@ -106,23 +108,6 @@ static void raid(void) {
   }
 }
 
-static bool isGod(XX * pXX) { return pXX->rent.bomb.i == BAD_INDEX; }
-
-// Lets raid collect defaults, who aborts
-static void enrich_(XX * pXX, Cash amt) {
-  if (amt==0) return;
-  pXX->rent.cash += amt;
-  if (isGod(pXX)) return;
-  updateDeathWithXX_(pXX);
-  if (amt<0) {
-    raid();
-  }
-}
-
-static void enrich(XXIx i, Cash amt) {
-  enrich_(get(i), amt);
-}
-
 //Deduct cash and set last paid to now
 //Catches defaults now
 static void collectRent(XXIx i) {
@@ -149,6 +134,58 @@ static void collectRent(XXIx i) {
   if (defaulted) onXXRentDefaulted(defaulted);
 }
  
+static void changeCash_(XX * pXX, Cash amt) {
+  pXX->rent.cash += amt;
+  if (!isGod(pXX)) 
+    updateDeathWithXX_(pXX);
+}
+
+static void richer_(XX * pXX, Cash amt) {
+  if (amt<0) abort();
+  if (amt==0) return;
+  changeCash_(pXX, amt);
+}
+
+static void richer(XXIx i, Cash amt) {
+  richer_(get(i), amt);
+}
+
+static Cash poorer_(XX * pXX, Cash amt, Terms t) {
+  if (amt<0) abort();
+  if (amt==0) return 0;
+  Cash ret;
+  if (isGod(pXX)) {
+    ret = amt;
+  } else {
+    Cash got = pXX->rent.cash;
+    ret = t==Exact ? (amt<=got ? amt : 0) :
+          t==Ono   ? MIN(amt, got) :
+          t==Rob   ? got :
+          (abort(),0);
+  }
+  changeCash_(pXX, -ret);
+  return ret;
+}
+
+static Cash poorer(XXIx i, Cash amt, Terms t) {
+  return poorer_(get(i), amt, t);
+}
+/*
+// Lets raid collect defaults, who aborts
+static void enrich_(XX * pXX, Cash amt) {
+  if (amt==0) return;
+  pXX->rent.cash += amt;
+  if (isGod(pXX)) return;
+  updateDeathWithXX_(pXX);
+  if (amt<0) {
+    raid();
+  }
+}
+
+static void enrich(XXIx i, Cash amt) {
+  enrich_(get(i), amt);
+}
+
 static bool chargeIfCan_(XX * pXX, Cash amt) {
   XXRent * pRent = &pXX->rent;
   bool g = isGod(pXX);
@@ -186,7 +223,7 @@ static Cash rob(XXIx i) {
 static Cash robUpTo(XXIx i, Cash max) {
   return robUpTo_(get(i), &max);
 }
-
+*/
 void showXX(XXIx i, XX * p) {
   printf("ix=%-4d|lastPaidRent=%-5d cash=%-5ld bomb=%-2d ", i.i, p->rent.lastPaidRent, p->rent.cash, p->rent.bomb.i);
   showXXBody(i, &p->body);
@@ -238,8 +275,8 @@ static void forAll(bool u, XXVIP act) {
   pileOfXXs.forAll(false, act); 
 }
 
-XXHotel hotelOfXXs = { open, admit, get, enrich, 
-  chargeIfCan, collectRent, forAll, rob, robUpTo, raid, 
+XXHotel hotelOfXXs = { open, admit, get, richer, 
+  poorer, collectRent, forAll, raid, 
   count, close, show, showXX };
 
 

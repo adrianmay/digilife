@@ -37,7 +37,7 @@ typedef TockDiff ScoreDiff;
 typedef uint32_t Ix;
 typedef  int32_t IxDiff;
 //typedef uint32_t Name;
-typedef uint8_t Nick;
+typedef Ix Nick;
 typedef uint32_t TockDuration; // In nanoseconds.
 typedef int64_t Cash;
 typedef double TockPrice; // The currency unit can be tiny.

@@ -147,8 +147,8 @@ Ix allocInPile(Pilehead * ph, void ** ppNew, bool * pRecycled, void * ghost, int
     ret = ph->top-1;
   }
   Free * pNew = findFreeInPile(ph, ret);
-  //printf("In allocInPile: Setting nextFree of %d in %s to nick %x\n", ret, ph->fn, nck);
   if (ppNew) *ppNew = pNew;
+  //printf("allocInPile %s %d\n", ph->fn, ret);
   return ret;
 }
 
@@ -160,6 +160,7 @@ static bool isInFreeList(Pilehead * ph, Ix i) {
 // There's no rent collector thread so this needs MT protection, but higher up
 void freeInPile(Pilehead * ph, Ix i, void * ghost, int ghostlen) {
   Free * pFree = findFreeInPile(ph,i); // Get the block
+  //printf("freeInPile %s %d\n", ph->fn, i);
   if (isInFreeList(ph, i)) {
     printf("DOUBLE FREE in %s: %d\n", ph->fn, i);
     abort();

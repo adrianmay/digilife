@@ -138,7 +138,7 @@ static XXIx play(Cash cash, Weight w, WithXXTicket stuffTicket) {
   return i;
 }
 
-bool onXXHotelGoDie(XXIx i) { return true; }
+bool onXXHotelGoDie(XXIx i, XX * pXX) { return true; }
 
   //XX * p = pileOfXXs.get(i);
   //XXRafle * pRaf = &p->body.raffle;

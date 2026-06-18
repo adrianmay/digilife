@@ -91,7 +91,7 @@ static void raid(void) {
         onXXRentDefaulted(-pXX->rent.cash);
         pXX->rent.cash = 0;
       }
-      if (onXXHotelGoDie(bomb.who)) {
+      if (onXXHotelGoDie(bomb.who, pXX)) {
         pileOfXXs.free(bomb.who);
       }
       continue;
@@ -188,7 +188,7 @@ static Cash robUpTo(XXIx i, Cash max) {
 }
 
 void showXX(XXIx i, XX * p) {
-  printf("ix=%4d|lastPaidRent=%d,cash=%'ld,bomb=%d,", i.i, p->rent.lastPaidRent, p->rent.cash, p->rent.bomb.i);
+  printf("ix=%-4d|lastPaidRent=%-5d cash=%-5ld bomb=%-2d ", i.i, p->rent.lastPaidRent, p->rent.cash, p->rent.bomb.i);
   showXXBody(i, &p->body);
 }
 

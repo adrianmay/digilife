@@ -7,7 +7,6 @@
 #include "Thing_hotel/structs.h"
 #include "Thing_pile/1.h"
 #include "Thing_hotel/h.h"
-#include "bit/MobBody.h"
 
 // ALL OFF COS OF PERF STUFF 
 
@@ -15,13 +14,9 @@
 
 static bool extinct=true;
 void onThingsExtinct(void) { extinct = true; }
-bool onThingHotelGoDie(ThingIx i) { return true;}
+bool onThingHotelGoDie(ThingIx i, Thing * pThing) { return true;}
 void onThingRentCollected(Cash cash) { }
 void onThingRentDefaulted(Cash cash) { }
-void showMobBody(MobIx i, MobBody * p) {
-  printf("code=<binary>\n");
-}
-
 
 Cycles cycles;
 Thing * pThing;

@@ -98,12 +98,13 @@ void showTank() {
 }
 
 MobTact makeGod() {
+  void stuffGod(MobBody * pB) {pB->phylum=PHY_GOD;}
   Mob * p;
-  MobIx iChild = hotelOfMobs.admit(0, 0, &p, 0);
+  MobIx iChild = hotelOfMobs.admit(0, stuffGod, &p, 0);
   return (MobTact){iChild, p->body.nick};
 }
 
-MobTact spawn(Cash cash, MobTact tBenefactor, WithMobBody stuffBody) {
+MobTact spawn_(Cash cash, MobTact tBenefactor, WithMobBody stuffBody) {
   void stuff(MobBody * pB) {
     pB->nick = randIntBelow(0xFFFF);
     pB->todo = (MsgIx){BAD_INDEX};
@@ -122,6 +123,13 @@ MobTact spawn(Cash cash, MobTact tBenefactor, WithMobBody stuffBody) {
   return (MobTact) {badMobIx};
 }
 
+MobTact spawn(Cash cash, MobTact tBenefactor, WithMobBody stuffBody) {
+  MobTact ret = spawn_(cash, tBenefactor, stuffBody);
+  printf("Spawned: ");
+  showMobTact(ret);
+  return ret;
+}
+
 MsgIx post(Cash cash, CpuBid bid, MobTact tS, MobTact tR, WithPayload stuffPayload) {
   void stuff(MsgTicket * pT) {
     pT->cpuBid = bid;
@@ -130,10 +138,14 @@ MsgIx post(Cash cash, CpuBid bid, MobTact tS, MobTact tR, WithPayload stuffPaylo
     stuffPayload(&pT->payload);
   }
   if (checkTact(tS)) {
-    if (hotelOfMobs.chargeIfCan(tS.i, cash)) {
-      MsgIx iMsg = raffleOfMsgs.play(cash, bidToWeight(bid), stuff);
+    Cash canAfford = hotelOfMobs.robUpTo(tS.i, cash);
+    if (canAfford>0) {
+      MsgIx iMsg = raffleOfMsgs.play(canAfford, bidToWeight(bid), stuff);
       return iMsg;
-    } else printf("Mob %d couldn't afford %ld to post\n", tS.i.i, cash);
+    } else { 
+      printf("Mob %d couldn't afford %ld to post\n", tS.i.i, canAfford);
+      abort();
+    }
   } else printf("Tact unreal\n");
   return badMsgIx;
 }
@@ -181,13 +193,14 @@ void closeTank(FATE f) {
 //void onMobsExtinct() { shouldQuit = true; }
 //void onMsgsExtinct() {}
 
-
 bool onMsgRaffleApprove(MsgIx i, MsgTicket * pTicket) {
   MobTact tMob = pTicket->rcvr;
   Mob * pMob = derefTact(tMob);
+  if (!pMob) return false;
+  //printf("Approving msg %d\n", i.i); 
+  //raffleOfMsgs.show();
   MsgIx exp = badMsgIx;
   bool res = atomic_compare_exchange_strong(&pMob->body.todo, &exp, i);
-
   return res;
 }
 
@@ -195,6 +208,8 @@ void onMsgRaffleConsume(MsgIx i, MsgTicket * pTicket) {
   (void)pTicket;
   Msg * pMsg = pileOfMsgs.get(i);  
   MobTact tMob = pMsg->body.ticket.rcvr;
+  //showMobTact(tMob);
+  //hotelOfMobs.show();
   Mob * pMob = derefTact(tMob);
   MobBody * pB = &pMob->body;
   if (pMob) {
@@ -249,10 +264,11 @@ void onMsgRaffleConsume(MsgIx i, MsgTicket * pTicket) {
   }
 }
 
-bool onMobHotelGoDie(MobIx i) {
-  Mob * pMob = pileOfMobs.get(i);
+bool onMobHotelGoDie(MobIx i, Mob * pMob) {
   MsgIx todo = atomic_exchange(&pMob->body.todo, (MsgIx){BAD_INDEX-1});
-  return (todo.i == BAD_INDEX);
+  bool res = todo.i == BAD_INDEX;
+  if (res) pMob->body.nick = BAD_INDEX;
+  return res;
 }
 
 void choose() {raffleOfMsgs.draw();}

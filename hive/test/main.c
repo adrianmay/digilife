@@ -8,10 +8,30 @@
 #include "args/h.h"
 #include "test.h"
 #include "bit/MsgTicket.h"
+#include "bit/MobBody.h"
 
+
+void showMobBody(MobIx i, MobBody * p) {
+  MsgIx ix = atomic_load(&p->todo);
+  printf(" nick=%04x todo=%-3d phylum=%d ", p->nick, ix.i, p->phylum);
+  switch (p->phylum) {
+    case PHY_GOD:
+      printf("God\n");
+      break;
+    case PHY_A:
+      printf("effort=%d\n", p->p.a.effort);
+      break;
+    case PHY_B:
+      printf("spawnThresh=%-4ld payMsg=%ld bid=%f\n", p->p.b.spawnThresh, p->p.b.payMsg, p->p.b.bid);
+      break;
+    default:
+      printf("Unknown phylum\n");
+  }
+}
 
 void showMsgTicket(MsgTicket * p) {
-  printf("cpuBid=%lf, rcvr=%d\n", p->cpuBid, p->rcvr.i.i);
+  printf("cpuBid=%lf, rcvr=", p->cpuBid);
+  showMobTact(p->rcvr);
 }
 
 void B2V(B b) { (*b)(); }

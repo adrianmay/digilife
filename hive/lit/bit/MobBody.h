@@ -21,7 +21,7 @@ typedef  union {
   PhyB b;
 } PhyData;
 
-enum {PHY_ERROR, PHY_A, PHY_B};
+enum {PHY_ERROR, PHY_GOD, PHY_A, PHY_B};
 
 typedef struct {
   Nick nick;

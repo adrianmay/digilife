@@ -20,11 +20,12 @@ do
 done
 
 echo "Building tags"
-find tpt lit gen bin -name "*.h" -or -name "*.c" | xargs ctags || exit 1
+find tpt lit gen bin/test -name "*.h" -or -name "*.c" | xargs ctags || exit 1
 
 echo "Doctoring tags"
 awk -F'\t' -f tools/doctor.awk OFS='\t' tags > newtags
 mv newtags tags
+tools/sort_tags.sh
 
 pids=""
 

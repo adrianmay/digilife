@@ -148,7 +148,7 @@ MsgIx post(Cash cash, CpuBid bid, MobTact tS, MobTact tR, WithPayload stuffPaylo
       return iMsg;
     } else { 
       printf("Mob %d couldn't afford %ld to post\n", tS.i.i, canAfford);
-      abort();
+      //abort();
     }
   } else printf("Tact unreal\n");
   return badMsgIx;

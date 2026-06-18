@@ -20,8 +20,10 @@ static bool init(void) {
   return true; 
 }
 
+int iter=0;
+
 void survey() {
-  printf("Mobs=%d, Msgs=%d\n", hotelOfMobs.count(), raffleOfMsgs.count());
+  printf("Iter=%d Mobs=%d Msgs=%d\n", iter, hotelOfMobs.count(), raffleOfMsgs.count());
   //hotelOfMobs.show();
   //raffleOfMsgs.show();
 }
@@ -48,8 +50,9 @@ static bool test1(void) {
   //printf("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n");
 //  for (int a=0;a<10;a++) {
   while (!shouldQuit) {
-    survey();
+    if (iter % 1000 == 0) survey();
     choose();
+    iter++;
   }
   survey();
   return true;

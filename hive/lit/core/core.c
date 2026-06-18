@@ -32,7 +32,7 @@ void burn(Core * pC, Cycles c, int line) {
   //printf("burn: ")
   CycleDiff remaining = pC->limit - pC->used;
   if (remaining < 0) {
-    printf("Burning out from line %d\n", line);
+    //printf("Burning out from line %d\n", line);
     longjmp(pC->jmpbuf, pC->used);
   }
 }

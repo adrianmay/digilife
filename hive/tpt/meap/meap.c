@@ -166,7 +166,11 @@ static bool erase(XXIx iCur) {
 static Chomped chomp(Score thresh, XX * pCopyOut, int pseudoAnimals) {
   Chomped res;
   Ix x = meapOfXXs.size();
-  if (x<=pseudoAnimals) { res = Extinct; }
+  if (x<=pseudoAnimals) { 
+    printf("chomp XX: extinct: x=%d, pseudo=%d\n", x, pseudoAnimals);
+    //abort();
+    res = Extinct; 
+  }
   else {
     XXIx i = (XXIx) {0};
     XX * p = pileOfXXs.get(i);

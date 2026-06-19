@@ -31,6 +31,16 @@ static XX * get(XXIx i) {
   return pileOfXXs.get(i);
 }
 
+static int numGods=0;
+
+static void checkHotel(int expectExcess) {
+  int diff = pileOfXXs.count() - (meapOfXXBombs.size() + numGods + expectExcess);
+  if (diff) {
+    //printf("checkHotel failed; %d less bombs.\n", diff);
+    //abort();
+  }
+}
+
 //Below, the trailing underscore means no lock taken
 
 // Updates bomp expiry and reorders meap. 
@@ -78,6 +88,7 @@ void showXXBomb(XXBombIx i, XXBomb * p) {
 static bool isGod(XX * pXX) { return pXX->rent.bomb.i == BAD_INDEX; }
 
 static void raid(void) {
+  checkHotel(0);
   XXBomb bomb; // Bomb copied out to here
   Tocks now = tocksNow();
   while (true) { // Returns when nothing to kill for now
@@ -95,11 +106,12 @@ static void raid(void) {
       }
       if (onXXHotelGoDie(bomb.who, pXX)) {
         pileOfXXs.free(bomb.who);
-      }
+        checkHotel(0);
+      } else checkHotel(1);
       continue;
     }
     if (ch == Extinct) {
-      //printf("XXs are extinct\n");
+      checkHotel(0);
       onXXsExtinct(); 
       meapOfXXBombs.check();
       return;
@@ -128,12 +140,11 @@ static void collectRent(XXIx i) {
     collected = c;
     defaulted = bill-c;
     updateDeathWithXX_(pXX);
-    raid();
   }
   if (collected) onXXRentCollected(collected);
   if (defaulted) onXXRentDefaulted(defaulted);
 }
- 
+
 static void changeCash_(XX * pXX, Cash amt) {
   pXX->rent.cash += amt;
   if (!isGod(pXX)) 
@@ -159,9 +170,9 @@ static Cash poorer_(XX * pXX, Cash amt, Terms t) {
   } else {
     Cash got = pXX->rent.cash;
     ret = t==Exact ? (amt<=got ? amt : 0) :
-          t==Ono   ? MIN(amt, got) :
-          t==Rob   ? got :
-          (abort(),0);
+      t==Ono   ? MIN(amt, got) :
+      t==Rob   ? got :
+      (abort(),0);
   }
   changeCash_(pXX, -ret);
   return ret;
@@ -170,69 +181,18 @@ static Cash poorer_(XX * pXX, Cash amt, Terms t) {
 static Cash poorer(XXIx i, Cash amt, Terms t) {
   return poorer_(get(i), amt, t);
 }
-/*
-// Lets raid collect defaults, who aborts
-static void enrich_(XX * pXX, Cash amt) {
-  if (amt==0) return;
-  pXX->rent.cash += amt;
-  if (isGod(pXX)) return;
-  updateDeathWithXX_(pXX);
-  if (amt<0) {
-    raid();
-  }
-}
 
-static void enrich(XXIx i, Cash amt) {
-  enrich_(get(i), amt);
-}
-
-static bool chargeIfCan_(XX * pXX, Cash amt) {
-  XXRent * pRent = &pXX->rent;
-  bool g = isGod(pXX);
-  if (g) 
-    pRent->cash -= amt;
-  else { // Not a god
-    if (pRent->cash < amt) 
-      return false;
-    enrich_(pXX, -amt);
-    meapOfXXBombs.check();
-  }
-  return true;
-}
-
-static bool chargeIfCan(XXIx i, Cash amt) {
-  return chargeIfCan_(get(i), amt);
-}
-
-static Cash robUpTo_(XX * pXX, Cash * pMax) {
-  if (isGod(pXX))
-    return 0;
-  Cash got = pXX->rent.cash;
-  if (got<0) abort(); //return 0;
-  if (pMax && got > *pMax)
-    got = *pMax;
-  enrich_(pXX, -got);
-  meapOfXXBombs.check();
-  return got;
-}
-
-static Cash rob(XXIx i) {
-  return robUpTo_(get(i), 0);
-}
-
-static Cash robUpTo(XXIx i, Cash max) {
-  return robUpTo_(get(i), &max);
-}
-*/
 void showXX(XXIx i, XX * p) {
   printf("ix=%-4d|lastPaidRent=%-5d cash=%-5ld bomb=%-2d ", i.i, p->rent.lastPaidRent, p->rent.cash, p->rent.bomb.i);
   showXXBody(i, &p->body);
 }
 
 static XXIx admit(Cash cash, WithXXBody stuff, XX ** pp, bool * pRecycled) {
+  checkHotel(0);
   XX * p;
   XXIx i = pileOfXXs.alloc(&p, pRecycled);
   if (cash == 0) { //God
+    numGods++;
     p->rent.cash = 0;
     p->rent.lastPaidRent = tocksNow();
     if (stuff) stuff(&p->body);
@@ -244,7 +204,6 @@ static XXIx admit(Cash cash, WithXXBody stuff, XX ** pp, bool * pRecycled) {
     if (stuff) stuff(&p->body);
     Tocks expiry = p->rent.lastPaidRent + cash / (billableXXSize * tockPrice());
     meapOfXXBombs.insert(expiry, i.i, &p->rent.bomb); // Do we need the return value?
-    meapOfXXBombs.check();
   }
   if (pp) *pp = p;
   return i;
@@ -277,7 +236,7 @@ static void forAll(bool u, XXVIP act) {
 
 XXHotel hotelOfXXs = { open, admit, get, richer, 
   poorer, collectRent, forAll, raid, 
-  count, close, show, showXX };
+  count, checkHotel, close, show, showXX };
 
 
 const size_t billableXXSize = sizeof(XX)+sizeof(XXBomb);

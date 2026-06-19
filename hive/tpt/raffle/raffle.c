@@ -145,7 +145,7 @@ bool onXXHotelGoDie(XXIx i, XX * pXX) {
     pRaf->s = 0;
     propagateWeightUp(i, -w);
   }
-  return true; 
+  return true;
 }
 
   //XX * p = pileOfXXs.get(i);

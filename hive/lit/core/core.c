@@ -40,6 +40,7 @@ void burn(Core * pC, Cycles c, int line) {
 void runMob(Core * pC, Api api, MobTact tMe, 
             Cash mobCash, Cash msgCash, 
             MobBody * pMB, MsgTicket * pTicket) {
+  //hotelOfMobs.check(1);
   if (pMB->phylum != PHY_B) abort();
   PhyB * pB = &pMB->p.b;
   //printf("runMob: mobcash=%ld, msgcash=%ld, thresh=%ld\n", mobCash, msgCash, pB->spawnThresh);
@@ -58,6 +59,7 @@ void runMob(Core * pC, Api api, MobTact tMe,
     }
     Cash forChild = (mobCash)/2 - pB->payMsg;
     if (forChild>0) {
+      //hotelOfMobs.checkHotel(1);
       MobTact tCh = api.spawn(forChild, stuffMobBody);
       burn(pC, 3, __LINE__);
       api.post(pB->payMsg, pB->bid, tCh, stuffMsgPayload);

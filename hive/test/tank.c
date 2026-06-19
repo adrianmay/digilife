@@ -7,10 +7,11 @@
 
 
 static bool shouldQuit = false;
-void onMobsExtinct() { shouldQuit = true; }
+void onMobsExtinct() { printf("onMobsExtinct\n"); shouldQuit = true; }
 void onMsgsExtinct() {}
 
 static void tock() {
+  //printf("Tock\n");
   hotelOfMobs.raid();
 }
 
@@ -27,6 +28,7 @@ void survey() {
   //hotelOfMobs.show();
   //raffleOfMsgs.show();
 }
+
 static void cleanup(void) { closeTank(HIDE); }
 
 void train(MobBody * pMB) {
@@ -44,17 +46,20 @@ static MsgIx postie(Cash cash, CpuBid bid, MobTact tSndr, MobTact tRcvr) {
 static bool test1(void) {
   //for (int i=0;i<500;i++) {
   //survey();
-  MobTact t = spawn(2000, tInvestor, train);
+  MobTact t = spawn(3000, tInvestor, train);
   //survey();
-  postie(100, 1, t, t);
+  postie(200, 1, t, t);
   //printf("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n");
 //  for (int a=0;a<10;a++) {
   while (!shouldQuit) {
-    if (iter % 1000 == 0) survey();
+    if (iter % 1000 == 0) 
+      survey();
     choose();
     iter++;
   }
   survey();
+  hotelOfMobs.show();
+//  raffleOfMsgs.show();
   return true;
 }
 static bool test(void) {

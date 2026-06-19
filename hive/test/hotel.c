@@ -31,6 +31,7 @@ static bool init(void) {
   onTestTock = tock;
   openGlobals();
   hotelOfThings.open();
+  hotelOfThings.checkHotel(0);
   iGod = hotelOfThings.admit(0,0,0,0); //God
   return true;
 }

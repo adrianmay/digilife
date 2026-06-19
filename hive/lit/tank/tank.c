@@ -100,6 +100,7 @@ void showTank() {
 MobTact makeGod() {
   void stuffGod(MobBody * pB) {pB->phylum=PHY_GOD;}
   Mob * p;
+  hotelOfMobs.checkHotel(0);
   MobIx iChild = hotelOfMobs.admit(0, stuffGod, &p, 0);
   return (MobTact){iChild, p->body.nick};
 }
@@ -219,7 +220,10 @@ void onMsgRaffleConsume_(MsgIx i, MsgTicket * pTicket) {
   MobBody * pB = &pMob->body;
   if (pMob) {
     MsgIx todo = atomic_load(&pMob->body.todo);
-    if (todo.i == i.i) {
+    if (todo.i == BAD_INDEX-1) {
+      pMob->body.nick = BAD_INDEX;
+      pileOfMobs.free(tMob.i);
+    } else if (todo.i == i.i) {
       hotelOfMobs.collectRent(tMob.i);
       MobTact spawn_(Cash c, WithMobBody st) { 
         return spawn(c, tMob, st);
@@ -239,6 +243,7 @@ void onMsgRaffleConsume_(MsgIx i, MsgTicket * pTicket) {
       // free it.
       if (!atomic_compare_exchange_strong(&pMob->body.todo, &exp, badMsgIx)) {
         if (exp.i != BAD_INDEX-1) abort();  
+        //printf("Delayed free mob %d\n", tMob.i.i);
         pileOfMobs.free(tMob.i);
         alive = false; //If the mob is financed now and proceeds to the below, another thread
                        //could rob the mob and crash the code below
@@ -267,9 +272,11 @@ void onMsgRaffleConsume_(MsgIx i, MsgTicket * pTicket) {
       }
     } 
   }
+  hotelOfMobs.raid();
 }
 
 void onMsgRaffleConsume(MsgIx i, MsgTicket * pTicket) {
+  //printf("")
   onMsgRaffleConsume_(i, pTicket);
   raffleOfMsgs.cancel(i);
 }
@@ -277,7 +284,9 @@ void onMsgRaffleConsume(MsgIx i, MsgTicket * pTicket) {
 bool onMobHotelGoDie(MobIx i, Mob * pMob) {
   MsgIx todo = atomic_exchange(&pMob->body.todo, (MsgIx){BAD_INDEX-1});
   bool res = todo.i == BAD_INDEX;
-  if (res) pMob->body.nick = BAD_INDEX;
+  if (res) 
+    pMob->body.nick = BAD_INDEX;
+  //else printf("Returning false from onMobHotelGoDie i=%d\n", i.i);
   return res;
 }
 

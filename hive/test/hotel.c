@@ -106,7 +106,7 @@ bool testRob(void) {
   printf("testRob\n");
   make(5, 9000);
   hotelOfThings.poorer(iThing, 0, Rob);
-  expectExtinctSoon(0);
+  expectExtinctSoon(150);
   return true;
 }
 

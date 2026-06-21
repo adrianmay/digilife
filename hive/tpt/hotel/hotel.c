@@ -163,7 +163,7 @@ static void richer(XXIx i, Cash amt) {
 
 static Cash poorer_(XX * pXX, Cash amt, Terms t) {
   if (amt<0) abort();
-  if (amt==0) return 0;
+  if (amt==0 && t!=Rob) return 0;
   Cash ret;
   if (isGod(pXX)) {
     ret = amt;

@@ -92,9 +92,9 @@ int main(int argc, char **argv) {
 //    perf() &&
 //    pile() &&
 //    meap() &&
-//    hotel() &&
+    hotel() &&
 //    raffle() &&
-    tank() &&
+//    tank() &&
 //    exec() &&
 //    equi() &&
     true;

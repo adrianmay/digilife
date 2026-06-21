@@ -3,7 +3,7 @@
 #include "globals/h.h"
 #include "h.h"
 
-#define PAY 2000
+#define PAY 700
 
 typedef struct {
 //  pthread_t pid;
@@ -16,13 +16,14 @@ typedef struct {
 void stuffMsgPayload(MsgPayload * p) { (void)p; }
 
 Cash mutCashThresh(Cash c) {
-  double g = gaussian_random(1, 0.1);
-  return c * g;
+  double g = gaussian_random(0, 1 + ((double)c)/5.0);
+  return MAX(0, c + g);
 }
 
 CpuBid mutCpuBid(CpuBid bid) {
-  double g = gaussian_random(1, 0.1);
-  return bid * g;
+  return bid;
+  //double g = gaussian_random(1, 0.1); //return bid * g;
+  //return bid * g;
 }
 
 #define SLOWNESS 10
@@ -38,13 +39,13 @@ void burn(Core * pC, Cycles c, int line) {
 }
 
 void runMob(Core * pC, Api api, MobTact tMe, 
-            Cash mobCash, Cash msgCash, 
+            Cash mobCash, Cash msgCash,
             MobBody * pMB, MsgTicket * pTicket) {
   //hotelOfMobs.check(1);
   if (pMB->phylum != PHY_B) abort();
   PhyB * pB = &pMB->p.b;
   //printf("runMob: mobcash=%ld, msgcash=%ld, thresh=%ld\n", mobCash, msgCash, pB->spawnThresh);
-  mobPayMob(tSales, tMe, randIntBelow(PAY));
+  mobPayMob(tSales, tMe, PAY); // randIntBelow(PAY));
   burn(pC, 2, __LINE__);
   if ((mobCash) > pB->spawnThresh) {
     void stuffMobBody(MobBody * pCh) {
@@ -56,6 +57,7 @@ void runMob(Core * pC, Api api, MobTact tMe,
       burn(pC, 2, __LINE__);
       pCB->bid = mutCpuBid(pB->bid);
       burn(pC, 1, __LINE__);
+      smple(pCh);
     }
     Cash forChild = (mobCash)/2 - pB->payMsg;
     if (forChild>0) {
@@ -89,6 +91,7 @@ Burned run(Api api, MobTact tMe, Cash mobCash, Cash msgCash, MobBody * pMB, MsgT
   else
     return (Burned){core.used, 0};
 }
+
 //     #include <stdatomic.h>
 //     #include <math.h>
 //     #include <string.h>

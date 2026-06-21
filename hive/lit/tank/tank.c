@@ -90,7 +90,7 @@ Cash msgPayMobAll(MsgIx iMsg, MobTact tMob) {
   return c;
 }
 
-Weight bidToWeight(CpuBid bid) {return 1000*bid;}
+Weight bidToWeight(CpuBid bid) {return 1;}
 
 void showTank() {
   hotelOfMobs.show();
@@ -207,6 +207,20 @@ bool onMsgRaffleApprove(MsgIx i, MsgTicket * pTicket) {
   MsgIx exp = badMsgIx;
   bool res = atomic_compare_exchange_strong(&pMob->body.todo, &exp, i);
   return res;
+}
+
+int samples=0;
+Avg avg;
+
+#define MIX(F) \
+  avg.F = ( samples*avg.F + ((double)pB->p.b.F)) / ((double)(samples+1)) ;
+
+
+void smple(MobBody* pB) {
+  MIX(spawnThresh)
+  MIX(payMsg)
+  MIX(bid)
+  if (samples<100) samples++;
 }
 
 void onMsgRaffleConsume_(MsgIx i, MsgTicket * pTicket) {

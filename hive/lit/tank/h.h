@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Msg_pile/2.h"
 #include "Mob_hotel/h.h"
 #include "Msg_pile/2.h"
@@ -32,3 +34,7 @@ void choose(void);
 Cash mobPayMob(MobTact tFrom, MobTact tTo, Cash amt);
 Cash msgPayMob(MsgIx iMsg, MobTact tMob, Cash amt);
 Cash msgPayMobAll(MsgIx iMsg, MobTact tMob);
+
+typedef struct {double spawnThresh; double payMsg; double bid; } Avg;
+void smple(MobBody* pB);
+extern Avg avg;

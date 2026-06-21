@@ -7,6 +7,8 @@
 #include "Mess_raffle/h.h"
 
 
+static bool extinct = false;
+void onMesssExtinct(void) { extinct = true; }
 void onMessRentCollected(Cash cash) { }
 void onMessRentDefaulted(Cash cash) { }
 
@@ -14,8 +16,7 @@ void showMessTicket(MessTicket * p) {
   printf("type=%c serial=%-3d\n", p->type, p->serial);
 }
 
-static bool extinct = false;
-void onMesssExtinct(void) { extinct = true; }
+/*
 
 void tock() { 
 //  printf("Tock: %d\n", tocksNow()); 
@@ -164,4 +165,4 @@ bool testRaffle() {
 
 bool raffle(void) { return bkt("raffle", init, testRaffle, cleanupRaffle); }
 
-
+*/

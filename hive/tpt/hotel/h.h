@@ -4,31 +4,36 @@
 //#include "XX_hotel/h.h"
 #include "XX_pile/2.h"
 
-typedef enum {Exact, Ono, Rob} Terms;
+typedef struct {XXIx i; Nick n; } XXTact;
 
+#define NICK_BUSY 0x80000000
+#define NICK_DOOMED 0x40000000
+typedef void (*WithXX)(XX *);
 typedef void (*WithXXBody)(XXBody *);
 
 extern void onXXRentCollected(Cash rent); // Provide this
 extern void onXXRentDefaulted(Cash rent); // Provide this
                                      
 typedef bool        (*XXHotelOpen)(void);
-typedef XXIx        (*XXHotelAdmit)(Cash cash, WithXXBody stuff, XX ** pp, bool * pRecycled); //Cash = 0 -> God
+typedef XXTact      (*XXHotelAdmit)(Cash cash, WithXXBody stuff, XX ** pp, bool * pRecycled); //Cash = 0 -> God
 typedef XX *        (*XXHotelGet)(XXIx i);
-typedef void        (*XXHotelRicher)(XXIx iWho, Cash amt);
-typedef Cash        (*XXHotelPoorer)(XXIx iWho, Cash amt, Terms t);
-typedef void        (*XXHotelCollectRent)(XXIx iWho);
+typedef Woth        (*XXHotelWith)(XXTact, WithXX);
+typedef Woth        (*XXHotelRicher)(XXTact, Cash);
+typedef Woth        (*XXHotelPoorer)(XXTact, Cash *, Terms);
+typedef Woth        (*XXHotelCollectRent)(XXTact);
 typedef void        (*XXHotelVV)(void);
 typedef void        (*XXHotelVI)(int expectExcess);
 typedef Ix          (*XXHotelCount)(void);
 typedef void        (*XXHotelClose)(FATE fate);
 typedef void        (*XXHotelForAll)(bool u, XXVIP);
 typedef void        (*XXHotelShow)(void);
-typedef void        (*XXHotelShowXX)(XXIx i, XX * p);
+typedef void        (*XXHotelShowXX)(XXTact, XX * p);
 
 typedef struct {
   XXHotelOpen open;
   XXHotelAdmit admit;
   XXHotelGet get;
+  XXHotelWith with;
   XXHotelRicher richer;
   XXHotelPoorer poorer;
   XXHotelCollectRent collectRent;

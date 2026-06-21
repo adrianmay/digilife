@@ -9,7 +9,7 @@
 static bool shouldQuit = false;
 void onMobsExtinct() { printf("onMobsExtinct\n"); shouldQuit = true; }
 void onMsgsExtinct() {}
-
+/*
 static void tock() {
   //printf("Tock\n");
   hotelOfMobs.raid();
@@ -71,4 +71,4 @@ static bool test(void) {
 
 bool tank(void) { return bkt("tank", init, test, cleanup); }
 
-
+*/

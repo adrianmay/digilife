@@ -9,10 +9,23 @@
 #include "core/h.h"
 #include "h.h"
 
+void onMobRentCollected(Cash cash) {
+}
+
+void onMobRentDefaulted(Cash cash) {
+}
+
+void onMsgRentCollected(Cash cash) {
+}
+
+void onMsgRentDefaulted(Cash cash) {
+}
+
 void showMobTact(MobTact t) {
   printf("Tact {%d,%x}\n", t.i.i, t.n);
 }
 
+/*
 MobTact tact(MobIx i) {
   Mob * pMob = hotelOfMobs.get(i);
   Nick nick = pMob->body.nick;
@@ -101,8 +114,8 @@ MobTact makeGod() {
   void stuffGod(MobBody * pB) {pB->phylum=PHY_GOD;}
   Mob * p;
   hotelOfMobs.checkHotel(0);
-  MobIx iChild = hotelOfMobs.admit(0, stuffGod, &p, 0);
-  return (MobTact){iChild, p->body.nick};
+  MobTact tChild = hotelOfMobs.admit(0, stuffGod, &p, 0);
+  return tChild;
 }
 
 MobTact spawn_(Cash cash, MobTact tBenefactor, WithMobBody stuffBody) {
@@ -111,7 +124,7 @@ MobTact spawn_(Cash cash, MobTact tBenefactor, WithMobBody stuffBody) {
     pB->todo = (MsgIx){BAD_INDEX};
     stuffBody(pB);
   }
-  MobIx iChild = badMobIx;
+  MobIx tChild = badMobIx;
   if (checkTact(tBenefactor)) {
     if (hotelOfMobs.poorer(tBenefactor.i, cash, Exact)) {
       Mob * pMob;
@@ -305,5 +318,5 @@ bool onMobHotelGoDie(MobIx i, Mob * pMob) {
 }
 
 void choose() {raffleOfMsgs.draw();}
-
+*/
 

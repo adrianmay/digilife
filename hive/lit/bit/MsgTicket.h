@@ -1,9 +1,6 @@
 #pragma once
 
-#include "Mob_pile/1.h"
-
-
-typedef struct {MobIx i; Nick n; } MobTact;
+#include "Mob_hotel/h.h"
 
 typedef struct {
 } MsgPayload;

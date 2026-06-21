@@ -2,7 +2,7 @@
 #include "misc/h.h"
 #include "globals/h.h"
 #include "h.h"
-
+/*
 #define PAY 700
 
 typedef struct {
@@ -91,6 +91,16 @@ Burned run(Api api, MobTact tMe, Cash mobCash, Cash msgCash, MobBody * pMB, MsgT
   else
     return (Burned){core.used, 0};
 }
+
+
+*/
+
+
+
+
+
+
+
 
 //     #include <stdatomic.h>
 //     #include <math.h>

@@ -31,6 +31,27 @@ static XX * get(XXIx i) {
   return pileOfXXs.get(i);
 }
 
+static Woth with(XXTact t, WithXX act) {
+  Nick nick; 
+  XX * pXX = hotelOfXXs.get(t.i);
+  nick = atomic_fetch_or(&pXX->rent.nick, NICK_BUSY); 
+  if (nick==t.n) { // Normal case
+    act(pXX);
+    nick = atomic_fetch_and(&pXX->rent.nick, ~NICK_BUSY); 
+    if (nick == (t.n | NICK_BUSY)) // Normal
+      return Ok;
+    if (nick | NICK_DOOMED) { // Somebody requested to delete it when we were using it.
+      atomic_store(&pXX->rent.nick, BAD_INDEX); 
+      if (nick != (t.n | NICK_DOOMED)) abort(); // Shouldn't happen
+      pileOfXXs.free(t.i); // Free it
+      printf("Late free\n");
+      return Ok;
+    }
+  } 
+  if (nick == (t.n | NICK_BUSY)) return Busy;
+  return Dead;// Doomed, BAD_INDEX or a new mob. 
+}
+
 static int numGods=0;
 
 static void checkHotel(int expectExcess) {
@@ -93,6 +114,7 @@ static void raid(void) {
   Tocks now = tocksNow();
   while (true) { // Returns when nothing to kill for now
     bomb.who = badXXIx; // Prevent false alarms
+    //meapOfXXBombs.show();
     Chomped ch = meapOfXXBombs.chomp(now, &bomb, 0);
     if (ch == Killed ) {
       //bombee = bomb.who;
@@ -101,13 +123,17 @@ static void raid(void) {
       meapOfXXBombs.check();
       XX * pXX = hotelOfXXs.get(bomb.who);
       if (pXX->rent.cash<0) {
-        onXXRentDefaulted(-pXX->rent.cash);
+        onXXRentDefaulted(-pXX->rent.cash); // Should be at the real free
         pXX->rent.cash = 0;
       }
-      if (onXXHotelGoDie(bomb.who, pXX)) {
-        pileOfXXs.free(bomb.who);
-        checkHotel(0);
-      } else checkHotel(1);
+      Nick want;
+      want = atomic_fetch_or(&pXX->rent.nick, NICK_DOOMED); 
+      if (want & NICK_DOOMED) 
+        abort();
+      if (want & NICK_BUSY) continue;
+      atomic_store(&pXX->rent.nick, BAD_INDEX); 
+      printf("Free in raid\n");
+      pileOfXXs.free(bomb.who);
       continue;
     }
     if (ch == Extinct) {
@@ -122,8 +148,7 @@ static void raid(void) {
 
 //Deduct cash and set last paid to now
 //Catches defaults now
-static void collectRent(XXIx i) {
-  XX * pXX = get(i);
+static void collectRent_(XX * pXX) {
   Cash collected, defaulted;
   XXRent * pRent = &pXX->rent;
   Tocks now = tocksNow();
@@ -145,6 +170,11 @@ static void collectRent(XXIx i) {
   if (defaulted) onXXRentDefaulted(defaulted);
 }
 
+static Woth collectRent(XXTact t) {
+  void f(XX * pXX) { collectRent_(pXX);}
+  return with(t, f); 
+}
+
 static void changeCash_(XX * pXX, Cash amt) {
   pXX->rent.cash += amt;
   if (!isGod(pXX)) 
@@ -157,8 +187,9 @@ static void richer_(XX * pXX, Cash amt) {
   changeCash_(pXX, amt);
 }
 
-static void richer(XXIx i, Cash amt) {
-  richer_(get(i), amt);
+static Woth richer(XXTact t, Cash amt) {
+  void f(XX * pXX) { richer_(pXX, amt);}
+  return with(t, f); 
 }
 
 static Cash poorer_(XX * pXX, Cash amt, Terms t) {
@@ -178,19 +209,22 @@ static Cash poorer_(XX * pXX, Cash amt, Terms t) {
   return ret;
 }
 
-static Cash poorer(XXIx i, Cash amt, Terms t) {
-  return poorer_(get(i), amt, t);
+static Woth poorer(XXTact t, Cash * amt, Terms terms) {
+  void f(XX * pXX) { *amt = poorer_(pXX, *amt, terms);}
+  return with(t, f); 
 }
 
-void showXX(XXIx i, XX * p) {
-  printf("ix=%-4d|lastPaidRent=%-5d cash=%-5ld bomb=%-2d ", i.i, p->rent.lastPaidRent, p->rent.cash, p->rent.bomb.i);
-  showXXBody(i, &p->body);
+void showXX(XXTact t, XX * p) {
+  printf("ix=%-4d nick=%-4d|lastPaidRent=%-5d cash=%-5ld bomb=%-2d ", t.i.i, t.n, p->rent.lastPaidRent, p->rent.cash, p->rent.bomb.i);
+  showXXBody(t.i, &p->body);
 }
 
-static XXIx admit(Cash cash, WithXXBody stuff, XX ** pp, bool * pRecycled) {
+static XXTact admit(Cash cash, WithXXBody stuff, XX ** pp, bool * pRecycled) {
   checkHotel(0);
   XX * p;
   XXIx i = pileOfXXs.alloc(&p, pRecycled);
+  XXTact t = (XXTact){i, randIntBelow(0x40000000)};
+  p->rent.nick = t.n;
   if (cash == 0) { //God
     numGods++;
     p->rent.cash = 0;
@@ -206,7 +240,7 @@ static XXIx admit(Cash cash, WithXXBody stuff, XX ** pp, bool * pRecycled) {
     meapOfXXBombs.insert(expiry, i.i, &p->rent.bomb); // Do we need the return value?
   }
   if (pp) *pp = p;
-  return i;
+  return t;
 }
 
 
@@ -234,8 +268,8 @@ static void forAll(bool u, XXVIP act) {
   pileOfXXs.forAll(false, act); 
 }
 
-XXHotel hotelOfXXs = { open, admit, get, richer, 
-  poorer, collectRent, forAll, raid, 
+XXHotel hotelOfXXs = { open, admit, get, with, 
+  richer, poorer, collectRent, forAll, raid, 
   count, checkHotel, close, show, showXX };
 
 

@@ -7,7 +7,7 @@
 #include "XX_raffle/h.h"
 #include "XX_pile/2.h"
 #include "XX_hotel/h.h"
-
+/*
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t  cond  = PTHREAD_COND_INITIALIZER;
 static void lock() { pthread_mutex_lock(&mutex); }
@@ -122,7 +122,7 @@ static XXIx play(Cash cash, Weight w, WithXXTicket stuffTicket) {
   void stuffBody(XXBody * pBody) {
     stuffTicket(&pBody->ticket);
   }
-  XXIx i = hotelOfXXs.admit(cash, stuffBody, &p, &recycled);
+  XXTact t = hotelOfXXs.admit(cash, stuffBody, &p, &recycled);
   //if (p->rent.cash>10000) { printf("Overrich 1 %d has %'ld from %'ld\n", i.i, p->rent.cash, cash); exit(1); }
   XXRafle * pRaf = &p->body.raffle; 
   if (!recycled) pRaf->s = pRaf->l = pRaf->r = 0; // Don't really need to zero s
@@ -268,4 +268,11 @@ void showXXBody(XXIx i, XXBody * p) {
          (i.i==0)?(-1):(parent(i).i), left(i).i, right(i).i);
   showXXTicket(&p->ticket);
 }
+*/
 
+void showXXBody(XXIx i, XXBody * p) {
+  printf("l=%-4ld s=%-4ld r=%-4ld ", 
+         p->raffle.l, p->raffle.s, p->raffle.r
+         );
+  showXXTicket(&p->ticket);
+}

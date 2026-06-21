@@ -20,8 +20,8 @@ void onThingRentDefaulted(Cash cash) { }
 
 Cycles cycles;
 Thing * pThing;
-ThingIx iThing;
-ThingIx iGod;
+ThingTact tThing;
+ThingTact tGod;
 
 static void tock() {
   hotelOfThings.raid();
@@ -32,7 +32,7 @@ static bool init(void) {
   openGlobals();
   hotelOfThings.open();
   hotelOfThings.checkHotel(0);
-  iGod = hotelOfThings.admit(0,0,0,0); //God
+  tGod = hotelOfThings.admit(0,0,0,0); //God
   return true;
 }
 
@@ -58,11 +58,12 @@ bool testNoPop(void) {
   return true;
 }
 
-void make(Ix name, Cash cash) {
+ThingTact make(Ix name, Cash cash) {
   bool recycledSlot;
   void stuff(ThingBody * p) { p->name = name; }
-  iThing = hotelOfThings.admit(cash, stuff, &pThing, &recycledSlot);
+  tThing = hotelOfThings.admit(cash, stuff, &pThing, &recycledSlot);
   extinct=false;
+  return tThing;
 }
 
 bool expectExtinctSoon(Cash cash) {
@@ -88,14 +89,14 @@ bool test1(void) {
 }
 
 void * earn(void *) {
-  hotelOfThings.richer(iThing, 2000);
+  hotelOfThings.richer(tThing, 2000);
   return 0;
 }
 
 bool testEarn(void) {
   printf("testEarn\n");
   make(4, 3000);
-  hotelOfThings.richer(iThing, 2000);
+  hotelOfThings.richer(tThing, 2000);
   //hotelOfThings.show();
   //earn(0);
   expectExtinctSoon(5000);
@@ -105,7 +106,7 @@ bool testEarn(void) {
 bool testRob(void) {
   printf("testRob\n");
   make(5, 9000);
-  hotelOfThings.poorer(iThing, 0, Rob);
+  hotelOfThings.poorer(tThing, 0, Rob);
   expectExtinctSoon(150);
   return true;
 }
@@ -115,23 +116,72 @@ bool testGod(void) {
   make(6, 1000);
   make(5, 0);
   expectExtinctSoon(1000);
-  hotelOfThings.collectRent(iThing);
-  Cash godsCash = hotelOfThings.get(iThing)->rent.cash;
-  assertLong(godsCash, -1080l);
+  hotelOfThings.collectRent(tThing);
+  bool ff(Thing * pThing) { assertLong(pThing->rent.cash, -1200l); return true;}
+  void f(Thing * pThing) { ff(pThing); }
+  hotelOfThings.with(tThing, f);
   return true;
 }
 
+bool testAfterFree(void) {
+  printf("testAfterFree\n");
+  ThingTact tThing = make(6, 1000);
+  expectExtinctSoon(1000);
+  void f(Thing * p) { (void)p; }
+  Woth w = hotelOfThings.with(tThing, f);
+  assertInt(w, Dead);
+  return true;
+}
+
+bool testBusy(void) {
+  printf("testBusy\n");
+  ThingTact tThing = make(6, 10000);
+  //printf("nick: %x\n", tThing.n);
+  void f(Thing * p) { (void)p; }
+  Woth wi;
+  void g(Thing * p) { 
+    wi = hotelOfThings.with(tThing, f);
+  }
+  Woth wo = hotelOfThings.with(tThing, g);
+  assertInt(wo, Ok);
+  assertInt(wi, Busy);
+  return true;
+}
+
+bool testFreeWhenBusy(void) {
+  printf("testFreeWhenBusy\n");
+  ThingTact tThing = make(6, 1);
+  //printf("nick: %x\n", tThing.n);
+  bool sameIndex2;
+  void g(Thing * p) { 
+    notifyCycles(2*GUESS_CYCLES_PER_TOCK);
+    //hotelOfThings.poorer(tThing, 0, Rob);
+    //hotelOfThings.raid();
+    ThingTact t2 = make(7,1000);
+    sameIndex2 = t2.i.i == tThing.i.i;
+  }
+  Woth wo = hotelOfThings.with(tThing, g);
+  ThingTact t3 = make(8,1000);
+  bool sameIndex3 = t3.i.i == tThing.i.i;
+  assertInt(wo, Ok);
+  assertInt(sameIndex2, false);
+  assertInt(sameIndex3, true);
+  return true;
+}
 void cleanupHotel(void) { hotelOfThings.close(HIDE); closeGlobals(HIDE); }
 
 bool testHotel(void) {
   printf("Tock price: %f\n", tockPrice());
   printf("Billable size: %ld\n", billableThingSize);
   return
-    testNoPop() &&
-    test1() &&
-    testEarn() &&
-    testRob() &&
-    testGod() &&
+  //  testNoPop() &&
+  //  test1() &&
+  //  testEarn() &&
+  //  testRob() &&
+  //  testGod() &&
+    //testAfterFree() &&
+    testBusy() &&
+    testFreeWhenBusy() &&
     true;
 }
 

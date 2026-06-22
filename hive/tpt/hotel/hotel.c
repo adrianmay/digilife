@@ -31,6 +31,28 @@ static XX * get(XXIx i) {
   return pileOfXXs.get(i);
 }
 
+static Woth withIx(XXIx i, WithXX act) {
+  Nick nick;
+  XX * pXX = hotelOfXXs.get(i);
+  XXTact t = (XXTact){i, pXX->rent.nick}; 
+  nick = atomic_fetch_or(&pXX->rent.nick, NICK_BUSY); 
+  if (nick==t.n) { // Normal case
+    act(pXX);
+    nick = atomic_fetch_and(&pXX->rent.nick, ~NICK_BUSY); 
+    if (nick == (t.n | NICK_BUSY)) // Normal
+      return Ok;
+    if (nick | NICK_DOOMED) { // Somebody requested to delete it when we were using it.
+      atomic_store(&pXX->rent.nick, BAD_INDEX); 
+      if (nick != (t.n | NICK_DOOMED)) abort(); // Shouldn't happen
+      pileOfXXs.free(t.i); // Free it
+      printf("Late free\n");
+      return Ok;
+    }
+  } 
+  if (nick == (t.n | NICK_BUSY)) return Busy;
+  return Dead;// Doomed, BAD_INDEX or a new mob. 
+}
+
 static Woth with(XXTact t, WithXX act) {
   Nick nick; 
   XX * pXX = hotelOfXXs.get(t.i);
@@ -108,47 +130,9 @@ void showXXBomb(XXBombIx i, XXBomb * p) {
 
 static bool isGod(XX * pXX) { return pXX->rent.bomb.i == BAD_INDEX; }
 
-static void raid(void) {
-  checkHotel(0);
-  XXBomb bomb; // Bomb copied out to here
-  Tocks now = tocksNow();
-  while (true) { // Returns when nothing to kill for now
-    bomb.who = badXXIx; // Prevent false alarms
-    //meapOfXXBombs.show();
-    Chomped ch = meapOfXXBombs.chomp(now, &bomb, 0);
-    if (ch == Killed ) {
-      //bombee = bomb.who;
-      //meapOfXXBombs.forAll(bombeeSafe);
-      //printf("XX Chomped with who=%d\n", bomb.who.i);
-      meapOfXXBombs.check();
-      XX * pXX = hotelOfXXs.get(bomb.who);
-      if (pXX->rent.cash<0) {
-        onXXRentDefaulted(-pXX->rent.cash); // Should be at the real free
-        pXX->rent.cash = 0;
-      }
-      Nick want;
-      want = atomic_fetch_or(&pXX->rent.nick, NICK_DOOMED); 
-      if (want & NICK_DOOMED) 
-        abort();
-      if (want & NICK_BUSY) continue;
-      atomic_store(&pXX->rent.nick, BAD_INDEX); 
-      printf("Free in raid\n");
-      pileOfXXs.free(bomb.who);
-      continue;
-    }
-    if (ch == Extinct) {
-      checkHotel(0);
-      onXXsExtinct(); 
-      meapOfXXBombs.check();
-      return;
-    }
-    return; // Must be Idle
-  }
-}
-
 //Deduct cash and set last paid to now
 //Catches defaults now
-static void collectRent_(XX * pXX) {
+static void collectRent(XX * pXX) {
   Cash collected, defaulted;
   XXRent * pRent = &pXX->rent;
   Tocks now = tocksNow();
@@ -170,9 +154,47 @@ static void collectRent_(XX * pXX) {
   if (defaulted) onXXRentDefaulted(defaulted);
 }
 
-static Woth collectRent(XXTact t) {
-  void f(XX * pXX) { collectRent_(pXX);}
-  return with(t, f); 
+static void raid(void) {
+  checkHotel(0);
+  XXBomb bomb; // Bomb copied out to here
+  Tocks now = tocksNow();
+  printf("Tocks=%d\n", now);
+  while (true) { // Returns when nothing to kill for now
+    bomb.who = badXXIx; // Prevent false alarms
+    //meapOfXXBombs.show();
+    Chomped ch = meapOfXXBombs.chomp(now, &bomb, 0);
+    if (ch == Killed ) {
+      //bombee = bomb.who;
+      //meapOfXXBombs.forAll(bombeeSafe);
+      meapOfXXBombs.check();
+      XX * pXX = hotelOfXXs.get(bomb.who);
+      printf("XX Chomped with expiry=%d, who=%d, cash before collecting rent=%ld\n", bomb.tocks, bomb.who.i, pXX->rent.cash);
+      collectRent(pXX);
+      printf("XX Chomped with who=%d, cash after collecting rent=%ld\n", bomb.who.i, pXX->rent.cash);
+      if (pXX->rent.cash<0) {
+        onXXRentDefaulted(-pXX->rent.cash); // Should be at the real free
+        pXX->rent.cash = 0;
+      }
+      Nick want;
+      want = atomic_fetch_or(&pXX->rent.nick, NICK_DOOMED); 
+      if (want & NICK_DOOMED) 
+        abort();
+      if (want & NICK_BUSY) continue;
+      atomic_store(&pXX->rent.nick, BAD_INDEX); 
+      //printf("Free in raid\n");
+      onXXHotelGoDie(bomb.who, pXX);
+      pileOfXXs.free(bomb.who);
+      continue;
+    }
+    if (ch == Extinct) {
+      checkHotel(0);
+      onXXsExtinct(); 
+      meapOfXXBombs.check();
+      return;
+    }
+    printf("Raid over\n");
+    return; // Must be Idle
+  }
 }
 
 static void changeCash_(XX * pXX, Cash amt) {
@@ -181,18 +203,13 @@ static void changeCash_(XX * pXX, Cash amt) {
     updateDeathWithXX_(pXX);
 }
 
-static void richer_(XX * pXX, Cash amt) {
+static void richer(XX * pXX, Cash amt) {
   if (amt<0) abort();
   if (amt==0) return;
   changeCash_(pXX, amt);
 }
 
-static Woth richer(XXTact t, Cash amt) {
-  void f(XX * pXX) { richer_(pXX, amt);}
-  return with(t, f); 
-}
-
-static Cash poorer_(XX * pXX, Cash amt, Terms t) {
+static Cash poorer(XX * pXX, Cash amt, Terms t) {
   if (amt<0) abort();
   if (amt==0 && t!=Rob) return 0;
   Cash ret;
@@ -209,9 +226,8 @@ static Cash poorer_(XX * pXX, Cash amt, Terms t) {
   return ret;
 }
 
-static Woth poorer(XXTact t, Cash * amt, Terms terms) {
-  void f(XX * pXX) { *amt = poorer_(pXX, *amt, terms);}
-  return with(t, f); 
+static Cash rob(XX * pXX) {
+  return poorer(pXX, 0, Rob);
 }
 
 void showXX(XXTact t, XX * p) {
@@ -237,9 +253,11 @@ static XXTact admit(Cash cash, WithXXBody stuff, XX ** pp, bool * pRecycled) {
     p->rent.lastPaidRent = tocksNow();
     if (stuff) stuff(&p->body);
     Tocks expiry = p->rent.lastPaidRent + cash / (billableXXSize * tockPrice());
+    printf("Admit: expiry=%d lastPaid=%d cash=%ld\n", expiry, p->rent.lastPaidRent, cash);
     meapOfXXBombs.insert(expiry, i.i, &p->rent.bomb); // Do we need the return value?
   }
   if (pp) *pp = p;
+  printf("admit:%d\n", i.i);
   return t;
 }
 
@@ -268,8 +286,8 @@ static void forAll(bool u, XXVIP act) {
   pileOfXXs.forAll(false, act); 
 }
 
-XXHotel hotelOfXXs = { open, admit, get, with, 
-  richer, poorer, collectRent, forAll, raid, 
+XXHotel hotelOfXXs = { open, admit, get, with, withIx,
+  richer, poorer, rob, collectRent, forAll, raid, 
   count, checkHotel, close, show, showXX };
 
 

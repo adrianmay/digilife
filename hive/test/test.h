@@ -5,15 +5,13 @@
 //#include <stdlib.h>
 //#include <locale.h>
 //#include <signal.h>
+#include "types.h"
 #include "assert.h"
 
-typedef void (*V)(void);
-typedef bool  (*B)(void);
-typedef bool (*BV)(void);
 
-extern V onTestTock;
+extern VV onTestTock;
 
-bool bkt(const char * name, B up, B along, V down);
+bool bkt(const char * name, B up, B along, VV down);
 bool nowt(void);
 void * sweat(void *);
 void * sweat_forever(void *);

@@ -7,7 +7,7 @@
 #include "XX_raffle/h.h"
 #include "XX_pile/2.h"
 #include "XX_hotel/h.h"
-/*
+
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t  cond  = PTHREAD_COND_INITIALIZER;
 static void lock() { pthread_mutex_lock(&mutex); }
@@ -87,10 +87,10 @@ static Ix count(void) {
   return hotelOfXXs.count();
 }
 
-static void raid(void) {
-  hotelOfXXs.raid();
-  checkM("raid");
-}
+// static void raid(void) {
+//   hotelOfXXs.raid();
+//   checkM("raid");
+// }
 
 static void propagateWeightUp(XXIx i, Weight w) {
   // i's weight is already correct, this adjusts the ancestors
@@ -113,7 +113,8 @@ static bool empty() {
   return false;
 }
 
-static XXIx play(Cash cash, Weight w, WithXXTicket stuffTicket) {
+static void play(Cash cash, Weight w, WithXXTicket stuffTicket) {
+  printf("play: cash=%ld ", cash);
   char blah[40];
   checkM("enter1");
   bool wasEmpty = empty();
@@ -129,24 +130,14 @@ static XXIx play(Cash cash, Weight w, WithXXTicket stuffTicket) {
   checkM(blah);
   lock();
   pRaf->s = w;
-  propagateWeightUp(i, w);
+  propagateWeightUp(t.i, w);
   //if (p->rent.cash>10000) { printf("Overrich 2 %d has %'ld\n", i.i, p->rent.cash); exit(1); }
-  sprintf(blah, "enter4 i=%d recyc=%b", i.i, recycled);
+  sprintf(blah, "enter4 i=%d recyc=%b", t.i.i, recycled);
   checkM(blah);
   if (wasEmpty) pthread_cond_signal(&cond);
   unlock();
-  return i;
 }
 
-bool onXXHotelGoDie(XXIx i, XX * pXX) { 
-  XXRafle * pRaf = &pXX->body.raffle;
-  Weight w = pRaf->s;
-  if (w) {
-    pRaf->s = 0;
-    propagateWeightUp(i, -w);
-  }
-  return true;
-}
 
   //XX * p = pileOfXXs.get(i);
   //XXRafle * pRaf = &p->body.raffle;
@@ -155,26 +146,13 @@ bool onXXHotelGoDie(XXIx i, XX * pXX) {
   //pRaf->s = 0;
   //propagateWeightUp(i, -w);
 
-static Cash cancel_(XXIx i) {
-  Cash c = hotelOfXXs.poorer(i,0,Rob); //Take all money so it soon gets freed...
-  if (pileOfXXs.get(i)->body.raffle.s != 0) abort();
-  return c;
-}
-
-static Cash cancel(XXIx i) {
-  lock();
-  Cash c = cancel_(i);
-  checkM("cancel");
-  raid();
-  checkM("cancel");
-  unlock();
-  return c;
-}
-
 // Assumes there are tickets. Look out of onXXsExtinct
+
+static bool draw();
+
 static void drawBelow(XXIx i) {
-  XX * pB = pileOfXXs.get(i);
-  XXRafle * pRaf = &pB->body.raffle;
+  XX * pXX = hotelOfXXs.get(i);
+  XXRafle * pRaf = &pXX->body.raffle;
   Weight target = peep();
   if (pRaf->l > 0 && target < pRaf->l) {
     push(target); 
@@ -182,15 +160,18 @@ static void drawBelow(XXIx i) {
     pop();
     return; 
   }
+  void claim(void) {
+    Weight w = pRaf->s;
+    pRaf->s = 0;
+    propagateWeightUp(i, -w);
+  }
+  void rob(void) {
+    hotelOfXXs.rob(pXX);
+    hotelOfXXs.raid();
+  }
   target -= pRaf->l;
   if (target < pRaf->s) {
-    if (onXXRaffleApprove(i, &pB->body.ticket)) {
-      Weight w = pRaf->s;
-      pRaf->s = 0;
-      propagateWeightUp(i, -w);
-      unlock();  
-      onXXRaffleConsume(i, &pB->body.ticket); // Should leave ticket bankrupt
-    } else unlock();
+    onXXRaffleDispatch(i, pXX, claim, unlock, rob);
     return;
   }
   target -= pRaf->s;
@@ -219,6 +200,7 @@ static void drawAssumeNotEmpty() {
 // If this returns false we're closing down the program
 static bool draw() {
   lock();
+  hotelOfXXs.raid();
   checkM("draw 1");
   if (gottaQuitXX)    { gottaQuitXX=false; unlock(); return false; }
   else if (empty()) {
@@ -248,19 +230,15 @@ static void quitNow() {
   pthread_cond_signal(&cond);
 }
 
-static void enrich(XXIx who, Cash amt) {
-  hotelOfXXs.richer(who, amt);
+static Cash rob(XX *  pXX) {
+  return hotelOfXXs.rob(pXX);
 }
 
-static Cash rob(XXIx who) {
-  return hotelOfXXs.poorer(who,0,Rob);
-}
+// static Cash robUpTo(XXIx who, Cash limit) {
+//   return hotelOfXXs.poorer(who, limit, Ono);
+// }
 
-static Cash robUpTo(XXIx who, Cash limit) {
-  return hotelOfXXs.poorer(who, limit, Ono);
-}
-
-XXRaffle raffleOfXXs = { open, play, enrich, rob, robUpTo, cancel, empty, draw, close, show, count, check, raid, quitNow };
+XXRaffle raffleOfXXs = { open, play, rob, empty, draw, close, show, count, check, quitNow };
 
 void showXXBody(XXIx i, XXBody * p) {
   printf("l=%-4ld s=%-4ld r=%-4ld ⇑=%-3d ⇙=%-3d ⇘=%-3d ", 
@@ -268,11 +246,9 @@ void showXXBody(XXIx i, XXBody * p) {
          (i.i==0)?(-1):(parent(i).i), left(i).i, right(i).i);
   showXXTicket(&p->ticket);
 }
-*/
 
-void showXXBody(XXIx i, XXBody * p) {
-  printf("l=%-4ld s=%-4ld r=%-4ld ", 
-         p->raffle.l, p->raffle.s, p->raffle.r
-         );
-  showXXTicket(&p->ticket);
+void onXXHotelGoDie(XXIx i, XX * pXX) {
+  Weight w = pXX->body.raffle.s;
+  pXX->body.raffle.s = 0;
+  propagateWeightUp(i, -w);
 }

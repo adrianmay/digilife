@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
+#include "types.h"
 #include "globals/h.h"
 #include "perf/h.h"
 #include "args/h.h"
@@ -12,8 +13,7 @@
 
 
 void showMobBody(MobIx i, MobBody * p) {
-  MsgIx ix = atomic_load(&p->todo);
-  printf(" nick=%04x todo=%-3d phylum=%d ", p->nick, ix.i, p->phylum);
+  printf(" todo=%-3d phylum=%d ", i.i, p->phylum);
   switch (p->phylum) {
     case PHY_GOD:
       printf("God\n");
@@ -38,7 +38,7 @@ void B2V(B b) { (*b)(); }
 
 bool nowt(void) { return true; }
 
-bool bkt(const char * name, B up, B along, V down) {
+bool bkt(const char * name, BV up, BV along, VV down) {
   printf("Testing %s\n", name);
   bool suc;
   if ((suc=(*up)())) {
@@ -80,7 +80,7 @@ void initEverything(void) {
 }
 /////////////////////
 
-V onTestTock;
+VV onTestTock;
 void onTock() {onTestTock();}
 
 int main(int argc, char **argv) {
@@ -92,8 +92,8 @@ int main(int argc, char **argv) {
 //    perf() &&
 //    pile() &&
 //    meap() &&
-    hotel() &&
-//    raffle() &&
+//    hotel() &&
+    raffle() &&
 //    tank() &&
 //    exec() &&
 //    equi() &&

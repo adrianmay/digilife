@@ -24,8 +24,6 @@ typedef  union {
 enum {PHY_ERROR, PHY_GOD, PHY_A, PHY_B};
 
 typedef struct {
-  Nick nick;
-  _Atomic MsgIx todo; // Msg running now or soon; BAD_INDEX when idle; BAD_INDEX-1 to free mob when msg finishes
   uint8_t phylum;
   PhyData p;
 } MobBody;

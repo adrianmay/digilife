@@ -9,7 +9,7 @@
 static bool shouldQuit = false;
 void onMobsExtinct() { printf("onMobsExtinct\n"); shouldQuit = true; }
 void onMsgsExtinct() {}
-/*
+
 static void tock() {
   //printf("Tock\n");
   hotelOfMobs.raid();
@@ -39,9 +39,9 @@ void train(MobBody * pMB) {
   pMB->p.b.bid = 0; //0.01 * pow(1.4, (randIntBelow(10)-5));
 }
 
-static MsgIx postie(Cash cash, CpuBid bid, MobTact tSndr, MobTact tRcvr) {
+static void postie(Cash cash, CpuBid bid, MobTact tSndr, MobTact tRcvr) {
   void stf(MsgPayload * pP) { }
-  return post(cash, 1, tSndr, tRcvr, stf);
+  post(cash, 1, tSndr, tRcvr, stf);
 }
 
 static bool test1(void) {
@@ -71,4 +71,4 @@ static bool test(void) {
 
 bool tank(void) { return bkt("tank", init, test, cleanup); }
 
-*/
+

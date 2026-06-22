@@ -27,7 +27,7 @@ void showTank(void);
 void showMobTact(MobTact t);
 
 MobTact spawn(Cash cash, MobTact iParent, WithMobBody train);
-MsgIx post(Cash cash, CpuBid bid, MobTact sndr, MobTact rcvr, WithPayload stuff);
+bool post(Cash cash, CpuBid bid, MobTact sndr, MobTact rcvr, WithPayload stuff);
 void choose(void);
 
 

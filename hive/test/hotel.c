@@ -14,7 +14,7 @@
 
 static bool extinct=true;
 void onThingsExtinct(void) { extinct = true; }
-bool onThingHotelGoDie(ThingIx i, Thing * pThing) { return true;}
+void onThingHotelGoDie(ThingIx i, Thing * pThing) { }
 void onThingRentCollected(Cash cash) { }
 void onThingRentDefaulted(Cash cash) { }
 
@@ -89,14 +89,16 @@ bool test1(void) {
 }
 
 void * earn(void *) {
-  hotelOfThings.richer(tThing, 2000);
+  void f(Thing * pT) { hotelOfThings.richer(pT, 2000); }
+  hotelOfThings.with(tThing, f);
   return 0;
 }
 
 bool testEarn(void) {
   printf("testEarn\n");
   make(4, 3000);
-  hotelOfThings.richer(tThing, 2000);
+  void f(Thing * pT) { hotelOfThings.richer(pT, 2000); }
+  hotelOfThings.with(tThing, f);
   //hotelOfThings.show();
   //earn(0);
   expectExtinctSoon(5000);
@@ -106,7 +108,8 @@ bool testEarn(void) {
 bool testRob(void) {
   printf("testRob\n");
   make(5, 9000);
-  hotelOfThings.poorer(tThing, 0, Rob);
+  void f(Thing * pT) { hotelOfThings.poorer(pT, 0, Rob); }
+  hotelOfThings.with(tThing, f);
   expectExtinctSoon(150);
   return true;
 }
@@ -116,7 +119,7 @@ bool testGod(void) {
   make(6, 1000);
   make(5, 0);
   expectExtinctSoon(1000);
-  hotelOfThings.collectRent(tThing);
+  hotelOfThings.with(tThing, hotelOfThings.collectRent);
   bool ff(Thing * pThing) { assertLong(pThing->rent.cash, -1200l); return true;}
   void f(Thing * pThing) { ff(pThing); }
   hotelOfThings.with(tThing, f);

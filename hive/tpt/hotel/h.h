@@ -18,9 +18,11 @@ typedef bool        (*XXHotelOpen)(void);
 typedef XXTact      (*XXHotelAdmit)(Cash cash, WithXXBody stuff, XX ** pp, bool * pRecycled); //Cash = 0 -> God
 typedef XX *        (*XXHotelGet)(XXIx i);
 typedef Woth        (*XXHotelWith)(XXTact, WithXX);
-typedef Woth        (*XXHotelRicher)(XXTact, Cash);
-typedef Woth        (*XXHotelPoorer)(XXTact, Cash *, Terms);
-typedef Woth        (*XXHotelCollectRent)(XXTact);
+typedef Woth        (*XXHotelWithIx)(XXIx, WithXX);
+typedef void        (*XXHotelRicher)(XX*, Cash);
+typedef Cash        (*XXHotelPoorer)(XX*, Cash, Terms);
+typedef Cash        (*XXHotelRob)(XX * pXX);
+typedef void        (*XXHotelCollectRent)(XX * pXX);
 typedef void        (*XXHotelVV)(void);
 typedef void        (*XXHotelVI)(int expectExcess);
 typedef Ix          (*XXHotelCount)(void);
@@ -34,8 +36,10 @@ typedef struct {
   XXHotelAdmit admit;
   XXHotelGet get;
   XXHotelWith with;
+  XXHotelWithIx withIx;
   XXHotelRicher richer;
   XXHotelPoorer poorer;
+  XXHotelRob rob; 
   XXHotelCollectRent collectRent;
   XXHotelForAll forAll;
   XXHotelVV raid;
@@ -47,7 +51,7 @@ typedef struct {
 } XXHotel;
 
 extern void onXXsExtinct(void); // Provide this.
-extern bool onXXHotelGoDie(XXIx, XX * pXX); // Provide this.
+extern void onXXHotelGoDie(XXIx, XX * pXX); // Provide this.
 extern void onXXRentCollected(Cash cash); // Provide this.
 extern void onXXRentDefaulted(Cash cash); // Provide this.
 extern XXHotel hotelOfXXs;

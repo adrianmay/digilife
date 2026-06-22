@@ -9,14 +9,13 @@
 
 static bool extinct = false;
 void onMesssExtinct(void) { extinct = true; }
-void onMessRentCollected(Cash cash) { }
+void onMessRentCollected(Cash cash) { printf("Rent collected\n");}
 void onMessRentDefaulted(Cash cash) { }
 
 void showMessTicket(MessTicket * p) {
   printf("type=%c serial=%-3d\n", p->type, p->serial);
 }
 
-/*
 
 void tock() { 
 //  printf("Tock: %d\n", tocksNow()); 
@@ -85,20 +84,10 @@ int h, t, v, e;
 
 void apathy(MessTicket * pT) { (void)pT; }
 
-bool onMessRaffleApprove(MessIx i, MessTicket * pTicket) {
-  return randIntBelow(3)!=0;
-}
 
 void onMessRaffleConsume(MessIx i, MessTicket * pT) {
-  if (pT->type=='H') h++;
-  else if (pT->type=='T') t++;
-  else if (pT->type=='V') v++;
-  else e++;
-  if (randIntBelow(2)==0) 
-    raffleOfMesss.play(10, 1+randIntBelow(10), apathy);
-  raffleOfMesss.cancel(i);
+  //raffleOfMesss.cancel(i);
 }
-
 
 void sample(void) {
   h=0; t=0; v=0; e=0;
@@ -121,7 +110,7 @@ int bored = 0;
 
 
 
-#define BLOCKS 20000
+#define BLOCKS 500
 
 void stuffSerial(MessTicket * pT) { 
   static int ser=1;
@@ -135,7 +124,9 @@ void * produce(void * p) {
     notifyCycles(300);
     sleepMs(randIntBelow(5));
     if (bored==1) break;
+    printf("A\n");
     raffleOfMesss.play(10, 1+randIntBelow(10), stuffSerial);
+    printf("B\n");
   }
   bored = 1;
   return 0;
@@ -156,13 +147,28 @@ bool testBlock() {
 }
 
 bool testRaffle() {
-  //stuff1(); ch(); sample(); ch(); empty();
-  //stuff2(); ch(); sample(); ch(); empty();
-  raffleOfMesss.show();
+//   stuff1(); ch(); sample(); ch(); empty();
+//   stuff2(); ch(); sample(); ch(); empty();
+  //raffleOfMesss.show();
   testBlock();
   return true;
 }
 
 bool raffle(void) { return bkt("raffle", init, testRaffle, cleanupRaffle); }
 
-*/
+void onMessRaffleDispatch(MessIx i, Mess * pMess, VV claim, VV unlock, VV rob) {
+  printf("onMessRaffleDispatch: %d\n", i.i);
+  claim();
+  unlock();
+  MessTicket * pT = &pMess->body.ticket;
+  if (pT->type=='H') h++;
+  else if (pT->type=='T') t++;
+  else if (pT->type=='V') v++;
+  else e++;
+  //if (randIntBelow(2)==0) 
+  //  raffleOfMesss.play(10, 1+randIntBelow(10), apathy);
+  //rob();
+}
+
+
+

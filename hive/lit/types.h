@@ -54,3 +54,5 @@ typedef enum {NOWT, DELETE, HIDE} FATE;
 typedef enum {Exact, Ono, Rob} Terms;
 typedef enum {Ok, Dead, Busy} Woth;
 
+typedef bool  (*B)(void);
+typedef bool (*BV)(void);

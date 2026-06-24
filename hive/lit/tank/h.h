@@ -26,8 +26,8 @@ void closeTank(FATE);
 void showTank(void);
 void showMobTact(MobTact t);
 
-MobTact spawn(Cash cash, Mob * pParent, MobTact iParent, WithMobBody train);
-bool post(Cash cash, CpuBid bid, Mob * pSender, MobTact sndr, MobTact rcvr, WithPayload stuff);
+//MobTact spawn(Core * pCore, Cash cash, WithMobBody train);
+//bool post(Cash cash, CpuBid bid, Mob * pSender, MobTact sndr, MobTact rcvr, WithPayload stuff);
 void choose(void);
 
 

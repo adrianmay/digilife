@@ -31,32 +31,29 @@ void survey() {
 
 static void cleanup(void) { closeTank(HIDE); }
 
-static void train(MobBody * pMB) {
- pMB->phylum = PHY_B;
- //pMB->p.b.spawnThresh = randIntBelow(500);
- //pMB->p.b.payMsg = 0;
- //pMB->p.b.bid = 0; //0.01 * pow(1.4, (randIntBelow(10)-5));
-// pMB->phylum = PHY_B;
-// pMB->p.b.spawnThresh = randIntBelow(500);
-// pMB->p.b.payMsg = 100 + randIntBelow(100);
-// pMB->p.b.bid = 0; //0.01 * pow(1.4, (randIntBelow(10)-5));
+
+static void stuffMob(MobBody * pMB) { pMB->phylum = PHY_B; }
+static void stuffPayload(MsgPayload * pP) { }
+
+void eve(void) {
+  Cash cash = 5000;
+  Cash forSpawn = cash*MSG_PROP;
+  Cash forPost = cash - forSpawn;
+
+  Core core;
+  core.tMob=tInvestor;
+  core.mobCash = cash;
+  core.msgCash = 0;
+  core.bid=0;
+  
+  MobTact tEve;
+  spawn(&core, forSpawn, stuffMob, &tEve); 
+  post(&core, forPost, 0, tEve, stuffPayload);
 }
 
-static void postie(Cash cash, CpuBid bid, MobTact tSndr, MobTact tRcvr) {
-  void stf(MsgPayload * pP) { }
-  void f(Mob * pMob) { post(cash, 1, pMob, tSndr, tRcvr, stf); }
-  hotelOfMobs.with(tSndr, f);
-}
 
 static bool test1(void) {
-  //for (int i=0;i<500;i++) {
-  //survey();
-  MobTact t;
-  void f(Mob * pInv) { t = spawn(8000, pInv, tInvestor, train); }
-  hotelOfMobs.with(tInvestor, f);
-  //survey();
-  postie(2000, 1, t, t);
-  //printf("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n");
+  eve();
 //  for (int a=0;a<10;a++) {
   while (!shouldQuit) {
     if (iter % 1000 == 0) 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <setjmp.h>
 #include "Msg_pile/2.h"
 #include "Mob_hotel/h.h"
 #include "Msg_pile/2.h"
@@ -7,6 +8,34 @@
 #include "bit/MsgTicket.h"
 
 //typedef WithXXBody WithXXBody;
+
+#define TARGET_POP 1000
+#define CPU_BID 0
+#define IDLE_COST 1
+#define SPAWN_EXTRA_COST 1
+#define SPAWN_TOT_COST (IDLE_COST+SPAWN_EXTRA_COST)
+#define SPAWN_THRESH (TARGET_POP*2*SPAWN_TOT_COST)
+
+#define SIZE_MOB ((double)sizeof(Mob))
+#define SIZE_MSG ((double)sizeof(Msg))
+#define SIZE_BOTH (SIZE_MOB+SIZE_MSG)
+#define MSG_PROP (SIZE_MSG/SIZE_BOTH)
+#define RENT_PER_TOCK (SIZE_BOTH*GUESS_GROATS_PER_TOCK_PER_BYTE)
+#define RENT_PER_CYCLE (RENT_PER_TOCK/GUESS_CYCLES_PER_TOCK)
+
+#define CYCLES_IDLE (IDLE_COST/RENT_PER_CYCLE) 
+#define CYCLES_EXTRA_SPAWN (SPAWN_EXTRA_COST/RENT_PER_CYCLE) 
+
+#define PAY 1000
+#define BIG 1000000
+
+typedef struct {
+  MobTact tMob;
+  Cash msgCash;
+  Cash mobCash;
+  CpuBid bid;
+  jmp_buf jmpbuf;
+} Core;
 
 extern MobTact 
   tInvestor, tSales, 
@@ -26,8 +55,8 @@ void closeTank(FATE);
 void showTank(void);
 void showMobTact(MobTact t);
 
-//MobTact spawn(Core * pCore, Cash cash, WithMobBody train);
-//bool post(Cash cash, CpuBid bid, Mob * pSender, MobTact sndr, MobTact rcvr, WithPayload stuff);
+bool spawn(Core * pCore, Cash cash, WithMobBody stuffBody, MobTact * ptChild);
+bool post (Core * pCore, Cash cash, CpuBid bid, MobTact rcvr, WithPayload stuff);
 void choose(void);
 
 

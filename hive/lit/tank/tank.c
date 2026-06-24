@@ -1,4 +1,3 @@
-#include <setjmp.h>
 #include "Mob_pile/1.h"
 #include "Msg_pile/1.h"
 #include "Mob_pile/2.h"
@@ -27,7 +26,7 @@ MobTact makeGod() {
 }
 
 MobTact 
-  tInvestor, tSales, 
+tInvestor, tSales, 
   tMemCosts, tMemLost, 
   tCpuCosts, tCpuLost, tCpuFines, 
   tUndeliverables;
@@ -56,21 +55,7 @@ void closeTank(FATE f) {
   hotelOfMobs.close(f);
   closeGlobals(f);
 }
- 
-/*
-int samples=0;
-Avg avg;
 
-#define MIX(F) \
-  avg.F = ( samples*avg.F + ((double)pB->p.b.F)) / ((double)(samples+1)) ;
-
-void smple(MobBody* pB) {
-  MIX(spawnThresh)
-  MIX(payMsg)
-  MIX(bid)
-  if (samples<100) samples++;
-}
-*/
 void choose() {raffleOfMsgs.draw();}
 
 void onMobRentCollected(Cash cash) {
@@ -92,14 +77,6 @@ void onMsgRentDefaulted(Cash cash) {
   void f(Mob * p) {hotelOfMobs.richer(p, cash);}
   hotelOfMobs.with(tMemLost,f);
 }
-
-typedef struct {
-  MobTact tMob;
-  Cash msgCash;
-  Cash mobCash;
-  CpuBid bid;
-  jmp_buf jmpbuf;
-} Core;
 
 void burned(Core * pC, Cycles cycles, int line) {
   pC->msgCash -= cycles * pC->bid;
@@ -148,32 +125,16 @@ bool post(Core * pC, Cash cash, CpuBid bid, MobTact tR, WithPayload stuffPayload
     raffleOfMsgs.play(cash, bidToWeight(bid), stuff);
     return true;
   }
-  spending(pC, cash, f);
+  return spending(pC, cash, f);
 }
 
-#define TARGET_POP 1000
-#define CPU_BID 0
-#define IDLE_COST 1
-#define SPAWN_EXTRA_COST 1
-#define SPAWN_TOT_COST (IDLE_COST+SPAWN_EXTRA_COST)
-#define SPAWN_THRESH (TARGET_POP*2*SPAWN_TOT_COST)
-
-#define SIZE_MOB ((double)sizeof(Mob))
-#define SIZE_MSG ((double)sizeof(Msg))
-#define SIZE_BOTH (SIZE_MOB+SIZE_MSG)
-#define MSG_PROP (SIZE_MSG/SIZE_BOTH)
-#define RENT_PER_TOCK (SIZE_BOTH*GUESS_GROATS_PER_TOCK_PER_BYTE)
-#define RENT_PER_CYCLE (RENT_PER_TOCK/GUESS_CYCLES_PER_TOCK)
-
-#define CYCLES_IDLE (IDLE_COST/RENT_PER_CYCLE) 
-#define CYCLES_EXTRA_SPAWN (SPAWN_EXTRA_COST/RENT_PER_CYCLE) 
-
-#define PAY 1000
-#define BIG 1000000
-
-static void train(MobBody * pMB) { pMB->phylum = PHY_B; }
+void mutMob(MobBody * pDst, Mob * pSrc) {
+  pDst->phylum = PHY_B;
+}
 
 bool runMob(Core * pC, Mob * pMob, Msg * pMsg) {
+  void stuffMob(MobBody * pMB) { mutMob(pMB, pMob); }
+  void stuffPayload(MsgPayload * pP) { }
   CpuBid bid = 0;
   MobBody * pMB = &pMob->body;
   //printf("runMob start: i=%d cash=%ld\n", pC->tMob.i.i, pMob->rent.cash);
@@ -181,7 +142,6 @@ bool runMob(Core * pC, Mob * pMob, Msg * pMsg) {
   pC->mobCash += PAY;
   burned(pC, CYCLES_IDLE, __LINE__);
   PhyB * pB = &pMB->p.b;
-  void stuffPayload(MsgPayload * p) {(void)p;}
   if (pC->mobCash > pB->spawnThresh) {
     burned(pC, CYCLES_EXTRA_SPAWN, __LINE__);
     Cash forChildTot = pC->mobCash/2;
@@ -189,10 +149,11 @@ bool runMob(Core * pC, Mob * pMob, Msg * pMsg) {
     Cash forChildMsg = forChildTot * MSG_PROP;
     //printf("Spawning: mycash=%ld forChildMob=%ld forChildMsg=%ld\n", pMob->rent.cash, forChildMob, forChildMsg);
     MobTact tChild;
-    if (spawn(pC, forChildMob, train, &tChild))
+    if (spawn(pC, forChildMob, stuffMob, &tChild))
       post(pC, forChildMsg, bid, tChild, stuffPayload);
   } 
   post(pC, pMob->rent.cash*MSG_PROP, bid, pMsg->body.ticket.rcvr, stuffPayload);
+  return true;
 }
 
 void job(MobTact tMob, Mob * pMob, Msg* pMsg) {
@@ -237,5 +198,21 @@ void onMsgRaffleDispatch(MsgIx i, Msg * pMsg, VV claim, VV unlock, VV rob) {
 
 }
 
-
 void onMobHotelGoDie(MobIx i, Mob * p) {}
+
+
+
+/*
+int samples=0;
+Avg avg;
+
+#define MIX(F) \
+  avg.F = ( samples*avg.F + ((double)pB->p.b.F)) / ((double)(samples+1)) ;
+
+void smple(MobBody* pB) {
+  MIX(spawnThresh)
+  MIX(payMsg)
+  MIX(bid)
+  if (samples<100) samples++;
+}
+*/

@@ -56,3 +56,6 @@ typedef enum {Ok, Dead, Busy} Woth;
 
 typedef bool  (*B)(void);
 typedef bool (*BV)(void);
+
+extern int iter;
+

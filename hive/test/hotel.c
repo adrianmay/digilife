@@ -114,12 +114,13 @@ bool testRob(void) {
   return true;
 }
 
+void colRent(Thing * p) {hotelOfThings.collectRent(p, false);}
 bool testGod(void) {
   printf("testGod\n");
   make(6, 1000);
   make(5, 0);
   expectExtinctSoon(1000);
-  hotelOfThings.with(tThing, hotelOfThings.collectRent);
+  hotelOfThings.with(tThing, colRent);
   bool ff(Thing * pThing) { assertLong(pThing->rent.cash, -1200l); return true;}
   void f(Thing * pThing) { ff(pThing); }
   hotelOfThings.with(tThing, f);

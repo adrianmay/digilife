@@ -22,7 +22,8 @@ void showMobBody(MobIx i, MobBody * p) {
       printf("effort=%d\n", p->p.a.effort);
       break;
     case PHY_B:
-      printf("spawnThresh=%-4ld payMsg=%ld bid=%f\n", p->p.b.spawnThresh, p->p.b.payMsg, p->p.b.bid);
+      printf("\n");
+      //printf("spawnThresh=%-4ld payMsg=%ld bid=%f\n", p->p.b.spawnThresh, p->p.b.payMsg, p->p.b.bid);
       break;
     default:
       printf("Unknown phylum\n");
@@ -93,8 +94,8 @@ int main(int argc, char **argv) {
 //    pile() &&
 //    meap() &&
 //    hotel() &&
-    raffle() &&
-//    tank() &&
+//    raffle() &&
+    tank() &&
 //    exec() &&
 //    equi() &&
     true;

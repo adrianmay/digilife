@@ -114,7 +114,7 @@ static bool empty() {
 }
 
 static void play(Cash cash, Weight w, WithXXTicket stuffTicket) {
-  printf("play: cash=%ld ", cash);
+  //printf("play: cash=%ld ", cash);
   char blah[40];
   checkM("enter1");
   bool wasEmpty = empty();

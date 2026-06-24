@@ -11,8 +11,8 @@ typedef struct {
 
 typedef struct {
   Cash spawnThresh; // ito cash
-  Cash payMsg; 
-  double bid; 
+//  Cash payMsg; 
+//  double bid; 
   char pad[96];
 } PhyB;
 

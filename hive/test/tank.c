@@ -21,33 +21,39 @@ static bool init(void) {
   return true; 
 }
 
-int iter=0;
 
 void survey() {
   printf("Iter=%d Mobs=%d Msgs=%d ", iter, hotelOfMobs.count(), raffleOfMsgs.count());
-  printf("spTh=%f payMsg=%f bid=%f\n", avg.spawnThresh, avg.payMsg, avg.bid);
+  //printf("spTh=%f payMsg=%f bid=%f\n", avg.spawnThresh, avg.payMsg, avg.bid);
   //hotelOfMobs.show();
   //raffleOfMsgs.show();
 }
 
 static void cleanup(void) { closeTank(HIDE); }
 
-void train(MobBody * pMB) {
-  pMB->phylum = PHY_B;
-  pMB->p.b.spawnThresh = randIntBelow(500);
-  pMB->p.b.payMsg = 100 + randIntBelow(100);
-  pMB->p.b.bid = 0; //0.01 * pow(1.4, (randIntBelow(10)-5));
+static void train(MobBody * pMB) {
+ pMB->phylum = PHY_B;
+ //pMB->p.b.spawnThresh = randIntBelow(500);
+ //pMB->p.b.payMsg = 0;
+ //pMB->p.b.bid = 0; //0.01 * pow(1.4, (randIntBelow(10)-5));
+// pMB->phylum = PHY_B;
+// pMB->p.b.spawnThresh = randIntBelow(500);
+// pMB->p.b.payMsg = 100 + randIntBelow(100);
+// pMB->p.b.bid = 0; //0.01 * pow(1.4, (randIntBelow(10)-5));
 }
 
 static void postie(Cash cash, CpuBid bid, MobTact tSndr, MobTact tRcvr) {
   void stf(MsgPayload * pP) { }
-  post(cash, 1, tSndr, tRcvr, stf);
+  void f(Mob * pMob) { post(cash, 1, pMob, tSndr, tRcvr, stf); }
+  hotelOfMobs.with(tSndr, f);
 }
 
 static bool test1(void) {
   //for (int i=0;i<500;i++) {
   //survey();
-  MobTact t = spawn(8000, tInvestor, train);
+  MobTact t;
+  void f(Mob * pInv) { t = spawn(8000, pInv, tInvestor, train); }
+  hotelOfMobs.with(tInvestor, f);
   //survey();
   postie(2000, 1, t, t);
   //printf("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n");

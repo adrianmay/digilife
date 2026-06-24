@@ -174,10 +174,17 @@ static Chomped chomp(Score thresh, XX * pCopyOut, int pseudoAnimals) {
   else {
     XXIx i = (XXIx) {0};
     XX * p = pileOfXXs.get(i);
+    Ix * ip = (Ix *) p;
+    //if (ip[0] == 194 && ip[1] == 1138) {
+    if (iter>1433) {
+      printf("\nIn chomp: %d %d iter=%d\n", ip[0], ip[1], iter);
+      show();
+    }
     memcpy(pCopyOut, p, sizeof(XX));
     Score lowestScoreInMeap = p->tocks;
     ScoreDiff sd = wrapSub32S(lowestScoreInMeap, thresh);
     if (sd <= 0) {
+      onXXMeapWillErase(i, p);
       erase(i);
       res = Killed;
     } else {

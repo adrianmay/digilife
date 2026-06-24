@@ -56,7 +56,8 @@ void closeTank(FATE f) {
   hotelOfMobs.close(f);
   closeGlobals(f);
 }
-
+ 
+/*
 int samples=0;
 Avg avg;
 
@@ -69,7 +70,7 @@ void smple(MobBody* pB) {
   MIX(bid)
   if (samples<100) samples++;
 }
-
+*/
 void choose() {raffleOfMsgs.draw();}
 
 void onMobRentCollected(Cash cash) {
@@ -93,6 +94,7 @@ void onMsgRentDefaulted(Cash cash) {
 }
 
 typedef struct {
+  MobTact tMob;
   Cash jobCash;
   CpuBid bid;
   jmp_buf jmpbuf;
@@ -108,15 +110,18 @@ void burn(Core * pC, Cycles c, int line) {
   }
 }
 
-MobTact spawn(Cash cash, MobTact tBenefactor, WithMobBody stuffBody) {
-  if (cash<=0) return (MobTact) {badMobIx};
+MobTact spawn(Cash cash, Mob * pBene, MobTact tBenefactor, WithMobBody stuffBody) {
+  //printf("Spawn cash=%ld\n", cash);
+  if (cash<=0) {
+    printf("Can't spawn with no cash\n");
+    return (MobTact) {badMobIx};
+  }
   void stuff(MobBody * pB) {
     if (stuffBody) stuffBody(pB);
   }
   MobTact tChild = (MobTact){badMobIx};
   Cash forChild;
-  void f(Mob * pBene) { forChild = hotelOfMobs.poorer(pBene, cash, Exact); }
-  hotelOfMobs.with(tBenefactor, f);
+  forChild = hotelOfMobs.poorer(pBene, cash, Exact); 
   if (forChild == cash) {
     Mob * pMob;
     tChild = hotelOfMobs.admit(cash, stuff, &pMob, 0);
@@ -127,19 +132,20 @@ MobTact spawn(Cash cash, MobTact tBenefactor, WithMobBody stuffBody) {
 
 Weight bidToWeight(CpuBid bid) {return 1;}
 
-bool post(Cash cash, CpuBid bid, MobTact tS, MobTact tR, WithPayload stuffPayload) {
-  if (tR.i.i == BAD_INDEX) abort();
+bool post(Cash cash, CpuBid bid, Mob * pSender, MobTact tS, MobTact tR, WithPayload stuffPayload) {
+  //printf("post:f: mob cash=%ld\n", pSender->rent.cash);
+  if (tR.i.i == BAD_INDEX) {
+    printf("post: bad rcvr index\n");
+    return false;
+  }
   void stuff(MsgTicket * pT) {
     pT->cpuBid = bid;
     pT->rcvr = tR;
     pT->sndr = tS;
     if (stuffPayload) stuffPayload(&pT->payload);
   }
-  Cash canAfford;
-  void f(Mob * pMob) {
-    canAfford = hotelOfMobs.poorer(pMob, cash, Ono);
-  }
-  hotelOfMobs.with(tS, f);
+  Cash canAfford=0;
+  canAfford = hotelOfMobs.poorer(pSender, cash, Ono);
   if (canAfford>0) {
     raffleOfMsgs.play(canAfford, bidToWeight(bid), stuff);
     return true;
@@ -149,37 +155,60 @@ bool post(Cash cash, CpuBid bid, MobTact tS, MobTact tR, WithPayload stuffPayloa
     //abort();
   }
 }
+#define TARGET_POP 1000
+#define CPU_BID 0
+#define IDLE_COST 1
+#define SPAWN_EXTRA_COST 1
+#define SPAWN_TOT_COST (IDLE_COST+SPAWN_EXTRA_COST)
+#define SPAWN_THRESH (TARGET_POP*2*SPAWN_TOT_COST)
 
-#define PAY 700
-#define CYCLES_PASSIVE 10
-#define CYCLES_SPAWNING  20
-#define PROB_SPAWN 0.5
+#define SIZE_MOB ((double)sizeof(Mob))
+#define SIZE_MSG ((double)sizeof(Msg))
+#define SIZE_BOTH (SIZE_MOB+SIZE_MSG)
+#define MSG_PROP (SIZE_MSG/SIZE_BOTH)
+#define RENT_PER_TOCK (SIZE_BOTH*GUESS_GROATS_PER_TOCK_PER_BYTE)
+#define RENT_PER_CYCLE (RENT_PER_TOCK/GUESS_CYCLES_PER_TOCK)
+
+#define CYCLES_IDLE (IDLE_COST/RENT_PER_CYCLE) 
+#define CYCLES_EXTRA_SPAWN (SPAWN_EXTRA_COST/RENT_PER_CYCLE) 
+
+#define PAY 1000
 #define BIG 1000000
-#define MSG_PROP (((double)sizeof(Msg))/((double)(sizeof(Mob)+sizeof(Msg))))
+
+static void train(MobBody * pMB) {
+ pMB->phylum = PHY_B;
+}
 
 void runMob(Core * pC, Mob * pMob, Msg * pMsg) {
+  CpuBid bid = 0;
   MobBody * pMB = &pMob->body;
+  //printf("runMob start: i=%d cash=%ld\n", pC->tMob.i.i, pMob->rent.cash);
   if (pMB->phylum != PHY_B) abort();
   void pm(Mob * pSales) {
     hotelOfMobs.poorer(pSales, PAY, Exact);
     pC->jobCash += PAY;
   }
   hotelOfMobs.with(tSales, pm); 
+  notifyCycles(CYCLES_IDLE);
   PhyB * pB = &pMB->p.b;
-  if (randIntBelow(BIG)<BIG*PROB_SPAWN) {
+  void stuffPayload(MsgPayload * p) {(void)p;}
+  if (pMob->rent.cash>pB->spawnThresh) {
+    notifyCycles(CYCLES_EXTRA_SPAWN);
     Cash forChildTot = pMob->rent.cash/2;
     Cash forChildMob = forChildTot * (1.0 - MSG_PROP);
-    MobTact tChild = spawn(forChildMob, pMsg->body.ticket.rcvr, 0);
-    post(forChildMob*MSG_PROP, pB->bid, pMsg->body.ticket.rcvr, tChild, 0);
+    Cash forChildMsg = forChildTot * MSG_PROP;
+    //printf("Spawning: mycash=%ld forChildMob=%ld forChildMsg=%ld\n", pMob->rent.cash, forChildMob, forChildMsg);
+    MobTact tChild = spawn(forChildMob, pMob, pMsg->body.ticket.rcvr, train);
+    post(forChildMsg, bid, pMob, pMsg->body.ticket.rcvr, tChild, stuffPayload);
   } 
-  void stuffPayload(MsgPayload * p) {(void)p;}
-  post(pMob->rent.cash*MSG_PROP, pB->bid, pMsg->body.ticket.rcvr, pMsg->body.ticket.rcvr, stuffPayload);
+  post(pMob->rent.cash*MSG_PROP, bid, pMob, pMsg->body.ticket.rcvr, pMsg->body.ticket.rcvr, stuffPayload);
 
 }
 
-void job(Mob * pMob, Msg* pMsg) {
-  hotelOfMobs.collectRent(pMob);
+void job(MobTact tMob, Mob * pMob, Msg* pMsg) {
+  hotelOfMobs.collectRent(pMob, true);
   Core core;
+  core.tMob = tMob;
   core.jobCash = pMsg->rent.cash;
   MsgTicket * pTicket = &pMsg->body.ticket;
   core.bid = pTicket->cpuBid;
@@ -204,7 +233,7 @@ void onMsgRaffleDispatch(MsgIx i, Msg * pMsg, VV claim, VV unlock, VV rob) {
   void f(Mob * pMob) { 
     claim();
     unlock();
-    job(pMob, pMsg); //
+    job(tMob, pMob, pMsg); //
   }
   Woth woth = hotelOfMobs.with(tMob, f);
   if (woth != Busy) {

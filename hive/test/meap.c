@@ -204,3 +204,5 @@ bool meap(void) {
 void showJunk(JunkIx i, Junk * pJunk) {
   printf("tocks=0x%x\n", pJunk->tocks);
 }
+void onJunkMeapWillErase(JunkIx i, Junk * p) {}
+

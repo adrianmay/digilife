@@ -35,7 +35,8 @@ typedef struct {
 
 extern XXMeap meapOfXXs;
 
-// The caller should define this:
+// The caller should define these:
 extern void  onMoveXX(XX * p, XXIx to); // Update records of where p's meap is.
 extern void  onNewXX(XXIx i, Ix hint); // Update records of where p's meap is.
+extern void  onXXMeapWillErase(XXIx i, XX * p); // Update records of where p's meap is.
 

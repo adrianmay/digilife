@@ -10,6 +10,8 @@
 
 #define GLOBALS_FILENAME "Globals.pile"
 
+int iter=0;
+
 VolatileGlobals vg;
 PersistentGlobals * pg;
 

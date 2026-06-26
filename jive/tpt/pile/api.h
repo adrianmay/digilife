@@ -1,7 +1,3 @@
-#pragma once
-
-#include "ix.h"
-
 typedef void * (*F_XX)(XX * p, void * u);
 typedef void (*XXVIP)(XXIx, XX*);
 

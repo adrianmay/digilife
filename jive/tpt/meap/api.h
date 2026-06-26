@@ -7,6 +7,7 @@ typedef enum {Extinct, Idle, Killed} Chomped;
 typedef bool    (*XXMeapOpen)      (void);
 typedef void    (*XXMeapClose)     (Fate fate);
 typedef bool    (*XXMeapInsert)    (Tocks expiry, Ix hint, XXIx * pI);
+typedef XX *    (*XXMeapGet)       (XXIx i);
 typedef bool    (*XXMeapEditTocks) (XXIx i, Score when);
 typedef bool    (*XXMeapErase)     (XXIx i);
 typedef Chomped (*XXMeapChomp)     (Score thresh, XX * p, int pseudoAnimals);
@@ -22,6 +23,7 @@ typedef struct {
   XXMeapOpen open;
   XXMeapClose close;
   XXMeapInsert insert; // New member.
+  XXMeapGet get;
   XXMeapEditTocks editTocks; // Member's score might have changed.
   XXMeapErase  erase; // Delete it.
   XXMeapChomp chomp; //Check and eat 0-1 things
@@ -31,6 +33,7 @@ typedef struct {
   XXMeapShow show;
 } XXMeap;
 
+extern const XXIx badXXIx;
 
 extern XXMeap meapOfXXs;
 

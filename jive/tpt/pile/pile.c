@@ -2,8 +2,9 @@
 #include <pthread.h>
 #include "types.h"
 #include "ipile/h.h"
+#include "ix.h"
 #include "api.h"
-#include "YY"
+#include "record.h"
 
 Pilehead * headOfXXs = 0;
 const XXIx  badXXIx = (XXIx) {BAD_INDEX};

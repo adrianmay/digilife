@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+#include <stdlib.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <sys/random.h>
@@ -82,3 +84,19 @@ double gaussian_random(double mean, double stddev) {
 double clampProb(double p) {
   return MAX(0,MIN(1,p));
 }
+
+void nsToTs(uint64_t ns, struct timespec * pTs) {
+  memset(pTs, 0, sizeof(*pTs));
+  lldiv_t qr = lldiv(ns, 1000000000);
+  pTs->tv_sec = qr.quot;
+  pTs->tv_nsec= qr.rem;
+}
+
+void sleepNs(uint64_t ns) {
+  struct timespec ts;
+  nsToTs(ns, &ts);
+  clock_nanosleep(CLOCK_REALTIME, 0, &ts, 0);
+}
+
+void sleepMs(uint64_t ms) { sleepNs(1000000*ms); }
+

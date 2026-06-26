@@ -1,10 +1,10 @@
 #include <string.h>
 #include "types.h"
 #include "misc/h.h"
-#include "Junk_pile/api.h"
+#include "XX_pile/ix.h"
+#include "XX_pile/api.h"
 #include "api.h"
 #include "YY"
-
 
 static XXIx parent(XXIx i) {return ( XXIx ){ (i.i-1)/2 };}
 static XXIx left  (XXIx i) {return ( XXIx ){ 2*i.i + 1 };}
@@ -17,6 +17,8 @@ static void show(void) {
 }
 
 static Ix bombee;
+
+static XX * get(XXIx i) { return pileOfXXs.get(i); }
 
 static void bombeeSafe(Ix i, void * p) { 
   return;
@@ -235,4 +237,4 @@ static Ix size(void) {  return pileOfXXs.getUsr(); }
 static bool open(void) { return pileOfXXs.open(); }
 static void close(Fate f) { pileOfXXs.close(f); }
 
-XXMeap meapOfXXs = {open, close, insert, editTocks ,erase, chomp, checkOrdered,size, show };
+XXMeap meapOfXXs = {open, close, insert, get, editTocks ,erase, chomp, checkOrdered,size, show };

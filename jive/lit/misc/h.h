@@ -23,3 +23,7 @@ uint64_t randIntBelow(uint64_t lim);
 bool nearly(double a, double b, double f);
 double gaussian_random(double mean, double stddev);
 double clampProb(double p);
+
+void nsToTs(uint64_t ns, struct timespec * pTs);
+void sleepNs(uint64_t ns);
+void sleepMs(uint64_t ms);

@@ -29,11 +29,11 @@ int main(int argc, char **argv) {
   initEverything();
   bool suc =
 //    wrap() &&
-    globals() &&
 //    perf() &&
     pile() &&
     meap() &&
-//    hotel() &&
+    hotel() &&
+    globals() &&
 //    raffle() &&
 //    tank() &&
 //    exec() &&

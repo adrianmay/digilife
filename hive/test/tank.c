@@ -23,7 +23,7 @@ static bool init(void) {
 
 
 void survey() {
-  printf("Iter=%d Mobs=%d Msgs=%d ", iter, hotelOfMobs.count(), raffleOfMsgs.count());
+  printf("Iter=%d Mobs=%d Msgs=%d \n", iter, hotelOfMobs.count(), raffleOfMsgs.count());
   //printf("spTh=%f payMsg=%f bid=%f\n", avg.spawnThresh, avg.payMsg, avg.bid);
   //hotelOfMobs.show();
   //raffleOfMsgs.show();
@@ -54,16 +54,17 @@ void eve(void) {
 
 static bool test1(void) {
   eve();
-//  for (int a=0;a<10;a++) {
-  while (!shouldQuit) {
-    if (iter % 1000 == 0) 
-      survey();
+  printf("Eved\n");
+  for (int a=0;a<406; a++) {
+//  while (!shouldQuit) {
+    //if (iter % 100 == 0) 
+    //survey();
     choose();
     iter++;
   }
-  survey();
+//  survey();
   hotelOfMobs.show();
-//  raffleOfMsgs.show();
+  raffleOfMsgs.show();
   return true;
 }
 static bool test(void) {

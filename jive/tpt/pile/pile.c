@@ -3,7 +3,7 @@
 #include "types.h"
 #include "ipile/h.h"
 #include "api.h"
-#include "XX.h"
+#include "YY"
 
 Pilehead * headOfXXs = 0;
 const XXIx  badXXIx = (XXIx) {BAD_INDEX};

@@ -2,10 +2,10 @@
 #include "h.h"
 #include "misc/h.h"
 #include "globals/h.h"
-#include "Thing_hotel/structs.h"
+#include "Thing_hotel/record.h"
 #include "Thing_pile/ix.h"
 #include "Thing_pile/api.h"
-#include "Thing_hotel/h.h"
+#include "Thing_hotel/api.h"
 
 // ALL OFF COS OF PERF STUFF 
 

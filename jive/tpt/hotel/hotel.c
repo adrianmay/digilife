@@ -3,15 +3,11 @@
 #include "types.h"
 #include "misc/h.h"
 #include "globals/h.h"
-
 #include "XXBomb_pile/record.h"
-
 #include "XX_pile/record.h"
-
 #include "XX_pile/api.h"
 #include "XXBomb_meap/api.h"
-
-#include "h.h"
+#include "api.h"
 
 static void show(void) {
   meapOfXXBombs.show();

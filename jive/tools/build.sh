@@ -11,7 +11,7 @@ rm -rf gen bin
 mkdir gen bin
 
 # Copy simple stuff into build area
-cp -r lit/* gen
+cp -r lit/* gen 
 cp -r test hive bin
 
 # Stop me editing that stuff by accident
@@ -37,7 +37,6 @@ awk -F'\t' -f tools/doctor.awk OFS='\t' tags > newtags
 mv newtags tags
 # Try to make it prefer functions to struct members when name is same
 tools/sort_tags.sh
-
 # Find sutff to compile. If ./exc exists, read a list of lines of regexes to exclude,
 #   then it'll compile the rest and stop before linking.
 ALL_CS=`find gen bin/test -name "*.c"`

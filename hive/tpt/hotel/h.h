@@ -1,8 +1,9 @@
 #pragma once
 
+#include "structs.h"
 #include "XX_pile/1.h"
 //#include "XX_hotel/h.h"
-#include "XX_pile/2.h"
+//#include "XX_pile/2.h"
 
 typedef struct {XXIx i; Nick n; } XXTact;
 

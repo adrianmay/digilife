@@ -1,0 +1,1 @@
+find tpt lit test hive -name "*.c" -or -name "*.h"

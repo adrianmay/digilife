@@ -21,12 +21,15 @@ void initEverything(void) {
   setlocale(LC_NUMERIC, "");
 }
 
+VV onTestTock;
+void onTock() {onTestTock();}
+
 int main(int argc, char **argv) {
   parseArgs(argc, argv);
   initEverything();
   bool suc =
 //    wrap() &&
-//    globals() &&
+    globals() &&
 //    perf() &&
     pile() &&
     meap() &&

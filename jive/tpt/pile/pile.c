@@ -16,7 +16,7 @@ XXIx      allocXX(XX ** pNew, bool * pRecyc)     { Ix i = allocInPile(headOfXXs,
 XX *      getXX(XXIx i)                          { return (XX*)findInPile(headOfXXs, i.i); }
 //void *    withXX(XXIx i, F_XX f, void * u)       { return withInPile(headOfXXs, i.i, (F)f, u); }
 void      freeXX(XXIx i)                         { freeInPile(headOfXXs, i.i, 0, 0); }
-void      closeXXPile(FATE fate)                 { closePile(headOfXXs, fate); headOfXXs = 0; }
+void      closeXXPile(Fate fate)                 { closePile(headOfXXs, fate); headOfXXs = 0; }
 bool      validXXIx(XXIx i)                      { return (i.i & 0x7FFFFFFF) != 0x7FFFFFFF; }
 Ix        countXXs(void)                         { return countPop(headOfXXs); }
 Ix        topOfXXs(void)                         { return topInPile(headOfXXs); }

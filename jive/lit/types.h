@@ -48,7 +48,7 @@ typedef void (*VP)(void *);
 typedef void (*VIP)(Ix, void *);
 typedef void (*VC)(Cash);
 
-typedef enum {NOWT, DELETE, HIDE} FATE;
+typedef enum {Nowt, Delete, Hide} Fate;
 typedef enum {Exact, Ono, Rob} Terms;
 typedef enum {Ok, Dead, Busy} Woth;
 

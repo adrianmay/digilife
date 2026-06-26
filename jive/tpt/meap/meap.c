@@ -233,6 +233,6 @@ static bool checkOrdered(void) {
 static Ix size(void) {  return pileOfXXs.getUsr(); }
 
 static bool open(void) { return pileOfXXs.open(); }
-static void close(FATE f) { pileOfXXs.close(f); }
+static void close(Fate f) { pileOfXXs.close(f); }
 
 XXMeap meapOfXXs = {open, close, insert, editTocks ,erase, chomp, checkOrdered,size, show };

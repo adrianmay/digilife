@@ -155,7 +155,7 @@ bool testMeap4(void) {
 
 //bool testMeap5(void) { }
 
-void cleanupMeap(void) { meapOfJunks.close(HIDE); }
+void cleanupMeap(void) { meapOfJunks.close(Hide); }
 
 bool chompT(void) {
   Junk j;
@@ -208,4 +208,3 @@ void showJunk(JunkIx i, Junk * pJunk) {
 }
 void onJunkMeapWillErase(JunkIx i, Junk * p) {}
 
-int iter=0; // Take out when globals appears

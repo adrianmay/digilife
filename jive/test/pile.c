@@ -8,10 +8,10 @@ bool recycledity(void) {
   bool vir1 = pileOfLinks.open(); //Assume it doesn't exist
   assertInt(vir1,true);
   pileOfLinks.alloc(0, &recycledSlot);
-  pileOfLinks.close(NOWT); //Don't delete the pile
+  pileOfLinks.close(Nowt); //Don't delete the pile
   bool vir2 = pileOfLinks.open();
   assertInt(vir2,false);
-  pileOfLinks.close(HIDE); //Delete it for next time
+  pileOfLinks.close(Hide); //Delete it for next time
   return true;
 }
 
@@ -120,7 +120,7 @@ bool testLinkPile(void) {
          && forall()
 ;}
 
-void cleanupLinkPile(void) { pileOfLinks.close(HIDE); }
+void cleanupLinkPile(void) { pileOfLinks.close(Hide); }
 bool pile(void) { return bkt("pile", nowt,testLinkPile,cleanupLinkPile); }
 
 void showLink(Link * pLink) {

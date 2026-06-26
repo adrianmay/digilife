@@ -9,7 +9,7 @@ typedef bool    (*XXPileOpen)(void);
 typedef XXIx    (*XXPileAlloc)(XX ** pNew, bool * pRecycled);
 typedef XX *    (*XXPileGet)(XXIx i);
 typedef void    (*XXPileFree)(XXIx i);
-typedef void    (*XXPileClose)(FATE fate);
+typedef void    (*XXPileClose)(Fate fate);
 typedef bool    (*XXPileIxValid)(XXIx i);
 typedef Ix      (*XXPileCount)(void);
 // Types are same but this saves collisions:

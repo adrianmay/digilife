@@ -75,15 +75,15 @@ Pilehead * openPile(const char * basefilename, uint32_t rec, uint32_t stp, Ix li
   return ph;
 }
 
-void closePile(Pilehead * ph, FATE fate) {
+void closePile(Pilehead * ph, Fate fate) {
   if (!ph) return;
   int fd = ph->fd;
   if (fd == -1) return;
   close(fd);
   char src[MAX_FULL_PATH];
   snprintf(src, MAX_FULL_PATH, "%s/%s", getDataDir(), ph->fn);
-  if (fate==DELETE) unlink(src);
-  if (fate==HIDE) {
+  if (fate==Delete) unlink(src);
+  if (fate==Hide) {
     char dest[MAX_FULL_PATH+1];
     snprintf(dest, MAX_FULL_PATH+1, "%s/.%s", getDataDir(), ph->fn);
     rename(src, dest);

@@ -1,6 +1,6 @@
 #include "h.h"
-#include "Link_pile/1.h"
-#include "Link_pile/2.h"
+#include "Link_pile/api.h"
+#include "Link_pile/Link.h"
 
 bool recycledSlot;
 

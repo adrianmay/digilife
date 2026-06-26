@@ -1,5 +1,3 @@
-#include "types.h"
-
 // The MSB of the first byte of structs in a pile is used
 // to indicate freeness of a block. Don't set it in blocks in use.
 // After allocation, the first 32 bits are set to a random number

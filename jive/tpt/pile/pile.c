@@ -1,6 +1,9 @@
+
 #include <pthread.h>
+#include "types.h"
 #include "ipile/h.h"
-#include "2.h"
+#include "api.h"
+#include "XX.h"
 
 Pilehead * headOfXXs = 0;
 const XXIx  badXXIx = (XXIx) {BAD_INDEX};

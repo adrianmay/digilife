@@ -1,12 +1,13 @@
 #pragma once
 
-#include "1.h"
+#include "ix.h"
 
+typedef void * (*F_XX)(XX * p, void * u);
+typedef void (*XXVIP)(XXIx, XX*);
 
 typedef bool    (*XXPileOpen)(void);
 typedef XXIx    (*XXPileAlloc)(XX ** pNew, bool * pRecycled);
 typedef XX *    (*XXPileGet)(XXIx i);
-//typedef void *  (*XXPileWith)(XXIx i, F_XX f, void * u);
 typedef void    (*XXPileFree)(XXIx i);
 typedef void    (*XXPileClose)(FATE fate);
 typedef bool    (*XXPileIxValid)(XXIx i);
@@ -22,7 +23,6 @@ typedef struct {
   XXPileOpen open;
   XXPileAlloc alloc;
   XXPileGet get;
-//  XXPileWith with;
   XXPileFree free;
   XXPileClose close;
   XXPileIxValid indexValid;

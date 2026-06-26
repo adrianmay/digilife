@@ -41,12 +41,17 @@ tools/sort_tags.sh
 # Find sutff to compile. If ./exc exists, read a list of lines of regexes to exclude,
 #   then it'll compile the rest and stop before linking.
 ALL_CS=`find gen bin -name "*.c"`
-echo "ALL_CS: $ALL_CS"
+# echo "ALL_CS: $ALL_CS"
 if [ -f exc ]
 then
-    SUPPRESS="(`cat exc | paste -sd '|' | grep -v '^$'`)"
-    echo "SUPPRESS: $SUPPRESS"
-    CS=`echo "$ALL_CS" | grep -Pv $SUPPRESS`
+  SUPPRESS="`cat exc | paste -sd '|' | grep -v '^$'`"
+fi
+
+echo "SUPPRESS: $SUPPRESS"
+
+if [ -n "$SUPPRESS" ]
+then
+  CS=`echo "$ALL_CS" | grep -Pv "$SUPPRESS"`
 else 
   CS=$ALL_CS
 fi
@@ -62,12 +67,15 @@ do
   pids="$pids $!"
 done
 
-if [ -f exc ]; then exit 1; fi
 # Wait on all compilations
 for p in $pids
 do
   wait "$p" || exit 1
 done
+
+echo "<${SUPPRESS}>"
+# if [ - "$SUPPRESS" ]; then exit 3; fi
+if [ -n "$SUPPRESS" ]; then exit 3; fi
 
 # Link all generated modules to a single object, but I can't remember why:
 pids=""

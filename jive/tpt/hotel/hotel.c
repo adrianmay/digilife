@@ -36,20 +36,20 @@ static XX * get(XXIx i) {
 static Woth with_(XXTact t, V_XXP act) {
   XX * pXX = hotelOfXXs.get(t.i);
   Nick want, set; 
-  want = (t.n); set = t.n | NICK_BUSY; 
+  want = (t.n); set = t.n | NICK_FLAG_BUSY; 
   if (atomic_compare_exchange_strong(&pXX->rent.nick, &want, set)) {
     act(pXX);
-    want = (t.n | NICK_BUSY); set = t.n; 
+    want = (t.n | NICK_FLAG_BUSY); set = t.n; 
     if (atomic_compare_exchange_strong(&pXX->rent.nick, &want, set))
       return Ok;
-    want = (t.n | NICK_BUSY | NICK_DOOMED); set = t.n | NICK_BUSY | NICK_DOOMED; 
+    want = (t.n | NICK_FLAG_BUSY | NICK_FLAG_DOOMED); set = t.n | NICK_FLAG_BUSY | NICK_FLAG_DOOMED; 
     if (atomic_compare_exchange_strong(&pXX->rent.nick, &want, set)) {
       onXXHotelGoDie(t.i, pXX);
       pileOfXXs.free(t.i); // Free it
       return Ok;
     }
   } else {
-    want = t.n | NICK_BUSY; set = t.n | NICK_BUSY; 
+    want = t.n | NICK_FLAG_BUSY; set = t.n | NICK_FLAG_BUSY; 
     if (atomic_compare_exchange_strong(&pXX->rent.nick, &want, set)) {
       return Busy;
     }
@@ -149,7 +149,7 @@ static bool updateDeathWithXX_(XX * pXX) {
 //  }
 //}
 
-static bool isGod(XX * pXX) { return pXX->rent.bomb.i == BAD_INDEX; }
+static bool isGod(XX * pXX) { return pXX->rent.nick & NICK_NAME_GOD ; }
 
 //Deduct cash and set last paid to now
 //Catches defaults now
@@ -203,13 +203,13 @@ static void raid(void) {
         onXXRentDefaulted(-pXX->rent.cash); // Should be at the real free
         pXX->rent.cash = 0;
       }
-      Nick want = atomic_fetch_or(&pXX->rent.nick, NICK_DOOMED); 
-      if (want & NICK_DOOMED) {
+      Nick want = atomic_fetch_or(&pXX->rent.nick, NICK_FLAG_DOOMED); 
+      if (want & NICK_FLAG_DOOMED) {
         printf("XX %d already doomed\n", bomb.who.i);
         show();
         abort();
       }
-      if (want & NICK_BUSY) continue;
+      if (want & NICK_FLAG_BUSY) continue;
       Nick test = atomic_exchange(&pXX->rent.nick, BAD_INDEX); 
       if (test == 0) {
         printf("Gotcha\n");
@@ -269,14 +269,14 @@ void showXX(XXTact t, XX * p) {
   showXXBody(&p->body);
 }
 
-static XXTact admit(Cash cash, V_XXBodyP stuff, XX ** pp, bool * pRecycled) {
+static XXTact admit(Cash cash, bool isGod, V_XXBodyP stuff, XX ** pp, bool * pRecycled) {
   checkHotel(0);
   XX * p;
   XXIx i = pileOfXXs.alloc(&p, pRecycled);
-  Nick n = randIntBelow(0x40000000);
+  Nick n = randInt32Masked(NICK_NAME_RAND_MASK) | ( isGod ? NICK_NAME_GOD : 0 );
   XXTact t = (XXTact){i, n};
   p->rent.nick = n;
-  if (cash == 0) { //God
+  if (isGod) { //God
     numGods++;
     p->rent.cash = 0;
     p->rent.lastPaidRent = tocksNow();
@@ -284,6 +284,7 @@ static XXTact admit(Cash cash, V_XXBodyP stuff, XX ** pp, bool * pRecycled) {
     p->rent.bomb = badXXBombIx;
     pileOfXXs.modUsr(1);
   } else {
+    if (cash == 0) return (XXTact){(XXIx){BAD_INDEX}};
     p->rent.cash = cash;
     p->rent.lastPaidRent = tocksNow();
     if (stuff) stuff(&p->body);

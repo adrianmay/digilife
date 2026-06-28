@@ -35,7 +35,7 @@ static bool init(void) {
   openGlobals();
   hotelOfThings.open();
   hotelOfThings.checkHotel(0);
-  tGod = hotelOfThings.admit(0,0,0,0); //God
+  tGod = hotelOfThings.admit(0,true, 0,0,0); //God
   return true;
 }
 
@@ -64,7 +64,7 @@ bool testNoPop(void) {
 ThingTact make(Ix name, Cash cash) {
   bool recycledSlot;
   void stuff(ThingBody * p) { p->name = name; }
-  tThing = hotelOfThings.admit(cash, stuff, &pThing, &recycledSlot);
+  tThing = hotelOfThings.admit(cash, false, stuff, &pThing, &recycledSlot);
   extinct=false;
   return tThing;
 }

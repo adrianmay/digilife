@@ -37,6 +37,10 @@ int fileSize(int fd) {
   return sb.st_size;
 }
 
+uint32_t randInt32Masked(uint32_t mask) {
+  return rand() & mask;
+}
+
 uint64_t randIntBelow(uint64_t lim) {
   uint64_t res;
   res = rand();

@@ -18,6 +18,7 @@ int64_t  wrapSub64S (uint64_t a, uint64_t b);
 int quit(int i);
 int fileSize(int fd);
 
+uint32_t randInt32Masked(uint32_t mask);
 uint64_t randIntBelow(uint64_t lim);
 
 bool nearly(double a, double b, double f);

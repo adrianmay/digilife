@@ -1,17 +1,6 @@
 
 typedef struct {XXIx i; Nick n; } XXTact;
 
-#define NICK_FLAG_BUSY   0x80000000
-#define NICK_FLAG_DOOMED 0x40000000
-// This is part of the name:
-#define NICK_NAME_GOD    0x20000000
-// When you only want the multithreading flags:
-#define NICK_FLAG_MASK (NICK_FLAG_BUSY | NICK_FLAG_DOOMED)
-// When you want the whole existing name:
-#define NICK_NAME_READ_MASK (~(NICK_FLAG_MASK))
-// When you make up a random new name:    
-#define NICK_NAME_RAND_MASK (NICK_NAME_READ_MASK & (!NICK_NAME_GOD) )
-
 typedef void (*V_XXP)(XX *);
 typedef void (*V_XXBodyP)(XXBody *);
 

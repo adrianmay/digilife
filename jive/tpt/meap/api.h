@@ -38,7 +38,7 @@ extern const XXIx badXXIx;
 extern XXMeap meapOfXXs;
 
 // The caller should define these:
-extern void  onXXMeapMove(XX * p, XXIx to); // Update records of where p's meap is.
-extern void  onXXMeapNew(XX * p, Ix hint); // Update records of where p's meap is.
-extern void  onXXMeapWillErase(XXIx i, XX * p); // Update records of where p's meap is.
+extern void onXXMeapMove(XX * p, XXIx to); // Update records of where p's meap is.
+extern void onXXMeapNew(XX * p, Ix hint); // Update records of where p's meap is.
+extern Nick onXXMeapWillErase(XXIx i, XX * p); // Update records of where p's meap is.
 

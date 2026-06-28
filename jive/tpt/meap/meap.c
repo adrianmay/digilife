@@ -189,7 +189,8 @@ static Chomped chomp(Score thresh, XX * pCopyOut, int pseudoAnimals) {
     Score lowestScoreInMeap = p->tocks;
     ScoreDiff sd = wrapSub32S(lowestScoreInMeap, thresh);
     if (sd <= 0) {
-      onXXMeapWillErase(i, p);
+      Nick nick = onXXMeapWillErase(i, p);
+      if (nick & NICK_FLAG_BOMBED)
       erase(i);
       res = Killed;
     } else {

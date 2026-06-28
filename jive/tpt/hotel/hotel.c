@@ -42,7 +42,7 @@ static Woth with_(XXTact t, V_XXP act) {
     want = (t.n | NICK_FLAG_BUSY); set = t.n; 
     if (atomic_compare_exchange_strong(&pXX->rent.nick, &want, set))
       return Ok;
-    want = (t.n | NICK_FLAG_BUSY | NICK_FLAG_DOOMED); set = t.n | NICK_FLAG_BUSY | NICK_FLAG_DOOMED; 
+    want = (t.n | NICK_FLAG_BUSY | NICK_FLAG_BOMBED); set = t.n | NICK_FLAG_BUSY | NICK_FLAG_BOMBED; 
     if (atomic_compare_exchange_strong(&pXX->rent.nick, &want, set)) {
       onXXHotelGoDie(t.i, pXX);
       pileOfXXs.free(t.i); // Free it
@@ -203,8 +203,8 @@ static void raid(void) {
         onXXRentDefaulted(-pXX->rent.cash); // Should be at the real free
         pXX->rent.cash = 0;
       }
-      Nick want = atomic_fetch_or(&pXX->rent.nick, NICK_FLAG_DOOMED); 
-      if (want & NICK_FLAG_DOOMED) {
+      Nick want = atomic_fetch_or(&pXX->rent.nick, NICK_FLAG_BOMBED); 
+      if (want & NICK_FLAG_BOMBED) {
         printf("XX %d already doomed\n", bomb.who.i);
         show();
         abort();
@@ -317,9 +317,9 @@ void onXXBombMeapMove(XXBomb * pBomb, XXBombIx to) {
   meapOfXXBombs.check();
 }
 
-void onXXBombMeapWillErase(XXBombIx i, XXBomb * pBomb) {
-  void f(XX * pXX) { pXX->rent.bomb = (XXBombIx){BAD_INDEX}; }
-  hotelOfXXs.withIx(pBomb->who, f);
+Nick onXXBombMeapWillErase(XXBombIx i, XXBomb * pBomb) {
+  XX * pXX = pileOfXXs.get(pBomb->who);
+  return atomic_fetch_or(&pXX->rent.nick, NICK_FLAG_BOMBED);
 }
 
 static void forAll(bool u, V_XXI_XXP act) { 

@@ -1,7 +1,7 @@
 #include <unistd.h>
 #include "h.h"
-#include "misc/h.h"
-#include "globals/h.h"
+#include "misc/api.h"
+#include "globals/api.h"
 #include "Thing_hotel/record.h"
 #include "Thing_pile/ix.h"
 #include "Thing_pile/api.h"

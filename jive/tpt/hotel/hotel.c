@@ -1,8 +1,8 @@
 #include <pthread.h>
 #include <string.h>
 #include "types.h"
-#include "misc/h.h"
-#include "globals/h.h"
+#include "misc/api.h"
+#include "globals/api.h"
 #include "XXBomb_pile/record.h"
 #include "XX_pile/record.h"
 #include "XX_pile/api.h"

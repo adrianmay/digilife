@@ -6,9 +6,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include "types.h"
-#include "misc/h.h"
-#include "args/h.h"
-#include "h.h"
+#include "misc/api.h"
+#include "args/api.h"
+#include "api.h"
 #include "structs.h"
 #define MAX_FULL_PATH (MAX_FILENAME+DATA_DIR_MAX)
 

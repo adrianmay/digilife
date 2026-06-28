@@ -12,7 +12,7 @@ typedef bool    (*XXMeapEditTocks) (XXIx i, Score when);
 typedef bool    (*XXMeapErase)     (XXIx i);
 typedef Chomped (*XXMeapChomp)     (Score thresh, XX * p, int pseudoAnimals);
 typedef bool    (*XXCheckOrdered)  (void);
-//typedef void    (*XXForAll)        (void (*)(Ix, void *));
+//typedef void    (*XXForAll)        (V_I_P);
 typedef Ix      (*XXMeapSize)      (void);
 typedef void    (*XXMeapShow)      (void);
 //
@@ -38,7 +38,7 @@ extern const XXIx badXXIx;
 extern XXMeap meapOfXXs;
 
 // The caller should define these:
-extern void  onMoveXX(XX * p, XXIx to); // Update records of where p's meap is.
-extern void  onNewXX(XX * p, Ix hint); // Update records of where p's meap is.
+extern void  onXXMeapMove(XX * p, XXIx to); // Update records of where p's meap is.
+extern void  onXXMeapNew(XX * p, Ix hint); // Update records of where p's meap is.
 extern void  onXXMeapWillErase(XXIx i, XX * p); // Update records of where p's meap is.
 

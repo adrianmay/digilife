@@ -33,7 +33,7 @@ static XX * get(XXIx i) {
   return pileOfXXs.get(i);
 }
 
-static Woth with_(XXTact t, WithXX act) {
+static Woth with_(XXTact t, V_XXP act) {
   XX * pXX = hotelOfXXs.get(t.i);
   Nick want, set; 
   want = (t.n); set = t.n | NICK_BUSY; 
@@ -57,7 +57,7 @@ static Woth with_(XXTact t, WithXX act) {
   return Dead;
 }
 
-static Woth with(XXTact t, WithXX act) {
+static Woth with(XXTact t, V_XXP act) {
   XX * pXX = hotelOfXXs.get(t.i);
   Woth w = with_(t, act);
   Nick n = atomic_load(&pXX->rent.nick);
@@ -68,7 +68,7 @@ static Woth with(XXTact t, WithXX act) {
   return w;
 }
 
-static Woth withIx(XXIx i, WithXX act) {
+static Woth withIx(XXIx i, V_XXP act) {
   XX * pXX = hotelOfXXs.get(i);
   XXTact t = (XXTact){i, pXX->rent.nick};
   return with(t, act);
@@ -269,7 +269,7 @@ void showXX(XXTact t, XX * p) {
   showXXBody(&p->body);
 }
 
-static XXTact admit(Cash cash, WithXXBody stuff, XX ** pp, bool * pRecycled) {
+static XXTact admit(Cash cash, V_XXBodyP stuff, XX ** pp, bool * pRecycled) {
   checkHotel(0);
   XX * p;
   XXIx i = pileOfXXs.alloc(&p, pRecycled);
@@ -298,10 +298,10 @@ static XXTact admit(Cash cash, WithXXBody stuff, XX ** pp, bool * pRecycled) {
 
 
 // Assumes some mutex is held, despite the name
-// That's true because onNewXX only called from meap's insert
+// That's true because onXXMeapNew only called from meap's insert
 //   which for the hotel is only called from hotel's admit
 // We know it exists, and it doesn't have or need money
-void onNewXXBomb(XXBomb * pBomb, Ix hint) {
+void onXXBombMeapNew(XXBomb * pBomb, Ix hint) {
   pBomb->who = (XXIx){hint};
 //  XX * p = pileOfXXs.get(pBomb->who);
 //  p->rent.bomb = iBomb;
@@ -310,21 +310,18 @@ void onNewXXBomb(XXBomb * pBomb, Ix hint) {
 }
 
 // Similarly thread safe already, I think?
-void onMoveXXBomb(XXBomb * pBomb, XXBombIx to) {
+void onXXBombMeapMove(XXBomb * pBomb, XXBombIx to) {
   XX * p = pileOfXXs.get(pBomb->who);
   p->rent.bomb = to;
   meapOfXXBombs.check();
 }
 
 void onXXBombMeapWillErase(XXBombIx i, XXBomb * pBomb) {
-  void f(XX * pXX) { 
-//    printf("Dying god %d\n", pBomb->who.i);
-    pXX->rent.bomb = (XXBombIx){BAD_INDEX};
-  }
+  void f(XX * pXX) { pXX->rent.bomb = (XXBombIx){BAD_INDEX}; }
   hotelOfXXs.withIx(pBomb->who, f);
 }
 
-static void forAll(bool u, XXVIP act) { 
+static void forAll(bool u, V_XXI_XXP act) { 
   pileOfXXs.forAll(false, act); 
 }
 

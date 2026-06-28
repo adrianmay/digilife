@@ -6,19 +6,17 @@
 // a given slot.
 // TODO: Limit to 2,147,483,648 slots
 
-typedef void * (*F)(void * item, void * u);
-
 typedef struct Pilehead Pilehead;
 Pilehead * openPile(const char * filename, Ix rec, Ix stp, Ix lim, bool * virgin);
 void closePile(Pilehead * ph, Fate fate);
 Ix allocInPile(Pilehead * ph, void ** pNew, bool * pRecycled, void * ghost, int ghostlen); // Free block contents get copied to ghost
 void * findInPile(Pilehead * ph, Ix i); // Just deref the index
-void * withInPile(Pilehead * ph, Ix i, F f, void * u); // With derefed index
+void * withInPile(Pilehead * ph, Ix i, P_P_P f, void * u); // With derefed index
 void freeInPile(Pilehead * ph, Ix i, void * ghost, int ghostlen); // Ghost gets inserted into free block for debugging
 Ix countPop(Pilehead * ph );
 Ix topInPile(Pilehead * ph );
 Ix getUsr(Pilehead * ph); // Misc number
 void setUsr(Pilehead * ph, Ix u);
 void modUsr(Pilehead * ph, IxDiff u);
-void forAllPile(Pilehead * ph, bool onlyToUsr, VIP act);
-void showPile(Pilehead * ph, VIP showSlot, bool onlyToUsr);
+void forAllPile(Pilehead * ph, bool onlyToUsr, V_I_P act);
+void showPile(Pilehead * ph, V_I_P showSlot, bool onlyToUsr);

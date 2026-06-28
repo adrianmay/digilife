@@ -113,7 +113,7 @@ void * findInPile(Pilehead * ph, Ix i) { return (((void*)(ph+1)) + i*ph->rec); }
 // If it's free, we know we're pointing at an index of another free block or BAD_INDEX, so cast it:
 Free * findFreeInPile(Pilehead * ph, Ix i) { return (Free*) findInPile(ph,i); }
 
-void * withInPile(Pilehead * ph, Ix i, F f, void * u) {
+void * withInPile(Pilehead * ph, Ix i, P_P_P f, void * u) {
   void * p = findInPile(ph, i);
   void * ret = f(p, u);
   return ret;
@@ -192,7 +192,7 @@ void setUsr(Pilehead * ph, Ix u) { ph->usr = u; }
 void modUsr(Pilehead * ph, int32_t u)  { ph->usr += u; }
 
 //act needs its own way to detect free blocks
-void forAllPile(Pilehead * ph, bool onlyToUsr, VIP act) {
+void forAllPile(Pilehead * ph, bool onlyToUsr, V_I_P act) {
   if (!ph) {
     printf("Pile is closed\n");
     abort();
@@ -204,7 +204,7 @@ void forAllPile(Pilehead * ph, bool onlyToUsr, VIP act) {
 }
 
 // TODO: Could be done with forAllPile:
-void showPile(Pilehead * ph, VIP showSlot, bool onlyToUsr) {
+void showPile(Pilehead * ph, V_I_P showSlot, bool onlyToUsr) {
   printf("\nPILE: %s\n", ph?ph->fn:"closed.");
   if (!ph) {
     printf("Pile is closed\n");

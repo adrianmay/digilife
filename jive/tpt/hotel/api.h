@@ -3,17 +3,17 @@ typedef struct {XXIx i; Nick n; } XXTact;
 
 #define NICK_BUSY 0x80000000
 #define NICK_DOOMED 0x40000000
-typedef void (*WithXX)(XX *);
-typedef void (*WithXXBody)(XXBody *);
+typedef void (*V_XXP)(XX *);
+typedef void (*V_XXBodyP)(XXBody *);
 
 extern void onXXRentCollected(Cash rent); // Provide this
 extern void onXXRentDefaulted(Cash rent); // Provide this
                                      
 typedef bool        (*XXHotelOpen)(void);
-typedef XXTact      (*XXHotelAdmit)(Cash cash, WithXXBody stuff, XX ** pp, bool * pRecycled); //Cash = 0 -> God
+typedef XXTact      (*XXHotelAdmit)(Cash cash, V_XXBodyP stuff, XX ** pp, bool * pRecycled); //Cash = 0 -> God
 typedef XX *        (*XXHotelGet)(XXIx i);
-typedef Woth        (*XXHotelWith)(XXTact, WithXX);
-typedef Woth        (*XXHotelWithIx)(XXIx, WithXX);
+typedef Woth        (*XXHotelWith)(XXTact, V_XXP);
+typedef Woth        (*XXHotelWithIx)(XXIx, V_XXP);
 typedef void        (*XXHotelRicher)(XX*, Cash);
 typedef Cash        (*XXHotelPoorer)(XX*, Cash, Terms);
 typedef Cash        (*XXHotelRob)(XX * pXX);
@@ -22,7 +22,7 @@ typedef void        (*XXHotelVV)(void);
 typedef void        (*XXHotelVI)(int expectExcess);
 typedef Ix          (*XXHotelCount)(void);
 typedef void        (*XXHotelClose)(Fate fate);
-typedef void        (*XXHotelForAll)(bool u, XXVIP);
+typedef void        (*XXHotelForAll)(bool u, V_XXI_XXP);
 typedef void        (*XXHotelShow)(void);
 typedef void        (*XXHotelShowXX)(XXTact, XX * p);
 

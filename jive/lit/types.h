@@ -42,18 +42,18 @@ typedef double TockPrice; // The currency unit can be tiny.
 typedef int64_t Weight; // We use negative ones when removing stuff. TODO: 32 bit
 typedef double CpuBid; // Float or int?
 
-typedef void * (*F)(void * item, void * u);
-typedef void (*VV)(void);
-typedef void (*VP)(void *);
-typedef void (*VIP)(Ix, void *);
-typedef void (*VC)(Cash);
+typedef void   (*V)(void);
+typedef bool   (*B)(void);
+typedef void   (*V_C)(Cash);
+typedef void   (*V_P)(void *);
+typedef void   (*V_P_P)(void *, void *);
+typedef void * (*P_P_P)(void *, void *);
+typedef void   (*V_I_P)(Ix, void *);
 
 typedef enum {Nowt, Delete, Hide} Fate;
 typedef enum {Exact, Ono, Rob} Terms;
 typedef enum {Ok, Dead, Busy} Woth;
 
-typedef bool  (*B)(void);
-typedef bool (*BV)(void);
 
 extern int iter;
 

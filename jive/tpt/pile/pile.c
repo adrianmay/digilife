@@ -24,7 +24,7 @@ Ix        topOfXXs(void)                         { return topInPile(headOfXXs); 
 Ix        getXXUsr(void)                         { return getUsr(headOfXXs); }
 void      setXXUsr(Ix u)                         { setUsr(headOfXXs, u); }
 void      modXXUsr(IxDiff u)                     { modUsr(headOfXXs, u); }  // Make this atomic sometime
-void      forAllXXPile(bool u, XXVIP act)        { void a(Ix i, void * p) { act((XXIx){i}, (XX*)p); } forAllPile(headOfXXs, u, a); }
+void      forAllXXPile(bool u, V_XXI_XXP act)    { void a(Ix i, void * p) { act((XXIx){i}, (XX*)p); } forAllPile(headOfXXs, u, a); }
 void      showXXPile(bool u)                     { showPile(headOfXXs, showXX_, u); }
 
 XXPile pileOfXXs =

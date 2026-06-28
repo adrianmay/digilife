@@ -62,8 +62,8 @@ static void swap(XXIx i1, XXIx i2) {
   memcpy(&tmp, p1, len);
   memcpy(p1, p2, len);
   memcpy(p2, &tmp, len);
-  onMoveXX(p1, i1);
-  onMoveXX(p2, i2);
+  onXXMeapMove(p1, i1);
+  onXXMeapMove(p2, i2);
   checkNoDupes();
 }
 
@@ -132,7 +132,7 @@ static bool insert(Tocks expiry, Ix hint, XXIx * pI) {
     *pI = pileOfXXs.alloc(&pNew, 0);
   // pNew is now correct either way.
   pNew->tocks = expiry;
-  onNewXX(pNew, hint);
+  onXXMeapNew(pNew, hint);
   pileOfXXs.modUsr(1);                        // Not sure if this should be before the above, but certainly it's before siftUp.
   if (pI->i > 0) {                          // No point sorting a singleton.
     bool res = siftUp(*pI);             // Calls siftUp if it returns true;

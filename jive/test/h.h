@@ -1,9 +1,9 @@
 #include "types.h"
 #include "assert.h"
 
-extern VV onTestTock;
+extern V onTestTock;
 
-bool bkt(const char * name, B up, B along, VV down);
+bool bkt(const char * name, B up, B along, V down);
 bool nowt(void);
 
 bool globals(void);

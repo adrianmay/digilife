@@ -4,7 +4,7 @@
 
 bool nowt(void) { return true; }
 
-bool bkt(const char * name, BV up, BV along, VV down) {
+bool bkt(const char * name, B up, B along, V down) {
   printf("Testing %s\n", name);
   bool suc;
   if ((suc=(*up)())) {
@@ -21,7 +21,7 @@ void initEverything(void) {
   setlocale(LC_NUMERIC, "");
 }
 
-VV onTestTock;
+V onTestTock;
 void onTock() {onTestTock();}
 
 int main(int argc, char **argv) {

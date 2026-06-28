@@ -1,5 +1,5 @@
-typedef void * (*F_XX)(XX * p, void * u);
-typedef void (*XXVIP)(XXIx, XX*);
+typedef void * (*P_XXP_P)(XX *, void *);
+typedef void   (*V_XXI_XXP)(XXIx, XX*);
 
 typedef bool    (*XXPileOpen)(void);
 typedef XXIx    (*XXPileAlloc)(XX ** pNew, bool * pRecycled);
@@ -12,7 +12,7 @@ typedef Ix      (*XXPileCount)(void);
 typedef Ix      (*XXGetUsr)(void); // Misc number
 typedef void    (*XXSetUsr)(Ix u);
 typedef void    (*XXModUsr)(IxDiff u);
-typedef void    (*XXPileForAll)(bool onlyToUsr, XXVIP action); // cos of meap
+typedef void    (*XXPileForAll)(bool onlyToUsr, V_XXI_XXP action); // cos of meap
 typedef void    (*XXPileShow)(bool stopAtUsr); // cos of meap
 
 typedef struct {

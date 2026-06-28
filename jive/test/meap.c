@@ -5,9 +5,8 @@
 #include "Junk_meap/api.h"
 #include "bit/Junk.h"
 
-void  onNewJunk(Junk * pJ, Ix hint) { pJ->hint=hint;}
-void  onMoveJunk(Junk * pJ, JunkIx to) { }
-
+void  onJunkMeapNew(Junk * pJ, Ix hint) { pJ->hint=hint;}
+void  onJunkMeapMove(Junk * pJ, JunkIx to) { }
 
 #define assertWholeMeap(pExp, N) { \
   printf("Meap setup %d: ", setupNum); \
@@ -96,13 +95,13 @@ bool setup3Same(void) {
 }
 
 
-BV setterUppers[] = {
+B setterUppers[] = {
   setupEmpty, setupSingleton,
   setup2Inc, setup2Dec, setup2CloseInc, setup2CloseDec,
   setup123, setup132, setup213, setup231, setup312, setup321, setup3Same
 };
 
-#define numMeapSetups (sizeof(setterUppers)/sizeof(BV))
+#define numMeapSetups (sizeof(setterUppers)/sizeof(B))
 
 int setupNum, testNum;
 
@@ -186,8 +185,8 @@ bool chompTest(void) {
   return bkt("chompTest",nowt, chompT, cleanupMeap);
 }
 
-BV testers[] = {testMeap1, testMeap2, testMeap3, testMeap4}; //, testMeap3, testMeap4};
-#define numMeapTesters (sizeof(testers)/sizeof(BV))
+B testers[] = {testMeap1, testMeap2, testMeap3, testMeap4}; //, testMeap3, testMeap4};
+#define numMeapTesters (sizeof(testers)/sizeof(B))
 
 
 bool meap(void) {

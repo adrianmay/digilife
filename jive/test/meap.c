@@ -206,7 +206,7 @@ void showJunk(JunkIx i, Junk * pJunk) {
   printf("tocks=0x%x\n", pJunk->tocks);
 }
 
-Nick onJunkMeapWillErase(JunkIx i, Junk * p) { 
-  return 0; // Don't inhibit deleting anything.
+bool onJunkMeapWillErase(JunkIx i, Junk * p) { 
+  return true; // Don't inhibit deleting anything.
 }
 

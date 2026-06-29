@@ -317,9 +317,13 @@ void onXXBombMeapMove(XXBomb * pBomb, XXBombIx to) {
   meapOfXXBombs.check();
 }
 
-Nick onXXBombMeapWillErase(XXBombIx i, XXBomb * pBomb) {
-  XX * pXX = pileOfXXs.get(pBomb->who);
-  return atomic_fetch_or(&pXX->rent.nick, NICK_FLAG_BOMBED);
+bool onXXBombMeapWillErase(XXBombIx i, XXBomb * pBomb) {
+  XXIx who = pBomb->who;
+  XX * pXX = pileOfXXs.get(who);
+  Nick was = atomic_fetch_or(&pXX->rent.nick, NICK_FLAG_BOMBED);
+  if (!(was & NICK_FLAG_BUSY))
+    pileOfXXs.free(who);
+  return (!(was & NICK_FLAG_BOMBED)); 
 }
 
 static void forAll(bool u, V_XXI_XXP act) { 

@@ -25,7 +25,7 @@ typedef struct {
   XXMeapInsert insert; // New member.
   XXMeapGet get;
   XXMeapEditTocks editTocks; // Member's score might have changed.
-  XXMeapErase  erase; // Delete it.
+  XXMeapErase erase; // Delete it.
   XXMeapChomp chomp; //Check and eat 0-1 things
   XXCheckOrdered check; //Just for testing.
 //  XXForAll forAll; //Just for testing.
@@ -40,5 +40,6 @@ extern XXMeap meapOfXXs;
 // The caller should define these:
 extern void onXXMeapMove(XX * p, XXIx to); // Update records of where p's meap is.
 extern void onXXMeapNew(XX * p, Ix hint); // Update records of where p's meap is.
-extern Nick onXXMeapWillErase(XXIx i, XX * p); // Update records of where p's meap is.
+// Return true if you want the meap item erased
+extern bool onXXMeapWillErase(XXIx i, XX * p); // Update records of where p's meap is.
 

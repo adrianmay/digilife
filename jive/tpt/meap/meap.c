@@ -6,6 +6,10 @@
 #include "api.h"
 #include "YY"
 
+static pthread_mutex_t mutex=PTHREAD_MUTEX_INITIALIZER;
+static void lock() { pthread_mutex_lock(&mutex); }
+static void unlock() { pthread_mutex_unlock(&mutex); }
+
 static XXIx parent(XXIx i) {return ( XXIx ){ (i.i-1)/2 };}
 static XXIx left  (XXIx i) {return ( XXIx ){ 2*i.i + 1 };}
 static XXIx right (XXIx i) {return ( XXIx ){ 2*i.i + 2 };}
@@ -120,9 +124,11 @@ static void siftDown(XXIx iCur) {
 
 // Returns whether or not the lowest changed.
 static bool insert(Tocks expiry, Ix hint, XXIx * pI) {
+  bool res = false;
   XX * pNew;
   bombee = hint;
   forAll(bombeeSafe);
+  lock();
   Ix meapTop = pileOfXXs.getUsr();    //meapish size
   if (meapTop < pileOfXXs.count()) {  // That's pile's top minus pile's free count. But we'll never use free in this pile anyway.
     pI->i = meapTop;                  // Got meapish spares so just return one
@@ -135,21 +141,24 @@ static bool insert(Tocks expiry, Ix hint, XXIx * pI) {
   onXXMeapNew(pNew, hint);
   pileOfXXs.modUsr(1);                        // Not sure if this should be before the above, but certainly it's before siftUp.
   if (pI->i > 0) {                          // No point sorting a singleton.
-    bool res = siftUp(*pI);             // Calls siftUp if it returns true;
-    return res;
+    res = siftUp(*pI);             // Calls siftUp if it returns true;
   }
-  return false;
+  unlock();
+  return res;
 }
 
 static bool editTocks(XXIx iCur, Score when) {
+  lock();
   pileOfXXs.get(iCur)->tocks = when;
   siftDown(iCur);
   bool res = siftUp(iCur);
   checkNoDupes();
+  unlock();
   return res;
 }
 
-static bool erase(XXIx iCur) {
+// Assume already locked
+static bool erase_(XXIx iCur) {
   Ix cnt = pileOfXXs.getUsr();
   if (!cnt) {
     printf("Meap empty in erase\n");
@@ -168,36 +177,38 @@ static bool erase(XXIx iCur) {
   return res;
 }
 
+static bool erase(XXIx iCur) {
+  lock();
+  bool res = erase_(iCur);
+  unlock();
+  return res;
+}
+
 static Chomped chomp(Score thresh, XX * pCopyOut, int pseudoAnimals) {
   Chomped res;
+  lock();
   Ix x = meapOfXXs.size();
   if (x<=pseudoAnimals) { 
     printf("chomp XX: extinct: x=%d, pseudo=%d\n", x, pseudoAnimals);
-    //abort();
     res = Extinct; 
   }
   else {
     XXIx i = (XXIx) {0};
     XX * p = pileOfXXs.get(i);
-    Ix * ip = (Ix *) p;
     //if (ip[0] == 194 && ip[1] == 1138) {
-    if (iter>1433) {
-      printf("\nIn chomp: %d %d iter=%d\n", ip[0], ip[1], iter);
-      show();
-    }
     memcpy(pCopyOut, p, sizeof(XX));
     Score lowestScoreInMeap = p->tocks;
     ScoreDiff sd = wrapSub32S(lowestScoreInMeap, thresh);
     if (sd <= 0) {
-      Nick nick = onXXMeapWillErase(i, p);
-      if (nick & NICK_FLAG_BOMBED)
-      erase(i);
+      if (onXXMeapWillErase(i, p))
+        erase_(i);
       res = Killed;
     } else {
       res = Idle;
     }
   }
   checkNoDupes();
+  unlock();
   return res;
 }
 
@@ -236,6 +247,6 @@ static bool checkOrdered(void) {
 static Ix size(void) {  return pileOfXXs.getUsr(); }
 
 static bool open(void) { return pileOfXXs.open(); }
-static void close(Fate f) { pileOfXXs.close(f); }
+static void close(Fate f) { lock(); pileOfXXs.close(f); unlock(); }
 
-XXMeap meapOfXXs = {open, close, insert, get, editTocks ,erase, chomp, checkOrdered,size, show };
+XXMeap meapOfXXs = {open, close, insert, get, editTocks, erase, chomp, checkOrdered,size, show };

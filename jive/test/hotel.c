@@ -91,19 +91,10 @@ bool test1(void) {
   return true;
 }
 
-void * earn(void *) {
-  void f(Thing * pT) { hotelOfThings.richer(pT, 2000); }
-  hotelOfThings.with(tThing, f);
-  return 0;
-}
-
 bool testEarn(void) {
   printf("testEarn\n");
   make(4, 3000);
-  void f(Thing * pT) { hotelOfThings.richer(pT, 2000); }
-  hotelOfThings.with(tThing, f);
-  //hotelOfThings.show();
-  //earn(0);
+  hotelOfThings.richer(pT, 2000);
   expectExtinctSoon(5000);
   return true;
 }

@@ -10,8 +10,9 @@ extern void onXXRentDefaulted(Cash rent); // Provide this
 typedef bool        (*XXHotelOpen)(void);
 typedef XXTact      (*XXHotelAdmit)(Cash cash, bool isGod, V_XXBodyP stuff, XX ** pp, bool * pRecycled); //Cash = 0 -> God
 typedef XX *        (*XXHotelGet)(XXIx i);
-typedef Woth        (*XXHotelWith)(XXTact, V_XXP);
-typedef Woth        (*XXHotelWithIx)(XXIx, V_XXP);
+typedef XX *        (*XXHotelGrab)(XXTact);
+typedef XX *        (*XXHotelGrabIx)(XXIx);
+typedef void        (*XXHotelDrop)(XXIx);
 typedef void        (*XXHotelRicher)(XX*, Cash);
 typedef Cash        (*XXHotelPoorer)(XX*, Cash, Terms);
 typedef Cash        (*XXHotelRob)(XX * pXX);
@@ -28,8 +29,9 @@ typedef struct {
   XXHotelOpen open;
   XXHotelAdmit admit;
   XXHotelGet get;
-  XXHotelWith with;
-  XXHotelWithIx withIx;
+  XXHotelGrab grab;
+  XXHotelGrabIx grabIx;
+  XXHotelDrop drop;
   XXHotelRicher richer;
   XXHotelPoorer poorer;
   XXHotelRob rob; 

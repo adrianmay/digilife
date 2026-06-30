@@ -250,3 +250,4 @@ static bool open(void) { return pileOfXXs.open(); }
 static void close(Fate f) { lock(); pileOfXXs.close(f); unlock(); }
 
 XXMeap meapOfXXs = {open, close, insert, get, editTocks, erase, chomp, checkOrdered,size, show };
+

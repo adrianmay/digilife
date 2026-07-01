@@ -91,10 +91,21 @@ bool test1(void) {
   return true;
 }
 
+bool with(ThingTact t, V_ThingP act) {
+  Thing * pT = hotelOfThings.grab(t);
+  if (pT) {
+    act(pT);
+    hotelOfThings.drop(t.i);
+    return true;
+  }
+  else return false;
+}
+
 bool testEarn(void) {
   printf("testEarn\n");
-  make(4, 3000);
-  hotelOfThings.richer(pT, 2000);
+  ThingTact t = make(4, 3000);
+  void f(Thing * pT) { hotelOfThings.richer(pT, 2000); }
+  with(t, f);
   expectExtinctSoon(5000);
   return true;
 }
@@ -103,7 +114,7 @@ bool testRob(void) {
   printf("testRob\n");
   make(5, 9000);
   void f(Thing * pT) { hotelOfThings.poorer(pT, 0, Rob); }
-  hotelOfThings.with(tThing, f);
+  with(tThing, f);
   expectExtinctSoon(150);
   return true;
 }
@@ -114,10 +125,10 @@ bool testGod(void) {
   make(6, 1000);
   make(5, 0);
   expectExtinctSoon(1000);
-  hotelOfThings.with(tThing, colRent);
+  with(tThing, colRent);
   bool ff(Thing * pThing) { assertLong(pThing->rent.cash, -1200l); return true;}
   void f(Thing * pThing) { ff(pThing); }
-  hotelOfThings.with(tThing, f);
+  with(tThing, f);
   return true;
 }
 
@@ -126,7 +137,7 @@ bool testAfterFree(void) {
   ThingTact tThing = make(6, 1000);
   expectExtinctSoon(1000);
   void f(Thing * p) { (void)p; }
-  Woth w = hotelOfThings.with(tThing, f);
+  Woth w = with(tThing, f);
   assertInt(w, Dead);
   return true;
 }
@@ -136,13 +147,13 @@ bool testBusy(void) {
   ThingTact tThing = make(6, 10000);
   //printf("nick: %x\n", tThing.n);
   void f(Thing * p) { (void)p; }
-  Woth wi;
+  bool wi;
   void g(Thing * p) { 
-    wi = hotelOfThings.with(tThing, f);
+    wi = with(tThing, f);
   }
-  Woth wo = hotelOfThings.with(tThing, g);
-  assertInt(wo, Ok);
-  assertInt(wi, Busy);
+  bool wo = with(tThing, g);
+  assertInt(wo, true);
+  assertInt(wi, false);
   return true;
 }
 
@@ -158,10 +169,10 @@ bool testFreeWhenBusy(void) {
     ThingTact t2 = make(7,1000);
     sameIndex2 = t2.i.i == tThing.i.i;
   }
-  Woth wo = hotelOfThings.with(tThing, g);
+  bool wo = with(tThing, g);
   ThingTact t3 = make(8,1000);
   bool sameIndex3 = t3.i.i == tThing.i.i;
-  assertInt(wo, Ok);
+  assertInt(wo, true);
   assertInt(sameIndex2, false);
   assertInt(sameIndex3, true);
   return true;
@@ -172,12 +183,12 @@ bool testHotel(void) {
   printf("Tock price: %f\n", tockPrice());
   printf("Billable size: %ld\n", billableThingSize);
   return
-  //  testNoPop() &&
-  //  test1() &&
-  //  testEarn() &&
-  //  testRob() &&
-  //  testGod() &&
-    //testAfterFree() &&
+    testNoPop() &&
+    test1() &&
+    testEarn() &&
+    testRob() &&
+    testGod() &&
+    testAfterFree() &&
     testBusy() &&
     testFreeWhenBusy() &&
     true;

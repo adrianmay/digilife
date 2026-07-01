@@ -96,6 +96,7 @@ void showXXBomb(XXBomb * p) {
 
 // Updates bomp expiry and reorders meap. 
 // Assumes collectRent was just called.
+// Assumes the thing is grabbed.
 static bool updateDeathWithXXAndBomb_(XX* p, XXBombIx iBomb, XXBomb * pBomb) {
   Cash cash = p->rent.cash;
   Tocks ttl = cash / rentForXXPerTock();
@@ -103,8 +104,8 @@ static bool updateDeathWithXXAndBomb_(XX* p, XXBombIx iBomb, XXBomb * pBomb) {
   meapOfXXBombs.check();
   // This changes bomb time and reorders meap:
   bool res = false;
-  if (p->rent.bomb.i == iBomb.i)
-    res  = meapOfXXBombs.editTocks(p->rent.bomb, death);
+  if (p->rent.bomb.i == iBomb.i) // Redundant if grabbed.
+    res  = meapOfXXBombs.editTocks(p->rent.bomb, death); // Locks the meap itself
   meapOfXXBombs.check();
   return res;
   // The meap is now properly reordered but nobody called kill
@@ -113,7 +114,7 @@ static bool updateDeathWithXXAndBomb_(XX* p, XXBombIx iBomb, XXBomb * pBomb) {
 // Wrappers:
 static bool updateDeathWithXX_(XX * pXX) {
   XXBombIx iBomb = pXX->rent.bomb;
-  XXBomb * pBomb = meapOfXXBombs.get(iBomb);
+  XXBomb * pBomb = meapOfXXBombs.get(iBomb); // Assumes grabbed.
   return updateDeathWithXXAndBomb_(pXX, iBomb, pBomb);
 }
 
@@ -122,6 +123,18 @@ static void rebomb(XXRent * pRent, XXIx i) {
   meapOfXXBombs.insert(expiry, i.i, &pRent->bomb); // Do we need the return value?
 }
  
+// GRAB AND RAID SYNCHRONISATION:
+
+// When starting a job, the sum of the msg and mob cash is initialised in the core
+//   without changing them in the msg/mob.
+// Then money is received in subsidies and/or spent on actions in the mob code.
+// After the job ends, the msg is left bankrupt and the mob keeps whatever money it should.
+// At this point both bombs are talking rubbish. I considered deleting both bombs 
+//   at the start of the job but this way is more efficient.
+// A raid might have tried to destroy the mob or msg in the meantime but backed off
+//   seeing them busy and marked them bombed. 
+// drop puts everything to rights. It's not to be used unless a job just happened.
+
 // AFAIK this is just for running a job
 // If the XX is not busy, not doomed, and has the passed nick, mark it busy and return a pointer to it
 static XX * grab(XXTact t) {
@@ -142,15 +155,6 @@ static XX * grabIx(XXIx i) {
   return grab(t);
 }
 
-// When starting a job, the sum of the msg and mob cash is initialised in the core
-//   without changing them in the msg/mob.
-// Then money is received in subsidies and/or spent on actions in the mob code.
-// After the job ends, the msg is left bankrupt and the mob keeps whatever money it should.
-// At this point both bombs are talking rubbish. I considered deleting both bombs 
-//   at the start of the job but this way is more efficient.
-// A raid might have tried to destroy the mob or msg in the meantime but backed off
-//   seeing them busy and marked them bombed. 
-// This function puts everything to rights. It's not to be used unless a job just happened.
 static void drop(XXIx i) {
   XX * pXX = pileOfXXs.get(i);
   Nick was = atomic_fetch_or(&pXX->rent.nick, NICK_FLAG_BOMBED); // I might be lying about intending to free the bomb,
@@ -188,8 +192,28 @@ static void drop(XXIx i) {
 
 static bool isGod(XX * pXX) { return pXX->rent.nick & NICK_NAME_GOD ; }
 
+// Assumes some mutex is held, despite the name
+// That's true because onXXMeapNew only called from meap's insert
+//   which for the hotel is only called from hotel's admit
+// We know it exists, and it doesn't have or need money
+void onXXBombMeapNew(XXBomb * pBomb, Ix hint) {
+  pBomb->who = (XXIx){hint};
+//  XX * p = pileOfXXs.get(pBomb->who);
+//  p->rent.bomb = iBomb;
+//  updateDeathWithXXAndBomb_(p, pBomb);
+//  meapOfXXBombs.check();
+}
+
+// Similarly thread safe already, I think?
+void onXXBombMeapMove(XXBomb * pBomb, XXBombIx to) {
+  XX * p = pileOfXXs.get(pBomb->who);
+  p->rent.bomb = to;
+  meapOfXXBombs.check();
+}
+
 //Deduct cash and set last paid to now
 //Catches defaults now
+//Assumes grabbed.
 static void collectRent(XX * pXX, bool updateBomb) {
   Cash collected, defaulted;
   XXRent * pRent = &pXX->rent;
@@ -212,7 +236,15 @@ static void collectRent(XX * pXX, bool updateBomb) {
   if (defaulted) onXXRentDefaulted(defaulted);
 }
 
-//static int chance=0;
+bool onXXBombMeapWillErase(XXBombIx i, XXBomb * pBomb) {
+  XXIx who = pBomb->who;
+  XX * pXX = pileOfXXs.get(who);
+  Nick was = atomic_fetch_or(&pXX->rent.nick, NICK_FLAG_BOMBED);
+  if (!(was & NICK_FLAG_BUSY))
+    pileOfXXs.free(who);
+  return (!(was & NICK_FLAG_BOMBED)); // Must remove bomb for meap to continue unless drop already removed it
+}
+
 static void raid(void) {
   //printf("Raid starts\n");
   checkHotel(0);
@@ -223,31 +255,41 @@ static void raid(void) {
   while (true) { // Returns when nothing to kill for now
     bomb.who = badXXIx; // Prevent false alarms
     //meapOfXXBombs.show();
-    Chomped ch = meapOfXXBombs.chomp(now, &bomb, 0);
-    if (ch == Killed ) {
-      //bombee = bomb.who;
+    Chomped ch = meapOfXXBombs.chomp(now, &bomb, 0); // Locks, so each bomb appears here at most once.
+    if (ch == Killed ) {    // ... Also calls onXXBombMeapWillErase and erases the bomb if it says so.
+      //bombee = bomb.who;  // ... It says not only if drop already erased it.
       //meapOfXXBombs.forAll(bombeeSafe);
       meapOfXXBombs.check();
-      if (bomb.who.i == 194 && bomb.tocks==1138) {//printf("Chomped number 194, tocks=%d\n", bomb.tocks);
-        show();
-        printf("iter=%d\n", iter);
-        abort();
-      }
       XX * pXX = hotelOfXXs.get(bomb.who);
       //printf("XX Chomped with expiry=%d, who=%d, cash before collecting rent=%ld\n", bomb.tocks, bomb.who.i, pXX->rent.cash);
+
+      Nick got = atomic_load(&pXX->rent.nick); 
+      Nick flags = got && NICK_FLAG_MASK;
+      if (!(flags & NICK_FLAG_BOMBED)) abort(); // Either chomp set it or it was set already.
+                                              //
+      if (!(flags & NICK_FLAG_BUSY)) { // Normal, idle rent expiry
+        collectRent(pXX, false);
+        if (pXX->rent.cash<0) {
+          onXXRentDefaulted(-pXX->rent.cash); // Should be at the real free
+          pXX->rent.cash = 0; // Maybe redundant
+          onXXHotelGoDie(bomb.who, pXX);
+          atomic_store(&pXX->rent.nick, BAD_INDEX); 
+          pileOfXXs.free(bomb.who);
+        }
+      } else { // Expired when busy. Do nothing - the core will handle it
+      }
+/*
       collectRent(pXX, false);
       if (pXX->rent.cash<0) {
         onXXRentDefaulted(-pXX->rent.cash); // Should be at the real free
         pXX->rent.cash = 0;
       }
-      Nick want = atomic_fetch_or(&pXX->rent.nick, NICK_FLAG_BOMBED); 
       if (want & NICK_FLAG_BOMBED) {
         printf("XX %d already doomed\n", bomb.who.i);
         show();
         abort();
       }
       if (want & NICK_FLAG_BUSY) continue;
-      Nick test = atomic_exchange(&pXX->rent.nick, BAD_INDEX); 
       if (test == 0) {
         printf("Gotcha\n");
         abort();
@@ -256,6 +298,7 @@ static void raid(void) {
       onXXHotelGoDie(bomb.who, pXX);
       pileOfXXs.free(bomb.who);
       continue;
+      */
     }
     if (ch == Extinct) {
       checkHotel(0);
@@ -333,34 +376,6 @@ static XXTact admit(Cash cash, bool isGod, V_XXBodyP stuff, XX ** pp, bool * pRe
   return t;
 }
 
-
-// Assumes some mutex is held, despite the name
-// That's true because onXXMeapNew only called from meap's insert
-//   which for the hotel is only called from hotel's admit
-// We know it exists, and it doesn't have or need money
-void onXXBombMeapNew(XXBomb * pBomb, Ix hint) {
-  pBomb->who = (XXIx){hint};
-//  XX * p = pileOfXXs.get(pBomb->who);
-//  p->rent.bomb = iBomb;
-//  updateDeathWithXXAndBomb_(p, pBomb);
-//  meapOfXXBombs.check();
-}
-
-// Similarly thread safe already, I think?
-void onXXBombMeapMove(XXBomb * pBomb, XXBombIx to) {
-  XX * p = pileOfXXs.get(pBomb->who);
-  p->rent.bomb = to;
-  meapOfXXBombs.check();
-}
-
-bool onXXBombMeapWillErase(XXBombIx i, XXBomb * pBomb) {
-  XXIx who = pBomb->who;
-  XX * pXX = pileOfXXs.get(who);
-  Nick was = atomic_fetch_or(&pXX->rent.nick, NICK_FLAG_BOMBED);
-  if (!(was & NICK_FLAG_BUSY))
-    pileOfXXs.free(who);
-  return (!(was & NICK_FLAG_BOMBED)); // Must remove bomb for meap to continue unless drop already removed it
-}
 
 static void forAll(bool u, V_XXI_XXP act) { 
   pileOfXXs.forAll(false, act); 

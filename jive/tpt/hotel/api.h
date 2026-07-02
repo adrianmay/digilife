@@ -16,7 +16,7 @@ typedef void        (*XXHotelDrop)(XXIx);
 typedef void        (*XXHotelRicher)(XX*, Cash);
 typedef Cash        (*XXHotelPoorer)(XX*, Cash, Terms);
 typedef Cash        (*XXHotelRob)(XX * pXX);
-typedef void        (*XXHotelCollectRent)(XX * pXX, bool updateBomb);
+typedef void        (*XXHotelCollectRent)(XX * pXX);
 typedef void        (*XXHotelVV)(void);
 typedef void        (*XXHotelVI)(int expectExcess);
 typedef Ix          (*XXHotelCount)(void);

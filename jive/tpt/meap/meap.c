@@ -249,5 +249,5 @@ static Ix size(void) {  return pileOfXXs.getUsr(); }
 static bool open(void) { return pileOfXXs.open(); }
 static void close(Fate f) { lock(); pileOfXXs.close(f); unlock(); }
 
-XXMeap meapOfXXs = {open, close, insert, get, editTocks, erase, chomp, checkOrdered,size, show };
+XXMeap meapOfXXs = {open, close, insert, get, editTocks, erase, chomp, checkOrdered, forAll, size, show };
 

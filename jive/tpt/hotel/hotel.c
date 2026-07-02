@@ -88,7 +88,7 @@ static void checkHotel(int expectExcess) {
   }
 }
 
-void showXXBomb(XXBomb * p) {
+void showXXBomb(XXIx i, XXBomb * p) {
   printf("tocks=%d,who=%d\n", p->tocks, p->who.i);
 }
 
@@ -159,29 +159,33 @@ static void drop(XXIx i) {
   XX * pXX = pileOfXXs.get(i);
   Nick was = atomic_fetch_or(&pXX->rent.nick, NICK_FLAG_BOMBED); // I might be lying about intending to free the bomb,
   if (pXX->rent.cash>0) {                                        //  but it stops raid from doing so.
+    printf("Drop: solvent\n");
     if (was & NICK_FLAG_BOMBED)
       rebomb(&pXX->rent, i);
     else 
       updateDeathWithXX_(pXX);
     atomic_store(&pXX->rent.nick, was & NICK_NAME_READ_MASK); // Clear both flags
   } else { // Bankrupted by its own code
+    printf("Drop: broke\n");
     if (!(was & NICK_FLAG_BOMBED)) {
         meapOfXXBombs.erase(pXX->rent.bomb);
     }
+    onXXHotelGoDie(i, pXX);
+    atomic_store(&pXX->rent.nick, BAD_INDEX); 
     pileOfXXs.free(i);
     // TODO: Book loss
   }
 }
 
 // Debug:
-//static XXIx bombee;
-//static void bombeeSafe(Ix i, void * p) { 
-//  XXBomb * pB = (XXBomb *) p;
-//  if (pB->who.i == bombee.i) {
-//    printf("After chomp: Another bomb for XX %d\n", bombee.i);
-//    abort();
-//  }
-//}
+static XXIx bombee;
+static void bombeeSafe(Ix i, void * p) { 
+  XXBomb * pB = (XXBomb *) p;
+  if (pB->who.i == bombee.i) {
+    printf("After chomp: Another bomb for XX %d\n", bombee.i);
+    abort();
+  }
+}
 //static void bombeeSafe2(Ix i, void * p) { 
 //  XXBomb * pB = (XXBomb *) p;
 //  if (pB->who.i == bombee.i) {
@@ -214,7 +218,7 @@ void onXXBombMeapMove(XXBomb * pBomb, XXBombIx to) {
 //Deduct cash and set last paid to now
 //Catches defaults now
 //Assumes grabbed.
-static void collectRent(XX * pXX, bool updateBomb) {
+static void collectRent(XX * pXX) {
   Cash collected, defaulted;
   XXRent * pRent = &pXX->rent;
   Tocks now = tocksNow();
@@ -230,7 +234,6 @@ static void collectRent(XX * pXX, bool updateBomb) {
     pRent->cash = 0;
     collected = c;
     defaulted = bill-c;
-    if (updateBomb) updateDeathWithXX_(pXX);
   }
   if (collected) onXXRentCollected(collected);
   if (defaulted) onXXRentDefaulted(defaulted);
@@ -240,8 +243,8 @@ bool onXXBombMeapWillErase(XXBombIx i, XXBomb * pBomb) {
   XXIx who = pBomb->who;
   XX * pXX = pileOfXXs.get(who);
   Nick was = atomic_fetch_or(&pXX->rent.nick, NICK_FLAG_BOMBED);
-  if (!(was & NICK_FLAG_BUSY))
-    pileOfXXs.free(who);
+  //if (!(was & NICK_FLAG_BUSY)) // Comes later
+  //  pileOfXXs.free(who);
   return (!(was & NICK_FLAG_BOMBED)); // Must remove bomb for meap to continue unless drop already removed it
 }
 
@@ -255,20 +258,26 @@ static void raid(void) {
   while (true) { // Returns when nothing to kill for now
     bomb.who = badXXIx; // Prevent false alarms
     //meapOfXXBombs.show();
+    //printf("Raid before chomp, hotel is >>>\n");
+    //hotelOfXXs.show();
+    //printf("<<<\n");
     Chomped ch = meapOfXXBombs.chomp(now, &bomb, 0); // Locks, so each bomb appears here at most once.
+    //printf("Raid after chomp, hotel is >>>\n");
+    //hotelOfXXs.show();
+    //printf("<<<\n");
     if (ch == Killed ) {    // ... Also calls onXXBombMeapWillErase and erases the bomb if it says so.
-      //bombee = bomb.who;  // ... It says not only if drop already erased it.
-      //meapOfXXBombs.forAll(bombeeSafe);
+      bombee = bomb.who;  // ... It says not only if drop already erased it.
+      meapOfXXBombs.forAll(bombeeSafe);
+      //hotelOfXXs.show();
       meapOfXXBombs.check();
       XX * pXX = hotelOfXXs.get(bomb.who);
       //printf("XX Chomped with expiry=%d, who=%d, cash before collecting rent=%ld\n", bomb.tocks, bomb.who.i, pXX->rent.cash);
 
       Nick got = atomic_load(&pXX->rent.nick); 
-      Nick flags = got && NICK_FLAG_MASK;
+      Nick flags = got & NICK_FLAG_MASK;
       if (!(flags & NICK_FLAG_BOMBED)) abort(); // Either chomp set it or it was set already.
-                                              //
       if (!(flags & NICK_FLAG_BUSY)) { // Normal, idle rent expiry
-        collectRent(pXX, false);
+        collectRent(pXX);
         if (pXX->rent.cash<0) {
           onXXRentDefaulted(-pXX->rent.cash); // Should be at the real free
           pXX->rent.cash = 0; // Maybe redundant
@@ -364,7 +373,8 @@ static XXTact admit(Cash cash, bool isGod, V_XXBodyP stuff, XX ** pp, bool * pRe
     p->rent.bomb = badXXBombIx;
     pileOfXXs.modUsr(1);
   } else {
-    if (cash == 0) return (XXTact){(XXIx){BAD_INDEX}};
+    if (cash == 0) 
+      return (XXTact){(XXIx){BAD_INDEX}};
     p->rent.cash = cash;
     p->rent.lastPaidRent = tocksNow();
     if (stuff) stuff(&p->body);

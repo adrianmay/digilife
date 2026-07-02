@@ -34,7 +34,7 @@
 // When you want the whole existing name:
 #define NICK_NAME_READ_MASK (~(NICK_FLAG_MASK))
 // When you make up a random new name:    
-#define NICK_NAME_RAND_MASK (NICK_NAME_READ_MASK & (!NICK_NAME_GOD) )
+#define NICK_NAME_RAND_MASK (NICK_NAME_READ_MASK & (~NICK_NAME_GOD) )
 
 // Ought to be using the FPU here
 typedef uint64_t Cycles;

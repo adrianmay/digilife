@@ -6,32 +6,32 @@
 bool recycledSlot;
 
 bool recycledity(void) {
-  bool vir1 = pileOfLinks.open(); //Assume it doesn't exist
+  bool vir1 = pileOfLinks_open(); //Assume it doesn't exist
   assertInt(vir1,true);
-  pileOfLinks.alloc(0, &recycledSlot);
-  pileOfLinks.close(Nowt); //Don't delete the pile
-  bool vir2 = pileOfLinks.open();
+  pileOfLinks_alloc(0, &recycledSlot);
+  pileOfLinks_close(Nowt); //Don't delete the pile
+  bool vir2 = pileOfLinks_open();
   assertInt(vir2,false);
-  pileOfLinks.close(Hide); //Delete it for next time
+  pileOfLinks_close(Hide); //Delete it for next time
   return true;
 }
 
 int sumLinks(LinkIx i0) {
   Link * pT;
   int total=0;
-  for (LinkIx i=i0;pileOfLinks.indexValid(i);i=pT->next) { pT = pileOfLinks.get(i); total += pT->x;}
+  for (LinkIx i=i0;pileOfLinks_ixValid(i);i=pT->next) { pT = pileOfLinks_get(i); total += pT->x;}
   return total;
 }
 
 bool sumItems(LinkIx * i0) {
-  bool vir1 = pileOfLinks.open(); //Assume it doesn't exist
+  bool vir1 = pileOfLinks_open(); //Assume it doesn't exist
   assertInt(vir1,true);
   LinkIx i; Link * pT;
-  *i0 = i = pileOfLinks.alloc(&pT, &recycledSlot); // Must be index zero
+  *i0 = i = pileOfLinks_alloc(&pT, &recycledSlot); // Must be index zero
   pT->x = 0;
   Link * pNew;
   for (int a=0;a<40;a++) {
-    pT->next=pileOfLinks.alloc(&pNew, &recycledSlot);
+    pT->next=pileOfLinks_alloc(&pNew, &recycledSlot);
     pNew->next = badLinkIx;
     pNew->x = 10*a;
     pT=pNew;
@@ -41,37 +41,37 @@ bool sumItems(LinkIx * i0) {
   return true;
 }
 
-LinkIx nextLink(LinkIx i) { return pileOfLinks.get(i)->next; }
+LinkIx nextLink(LinkIx i) { return pileOfLinks_get(i)->next; }
 
 bool freeing(LinkIx i0) {
-  int count = pileOfLinks.count();
+  int count = pileOfLinks_count();
   assertInt(count,41);
   LinkIx i1 = nextLink(i0); //1
   LinkIx i2 = nextLink(i1); //2
   LinkIx i3 = nextLink(i2);
   LinkIx i4 = nextLink(i3);
   LinkIx i5 = nextLink(i4);
-  pileOfLinks.free(i2);
-  pileOfLinks.free(i4);
-  pileOfLinks.free(i3);
-  pileOfLinks.get(i1)->next = i5; // 6
+  pileOfLinks_free(i2);
+  pileOfLinks_free(i4);
+  pileOfLinks_free(i3);
+  pileOfLinks_get(i1)->next = i5; // 6
   int total = sumLinks(i0);
   assertInt(total,7740);
-  count = pileOfLinks.count();
+  count = pileOfLinks_count();
   assertInt(count,38);
   return true;
 }
 
 bool reallocing(void) { //Free list = 2,3,4
-  LinkIx i = pileOfLinks.alloc(0, &recycledSlot);
+  LinkIx i = pileOfLinks_alloc(0, &recycledSlot);
   assertInt(i.i,2);
-  i = pileOfLinks.alloc(0, &recycledSlot);
+  i = pileOfLinks_alloc(0, &recycledSlot);
   assertInt(i.i,4);
-  i = pileOfLinks.alloc(0, &recycledSlot);
+  i = pileOfLinks_alloc(0, &recycledSlot);
   assertInt(i.i,3);
-  i = pileOfLinks.alloc(0, &recycledSlot);
+  i = pileOfLinks_alloc(0, &recycledSlot);
   assertInt(i.i,41); // Keeping the 5 and 6
-  int count = pileOfLinks.count();
+  int count = pileOfLinks_count();
   assertInt(count,42);
   return true;
 }
@@ -87,7 +87,7 @@ void * incrementBy(Link * p, void * u) {
 //   int total = sumLinks(i0);
 //   assertInt(total,7740);
 //   int i = 3;
-//   pileOfLinks.with(i0, incrementBy, ((void*)&i));
+//   pileOfLinks_with(i0, incrementBy, ((void*)&i));
 //   total = sumLinks(i0);
 //   assertInt(total,7743);
 //   assertInt(i,6);
@@ -95,7 +95,7 @@ void * incrementBy(Link * p, void * u) {
 // }
 
 bool showIt(void) {
-  pileOfLinks.show(false);
+  pileOfLinks_show(false);
   return false;
 }
 
@@ -104,7 +104,7 @@ void act(LinkIx i, Link * p) {
 }
 
 bool forall() {
-  pileOfLinks.forAll(false, act);
+  pileOfLinks_forAll(false, act);
   return true;
 }
 
@@ -121,7 +121,7 @@ bool testLinkPile(void) {
          && forall()
 ;}
 
-void cleanupLinkPile(void) { pileOfLinks.close(Hide); }
+void cleanupLinkPile(void) { pileOfLinks_close(Hide); }
 bool pile(void) { return bkt("pile", nowt,testLinkPile,cleanupLinkPile); }
 
 void showLink(Link * pLink) {

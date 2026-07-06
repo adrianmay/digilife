@@ -12,26 +12,26 @@
 
 static void show(void) {
   meapOfXXBombs.show();
-  pileOfXXs.show(false);
+  pileOfXXs_show(false);
 }
 
 static bool open() {
   meapOfXXBombs.open();
-  bool virgin = pileOfXXs.open();
+  bool virgin = pileOfXXs_open();
   return virgin;
 }
 
 static void close(Fate fate) {
-  pileOfXXs.close(fate);
+  pileOfXXs_close(fate);
   meapOfXXBombs.close(fate);
 }
 
 static Ix count(void) {
-  return pileOfXXs.count();
+  return pileOfXXs_count();
 }
 
 static XX * get(XXIx i) {
-  return pileOfXXs.get(i);
+  return pileOfXXs_get(i);
 }
 
 // static Woth with_(XXTact t, V_XXP act) {
@@ -46,7 +46,7 @@ static XX * get(XXIx i) {
 //     want = (t.n | NICK_FLAG_BUSY | NICK_FLAG_BOMBED); set = t.n | NICK_FLAG_BUSY | NICK_FLAG_BOMBED; 
 //     if (atomic_compare_exchange_strong(&pXX->rent.nick, &want, set)) {
 //       onXXHotelGoDie(t.i, pXX);
-//       pileOfXXs.free(t.i); // Free it
+//       pileOfXXs_free(t.i); // Free it
 //       return Ok;
 //     }
 //   } else {
@@ -81,7 +81,7 @@ Cash rentForXXPerTock() { return tockPrice() * billableXXSize; }
 static int numGods=0;
 
 static void checkHotel(int expectExcess) {
-  int diff = pileOfXXs.count() - (meapOfXXBombs.size() + numGods + expectExcess);
+  int diff = pileOfXXs_count() - (meapOfXXBombs.size() + numGods + expectExcess);
   if (diff) {
     //printf("checkHotel failed; %d less bombs.\n", diff);
     //abort();
@@ -138,7 +138,7 @@ static void rebomb(XXRent * pRent, XXIx i) {
 // AFAIK this is just for running a job
 // If the XX is not busy, not doomed, and has the passed nick, mark it busy and return a pointer to it
 static XX * grab(XXTact t) {
-  XX * pXX = pileOfXXs.get(t.i);
+  XX * pXX = pileOfXXs_get(t.i);
   Nick want, set; 
   want = t.n; set = t.n | NICK_FLAG_BUSY; 
   if (atomic_compare_exchange_strong(&pXX->rent.nick, &want, set))
@@ -150,13 +150,13 @@ static XX * grab(XXTact t) {
 // As above if you don't know the nick cos you're the bomb.
 // I don't want to bloat the bombs and since only raid removes XXs, I think I can assume the nick is correct.
 static XX * grabIx(XXIx i) {
-  XX * pXX = pileOfXXs.get(i);
+  XX * pXX = pileOfXXs_get(i);
   XXTact t = (XXTact){i, pXX->rent.nick};
   return grab(t);
 }
 
 static void drop(XXIx i) {
-  XX * pXX = pileOfXXs.get(i);
+  XX * pXX = pileOfXXs_get(i);
   Nick was = atomic_fetch_or(&pXX->rent.nick, NICK_FLAG_BOMBED); // I might be lying about intending to free the bomb,
   if (pXX->rent.cash>0) {                                        //  but it stops raid from doing so.
     printf("Drop: solvent\n");
@@ -172,7 +172,7 @@ static void drop(XXIx i) {
     }
     onXXHotelGoDie(i, pXX);
     atomic_store(&pXX->rent.nick, BAD_INDEX); 
-    pileOfXXs.free(i);
+    pileOfXXs_free(i);
     // TODO: Book loss
   }
 }
@@ -202,7 +202,7 @@ static bool isGod(XX * pXX) { return pXX->rent.nick & NICK_NAME_GOD ; }
 // We know it exists, and it doesn't have or need money
 void onXXBombMeapNew(XXBomb * pBomb, Ix hint) {
   pBomb->who = (XXIx){hint};
-//  XX * p = pileOfXXs.get(pBomb->who);
+//  XX * p = pileOfXXs_get(pBomb->who);
 //  p->rent.bomb = iBomb;
 //  updateDeathWithXXAndBomb_(p, pBomb);
 //  meapOfXXBombs.check();
@@ -210,7 +210,7 @@ void onXXBombMeapNew(XXBomb * pBomb, Ix hint) {
 
 // Similarly thread safe already, I think?
 void onXXBombMeapMove(XXBomb * pBomb, XXBombIx to) {
-  XX * p = pileOfXXs.get(pBomb->who);
+  XX * p = pileOfXXs_get(pBomb->who);
   p->rent.bomb = to;
   meapOfXXBombs.check();
 }
@@ -241,10 +241,10 @@ static void collectRent(XX * pXX) {
 
 bool onXXBombMeapWillErase(XXBombIx i, XXBomb * pBomb) {
   XXIx who = pBomb->who;
-  XX * pXX = pileOfXXs.get(who);
+  XX * pXX = pileOfXXs_get(who);
   Nick was = atomic_fetch_or(&pXX->rent.nick, NICK_FLAG_BOMBED);
   //if (!(was & NICK_FLAG_BUSY)) // Comes later
-  //  pileOfXXs.free(who);
+  //  pileOfXXs_free(who);
   return (!(was & NICK_FLAG_BOMBED)); // Must remove bomb for meap to continue unless drop already removed it
 }
 
@@ -283,7 +283,7 @@ static void raid(void) {
           pXX->rent.cash = 0; // Maybe redundant
           onXXHotelGoDie(bomb.who, pXX);
           atomic_store(&pXX->rent.nick, BAD_INDEX); 
-          pileOfXXs.free(bomb.who);
+          pileOfXXs_free(bomb.who);
         }
       } else { // Expired when busy. Do nothing - the core will handle it
       }
@@ -305,7 +305,7 @@ static void raid(void) {
       }
       //printf("Free in raid\n");
       onXXHotelGoDie(bomb.who, pXX);
-      pileOfXXs.free(bomb.who);
+      pileOfXXs_free(bomb.who);
       continue;
       */
     }
@@ -361,7 +361,7 @@ void showXX(XXTact t, XX * p) {
 static XXTact admit(Cash cash, bool isGod, V_XXBodyP stuff, XX ** pp, bool * pRecycled) {
   checkHotel(0);
   XX * p;
-  XXIx i = pileOfXXs.alloc(&p, pRecycled);
+  XXIx i = pileOfXXs_alloc(&p, pRecycled);
   Nick n = randInt32Masked(NICK_NAME_RAND_MASK) | ( isGod ? NICK_NAME_GOD : 0 );
   p->rent.nick = n;
   XXTact t = (XXTact){i, n};
@@ -371,7 +371,7 @@ static XXTact admit(Cash cash, bool isGod, V_XXBodyP stuff, XX ** pp, bool * pRe
     p->rent.lastPaidRent = tocksNow();
     if (stuff) stuff(&p->body);
     p->rent.bomb = badXXBombIx;
-    pileOfXXs.modUsr(1);
+    pileOfXXs_modUsr(1);
   } else {
     if (cash == 0) 
       return (XXTact){(XXIx){BAD_INDEX}};
@@ -388,7 +388,7 @@ static XXTact admit(Cash cash, bool isGod, V_XXBodyP stuff, XX ** pp, bool * pRe
 
 
 static void forAll(bool u, V_XXI_XXP act) { 
-  pileOfXXs.forAll(false, act); 
+  pileOfXXs_forAll(false, act); 
 }
 
 XXHotel hotelOfXXs = { open, admit, get, grab, grabIx, drop, 

@@ -16,13 +16,12 @@ static XXIx right (XXIx i) {return ( XXIx ){ 2*i.i + 2 };}
 
 static void show(void) {
   printf("MEAP:");
-  //pileOfXXs.show(true);
-  pileOfXXs.show(false);
+  pileOfXXs_show(false);
 }
 
 static Ix bombee;
 
-static XX * get(XXIx i) { return pileOfXXs.get(i); }
+static XX * get(XXIx i) { return pileOfXXs_get(i); }
 
 static void bombeeSafe(Ix i, void * p) { 
   return;
@@ -35,8 +34,8 @@ static void bombeeSafe(Ix i, void * p) {
 }
 
 static void forAll(void (*cb)(Ix, void *) ) {
-  Ix cnt = pileOfXXs.getUsr();
-  for (Ix i=0;i<cnt;i++) cb(i, pileOfXXs.get((XXIx){i}));
+  Ix cnt = pileOfXXs_getUsr();
+  for (Ix i=0;i<cnt;i++) cb(i, pileOfXXs_get((XXIx){i}));
 }
 
 static Ix seen[100000];
@@ -61,8 +60,8 @@ static void swap(XXIx i1, XXIx i2) {
   if (i1.i==i2.i) return;
   XX tmp;
   size_t len = sizeof(tmp);
-  XX * p1 = pileOfXXs.get(i1);
-  XX * p2 = pileOfXXs.get(i2);
+  XX * p1 = pileOfXXs_get(i1);
+  XX * p2 = pileOfXXs_get(i2);
   memcpy(&tmp, p1, len);
   memcpy(p1, p2, len);
   memcpy(p2, &tmp, len);
@@ -78,9 +77,9 @@ static bool siftUp(XXIx iCur) {
     res = false; 
   } else {
     while (iCur.i > 0) {
-      sCur = pileOfXXs.get(iCur)->tocks;
+      sCur = pileOfXXs_get(iCur)->tocks;
       XXIx iPar = parent(iCur);
-      XX * pPar = pileOfXXs.get(iPar);
+      XX * pPar = pileOfXXs_get(iPar);
       Score sPar = pPar->tocks;
       if (sPar <= sCur) { 
         res = false; 
@@ -98,19 +97,19 @@ static bool siftUp(XXIx iCur) {
 
 // We can't use free cos meaps must be contiguous, so we use the heap's usr for the "meapish" size
 static void siftDown(XXIx iCur) {
-  Ix cnt = pileOfXXs.getUsr();
+  Ix cnt = pileOfXXs_getUsr();
   while (1) {
     XXIx iSmallest = iCur;
-    XX * pCur = pileOfXXs.get(iCur); Score sCur = pCur->tocks;
+    XX * pCur = pileOfXXs_get(iCur); Score sCur = pCur->tocks;
     Score sSmallest = sCur;
 
     XXIx iL = left(iCur);
     if (iL.i<cnt) {
-      XX * pL   = pileOfXXs.get(iL  ); Score sL   =   pL->tocks;
+      XX * pL   = pileOfXXs_get(iL  ); Score sL   =   pL->tocks;
       if (iL.i < cnt && sL < sSmallest) { iSmallest.i = iL.i; sSmallest = sL; }
       XXIx iR = right(iCur);
       if (iR.i<cnt) {
-        XX * pR   = pileOfXXs.get(iR  ); Score sR   =   pR->tocks;
+        XX * pR   = pileOfXXs_get(iR  ); Score sR   =   pR->tocks;
         if (iR.i < cnt && sR < sSmallest) iSmallest.i = iR.i;
       }
     }
@@ -129,17 +128,17 @@ static bool insert(Tocks expiry, Ix hint, XXIx * pI) {
   bombee = hint;
   forAll(bombeeSafe);
   lock();
-  Ix meapTop = pileOfXXs.getUsr();    //meapish size
-  if (meapTop < pileOfXXs.count()) {  // That's pile's top minus pile's free count. But we'll never use free in this pile anyway.
+  Ix meapTop = pileOfXXs_getUsr();    //meapish size
+  if (meapTop < pileOfXXs_count()) {  // That's pile's top minus pile's free count. But we'll never use free in this pile anyway.
     pI->i = meapTop;                  // Got meapish spares so just return one
-    pNew = pileOfXXs.get(*pI);
+    pNew = pileOfXXs_get(*pI);
   }
   else
-    *pI = pileOfXXs.alloc(&pNew, 0);
+    *pI = pileOfXXs_alloc(&pNew, 0);
   // pNew is now correct either way.
   pNew->tocks = expiry;
   onXXMeapNew(pNew, hint);
-  pileOfXXs.modUsr(1);                        // Not sure if this should be before the above, but certainly it's before siftUp.
+  pileOfXXs_modUsr(1);                        // Not sure if this should be before the above, but certainly it's before siftUp.
   if (pI->i > 0) {                          // No point sorting a singleton.
     res = siftUp(*pI);             // Calls siftUp if it returns true;
   }
@@ -149,7 +148,7 @@ static bool insert(Tocks expiry, Ix hint, XXIx * pI) {
 
 static bool editTocks(XXIx iCur, Score when) {
   lock();
-  pileOfXXs.get(iCur)->tocks = when;
+  pileOfXXs_get(iCur)->tocks = when;
   siftDown(iCur);
   bool res = siftUp(iCur);
   checkNoDupes();
@@ -159,17 +158,17 @@ static bool editTocks(XXIx iCur, Score when) {
 
 // Assume already locked
 static bool erase_(XXIx iCur) {
-  Ix cnt = pileOfXXs.getUsr();
+  Ix cnt = pileOfXXs_getUsr();
   if (!cnt) {
     printf("Meap empty in erase\n");
     return false;
   }
-  XX * p = pileOfXXs.get(iCur);
+  XX * p = pileOfXXs_get(iCur);
   Ix * pI = (Ix *) p;
   bombee = pI[0];
   Ix iLast = cnt-1;
   swap((XXIx){iLast}, iCur);
-  pileOfXXs.modUsr(-1);
+  pileOfXXs_modUsr(-1);
   siftDown(iCur); //Not calling review cos I'd need a recursive mutex
   bool res = siftUp(iCur);
   forAll(bombeeSafe);
@@ -194,7 +193,7 @@ static Chomped chomp(Score thresh, XX * pCopyOut, int pseudoAnimals) {
   }
   else {
     XXIx i = (XXIx) {0};
-    XX * p = pileOfXXs.get(i);
+    XX * p = pileOfXXs_get(i);
     //if (ip[0] == 194 && ip[1] == 1138) {
     memcpy(pCopyOut, p, sizeof(XX));
     Score lowestScoreInMeap = p->tocks;
@@ -213,14 +212,14 @@ static Chomped chomp(Score thresh, XX * pCopyOut, int pseudoAnimals) {
 }
 
 // static bool checkSubWeights(void) {
-//   Ix cnt = pileOfXXs.getUsr();
+//   Ix cnt = pileOfXXs_getUsr();
 //   for (Ix i=1;i<cnt;i++) {
 //     XXIx iCur = (XXIx){i};
-//     XX * pCur = pileOfXXs.get(iCur);
+//     XX * pCur = pileOfXXs_get(iCur);
 // 
 //     XXIx iL = left(iCur);
 //     if (iL.i<cnt) {
-//       XX * pL = pileOfXXs.get(iL);
+//       XX * pL = pileOfXXs_get(iL);
 //       if (pCur->body
 //     }
 // 
@@ -232,22 +231,22 @@ static Chomped chomp(Score thresh, XX * pCopyOut, int pseudoAnimals) {
 
 static bool checkOrdered(void) {
   bool ok=true;
-  Ix cnt = pileOfXXs.getUsr();
+  Ix cnt = pileOfXXs_getUsr();
   for (Ix i=1;i<cnt;i++) {
     XXIx iCur = (XXIx){i};
-    Score sCur = pileOfXXs.get(iCur)->tocks;
+    Score sCur = pileOfXXs_get(iCur)->tocks;
     XXIx iPar = parent(iCur);
-    Score sPar = pileOfXXs.get(iPar)->tocks;
+    Score sPar = pileOfXXs_get(iPar)->tocks;
     ok &= sPar <= sCur;
   }
   checkNoDupes();
   return ok;
 }
 
-static Ix size(void) {  return pileOfXXs.getUsr(); }
+static Ix size(void) {  return pileOfXXs_getUsr(); }
 
-static bool open(void) { return pileOfXXs.open(); }
-static void close(Fate f) { lock(); pileOfXXs.close(f); unlock(); }
+static bool open(void) { return pileOfXXs_open(); }
+static void close(Fate f) { lock(); pileOfXXs_close(f); unlock(); }
 
 XXMeap meapOfXXs = {open, close, insert, get, editTocks, erase, chomp, checkOrdered, forAll, size, show };
 

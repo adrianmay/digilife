@@ -4,38 +4,19 @@
 
 typedef enum {Extinct, Idle, Killed} Chomped;
 
-typedef bool    (*XXMeapOpen)      (void);
-typedef void    (*XXMeapClose)     (Fate fate);
-typedef bool    (*XXMeapInsert)    (Tocks expiry, Ix hint, XXIx * pI);
-typedef XX *    (*XXMeapGet)       (XXIx i);
-typedef bool    (*XXMeapEditTocks) (XXIx i, Score when);
-typedef bool    (*XXMeapErase)     (XXIx i);
-typedef Chomped (*XXMeapChomp)     (Score thresh, XX * p, int pseudoAnimals);
-typedef bool    (*XXCheckOrdered)  (void);
-typedef void    (*XXForAll)        (V_I_P);
-typedef Ix      (*XXMeapSize)      (void);
-typedef void    (*XXMeapShow)      (void);
-//
-// typedef enum {EXTINCT=-1, IDLE, } ChompResult;
-// typedef ChompResult (*XXMeapChomp)(Score score, XXIx * i);
-
-typedef struct {
-  XXMeapOpen open;
-  XXMeapClose close;
-  XXMeapInsert insert; // New member.
-  XXMeapGet get;
-  XXMeapEditTocks editTocks; // Member's score might have changed.
-  XXMeapErase erase; // Delete it.
-  XXMeapChomp chomp; //Check and eat 0-1 things
-  XXCheckOrdered check; //Just for testing.
-  XXForAll forAll; //Just for testing.
-  XXMeapSize size; // How many members.
-  XXMeapShow show;
-} XXMeap;
+bool    meapOfXXs_open      (void);
+void    meapOfXXs_close     (Fate fate);
+bool    meapOfXXs_insert    (Tocks expiry, Ix hint, XXIx * pI);
+XX *    meapOfXXs_get       (XXIx i);
+bool    meapOfXXs_editTocks (XXIx i, Score when);
+bool    meapOfXXs_erase     (XXIx i);
+Chomped meapOfXXs_chomp     (Score thresh, XX * p, int pseudoAnimals);
+void    meapOfXXs_forAll    (V_I_P);
+Ix      meapOfXXs_size      (void);
+void    meapOfXXs_show      (void);
+bool    meapOfXXs_check     (void);
 
 extern const XXIx badXXIx;
-
-extern XXMeap meapOfXXs;
 
 // The caller should define these:
 extern void onXXMeapMove(XX * p, XXIx to); // Update records of where p's meap is.

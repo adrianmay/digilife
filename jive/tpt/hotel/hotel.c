@@ -11,19 +11,19 @@
 #include "api.h"
 
 static void show(void) {
-  meapOfXXBombs.show();
+  meapOfXXBombs_show();
   pileOfXXs_show(false);
 }
 
 static bool open() {
-  meapOfXXBombs.open();
+  meapOfXXBombs_open();
   bool virgin = pileOfXXs_open();
   return virgin;
 }
 
 static void close(Fate fate) {
   pileOfXXs_close(fate);
-  meapOfXXBombs.close(fate);
+  meapOfXXBombs_close(fate);
 }
 
 static Ix count(void) {
@@ -81,7 +81,7 @@ Cash rentForXXPerTock() { return tockPrice() * billableXXSize; }
 static int numGods=0;
 
 static void checkHotel(int expectExcess) {
-  int diff = pileOfXXs_count() - (meapOfXXBombs.size() + numGods + expectExcess);
+  int diff = pileOfXXs_count() - (meapOfXXBombs_size() + numGods + expectExcess);
   if (diff) {
     //printf("checkHotel failed; %d less bombs.\n", diff);
     //abort();
@@ -101,12 +101,12 @@ static bool updateDeathWithXXAndBomb_(XX* p, XXBombIx iBomb, XXBomb * pBomb) {
   Cash cash = p->rent.cash;
   Tocks ttl = cash / rentForXXPerTock();
   Tocks death = tocksNow() + ttl;
-  meapOfXXBombs.check();
+  meapOfXXBombs_check();
   // This changes bomb time and reorders meap:
   bool res = false;
   if (p->rent.bomb.i == iBomb.i) // Redundant if grabbed.
-    res  = meapOfXXBombs.editTocks(p->rent.bomb, death); // Locks the meap itself
-  meapOfXXBombs.check();
+    res  = meapOfXXBombs_editTocks(p->rent.bomb, death); // Locks the meap itself
+  meapOfXXBombs_check();
   return res;
   // The meap is now properly reordered but nobody called kill
 }
@@ -114,13 +114,13 @@ static bool updateDeathWithXXAndBomb_(XX* p, XXBombIx iBomb, XXBomb * pBomb) {
 // Wrappers:
 static bool updateDeathWithXX_(XX * pXX) {
   XXBombIx iBomb = pXX->rent.bomb;
-  XXBomb * pBomb = meapOfXXBombs.get(iBomb); // Assumes grabbed.
+  XXBomb * pBomb = meapOfXXBombs_get(iBomb); // Assumes grabbed.
   return updateDeathWithXXAndBomb_(pXX, iBomb, pBomb);
 }
 
 static void rebomb(XXRent * pRent, XXIx i) {
   Tocks expiry = pRent->lastPaidRent + pRent->cash / rentForXXPerTock();
-  meapOfXXBombs.insert(expiry, i.i, &pRent->bomb); // Do we need the return value?
+  meapOfXXBombs_insert(expiry, i.i, &pRent->bomb); // Do we need the return value?
 }
  
 // GRAB AND RAID SYNCHRONISATION:
@@ -168,7 +168,7 @@ static void drop(XXIx i) {
   } else { // Bankrupted by its own code
     printf("Drop: broke\n");
     if (!(was & NICK_FLAG_BOMBED)) {
-        meapOfXXBombs.erase(pXX->rent.bomb);
+        meapOfXXBombs_erase(pXX->rent.bomb);
     }
     onXXHotelGoDie(i, pXX);
     atomic_store(&pXX->rent.nick, BAD_INDEX); 
@@ -205,14 +205,14 @@ void onXXBombMeapNew(XXBomb * pBomb, Ix hint) {
 //  XX * p = pileOfXXs_get(pBomb->who);
 //  p->rent.bomb = iBomb;
 //  updateDeathWithXXAndBomb_(p, pBomb);
-//  meapOfXXBombs.check();
+//  meapOfXXBombs_check();
 }
 
 // Similarly thread safe already, I think?
 void onXXBombMeapMove(XXBomb * pBomb, XXBombIx to) {
   XX * p = pileOfXXs_get(pBomb->who);
   p->rent.bomb = to;
-  meapOfXXBombs.check();
+  meapOfXXBombs_check();
 }
 
 //Deduct cash and set last paid to now
@@ -257,19 +257,19 @@ static void raid(void) {
   //show();
   while (true) { // Returns when nothing to kill for now
     bomb.who = badXXIx; // Prevent false alarms
-    //meapOfXXBombs.show();
+    //meapOfXXBombs_show();
     //printf("Raid before chomp, hotel is >>>\n");
     //hotelOfXXs.show();
     //printf("<<<\n");
-    Chomped ch = meapOfXXBombs.chomp(now, &bomb, 0); // Locks, so each bomb appears here at most once.
+    Chomped ch = meapOfXXBombs_chomp(now, &bomb, 0); // Locks, so each bomb appears here at most once.
     //printf("Raid after chomp, hotel is >>>\n");
     //hotelOfXXs.show();
     //printf("<<<\n");
     if (ch == Killed ) {    // ... Also calls onXXBombMeapWillErase and erases the bomb if it says so.
       bombee = bomb.who;  // ... It says not only if drop already erased it.
-      meapOfXXBombs.forAll(bombeeSafe);
+      meapOfXXBombs_forAll(bombeeSafe);
       //hotelOfXXs.show();
-      meapOfXXBombs.check();
+      meapOfXXBombs_check();
       XX * pXX = hotelOfXXs.get(bomb.who);
       //printf("XX Chomped with expiry=%d, who=%d, cash before collecting rent=%ld\n", bomb.tocks, bomb.who.i, pXX->rent.cash);
 
@@ -312,7 +312,7 @@ static void raid(void) {
     if (ch == Extinct) {
       checkHotel(0);
       onXXsExtinct(); 
-      meapOfXXBombs.check();
+      meapOfXXBombs_check();
       return;
     }
     //printf("Raid over\n");

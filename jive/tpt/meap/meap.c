@@ -14,26 +14,26 @@ static XXIx parent(XXIx i) {return ( XXIx ){ (i.i-1)/2 };}
 static XXIx left  (XXIx i) {return ( XXIx ){ 2*i.i + 1 };}
 static XXIx right (XXIx i) {return ( XXIx ){ 2*i.i + 2 };}
 
-static void show(void) {
+void meapOfXXs_show(void) {
   printf("MEAP:");
   pileOfXXs_show(false);
 }
 
 static Ix bombee;
 
-static XX * get(XXIx i) { return pileOfXXs_get(i); }
+XX * meapOfXXs_get(XXIx i) { return pileOfXXs_get(i); }
 
 static void bombeeSafe(Ix i, void * p) { 
   return;
   Ix * pB = (Ix *) p;
   if (*pB == bombee) {
     printf("In meap: Another bomb for XX %d\n", bombee);
-    show();
+    meapOfXXs_show();
     abort();
   }
 }
 
-static void forAll(void (*cb)(Ix, void *) ) {
+void meapOfXXs_forAll(void (*cb)(Ix, void *) ) {
   Ix cnt = pileOfXXs_getUsr();
   for (Ix i=0;i<cnt;i++) cb(i, pileOfXXs_get((XXIx){i}));
 }
@@ -53,7 +53,7 @@ static void checkNoDupes() //TODO: reinstate this
 {
   return; 
   memset(seen, BAD_INDEX, sizeof(seen));
-  forAll(markOnce);
+  meapOfXXs_forAll(markOnce);
 }
 
 static void swap(XXIx i1, XXIx i2) {
@@ -122,11 +122,11 @@ static void siftDown(XXIx iCur) {
 }
 
 // Returns whether or not the lowest changed.
-static bool insert(Tocks expiry, Ix hint, XXIx * pI) {
+bool meapOfXXs_insert(Tocks expiry, Ix hint, XXIx * pI) {
   bool res = false;
   XX * pNew;
   bombee = hint;
-  forAll(bombeeSafe);
+  meapOfXXs_forAll(bombeeSafe);
   lock();
   Ix meapTop = pileOfXXs_getUsr();    //meapish size
   if (meapTop < pileOfXXs_count()) {  // That's pile's top minus pile's free count. But we'll never use free in this pile anyway.
@@ -146,7 +146,7 @@ static bool insert(Tocks expiry, Ix hint, XXIx * pI) {
   return res;
 }
 
-static bool editTocks(XXIx iCur, Score when) {
+bool meapOfXXs_editTocks(XXIx iCur, Score when) {
   lock();
   pileOfXXs_get(iCur)->tocks = when;
   siftDown(iCur);
@@ -171,22 +171,22 @@ static bool erase_(XXIx iCur) {
   pileOfXXs_modUsr(-1);
   siftDown(iCur); //Not calling review cos I'd need a recursive mutex
   bool res = siftUp(iCur);
-  forAll(bombeeSafe);
+  meapOfXXs_forAll(bombeeSafe);
   checkNoDupes();
   return res;
 }
 
-static bool erase(XXIx iCur) {
+bool meapOfXXs_erase(XXIx iCur) {
   lock();
   bool res = erase_(iCur);
   unlock();
   return res;
 }
 
-static Chomped chomp(Score thresh, XX * pCopyOut, int pseudoAnimals) {
+Chomped meapOfXXs_chomp(Score thresh, XX * pCopyOut, int pseudoAnimals) {
   Chomped res;
   lock();
-  Ix x = meapOfXXs.size();
+  Ix x = meapOfXXs_size();
   if (x<=pseudoAnimals) { 
     printf("chomp XX: extinct: x=%d, pseudo=%d\n", x, pseudoAnimals);
     res = Extinct; 
@@ -229,7 +229,7 @@ static Chomped chomp(Score thresh, XX * pCopyOut, int pseudoAnimals) {
 //   return true;
 // }
 
-static bool checkOrdered(void) {
+bool meapOfXXs_check(void) {
   bool ok=true;
   Ix cnt = pileOfXXs_getUsr();
   for (Ix i=1;i<cnt;i++) {
@@ -243,10 +243,9 @@ static bool checkOrdered(void) {
   return ok;
 }
 
-static Ix size(void) {  return pileOfXXs_getUsr(); }
+Ix meapOfXXs_size(void) {  return pileOfXXs_getUsr(); }
 
-static bool open(void) { return pileOfXXs_open(); }
-static void close(Fate f) { lock(); pileOfXXs_close(f); unlock(); }
+bool meapOfXXs_open(void) { return pileOfXXs_open(); }
+void meapOfXXs_close(Fate f) { lock(); pileOfXXs_close(f); unlock(); }
 
-XXMeap meapOfXXs = {open, close, insert, get, editTocks, erase, chomp, checkOrdered, forAll, size, show };
 

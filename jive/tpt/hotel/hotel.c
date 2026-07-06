@@ -10,32 +10,32 @@
 #include "XXBomb_meap/api.h"
 #include "api.h"
 
-static void show(void) {
+void hotelOfThings_show(void) {
   meapOfXXBombs_show();
   pileOfXXs_show(false);
 }
 
-static bool open() {
+bool hotelOfThings_open() {
   meapOfXXBombs_open();
   bool virgin = pileOfXXs_open();
   return virgin;
 }
 
-static void close(Fate fate) {
+void hotelOfThings_close(Fate fate) {
   pileOfXXs_close(fate);
   meapOfXXBombs_close(fate);
 }
 
-static Ix count(void) {
+Ix hotelOfThings_count(void) {
   return pileOfXXs_count();
 }
 
-static XX * get(XXIx i) {
+XX * hotelOfThings_get(XXIx i) {
   return pileOfXXs_get(i);
 }
 
 // static Woth with_(XXTact t, V_XXP act) {
-//   XX * pXX = hotelOfXXs.get(t.i);
+//   XX * pXX = hotelOfXXs_get(t.i);
 //   Nick want, set; 
 //   want = (t.n); set = t.n | NICK_FLAG_BUSY; 
 //   if (atomic_compare_exchange_strong(&pXX->rent.nick, &want, set)) {
@@ -59,7 +59,7 @@ static XX * get(XXIx i) {
 // }
 // 
 // static Woth with(XXTact t, V_XXP act) {
-//   XX * pXX = hotelOfXXs.get(t.i);
+//   XX * pXX = hotelOfXXs_get(t.i);
 //   Woth w = with_(t, act);
 //   Nick n = atomic_load(&pXX->rent.nick);
 //   if (n==0) {
@@ -70,7 +70,7 @@ static XX * get(XXIx i) {
 // }
 // 
 // static Woth withIx(XXIx i, V_XXP act) {
-//   XX * pXX = hotelOfXXs.get(i);
+//   XX * pXX = hotelOfXXs_get(i);
 //   XXTact t = (XXTact){i, pXX->rent.nick};
 //   return with(t, act);
 // }
@@ -80,7 +80,7 @@ Cash rentForXXPerTock() { return tockPrice() * billableXXSize; }
 
 static int numGods=0;
 
-static void checkHotel(int expectExcess) {
+void hotelOfThings_checkHotel(int expectExcess) {
   int diff = pileOfXXs_count() - (meapOfXXBombs_size() + numGods + expectExcess);
   if (diff) {
     //printf("checkHotel failed; %d less bombs.\n", diff);
@@ -137,7 +137,7 @@ static void rebomb(XXRent * pRent, XXIx i) {
 
 // AFAIK this is just for running a job
 // If the XX is not busy, not doomed, and has the passed nick, mark it busy and return a pointer to it
-static XX * grab(XXTact t) {
+XX * hotelOfThings_grab(XXTact t) {
   XX * pXX = pileOfXXs_get(t.i);
   Nick want, set; 
   want = t.n; set = t.n | NICK_FLAG_BUSY; 
@@ -149,13 +149,13 @@ static XX * grab(XXTact t) {
  
 // As above if you don't know the nick cos you're the bomb.
 // I don't want to bloat the bombs and since only raid removes XXs, I think I can assume the nick is correct.
-static XX * grabIx(XXIx i) {
+XX * hotelOfThings_grabIx(XXIx i) {
   XX * pXX = pileOfXXs_get(i);
   XXTact t = (XXTact){i, pXX->rent.nick};
-  return grab(t);
+  return hotelOfThings_grab(t);
 }
 
-static void drop(XXIx i) {
+void hotelOfThings_drop(XXIx i) {
   XX * pXX = pileOfXXs_get(i);
   Nick was = atomic_fetch_or(&pXX->rent.nick, NICK_FLAG_BOMBED); // I might be lying about intending to free the bomb,
   if (pXX->rent.cash>0) {                                        //  but it stops raid from doing so.
@@ -218,7 +218,7 @@ void onXXBombMeapMove(XXBomb * pBomb, XXBombIx to) {
 //Deduct cash and set last paid to now
 //Catches defaults now
 //Assumes grabbed.
-static void collectRent(XX * pXX) {
+void hotelOfThings_collectRent(XX * pXX) {
   Cash collected, defaulted;
   XXRent * pRent = &pXX->rent;
   Tocks now = tocksNow();
@@ -248,9 +248,9 @@ bool onXXBombMeapWillErase(XXBombIx i, XXBomb * pBomb) {
   return (!(was & NICK_FLAG_BOMBED)); // Must remove bomb for meap to continue unless drop already removed it
 }
 
-static void raid(void) {
+void hotelOfThings_raid(void) {
   //printf("Raid starts\n");
-  checkHotel(0);
+  hotelOfThings_checkHotel(0);
   XXBomb bomb; // Bomb copied out to here
   Tocks now = tocksNow();
   //printf("Tocks=%d\n", now);
@@ -259,25 +259,25 @@ static void raid(void) {
     bomb.who = badXXIx; // Prevent false alarms
     //meapOfXXBombs_show();
     //printf("Raid before chomp, hotel is >>>\n");
-    //hotelOfXXs.show();
+    //hotelOfXXs_show();
     //printf("<<<\n");
     Chomped ch = meapOfXXBombs_chomp(now, &bomb, 0); // Locks, so each bomb appears here at most once.
     //printf("Raid after chomp, hotel is >>>\n");
-    //hotelOfXXs.show();
+    //hotelOfXXs_show();
     //printf("<<<\n");
     if (ch == Killed ) {    // ... Also calls onXXBombMeapWillErase and erases the bomb if it says so.
       bombee = bomb.who;  // ... It says not only if drop already erased it.
       meapOfXXBombs_forAll(bombeeSafe);
-      //hotelOfXXs.show();
+      //hotelOfXXs_show();
       meapOfXXBombs_check();
-      XX * pXX = hotelOfXXs.get(bomb.who);
+      XX * pXX = hotelOfXXs_get(bomb.who);
       //printf("XX Chomped with expiry=%d, who=%d, cash before collecting rent=%ld\n", bomb.tocks, bomb.who.i, pXX->rent.cash);
 
       Nick got = atomic_load(&pXX->rent.nick); 
       Nick flags = got & NICK_FLAG_MASK;
       if (!(flags & NICK_FLAG_BOMBED)) abort(); // Either chomp set it or it was set already.
       if (!(flags & NICK_FLAG_BUSY)) { // Normal, idle rent expiry
-        collectRent(pXX);
+        hotelOfThings_collectRent(pXX);
         if (pXX->rent.cash<0) {
           onXXRentDefaulted(-pXX->rent.cash); // Should be at the real free
           pXX->rent.cash = 0; // Maybe redundant
@@ -310,7 +310,7 @@ static void raid(void) {
       */
     }
     if (ch == Extinct) {
-      checkHotel(0);
+      hotelOfThings_checkHotel(0);
       onXXsExtinct(); 
       meapOfXXBombs_check();
       return;
@@ -326,13 +326,13 @@ static void changeCash_(XX * pXX, Cash amt) {
     updateDeathWithXX_(pXX);
 }
 
-static void richer(XX * pXX, Cash amt) {
+void hotelOfThings_richer(XX * pXX, Cash amt) {
   if (amt<0) abort();
   if (amt==0) return;
   changeCash_(pXX, amt);
 }
 
-static Cash poorer(XX * pXX, Cash amt, Terms t) {
+Cash hotelOfThings_poorer(XX * pXX, Cash amt, Terms t) {
   if (amt<0) abort();
   if (amt==0 && t!=Rob) return 0;
   Cash ret;
@@ -349,8 +349,8 @@ static Cash poorer(XX * pXX, Cash amt, Terms t) {
   return ret;
 }
 
-static Cash rob(XX * pXX) {
-  return poorer(pXX, 0, Rob);
+Cash hotelOfThings_rob(XX * pXX) {
+  return hotelOfThings_poorer(pXX, 0, Rob);
 }
 
 void showXX(XXTact t, XX * p) {
@@ -358,8 +358,8 @@ void showXX(XXTact t, XX * p) {
   showXXBody(&p->body);
 }
 
-static XXTact admit(Cash cash, bool isGod, V_XXBodyP stuff, XX ** pp, bool * pRecycled) {
-  checkHotel(0);
+XXTact hotelOfThings_admit(Cash cash, bool isGod, V_XXBodyP stuff, XX ** pp, bool * pRecycled) {
+  hotelOfThings_checkHotel(0);
   XX * p;
   XXIx i = pileOfXXs_alloc(&p, pRecycled);
   Nick n = randInt32Masked(NICK_NAME_RAND_MASK) | ( isGod ? NICK_NAME_GOD : 0 );
@@ -387,12 +387,7 @@ static XXTact admit(Cash cash, bool isGod, V_XXBodyP stuff, XX ** pp, bool * pRe
 }
 
 
-static void forAll(bool u, V_XXI_XXP act) { 
+void hotelOfXXs_forAll(bool u, V_XXI_XXP act) { 
   pileOfXXs_forAll(false, act); 
 }
-
-XXHotel hotelOfXXs = { open, admit, get, grab, grabIx, drop, 
-  richer, poorer, rob, collectRent, forAll, raid, 
-  count, checkHotel, close, show, showXX };
-
 

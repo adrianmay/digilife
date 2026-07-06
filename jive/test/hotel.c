@@ -30,15 +30,15 @@ ThingTact tThing;
 ThingTact tGod;
 
 static void tock() {
-  hotelOfThings.raid();
+  hotelOfThings_raid();
 }
 
 static bool init(void) {
   onTestTock = tock;
   openGlobals();
-  hotelOfThings.open();
-  hotelOfThings.checkHotel(0);
-  tGod = hotelOfThings.admit(0,true, 0,0,0); //God
+  hotelOfThings_open();
+  hotelOfThings_checkHotel(0);
+  tGod = hotelOfThings_admit(0,true, 0,0,0); //God
   return true;
 }
 
@@ -46,10 +46,10 @@ Tocks killTilExtinct(void) {
   Tocks started = tocksNow();
   while (true) {
 //    printf("killTilExtinct: tocks=%d, processCycles=%'ld\n", tocksNow(), readProcessCycles());
-    //hotelOfThings.forAll(hotelOfThings.review);
-    //hotelOfThings.kill();
+    //hotelOfThings_forAll(hotelOfThings_review);
+    //hotelOfThings_kill();
     if (extinct) break;
-    //hotelOfThings.show();
+    //hotelOfThings_show();
     notifyCycles(NOTIFY_TOCKS*GUESS_CYCLES_PER_TOCK);
     sleepNs(1000000);
   }
@@ -67,7 +67,7 @@ bool testNoPop(void) {
 ThingTact make(Ix name, Cash cash) {
   bool recycledSlot;
   void stuff(ThingBody * p) { p->name = name; }
-  tThing = hotelOfThings.admit(cash, false, stuff, &pThing, &recycledSlot);
+  tThing = hotelOfThings_admit(cash, false, stuff, &pThing, &recycledSlot);
   extinct=false;
   return tThing;
 }
@@ -95,10 +95,10 @@ bool test1(void) {
 }
 
 bool with(ThingTact t, V_ThingP act) {
-  Thing * pT = hotelOfThings.grab(t);
+  Thing * pT = hotelOfThings_grab(t);
   if (pT) {
     act(pT);
-    hotelOfThings.drop(t.i);
+    hotelOfThings_drop(t.i);
     return true;
   }
   else return false;
@@ -107,7 +107,7 @@ bool with(ThingTact t, V_ThingP act) {
 bool testEarn(void) {
   printf("testEarn\n");
   ThingTact t = make(4, 3000);
-  void f(Thing * pT) { hotelOfThings.richer(pT, 2000); }
+  void f(Thing * pT) { hotelOfThings_richer(pT, 2000); }
   with(t, f);
   expectExtinctSoon(5000);
   return true;
@@ -116,13 +116,13 @@ bool testEarn(void) {
 bool testRob(void) {
   printf("testRob\n");
   make(5, 9000);
-  void f(Thing * pT) { hotelOfThings.poorer(pT, 0, Rob); }
+  void f(Thing * pT) { hotelOfThings_poorer(pT, 0, Rob); }
   with(tThing, f);
   expectExtinctSoon(150);
   return true;
 }
 
-void colRent(Thing * p) {hotelOfThings.collectRent(p);}
+void colRent(Thing * p) {hotelOfThings_collectRent(p);}
 
 bool testGod(void) {
   printf("testGod\n");
@@ -168,8 +168,8 @@ bool testFreeWhenBusy(void) {
   bool sameIndex2;
   void g(Thing * p) { 
     notifyCycles(2*GUESS_CYCLES_PER_TOCK);
-    //hotelOfThings.poorer(tThing, 0, Rob);
-    //hotelOfThings.raid();
+    //hotelOfThings_poorer(tThing, 0, Rob);
+    //hotelOfThings_raid();
     ThingTact t2 = make(7,1000);
     sameIndex2 = t2.i.i == tThing.i.i;
   }
@@ -242,7 +242,7 @@ void doit(int me, int dowhat) {
     case 4:
       { int i = chSt(Idle, UsedBy+me);
         if (i!=-1) {
-          ths[i].p = hotelOfThings.grab(ths[i].t);
+          ths[i].p = hotelOfThings_grab(ths[i].t);
           if (!ths[i].p) atomic_store(&ths[i].st, Idle);
         }
         break; }
@@ -250,7 +250,7 @@ void doit(int me, int dowhat) {
     case 6:
       { int i = chSt(UsedBy+me, Idle);
         if (i!=-1)
-          hotelOfThings.drop(ths[i].t.i);
+          hotelOfThings_drop(ths[i].t.i);
         break; }
 
     case 7:
@@ -264,18 +264,18 @@ void doit(int me, int dowhat) {
         if (i!=-1) {
           Cash c = randIntBelow(1000);
           bool isGod = !randIntBelow(30);
-          ths[i].t = hotelOfThings.admit(c, isGod, 0, 0, 0);
+          ths[i].t = hotelOfThings_admit(c, isGod, 0, 0, 0);
         }
         break; }
     case 11: // Collect rent
     case 12:
       { int i = chSt(UsedBy+me, UsedBy+me);
         if (i!=-1) 
-          hotelOfThings.collectRent(ths[i].p);
+          hotelOfThings_collectRent(ths[i].p);
         break; }
     case 13: // Raid
     case 14:
-      { hotelOfThings.raid();
+      { hotelOfThings_raid();
         break; }
   }
 }
@@ -284,11 +284,11 @@ void * monkey(void * n) {
   int me = (int)( (int64_t) n);
   for (int a=0; a<10; a++) {
     doit(me, 9);  // Admit
-    //hotelOfThings.show();
+    //hotelOfThings_show();
   }
   //while (true) {
   for (int a=0;a<1000;a++) {
-//    hotelOfThings.show();
+//    hotelOfThings_show();
     doit(me, randIntBelow(15));
   }
   return 0;
@@ -311,7 +311,7 @@ bool testMonkey(void) {
 //   Charge rent on tocks during job
 
 
-void cleanupHotel(void) { hotelOfThings.close(Hide); closeGlobals(Hide); }
+void cleanupHotel(void) { hotelOfThings_close(Hide); closeGlobals(Hide); }
 
 bool testHotel(void) {
   printf("Tock price: %f\n", tockPrice());

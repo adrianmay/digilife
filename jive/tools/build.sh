@@ -30,13 +30,17 @@ done
 # I'd like the tags to point to sensible places despite the templates, and it's still not correct
 echo "Building tags"
 find tpt lit gen bin/test -name "*.h" -or -name "*.c" | xargs ctags || exit 1
+# find tpt lit gen bin/test -name "*.h" -or -name "*.c" | xargs ctags --kinds-c=fd    -o tags1 || exit 1
+# find tpt lit gen bin/test -name "*.h" -or -name "*.c" | xargs ctags --kinds-c=pv    -o tags2 || exit 1
+# find tpt lit gen bin/test -name "*.h" -or -name "*.c" | xargs ctags --kinds-c=mex   -o tags3 || exit 1
+# find tpt lit gen bin/test -name "*.h" -or -name "*.c" | xargs ctags --kinds-c=thugs -o tags4 || exit 1
 
-echo "Doctoring tags"
-# Point some stuff at the template instead of the generated source
-awk -F'\t' -f tools/doctor.awk OFS='\t' tags > newtags
-mv newtags tags
-# Try to make it prefer functions to struct members when name is same
-tools/sort_tags.sh
+#   echo "Doctoring tags"
+#   # Point some stuff at the template instead of the generated source
+#   awk -F'\t' -f tools/doctor.awk OFS='\t' tags > newtags
+#   mv newtags tags
+#   # Try to make it prefer functions to struct members when name is same
+#   tools/sort_tags.sh
 # Find sutff to compile. If ./exc exists, read a list of lines of regexes to exclude,
 #   then it'll compile the rest and stop before linking.
 ALL_CS=`find gen bin/test -name "*.c"`

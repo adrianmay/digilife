@@ -14,7 +14,8 @@ IF=${TF//tpt\/${TPT}/gen\/${MOD}}
 for I in ${TF[@]}
 do
   O=${I//tpt\/${TPT}/gen\/${MOD}}
-  awk ${VAR} '{ gsub(/XX/,XX); gsub(/YY/,YY); gsub(/ZZ/,ZZ); gsub(/WW/,WW); }1' $I > $O
+  # awk ${VAR} '{ gsub(/XX/,XX); gsub(/YY/,YY); gsub(/ZZ/,ZZ); gsub(/WW/,WW); }1' $I > $O
+  cat $I | tools/subs.pl XX $XX | tools/subs.pl YY $YY | tools/subs.pl ZZ $ZZ | tools/subs.pl WW $WW > $O  
   chmod -w $O
 done
 

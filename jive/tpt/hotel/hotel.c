@@ -158,17 +158,16 @@ XX * hotelOfThings_grabIx(XXIx i) {
 void hotelOfThings_drop(XXIx i) {
   XX * pXX = pileOfXXs_get(i);
   Nick was = atomic_fetch_or(&pXX->rent.nick, NICK_FLAG_BOMBED); // I might be lying about intending to free the bomb,
-  if (pXX->rent.cash>0) {                                        //  but it stops raid from doing so.
-    printf("Drop: solvent\n");
+  if (was & NICK_NAME_GOD) return;                               //  but it stops raid from doing so.
+  if (pXX->rent.cash>0) {         
     if (was & NICK_FLAG_BOMBED)
       rebomb(&pXX->rent, i);
     else 
       updateDeathWithXX_(pXX);
     atomic_store(&pXX->rent.nick, was & NICK_NAME_READ_MASK); // Clear both flags
   } else { // Bankrupted by its own code
-    printf("Drop: broke\n");
     if (!(was & NICK_FLAG_BOMBED)) {
-        meapOfXXBombs_erase(pXX->rent.bomb);
+      meapOfXXBombs_erase(pXX->rent.bomb);
     }
     onXXHotelGoDie(i, pXX);
     atomic_store(&pXX->rent.nick, BAD_INDEX); 

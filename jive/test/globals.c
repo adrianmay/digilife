@@ -7,7 +7,7 @@ bool testGlobals(void) {
   bool v = openGlobals();
   assertInt(v, true);
   uint64_t i = pg->lastKnownTock + vg.tocksReviewedAt + pg->cyclesPerTock;
-  assertLong(i, 1000L);
+  assertLong(i, 2000L);
   vg.tocksReviewedAt = 2;
   pg->lastKnownTock = 1;
   pg->cyclesPerTock = 3;

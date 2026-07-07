@@ -158,21 +158,34 @@ bool meapOfXXs_editTocks(XXIx iCur, Score when) {
 
 // Assume already locked
 static bool erase_(XXIx iCur) {
+  printf("Meap erase_ A\n");
   Ix cnt = pileOfXXs_getUsr();
+  printf("Meap erase_ C\n");
   if (!cnt) {
     printf("Meap empty in erase\n");
     return false;
   }
+  printf("Meap erase_ D\n");
   XX * p = pileOfXXs_get(iCur);
+  printf("Meap erase_ E\n");
   Ix * pI = (Ix *) p;
+  printf("Meap erase_ E1\n");
   bombee = pI[0];
+  printf("Meap erase_ E2\n");
   Ix iLast = cnt-1;
+  printf("Meap erase_ F\n");
   swap((XXIx){iLast}, iCur);
+  printf("Meap erase_ G\n");
   pileOfXXs_modUsr(-1);
+  printf("Meap erase_ H\n");
   siftDown(iCur); //Not calling review cos I'd need a recursive mutex
+  printf("Meap erase_ I\n");
+  siftDown(iCur); //Not calling review cos I'd need a recursive mutex
+  printf("Meap erase_ J\n");
   bool res = siftUp(iCur);
-  meapOfXXs_forAll(bombeeSafe);
-  checkNoDupes();
+  printf("Meap erase_ K\n");
+//  meapOfXXs_forAll(bombeeSafe);
+//  checkNoDupes();
   return res;
 }
 

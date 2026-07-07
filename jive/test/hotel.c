@@ -280,14 +280,17 @@ void doit(int me, int dowhat) {
   }
 }
 
+static int a=0;
+
 void * monkey(void * n) {
   int me = (int)( (int64_t) n);
-  for (int a=0; a<10; a++) {
+  for (a=0; a<10; a++) {
     doit(me, 9);  // Admit
     //hotelOfThings_show();
   }
   //while (true) {
-  for (int a=0;a<1000;a++) {
+  for (a=0;a<1000000;a++) {
+    printf("it=%d things=%d\n", a, hotelOfThings_count() );
 //    hotelOfThings_show();
     doit(me, randIntBelow(15));
   }
@@ -300,6 +303,7 @@ pthread_t pids[NUM_THREADS] = {0};
 bool testMonkey(void) {
   for (int64_t a=0;a<NUM_THREADS; a++) pthread_create(pids+a, 0, monkey, (void*)a);
   for (int64_t a=0;a<NUM_THREADS; a++) pthread_join(pids[a], 0);
+  printf("Finished with a=%d\n", a);
   return 0;
 }
 // Need grab vs raid race tests: 

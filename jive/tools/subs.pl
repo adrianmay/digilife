@@ -5,7 +5,7 @@ BEGIN {
 }
 @append = ();
 s{
-    ([[:alnum:]]*$p[[:alnum:]]*)
+    (\w*$p\w*)
 }{
     my $orig = $1;
     (my $new = $orig) =~ s/$p/$r\E/g;

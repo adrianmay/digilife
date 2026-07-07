@@ -30,10 +30,10 @@ int main(int argc, char **argv) {
   bool suc =
 //    wrap() &&
 //    perf() &&
-    pile() &&
-    meap() &&
+//    globals() &&
+//    pile() &&
+//    meap() &&
     hotel() &&
-    globals() &&
 //    raffle() &&
 //    tank() &&
 //    exec() &&

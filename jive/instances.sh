@@ -6,6 +6,9 @@ tools/make_pile.sh   Link  bit/Link.h       MEGA 1 &
 pids="$pids $!"
 tools/make_meap.sh   Junk  bit/Junk.h       MEGA &
 pids="$pids $!"
-tools/make_hotel.sh  Thing bit/ThingBody.h  GIGA 1 &
+tools/make_hotel.sh  Thing bit/Thing.h  GIGA 1 &
 pids="$pids $!"
+# tools/make_raffle.sh Mess  bit/MessTicket.h GIGA Thing &
+# pids="$pids $!"
+
 

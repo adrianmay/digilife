@@ -1,2 +1,2 @@
-#include "XX_pile/ix.h"
-typedef struct XXBomb {XXIx who; Tocks tocks;} XXBomb;
+#include "XXBlob_pile/ix.h"
+typedef struct XXBomb {XXBlobIx who; Tocks tocks;} XXBomb;

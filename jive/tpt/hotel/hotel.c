@@ -39,9 +39,6 @@ bool onXXBombMeapWillErase(XXBombIx i, XXBomb * pBomb) {
   return (!(was & NICK_FLAG_BOMBED)); // Must remove bomb for meap to continue unless drop already removed it
 }
 
-
-static int numGods=0;
-
 void showXXBomb(XXBlobIx i, XXBomb * p) {
   printf("tocks=%d,who=%d\n", p->tocks, p->who.i);
 }
@@ -77,28 +74,25 @@ Cash rentForXXPerTock() { return tockPrice() * billableXXSize; }
 static void rebomb(XXRent * pRent, XXBlobIx i) {
   Tocks expiry = pRent->lastPaidRent + pRent->cash / rentForXXPerTock();
   meapOfXXBombs_insert(expiry, i.i, &pRent->bomb); // Do we need the return value?
+  printf("Admit: expiry=%d lastPaid=%d cash=%ld\n", 
+         expiry, pRent->lastPaidRent, pRent->cash);
 }
  
 XXTact hotelOfXXs_admit(Cash cash, bool isGod, V_XXP stuff, XX ** pp, bool * pRecycled) {
+  if (cash == 0 && !isGod) 
+    return (XXTact){(XXIx){BAD_INDEX}};
   XXBlob * pBlob;
   XXBlobIx iBlob = pileOfXXBlobs_alloc(&pBlob, pRecycled);
+  pBlob->rent.bomb = badXXBombIx;
+  pBlob->rent.cash = cash;
+  pBlob->rent.lastPaidRent = tocksNow();
   Nick n = randInt32Masked(NICK_NAME_RAND_MASK) | ( isGod ? NICK_NAME_GOD : 0 );
   pBlob->rent.nick = n;
+  if (stuff) stuff(&pBlob->body);
   XXTact t = (XXTact){(XXIx){iBlob.i}, n};
   if (isGod) { //God
-    numGods++;
-    pBlob->rent.cash = 0;
-    pBlob->rent.lastPaidRent = tocksNow();
-    if (stuff) stuff(&pBlob->body);
-    pBlob->rent.bomb = badXXBombIx;
     pileOfXXBlobs_modUsr(1); // This is the god count
   } else {
-    if (cash == 0) 
-      return (XXTact){(XXIx){BAD_INDEX}};
-    pBlob->rent.cash = cash;
-    pBlob->rent.lastPaidRent = tocksNow();
-    if (stuff) stuff(&pBlob->body);
-    //printf("Admit: expiry=%d lastPaid=%d cash=%ld\n", expiry, p->rent.lastPaidRent, cash);
     rebomb(&pBlob->rent, iBlob);
   }
   if (pp) *pp = &pBlob->body;

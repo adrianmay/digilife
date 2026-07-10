@@ -42,7 +42,7 @@ static bool init(void) {
  
 void cleanupHotel(void) { hotelOfThings_close(Hide); closeGlobals(Hide); }
 
-#define NOTIFY_TOCKS 1
+#define NOTIFY_TOCKS 154
 
 Tocks killTilExtinct(void) {
   Tocks started = tocksNow();
@@ -50,11 +50,10 @@ Tocks killTilExtinct(void) {
 //    printf("killTilExtinct: tocks=%d, processCycles=%'ld\n", tocksNow(), readProcessCycles());
     //hotelOfThings_forAll(hotelOfThings_review);
     //hotelOfThings_kill();
-    if (extinct) break;
     //hotelOfThings_show();
-    notifyCycles(NOTIFY_TOCKS*GUESS_CYCLES_PER_TOCK);
     if (extinct) break;
-    sleepNs(1000);
+    notifyCycles(NOTIFY_TOCKS*GUESS_CYCLES_PER_TOCK);
+//    sleepNs(1000);
   }
   Tocks ended = tocksNow();
   return ended - started;
@@ -68,7 +67,7 @@ bool expectExtinctSoon(Cash cash) {
   else {
     Tocks expectIdeal = cash / ( billableThingSize * tockPrice() );
     printf("expectIdeal=%d\n", expectIdeal);
-    expect = ((expectIdeal - 1) / NOTIFY_TOCKS + 1) * NOTIFY_TOCKS ;
+    expect = NOTIFY_TOCKS + ((expectIdeal - 1) / NOTIFY_TOCKS + 1) * NOTIFY_TOCKS ;
   }
   assertInt(dur, expect);
   return true;
@@ -90,15 +89,14 @@ bool testNoPop(void) {
 }
 
 bool test1(void) {
-  Cash cash = 4000;
+  Cash cash = 40000000;
   make(3, cash);
   printf("Made in test1\n");
   expectExtinctSoon(cash);
   return true;
 }
 
-bool testHotel(void) {
-  printf("Tock price: %f\n", tockPrice());
+bool testHotel(void) { printf("Tock price: %f\n", tockPrice());
   printf("Billable size: %ld\n", billableThingSize);
   return
     testNoPop() &&

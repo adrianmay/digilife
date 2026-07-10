@@ -78,7 +78,6 @@ XX * hotelOfThings_get(XXIx i) {
 const size_t billableXXSize = sizeof(XX)+sizeof(XXBomb);
 Cash rentForXXPerTock() { return tockPrice() * billableXXSize; }
 
-static int numGods=0;
 
 void hotelOfThings_checkHotel(int expectExcess) {
   int diff = pileOfXXs_count() - (meapOfXXBombs_size() + numGods + expectExcess);
@@ -247,9 +246,9 @@ bool onXXBombMeapWillErase(XXBombIx i, XXBomb * pBomb) {
   return (!(was & NICK_FLAG_BOMBED)); // Must remove bomb for meap to continue unless drop already removed it
 }
 
-void hotelOfThings_raid(void) {
+void hotelOfXXs_raid(void) {
   //printf("Raid starts\n");
-  hotelOfThings_checkHotel(0);
+  hotelOfXXs_checkHotel(0);
   XXBomb bomb; // Bomb copied out to here
   Tocks now = tocksNow();
   //printf("Tocks=%d\n", now);
@@ -276,7 +275,7 @@ void hotelOfThings_raid(void) {
       Nick flags = got & NICK_FLAG_MASK;
       if (!(flags & NICK_FLAG_BOMBED)) abort(); // Either chomp set it or it was set already.
       if (!(flags & NICK_FLAG_BUSY)) { // Normal, idle rent expiry
-        hotelOfThings_collectRent(pXX);
+        hotelOfXXs_collectRent(pXX);
         if (pXX->rent.cash<0) {
           onXXRentDefaulted(-pXX->rent.cash); // Should be at the real free
           pXX->rent.cash = 0; // Maybe redundant
@@ -309,7 +308,7 @@ void hotelOfThings_raid(void) {
       */
     }
     if (ch == Extinct) {
-      hotelOfThings_checkHotel(0);
+      hotelOfXXs_checkHotel(0);
       onXXsExtinct(); 
       meapOfXXBombs_check();
       return;

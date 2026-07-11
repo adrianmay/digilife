@@ -12,10 +12,10 @@
 #include "api.h"
 
 // Assumes some mutex is held, despite the name
-// That's true because onXXMeapNew only called from meap's insert
+// That's true because onXXMeap_new only called from meap's insert
 //   which for the hotel is only called from hotel's admit
 // We know it exists, and it doesn't have or need money
-void onXXBombMeapNew(XXBomb * pBomb, Ix hint) {
+void onXXBombMeap_new(XXBomb * pBomb, Ix hint) {
   pBomb->who = (XXBlobIx){hint};
 //  XX * p = pileOfXXs_get(pBomb->who);
 //  p->rent.bomb = iBomb;
@@ -24,13 +24,13 @@ void onXXBombMeapNew(XXBomb * pBomb, Ix hint) {
 }
 
 // Similarly thread safe already, I think?
-void onXXBombMeapMove(XXBomb * pBomb, XXBombIx to) {
+void onXXBombMeap_move(XXBomb * pBomb, XXBombIx to) {
   XXBlob * pBlob = pileOfXXBlobs_get(pBomb->who);
   pBlob->rent.bomb = to;
   meapOfXXBombs_check();
 }
 
-bool onXXBombMeapWillErase(XXBombIx i, XXBomb * pBomb) {
+bool onXXBombMeap_willErase(XXBombIx i, XXBomb * pBomb) {
   XXBlobIx who = pBomb->who;
   XXBlob * pBlob = pileOfXXBlobs_get(who);
   Nick was = atomic_fetch_or(&pBlob->rent.nick, NICK_FLAG_BOMBED);
@@ -45,7 +45,7 @@ void showXXBomb(XXBlobIx i, XXBomb * p) {
 
 void showXXBlob(XXBlobIx i, XXBlob * p) {
   printf("ix=%-4d nick=%-8x|lastPaidRent=%-5d cash=%-5ld bomb=%-2d ", i.i, p->rent.nick, p->rent.lastPaidRent, p->rent.cash, p->rent.bomb.i);
-  showXX(&p->body);
+  showXX((XXIx){i.i}, &p->body);
 }
 
 void hotelOfXXs_show(void) {
@@ -100,7 +100,7 @@ XXTact hotelOfXXs_admit(Cash cash, bool isGod, V_XXP stuff, XX ** pp, bool * pRe
 
 static bool isGod(XXRent * pRent) { return pRent->nick & NICK_NAME_GOD ; }
 
-void hotelOfThings_collectRent(XXRent * pRent) {
+void hotelOfXXs_collectRent(XXRent * pRent) {
   Cash collected, defaulted;
   Tocks now = tocksNow();
   Tocks timeUnpaid = now - pRent->lastPaidRent;
@@ -116,11 +116,11 @@ void hotelOfThings_collectRent(XXRent * pRent) {
     collected = c;
     defaulted = bill-c;
   }
-  if (collected) onXXRentCollected(collected);
-  if (defaulted) onXXRentDefaulted(defaulted);
+  if (collected) onXXHotel_rentCollected(collected);
+  if (defaulted) onXXHotel_rentDefaulted(defaulted);
 }
 
-XX * hotelOfThings_get(XXIx i) { 
+XX * hotelOfXXs_get(XXIx i) { 
   XXBlob * pBlob = pileOfXXBlobs_get((XXBlobIx){i.i});
   return &pBlob->body;
     
@@ -140,12 +140,12 @@ XX * hotelOfThings_get(XXIx i) {
 
 // AFAIK this is just for running a job
 // If the XX is not busy, not doomed, and has the passed nick, mark it busy and return a pointer to it
-XX * hotelOfThings_grab(XXTact t, Cash * pCash) {
+XX * hotelOfXXs_grab(XXTact t, Cash * pCash) {
   XXBlob * pBlob = pileOfXXBlobs_get((XXBlobIx){t.i.i});
   Nick want, set; 
   want = t.n; set = t.n | NICK_FLAG_BUSY; 
   if (atomic_compare_exchange_strong(&pBlob->rent.nick, &want, set)) {
-    hotelOfThings_collectRent(&pBlob->rent);
+    hotelOfXXs_collectRent(&pBlob->rent);
     *pCash = pBlob->rent.cash;
     return &pBlob->body;
   }
@@ -156,10 +156,10 @@ XX * hotelOfThings_grab(XXTact t, Cash * pCash) {
 // As above if you don't know the nick cos you're the bomb.
 // I don't want to bloat the bombs. 
 // Since only raid removes XXs, I think I can assume the nick is correct.
-XX * hotelOfThings_grabIx(XXIx i, Cash * pCash) {
+XX * hotelOfXXs_grabIx(XXIx i, Cash * pCash) {
   XXBlob * pBlob = pileOfXXBlobs_get((XXBlobIx){i.i});
   XXTact t = (XXTact){i, pBlob->rent.nick};
-  return hotelOfThings_grab(t, pCash);
+  return hotelOfXXs_grab(t, pCash);
 }
 
 static bool updateDeathWithBomb(XXBlob * p, XXBombIx iBomb, XXBomb * pBomb) {
@@ -183,7 +183,7 @@ static bool updateDeath(XXBlob * pBlob) {
   return updateDeathWithBomb(pBlob, iBomb, pBomb);
 }
 
-void hotelOfThings_drop(XXIx i, Cash cash) {
+void hotelOfXXs_drop(XXIx i, Cash cash) {
   XXBlobIx iBlob = (XXBlobIx){i.i};
   XXBlob * pBlob = pileOfXXBlobs_get(iBlob);
   pBlob->rent.cash = cash;
@@ -199,7 +199,7 @@ void hotelOfThings_drop(XXIx i, Cash cash) {
     if (!(was & NICK_FLAG_BOMBED)) {
       meapOfXXBombs_erase(pBlob->rent.bomb);
     }
-    onXXHotelGoDie(i, &pBlob->body);
+    onXXHotel_goDie(i, &pBlob->body);
     atomic_store(&pBlob->rent.nick, BAD_INDEX); 
     pileOfXXBlobs_free(iBlob);
     // TODO: Book loss
@@ -212,7 +212,7 @@ void hotelOfXXs_raid(void) {
   while (true) { // Returns when nothing to kill for now
     bomb.who = badXXBlobIx; // Prevent false alarms
     Chomped ch = meapOfXXBombs_chomp(now, &bomb, 0); // Locks, so each bomb appears here at most once.
-    if (ch == Killed ) {    // ... Also calls onXXBombMeapWillErase and erases the bomb if it says so.
+    if (ch == Killed ) {    // ... Also calls onXXBombMeap_willErase and erases the bomb if it says so.
       XXBlob * pBlob = pileOfXXBlobs_get(bomb.who);
 
       Nick got = atomic_load(&pBlob->rent.nick); 
@@ -221,9 +221,9 @@ void hotelOfXXs_raid(void) {
       if (!(flags & NICK_FLAG_BUSY)) { // Normal, idle rent expiry
         hotelOfXXs_collectRent(&pBlob->rent);
         if (pBlob->rent.cash<0) {
-          onXXRentDefaulted(-pBlob->rent.cash); // Should be at the real free
+          onXXHotel_rentDefaulted(-pBlob->rent.cash); // Should be at the real free
           pBlob->rent.cash = 0; // Maybe redundant
-          onXXHotelGoDie((XXIx){bomb.who.i}, &pBlob->body);
+          onXXHotel_goDie((XXIx){bomb.who.i}, &pBlob->body);
           atomic_store(&pBlob->rent.nick, BAD_INDEX); 
           pileOfXXBlobs_free(bomb.who);
         }
@@ -231,7 +231,7 @@ void hotelOfXXs_raid(void) {
       }
     }
     if (ch == Extinct) {
-      onXXsExtinct(); 
+      onXXHotel_extinct(); 
       meapOfXXBombs_check();
       return;
     }

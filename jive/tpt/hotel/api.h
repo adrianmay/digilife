@@ -11,18 +11,16 @@ XX *   hotelOfXXs_grabIx (XXIx, Cash *);
 void   hotelOfXXs_drop   (XXIx, Cash);
 void   hotelOfXXs_raid   (void);
 Ix     hotelOfXXs_count  (void);
-Ix     hotelOfXXs_top  (void);
+Ix     hotelOfXXs_top    (void);
+Cash   hotelOfXXs_rent   (void);
 void   hotelOfXXs_close  (Fate);
 
-// Provide this
-extern void onXXRentCollected  (Cash rent);
-extern void onXXRentDefaulted  (Cash rent); 
-extern void onXXsExtinct       (void); 
-extern void onXXHotelGoDie     (XXIx, XX * pXX); // Provide this.
-extern void onXXRentCollected  (Cash cash); // Provide this.
-extern void onXXRentDefaulted  (Cash cash); // Provide this.
+// Provide these:
+extern void showXX                  (XXIx i, XX * p);
+extern void onXXHotel_rentCollected (Cash rent);
+extern void onXXHotel_rentDefaulted (Cash rent); 
+extern void onXXHotel_extinct       (void); 
+extern void onXXHotel_goDie         (XXIx, XX * pXX); // Provide this.
 
 extern const size_t billableXXSize;
-                                         
-
 

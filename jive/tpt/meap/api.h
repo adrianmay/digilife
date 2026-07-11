@@ -19,8 +19,8 @@ bool    meapOfXXs_check     (void);
 extern const XXIx badXXIx;
 
 // The caller should define these:
-extern void onXXMeapMove(XX * p, XXIx to); // Update records of where p's meap is.
-extern void onXXMeapNew(XX * p, Ix hint); // Update records of where p's meap is.
+extern void onXXMeap_move(XX * p, XXIx to); // Update records of where p's meap is.
+extern void onXXMeap_new(XX * p, Ix hint); // Update records of where p's meap is.
 // Return true if you want the meap item erased
-extern bool onXXMeapWillErase(XXIx i, XX * p); // Update records of where p's meap is.
+extern bool onXXMeap_willErase(XXIx i, XX * p); // Update records of where p's meap is.
 

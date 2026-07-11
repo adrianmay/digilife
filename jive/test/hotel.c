@@ -6,11 +6,11 @@
 #include "Thing_hotel/api.h"
 
 static bool extinct=true;
-void onThingsExtinct(void) { extinct = true; }
-void onThingRentCollected(Cash cash) { }
-void onThingRentDefaulted(Cash cash) { }
+void onThingHotel_extinct(void) { extinct = true; }
+void onThingHotel_rentCollected(Cash cash) { }
+void onThingHotel_rentDefaulted(Cash cash) { }
 
-//void onThingHotelGoDie(ThingIx i, Thing * pThing) {
+//void onThingHotel_goDie(ThingIx i, Thing * pThing) {
 //  St want = Idle;
 //  for (int a=0; a<10*MAX_THS; a++) {
 //    if (ths[a].t.i.i == i.i) {
@@ -28,7 +28,7 @@ static void tock() {
   hotelOfThings_raid();
 }
 
-void showThing(Thing * p) {
+void showThing(ThingIx i, Thing * p) {
   printf("name=%d,code=<binary>\n", p->name);
 }
 
@@ -184,7 +184,7 @@ typedef enum {Free, Idle, UsedBy} St;
 typedef struct { _Atomic St st; ThingTact t; Thing * p; Cash c;  } Th;
 Th ths[MAX_THS]={0};
 
-void onThingHotelGoDie(ThingIx i, Thing * pThing) { 
+void onThingHotel_goDie(ThingIx i, Thing * pThing) { 
   St want = Idle;
   for (int a=0; a<10*MAX_THS; a++) {
     if (ths[a].t.i.i == i.i) {

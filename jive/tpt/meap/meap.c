@@ -65,8 +65,8 @@ static void swap(XXIx i1, XXIx i2) {
   memcpy(&tmp, p1, len);
   memcpy(p1, p2, len);
   memcpy(p2, &tmp, len);
-  onXXMeapMove(p1, i1);
-  onXXMeapMove(p2, i2);
+  onXXMeap_move(p1, i1);
+  onXXMeap_move(p2, i2);
   checkNoDupes();
 }
 
@@ -137,7 +137,7 @@ bool meapOfXXs_insert(Tocks expiry, Ix hint, XXIx * pI) {
     *pI = pileOfXXs_alloc(&pNew, 0);
   // pNew is now correct either way.
   pNew->tocks = expiry;
-  onXXMeapNew(pNew, hint);
+  onXXMeap_new(pNew, hint);
   pileOfXXs_modUsr(1);                        // Not sure if this should be before the above, but certainly it's before siftUp.
   if (pI->i > 0) {                          // No point sorting a singleton.
     res = siftUp(*pI);             // Calls siftUp if it returns true;
@@ -199,7 +199,7 @@ Chomped meapOfXXs_chomp(Score thresh, XX * pCopyOut, int pseudoAnimals) {
     Score lowestScoreInMeap = p->tocks;
     ScoreDiff sd = wrapSub32S(lowestScoreInMeap, thresh);
     if (sd <= 0) {
-      if (onXXMeapWillErase(i, p))
+      if (onXXMeap_willErase(i, p))
         erase_(i);
       res = Killed;
     } else {

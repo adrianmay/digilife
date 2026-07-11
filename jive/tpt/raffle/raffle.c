@@ -93,7 +93,7 @@ Ix raffleOfXXs_count(void) { return hotelOfXXTickets_count(); }
   //pRaf->s = 0;
   //propagateWeightUp(i, -w);
 
-// Assumes there are tickets. Look out of onXXsExtinct
+// Assumes there are tickets. Look out of onXXHotel_extinct
 
 // static bool draw();
 
@@ -182,7 +182,7 @@ void showXXTicket(XXTicketIx i, XXTicket * p) {
   showXX(&p->body);
 }
 
-void onXXTicketHotelGoDie(XXTicketIx i, XXTicket * pT) {
+void onXXTicketHotel_goDie(XXTicketIx i, XXTicket * pT) {
   Weight w = pT->weights.s;
   pT->weights.s = 0;
   propagateWeightUp(i, -w);

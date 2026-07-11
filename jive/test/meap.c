@@ -5,8 +5,9 @@
 #include "Junk_meap/api.h"
 #include "bit/Junk.h"
 
-void  onJunkMeapNew(Junk * pJ, Ix hint) { pJ->hint=hint;}
-void  onJunkMeapMove(Junk * pJ, JunkIx to) { }
+void onJunkMeap_new(Junk * pJ, Ix hint) { pJ->hint=hint;}
+void onJunkMeap_move(Junk * pJ, JunkIx to) { }
+bool onJunkMeap_willErase(JunkIx i, Junk * p) { return true; }
 
 #define assertWholeMeap(pExp, N) { \
   printf("Meap setup %d: ", setupNum); \
@@ -206,7 +207,4 @@ void showJunk(JunkIx i, Junk * pJunk) {
   printf("tocks=0x%x\n", pJunk->tocks);
 }
 
-bool onJunkMeapWillErase(JunkIx i, Junk * p) { 
-  return true; // Don't inhibit deleting anything.
-}
 

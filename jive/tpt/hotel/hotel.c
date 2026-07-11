@@ -162,6 +162,7 @@ static bool updateDeathWithBomb(XXBlob * p, XXBombIx iBomb, XXBomb * pBomb) {
   Cash cash = p->rent.cash;
   Tocks ttl = cash / rentForXXPerTock();
   Tocks death = tocksNow() + ttl;
+  printf("updateDeathWithBomb: ttl=%d death=%d\n", ttl, death);
   meapOfXXBombs_check();
   // This changes bomb time and reorders meap:
   bool res = false;
@@ -181,6 +182,7 @@ static bool updateDeath(XXBlob * pBlob) {
 void hotelOfThings_drop(XXIx i, Cash cash) {
   XXBlobIx iBlob = (XXBlobIx){i.i};
   XXBlob * pBlob = pileOfXXBlobs_get(iBlob);
+  pBlob->rent.cash = cash;
   Nick was = atomic_fetch_or(&pBlob->rent.nick, NICK_FLAG_BOMBED); // I might be lying about intending to free the bomb,
   if (was & NICK_NAME_GOD) return;                               //  but it stops raid from doing so.
   if (pBlob->rent.cash>0) {         

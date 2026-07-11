@@ -42,7 +42,7 @@ static bool init(void) {
  
 void cleanupHotel(void) { hotelOfThings_close(Hide); closeGlobals(Hide); }
 
-#define NOTIFY_TOCKS 154
+#define NOTIFY_TOCKS 10
 
 Tocks killTilExtinct(void) {
   Tocks started = tocksNow();
@@ -63,7 +63,7 @@ bool expectExtinctSoon(Cash cash) {
   Tocks dur = killTilExtinct();
   Tocks expect;
   if (cash==0) 
-    expect = 0;
+    expect = NOTIFY_TOCKS;
   else {
     Tocks expectIdeal = cash / ( billableThingSize * tockPrice() );
     printf("expectIdeal=%d\n", expectIdeal);
@@ -76,7 +76,7 @@ bool expectExtinctSoon(Cash cash) {
 ThingTact make(Ix name, Cash cash) {
   bool recycledSlot;
   void stuff(Thing * p) { p->name = name; }
-  tThing = hotelOfThings_admit(cash, false, stuff, &pThing, &recycledSlot);
+  tThing = hotelOfThings_admit(cash, !cash, stuff, &pThing, &recycledSlot);
   extinct=false;
   return tThing;
 }
@@ -89,21 +89,56 @@ bool testNoPop(void) {
 }
 
 bool test1(void) {
-  Cash cash = 40000000;
+  Cash cash = 40'000'000;
   make(3, cash);
   printf("Made in test1\n");
   expectExtinctSoon(cash);
   return true;
 }
 
+bool testEarn(void) {
+  printf("testEarn\n");
+  make(4, 30'000'000);
+  Cash cash;
+  hotelOfThings_grab(tThing, &cash);
+  cash += 20'000'000; 
+  hotelOfThings_drop(tThing.i, cash);
+  expectExtinctSoon(50'000'000);
+  return true;
+}
+
+bool testRob(void) {
+  printf("testRob\n");
+  make(5, 9000);
+  Cash cash;
+  hotelOfThings_grab(tThing, &cash);
+  cash = 0; 
+  hotelOfThings_drop(tThing.i, cash);
+  expectExtinctSoon(0);
+  return true;
+}
+
+bool testGod(void) {
+  printf("testGod\n");
+  make(6, 10'000'000);
+  make(5, 0);
+  Cash cash;
+  expectExtinctSoon(10'000'000);
+  printf("It's: %d\n", tocksNow());
+  hotelOfThings_grab(tThing, &cash);
+  assertLong(cash, -1200l);
+  hotelOfThings_drop(tThing.i, cash);
+  return true;
+}
+
 bool testHotel(void) { printf("Tock price: %f\n", tockPrice());
   printf("Billable size: %ld\n", billableThingSize);
   return
-    testNoPop() &&
-    test1() &&
+    //testNoPop() &&
+    //test1() &&
     //testEarn() &&
     //testRob() &&
-    //testGod() &&
+    testGod() &&
     //testAfterFree() &&
     //testBusy() &&
     //testFreeWhenBusy() &&

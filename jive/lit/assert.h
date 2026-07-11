@@ -28,6 +28,12 @@
     return false; \
   }
 
+#define assertIntAtLine(VAR, VAL, LINE) \
+  if (VAR != VAL) { \
+    fprintf(stdout, "%s:%d: Expected: " #VAL "=%d ; Got: %d\n", __FILE__, LINE, VAL, VAR); \
+    return false; \
+  }
+
 #define assertLong(VAR, VAL) \
   if (VAR != VAL) { \
     fprintf(stdout, "%s:%d: Expected: " #VAL "=%'ld ; Got: %'ld\n", __FILE__, __LINE__, VAL, VAR); \

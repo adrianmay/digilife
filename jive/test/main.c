@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
 //    tank() &&
 //    exec() &&
 //    equi() &&
-    true;
+    (printf("ALL TESTS SUCCEEDED\n"),true);
   return suc?0:1;
 }
 

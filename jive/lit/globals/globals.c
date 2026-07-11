@@ -21,7 +21,7 @@ static void lock() { pthread_mutex_lock(&mutex); }
 static void unlock() { pthread_mutex_unlock(&mutex); }
 
 static void initVirginPersistentGlobals(void) {
-  pg->lastKnownTock = 1000;
+  pg->lastKnownTock = FIRST_TOCK;
   pg->cyclesNotTocked = 0;
   pg->cyclesPerTock = GUESS_CYCLES_PER_TOCK; //Don't ignore animal for more than 2**32/nsPerTock
   pg->groatsPerTockPerByte = GUESS_GROATS_PER_TOCK_PER_BYTE; //min_groats_per_nanosecond * GUESS_NS_PER_TOCK;

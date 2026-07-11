@@ -59,17 +59,17 @@ Tocks killTilExtinct(void) {
   return ended - started;
 }
 
-bool expectExtinctSoon(Cash cash) {
+bool expectExtinctSoon(Cash cash, int line) {
   Tocks dur = killTilExtinct();
   Tocks expect;
   if (cash==0) 
     expect = NOTIFY_TOCKS;
   else {
     Tocks expectIdeal = cash / ( billableThingSize * tockPrice() );
-    printf("expectIdeal=%d\n", expectIdeal);
     expect = NOTIFY_TOCKS + ((expectIdeal - 1) / NOTIFY_TOCKS + 1) * NOTIFY_TOCKS ;
+    printf("expectIdeal=%d expect=%d\n", expectIdeal, expect);
   }
-  assertInt(dur, expect);
+  assertIntAtLine(dur, expect, line);
   return true;
 }
 
@@ -92,7 +92,7 @@ bool test1(void) {
   Cash cash = 40'000'000;
   make(3, cash);
   printf("Made in test1\n");
-  expectExtinctSoon(cash);
+  expectExtinctSoon(cash, __LINE__);
   return true;
 }
 
@@ -103,7 +103,7 @@ bool testEarn(void) {
   hotelOfThings_grab(tThing, &cash);
   cash += 20'000'000; 
   hotelOfThings_drop(tThing.i, cash);
-  expectExtinctSoon(50'000'000);
+  expectExtinctSoon(50'000'000, __LINE__);
   return true;
 }
 
@@ -114,7 +114,7 @@ bool testRob(void) {
   hotelOfThings_grab(tThing, &cash);
   cash = 0; 
   hotelOfThings_drop(tThing.i, cash);
-  expectExtinctSoon(0);
+  expectExtinctSoon(0, __LINE__);
   return true;
 }
 
@@ -123,10 +123,11 @@ bool testGod(void) {
   make(6, 10'000'000);
   make(5, 0);
   Cash cash;
-  expectExtinctSoon(10'000'000);
+  expectExtinctSoon(10'000'000, __LINE__);
   printf("It's: %d\n", tocksNow());
-  hotelOfThings_grab(tThing, &cash);
-  assertLong(cash, -1200l);
+  hotelOfThings_grab(tThing, &cash); //  hotelOfXXs_grab
+  Cash expect =  - (hotelOfThings_rent()*(tocksNow()-FIRST_TOCK));
+  assertLong(cash, expect);
   hotelOfThings_drop(tThing.i, cash);
   return true;
 }

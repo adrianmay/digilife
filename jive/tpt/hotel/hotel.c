@@ -69,10 +69,10 @@ void hotelOfXXs_close(Fate fate) {
 }
 
 const size_t billableXXSize = sizeof(XX)+sizeof(XXBomb);
-Cash rentForXXPerTock() { return tockPrice() * billableXXSize; }
+Cash hotelOfXXs_rent() { return tockPrice() * billableXXSize; }
 
 static void rebomb(XXRent * pRent, XXBlobIx i) {
-  Tocks expiry = pRent->lastPaidRent + pRent->cash / rentForXXPerTock();
+  Tocks expiry = pRent->lastPaidRent + pRent->cash / hotelOfXXs_rent();
   meapOfXXBombs_insert(expiry, i.i, &pRent->bomb); // Do we need the return value?
   printf("Admit: expiry=%d lastPaid=%d cash=%ld\n", 
          expiry, pRent->lastPaidRent, pRent->cash);
@@ -107,7 +107,7 @@ void hotelOfThings_collectRent(XXRent * pRent) {
   Tocks now = tocksNow();
   Tocks timeUnpaid = now - pRent->lastPaidRent;
   pRent->lastPaidRent = now;
-  Cash bill = rentForXXPerTock() * timeUnpaid;
+  Cash bill = hotelOfXXs_rent() * timeUnpaid;
   if (isGod(pRent) || pRent->cash >= bill) {
     pRent->cash -= bill;
     collected = bill;
@@ -160,7 +160,7 @@ XX * hotelOfThings_grabIx(XXIx i, Cash * pCash) {
 
 static bool updateDeathWithBomb(XXBlob * p, XXBombIx iBomb, XXBomb * pBomb) {
   Cash cash = p->rent.cash;
-  Tocks ttl = cash / rentForXXPerTock();
+  Tocks ttl = cash / hotelOfXXs_rent();
   Tocks death = tocksNow() + ttl;
   printf("updateDeathWithBomb: ttl=%d death=%d\n", ttl, death);
   meapOfXXBombs_check();

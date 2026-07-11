@@ -11,6 +11,7 @@ void   hotelOfXXs_drop(XXIx, Cash);
 void   hotelOfXXs_raid(void);
 Ix     hotelOfXXs_count(void);
 void   hotelOfXXs_close(Fate);
+Cash   hotelOfXXs_rent(void);
 
 extern void onXXRentCollected(Cash rent); // Provide this
 extern void onXXRentDefaulted(Cash rent); // Provide this

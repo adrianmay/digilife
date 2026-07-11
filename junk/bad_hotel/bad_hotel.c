@@ -183,9 +183,6 @@ bool testFreeWhenBusy(void) {
 }
 
 #define MAX_THS 100
-// #define Free 0
-// #define Idle 1
-// #define UsedBy 2
 typedef enum {Free, Idle, UsedBy} St;
 typedef struct { _Atomic St st; ThingTact t; Thing * p; } Th;
 Th ths[MAX_THS]={0};

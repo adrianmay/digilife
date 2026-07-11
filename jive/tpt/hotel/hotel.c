@@ -74,8 +74,7 @@ Cash hotelOfXXs_rent() { return tockPrice() * billableXXSize; }
 static void rebomb(XXRent * pRent, XXBlobIx i) {
   Tocks expiry = pRent->lastPaidRent + pRent->cash / hotelOfXXs_rent();
   meapOfXXBombs_insert(expiry, i.i, &pRent->bomb); // Do we need the return value?
-  printf("Admit: expiry=%d lastPaid=%d cash=%ld\n", 
-         expiry, pRent->lastPaidRent, pRent->cash);
+  //printf("rebomb: expiry=%d lastPaid=%d cash=%ld\n", expiry, pRent->lastPaidRent, pRent->cash);
 }
  
 XXTact hotelOfXXs_admit(Cash cash, bool isGod, V_XXP stuff, XX ** pp, bool * pRecycled) {

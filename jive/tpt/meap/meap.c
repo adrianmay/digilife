@@ -188,7 +188,7 @@ Chomped meapOfXXs_chomp(Score thresh, XX * pCopyOut, int pseudoAnimals) {
   lock();
   Ix x = meapOfXXs_size();
   if (x<=pseudoAnimals) { 
-    printf("chomp XX: extinct: x=%d, pseudo=%d\n", x, pseudoAnimals);
+    //printf("chomp XX: extinct: x=%d, pseudo=%d\n", x, pseudoAnimals);
     res = Extinct; 
   }
   else {

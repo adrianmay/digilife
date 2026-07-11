@@ -10,7 +10,7 @@ void onThingsExtinct(void) { extinct = true; }
 void onThingRentCollected(Cash cash) { }
 void onThingRentDefaulted(Cash cash) { }
 
-void onThingHotelGoDie(ThingIx i, Thing * pThing) {
+//void onThingHotelGoDie(ThingIx i, Thing * pThing) {
 //  St want = Idle;
 //  for (int a=0; a<10*MAX_THS; a++) {
 //    if (ths[a].t.i.i == i.i) {
@@ -18,7 +18,7 @@ void onThingHotelGoDie(ThingIx i, Thing * pThing) {
 //      atomic_compare_exchange_strong(&ths[a].st, &want, Free);
 //    }
 //  }
-}
+//}
 
 Cycles cycles;
 Thing * pThing;
@@ -82,16 +82,16 @@ ThingTact make(Ix name, Cash cash) {
 }
 
 bool testNoPop(void) {
+  printf("testNoPop\n");
   Tocks dur = killTilExtinct();
-  printf("testNoPop: %d\n", dur);
   assertCond(dur, ==0);
   return true;
 }
 
 bool test1(void) {
+  printf("test1\n");
   Cash cash = 40'000'000;
   make(3, cash);
-  printf("Made in test1\n");
   expectExtinctSoon(cash, __LINE__);
   return true;
 }
@@ -121,15 +121,174 @@ bool testRob(void) {
 bool testGod(void) {
   printf("testGod\n");
   make(6, 10'000'000);
-  make(5, 0);
+  make(7, 0);
+  Tocks start = tocksNow();
   Cash cash;
   expectExtinctSoon(10'000'000, __LINE__);
   printf("It's: %d\n", tocksNow());
   hotelOfThings_grab(tThing, &cash); //  hotelOfXXs_grab
-  Cash expect =  - (hotelOfThings_rent()*(tocksNow()-FIRST_TOCK));
+  Cash expect =  - (hotelOfThings_rent()*(tocksNow()-start));
   assertLong(cash, expect);
   hotelOfThings_drop(tThing.i, cash);
   return true;
+}
+
+bool testAfterFree(void) {
+  printf("testAfterFree\n");
+  ThingTact tThing = make(8, 10'000'000);
+  expectExtinctSoon(10'000'000, __LINE__);
+  Cash cash;
+  Thing * p = hotelOfThings_grab(tThing, &cash);
+  hotelOfThings_drop(tThing.i, cash);
+  assertCond((int)(long)p, ==0);
+  return true;
+}
+
+bool testBusy(void) {
+  printf("testBusy\n");
+  make(9, 10'000'000);
+  Cash cash;
+  pThing = hotelOfThings_grab(tThing, &cash);
+  assertCond((int)(long)pThing, !=0);
+  pThing = hotelOfThings_grab(tThing, &cash);
+  assertCond((int)(long)pThing, ==0);
+  hotelOfThings_drop(tThing.i, cash);
+  return true;
+}
+
+// We make a thing go bankrupt while its busy and assert
+// that the slot won't be reused until it stops being busy.
+bool testFreeWhenBusy(void) {
+  printf("testFreeWhenBusy\n");
+  ThingTact tThing = make(10, hotelOfThings_rent());
+  bool sameIndex2;
+  Cash cash;
+  pThing = hotelOfThings_grab(tThing, &cash);
+  notifyCycles(2*GUESS_CYCLES_PER_TOCK); 
+  ThingTact t2 = make(11, 1'000'000);
+  sameIndex2 = t2.i.i == tThing.i.i;
+  cash = 0;
+  hotelOfThings_drop(tThing.i, cash);
+  ThingTact t3 = make(8,1000);
+  bool sameIndex3 = t3.i.i == tThing.i.i;
+  assertInt(sameIndex2, false);
+  assertInt(sameIndex3, true);
+  return true;
+}
+
+/////////////////////////////////////////////////////////////////
+// Monkey test
+
+#define MAX_THS 100
+typedef enum {Free, Idle, UsedBy} St;
+typedef struct { _Atomic St st; ThingTact t; Thing * p; Cash c;  } Th;
+Th ths[MAX_THS]={0};
+
+void onThingHotelGoDie(ThingIx i, Thing * pThing) { 
+  St want = Idle;
+  for (int a=0; a<10*MAX_THS; a++) {
+    if (ths[a].t.i.i == i.i) {
+      printf("GoDie %i\n", i.i);
+      atomic_compare_exchange_strong(&ths[a].st, &want, Free);
+    }
+  }
+}
+
+int chSt(St from, St to) { 
+  //printf("chSt %d->%d ... ", from, to);
+  for (int i=0; i<10*MAX_THS; i++) {
+    int a = randIntBelow(MAX_THS);
+    St want = from;
+    if (atomic_compare_exchange_strong(&ths[a].st, &want, to)) {
+      //printf("returning: %d: was=%d \n", a, want); //showTh(a);
+      return a; 
+    }
+  }
+  return -1; 
+}
+
+void doit(int me, int dowhat, int it) {
+  //printf("At %d, %d does %d\n", it, me, dowhat);
+  switch (dowhat) {
+    case 0: // Richer
+      { int i = chSt(UsedBy+me, UsedBy+me);
+        if (i!=-1)
+          ths[i].c += randIntBelow(1000);
+        break; }
+    case 1: // Poorer
+      { int i = chSt(UsedBy+me, UsedBy+me);
+        if (i!=-1)
+          ths[i].c -= randIntBelow(10+ths[i].c*1.1);
+        break; }
+    case 2: // Rob
+      { int i = chSt(UsedBy+me, UsedBy+me);
+        if (i!=-1)
+          ths[i].c = 0;
+        break; }
+
+    case 3: // Grab
+    case 4:
+      { int i = chSt(Idle, UsedBy+me);
+        if (i!=-1) {
+          ths[i].p = hotelOfThings_grab(ths[i].t, &ths[i].c);
+          if (!ths[i].p) atomic_store(&ths[i].st, Idle);
+        }
+        break; }
+    case 5: // Drop
+    case 6:
+      { int i = chSt(UsedBy+me, Idle);
+        if (i!=-1)
+          hotelOfThings_drop(ths[i].t.i, ths[i].c);
+        break; }
+
+    case 7:
+    case 8:
+      notifyCycles(randIntBelow(GUESS_CYCLES_PER_TOCK*2));
+      break;
+
+    case 9: // Admit
+    case 10:
+      { int i = chSt(Free, Idle);
+        if (i!=-1) {
+          Cash c = randIntBelow(1000);
+          bool isGod = !randIntBelow(30);
+          ths[i].t = hotelOfThings_admit(c, isGod, 0, 0, 0);
+        }
+        break; }
+    case 11: // Raid
+    case 12:
+      { hotelOfThings_raid();
+        break; }
+  }
+}
+_Atomic int iterations;
+
+void * monkey(void * n) {
+  int me = (int)( (int64_t) n);
+  for (int a=0; a<10; a++) {
+    doit(me, 9, 0);  // Admit
+    //hotelOfThings_show();
+  }
+  while (true) {
+    //printf("it=%d things=%d\n", a, hotelOfThings_count() );
+//    hotelOfThings_show();
+    int it = atomic_load(&iterations);
+    if (it>=1000000) break;
+    doit(me, randIntBelow(13), it);
+    atomic_fetch_add(&iterations, 1);
+  }
+  return 0;
+}
+
+#define NUM_THREADS 20
+pthread_t pids[NUM_THREADS] = {0};
+
+bool testMonkey(void) {
+  atomic_store(&iterations, 0);
+  for (int64_t a=0;a<NUM_THREADS; a++) pthread_create(pids+a, 0, monkey, (void*)a);
+  for (int64_t a=0;a<NUM_THREADS; a++) pthread_join(pids[a], 0);
+  printf("Finished\n" );
+  return 0;
 }
 
 bool testHotel(void) { printf("Tock price: %f\n", tockPrice());
@@ -139,11 +298,11 @@ bool testHotel(void) { printf("Tock price: %f\n", tockPrice());
     //test1() &&
     //testEarn() &&
     //testRob() &&
-    testGod() &&
+    //testGod() &&
     //testAfterFree() &&
     //testBusy() &&
     //testFreeWhenBusy() &&
-    // testMonkey() &&
+    testMonkey() &&
     true;
 }
 

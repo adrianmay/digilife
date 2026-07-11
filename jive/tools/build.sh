@@ -87,7 +87,7 @@ do
   if [[ -n $OS ]]
   then
     echo "Building module object $M.o"
-    ld --relocatable -o $M.o $OS &
+    ld --relocatable -z noexecstack -o $M.o $OS &
     pids="$pids $!"
   fi
 done
@@ -102,7 +102,7 @@ touch gen/test.objs gen/hive.objs
 
 # Link the exes, although it's a drag to be building hive when test runs fails
 echo "Building Test"
-$CC $CFLAGS -o Test bin/test.o $(cat gen/all.objs gen/test.objs | sed 's#^#gen/#; s#$#.o#') || exit 1
+$CC $CFLAGS -z noexecstack -o Test bin/test.o $(cat gen/all.objs gen/test.objs | sed 's#^#gen/#; s#$#.o#') || exit 1
 # echo "Building Hive"
 # $CC $CFLAGS -o Hive bin/hive.o $(cat gen/all.objs gen/hive.objs | sed 's#^#gen/#; s#$#.o#') || exit 1
 

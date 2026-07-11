@@ -19,12 +19,8 @@ static void unlock() {}
 
 Pilehead * headOfXXs = 0;
 const XXIx  badXXIx = (XXIx) {BAD_INDEX};
-
 extern void showXX(XXIx i, XX * pXX); //Provide this;
-
-static void showXX_(Ix i, void * p) {
-  showXX( (XXIx){i}, (XX*)p); 
-}
+static void showXX_(Ix i, void * p) { showXX( (XXIx){i}, (XX*)p); }
 
 bool pileOfXXs_open(void) { 
   bool v; 
@@ -59,7 +55,7 @@ void pileOfXXs_close(Fate fate) {
 
 bool pileOfXXs_ixValid(XXIx i)  { return (i.i & 0x7FFFFFFF) != 0x7FFFFFFF; }
 Ix pileOfXXs_count(void)       { return countPop(headOfXXs); }
-Ix topOfXXs(void)       { return topInPile(headOfXXs); }
+Ix pileOfXXs_top  (void)       { return topInPile(headOfXXs); }
 
 Ix pileOfXXs_getUsr(void)       { return getUsr(headOfXXs); }
 void pileOfXXs_setUsr(Ix u)     { setUsr(headOfXXs, u); }

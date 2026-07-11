@@ -8,6 +8,7 @@ void    pileOfXXs_free(XXIx i);
 void    pileOfXXs_close(Fate fate);
 bool    pileOfXXs_ixValid(XXIx i);
 Ix      pileOfXXs_count(void);
+Ix      pileOfXXs_top(void);
 Ix      pileOfXXs_getUsr(void); // Misc number
 void    pileOfXXs_setUsr(Ix u);
 void    pileOfXXs_modUsr(IxDiff u);

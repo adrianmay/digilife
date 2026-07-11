@@ -59,9 +59,8 @@ bool hotelOfXXs_open() {
   return virgin;
 }
 
-Ix hotelOfXXs_count(void) {
-  return pileOfXXBlobs_count();
-}
+Ix hotelOfXXs_count(void) { return pileOfXXBlobs_count(); }
+Ix hotelOfXXs_top  (void) { return pileOfXXBlobs_top(); }
 
 void hotelOfXXs_close(Fate fate) {
   pileOfXXBlobs_close(fate);
@@ -120,6 +119,12 @@ void hotelOfThings_collectRent(XXRent * pRent) {
   }
   if (collected) onXXRentCollected(collected);
   if (defaulted) onXXRentDefaulted(defaulted);
+}
+
+XX * hotelOfThings_get(XXIx i) { 
+  XXBlob * pBlob = pileOfXXBlobs_get((XXBlobIx){i.i});
+  return &pBlob->body;
+    
 }
 
 // GRAB AND RAID SYNCHRONISATION:

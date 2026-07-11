@@ -1,6 +1,6 @@
-echo "Making raffle $1 $2 $3 $4"
-tools/make_hotel.sh $1 $1_raffle/Body.h $3 0
-tools/usetpt.sh raffle $1 $2 $4
+echo "Making raffle $1 $2 $3"
+tools/make_hotel.sh "$1Ticket" $1_raffle/ticket.h $3 0
+tools/usetpt.sh raffle $1 $2
 echo $1_raffle >> gen/${TARGET}.objs
 
 # echo "

@@ -9,5 +9,3 @@ typedef struct Mess {
 } Mess;
 
 
-void showMess(Mess * p);
-

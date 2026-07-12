@@ -14,10 +14,7 @@ static XXIx parent(XXIx i) {return ( XXIx ){ (i.i-1)/2 };}
 static XXIx left  (XXIx i) {return ( XXIx ){ 2*i.i + 1 };}
 static XXIx right (XXIx i) {return ( XXIx ){ 2*i.i + 2 };}
 
-void meapOfXXs_show(void) {
-  printf("MEAP:");
-  pileOfXXs_show(false);
-}
+void meapOfXXs_show(void) { printf("MEAP:"); pileOfXXs_show(false);  }
 
 static Ix bombee;
 

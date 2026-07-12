@@ -39,18 +39,26 @@ bool onXXBombMeap_willErase(XXBombIx i, XXBomb * pBomb) {
   return (!(was & NICK_FLAG_BOMBED)); // Must remove bomb for meap to continue unless drop already removed it
 }
 
-void showXXBomb(XXBlobIx i, XXBomb * p) {
-  printf("tocks=%d,who=%d\n", p->tocks, p->who.i);
-}
-
 void showXXBlob(XXBlobIx i, XXBlob * p) {
   printf("ix=%-4d nick=%-8x|lastPaidRent=%-5d cash=%-5ld bomb=%-2d ", i.i, p->rent.nick, p->rent.lastPaidRent, p->rent.cash, p->rent.bomb.i);
   showXX((XXIx){i.i}, &p->body);
 }
 
+void showXXBomb(XXBombIx i, XXBomb * p) {
+  printf("tocks=%d,who=%d", p->tocks, p->who.i);
+}
+
+void showXXPair(XXIx i, XX * p) {
+  XXBlob * pBlob = pileOfXXBlobs_get((XXBlobIx){i.i});
+  XXBomb * pBomb = meapOfXXBombs_get(pBlob->rent.bomb);
+  showXXBlob((XXBlobIx){i.i} , pBlob);
+  printf(" @ ");
+  showXXBomb(pBlob->rent.bomb, pBomb);
+}
+
 void hotelOfXXs_show(void) {
-  meapOfXXBombs_show();
   pileOfXXBlobs_show(false);
+  meapOfXXBombs_show();
 }
 
 bool hotelOfXXs_open() {

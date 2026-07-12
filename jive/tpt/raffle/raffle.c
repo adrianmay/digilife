@@ -80,7 +80,7 @@ void raffleOfXXs_play(Cash cash, Weight w, WithXX stuff) {
   unlock();
 }
 
-void raffleOfXXs_show(void) { hotelOfXXTickets_show(); }
+void raffleOfXXs_show(void)  { hotelOfXXTickets_show(); }
 
 static bool gottaQuitXX = false;
 
@@ -116,7 +116,7 @@ static void drawBelow(XXTicketIx i) {
   if (target < pW->s) {
     Cash cash;
     hotelOfXXTickets_grabIx(i, &cash);
-    cash = onXXRaffleDispatch(&pT->body, cash, claim, unlock); 
+    cash = onXXRaffle_dispatch(&pT->body, cash, claim, unlock); 
     hotelOfXXTickets_drop(i, cash);
     return;
   }
@@ -175,11 +175,12 @@ void raffleOfXXs_quit() {
   pthread_cond_signal(&cond);
 }
 
-void showXXTicket(XXTicketIx i, XXTicket * p) {
+void showXXTicket(XXTicketIx i, XXTicket * pT) {
+  XXTicket * p = hotelOfXXTickets_get(i);
   printf("l=%-4ld s=%-4ld r=%-4ld ⇑=%-3d ⇙=%-3d ⇘=%-3d ", 
          p->weights.l, p->weights.s, p->weights.r, 
          (i.i==0)?(-1):(parent(i).i), left(i).i, right(i).i);
-  showXX(&p->body);
+  showXX((XXIx){i.i}, &p->body);
 }
 
 void onXXTicketHotel_goDie(XXTicketIx i, XXTicket * pT) {
@@ -187,6 +188,10 @@ void onXXTicketHotel_goDie(XXTicketIx i, XXTicket * pT) {
   pT->weights.s = 0;
   propagateWeightUp(i, -w);
 }
+
+void onXXTicketHotel_rentCollected (Cash rent) {}
+void onXXTicketHotel_rentDefaulted (Cash rent) {}
+void onXXTicketHotel_extinct       (void) { onXXRaffle_extinct(); }
 
 // static void panicDump_(XXIx i) {
 //   XX * pB = pileOfXXs.get(i);

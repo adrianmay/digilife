@@ -15,6 +15,7 @@ void    meapOfXXs_forAll    (V_I_P);
 Ix      meapOfXXs_size      (void);
 void    meapOfXXs_show      (void);
 bool    meapOfXXs_check     (void);
+void    showXX              (XXIx i, XX * pXX);
 
 extern const XXIx badXXIx;
 

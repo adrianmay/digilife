@@ -10,9 +10,13 @@ bool   raffleOfXXs_draw   (void);
 void   raffleOfXXs_show   (void);
 Ix     raffleOfXXs_count  (void);
 bool   raffleOfXXs_empty  (void);
+void   showXXTicket(XXTicketIx i, XXTicket * pT);
 
+// Provide this:
+void showXX(XXIx i, XX * pXX);
 // Return the correct amount of cash assuming rent paid until now...
-extern Cash onXXRaffleDispatch(XX * pMsg, Cash c, V claim, V unlock);
+extern Cash onXXRaffle_dispatch(XX * pMsg, Cash c, V claim, V unlock);
+extern void onXXRaffle_extinct();
 
 //typedef bool   (*XXRaffleCheck)  (void);
 //typedef Cash   (*XXRaffleRob)    (XX * pXX);

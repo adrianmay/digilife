@@ -15,5 +15,7 @@ void    pileOfXXs_modUsr(IxDiff u);
 void    pileOfXXs_forAll(bool onlyToUsr, V_XXI_XXP action); // cos of meap
 void    pileOfXXs_show(bool stopAtUsr); // cos of meap
 
+extern void showXX(XXIx i, XX * pXX); //Provide this;
+
 extern const XXIx badXXIx;
 

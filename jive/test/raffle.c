@@ -1,5 +1,6 @@
-#include <unistd.h>
+
 #include "h.h"
+#include <unistd.h>
 #include "misc/api.h"
 //#include "perf/api.h"
 #include "globals/api.h"
@@ -9,15 +10,13 @@
 
 
 static bool extinct = false;
-void onMessTicketHotel_extinct(void) { extinct = true; }
-void onMessTicketHotel_rentCollected(Cash cash) { }
-void onMessTicketHotel_rentDefaulted(Cash cash) { }
+void onMessRaffle_extinct(void) { extinct = true; }
 
-void showMess(Mess * pMess) {}
+void showMess(MessIx i, Mess * pMess) {}
 
 
 void tock() { 
-//  printf("Tock: %d\n", tocksNow()); 
+  //  printf("Tock: %d\n", tocksNow()); 
 }
 
 Cash cash;
@@ -25,73 +24,73 @@ Cash cash;
 int h, t, v, e;
 
 /*
-WithMessTicket stuffTicket1(int a) {
-  void stuff(MessTicket * pT) {
-    pT->serial = a;
-    pT->type = a%3 ? 'T' : 'H';  //Twice as many heads
-  }
-  return stuff;
-}
+   WithMessTicket stuffTicket1(int a) {
+   void stuff(MessTicket * pT) {
+   pT->serial = a;
+   pT->type = a%3 ? 'T' : 'H';  //Twice as many heads
+   }
+   return stuff;
+   }
 
 // Equal weight, unequal types, loads of cash
 void stuff1(void) {
-  for (int a=0; a<1000; a++) {
-    void stuff(MessTicket * pT) {
-      pT->serial = a;
-      pT->type = a%3 ? 'T' : 'H';  //Twice as many heads
-    }
-    raffleOfMesss.play(5000, 10, stuff);
-  }
+for (int a=0; a<1000; a++) {
+void stuff(MessTicket * pT) {
+pT->serial = a;
+pT->type = a%3 ? 'T' : 'H';  //Twice as many heads
+}
+raffleOfMesss.play(5000, 10, stuff);
+}
 }
 
 WithMessTicket stuffTicket2(int a) {
-  void stuff(MessTicket * pT) {
-    pT->serial=a;
-    pT->type = a%2 ? 'T' : 'H';  //Twice as many heads
-  }
-  return stuff;
+void stuff(MessTicket * pT) {
+pT->serial=a;
+pT->type = a%2 ? 'T' : 'H';  //Twice as many heads
+}
+return stuff;
 }
 
 void stuff2(void) {
-  for (int a=0; a<1000; a++) {
-    Weight w = a%2 ? 4 : 8;  //Twice as many heads
-    raffleOfMesss.play(5000, w, stuffTicket2(a));
-  }
-  //raffleOfMesss.show();
+for (int a=0; a<1000; a++) {
+Weight w = a%2 ? 4 : 8;  //Twice as many heads
+raffleOfMesss.play(5000, w, stuffTicket2(a));
+}
+//raffleOfMesss.show();
 }
 
 void empty(void) {
-  while (!raffleOfMesss.empty()) { raffleOfMesss.draw(); };
+while (!raffleOfMesss.empty()) { raffleOfMesss.draw(); };
 }
 
 bool ch() {
-  if (!raffleOfMesss.check()) {
-    printf("Check failed\n");
-    raffleOfMesss.show();
-    return false;
-  }
-  return true;
+if (!raffleOfMesss.check()) {
+printf("Check failed\n");
+raffleOfMesss.show();
+return false;
+}
+return true;
 }
 
 void apathy(MessTicket * pT) { (void)pT; }
 
 void onMessRaffleConsume(MessIx i, MessTicket * pT) {
-  //raffleOfMesss.cancel(i);
+//raffleOfMesss.cancel(i);
 }
 
 void sample(void) {
-  h=0; t=0; v=0; e=0;
-  for (int a=0;a<100;a++) {
-    //notifyCycles(1);
-    ch();
-    bool res = raffleOfMesss.draw();
-    //printf("In sample after draw: %d\n", res);
-    if (!res) {
-      printf("Sampled %d H, %d T, %d virgins and %d errors.\n", h, t, v, e);
-      return;
-    }
-  }
-  printf("Sampled %d H, %d T, %d virgins and %d errors.\n", h, t, v, e);
+h=0; t=0; v=0; e=0;
+for (int a=0;a<100;a++) {
+//notifyCycles(1);
+ch();
+bool res = raffleOfMesss.draw();
+//printf("In sample after draw: %d\n", res);
+if (!res) {
+printf("Sampled %d H, %d T, %d virgins and %d errors.\n", h, t, v, e);
+return;
+}
+}
+printf("Sampled %d H, %d T, %d virgins and %d errors.\n", h, t, v, e);
 }
 */
 
@@ -179,7 +178,7 @@ bool testRaffle() {
   return true;
 }
 
-Cash onMessRaffleDispatch(Mess * pM, Cash cash, V claim, V unlock) {
+Cash onMessRaffle_dispatch(Mess * pM, Cash cash, V claim, V unlock) {
   //printf("onMessRaffleDispatch\n");
   claim();
   unlock();
@@ -188,9 +187,9 @@ Cash onMessRaffleDispatch(Mess * pM, Cash cash, V claim, V unlock) {
   else if (pM->type=='V') v++;
   else e++;
   return 0; // Kill the message
-  //if (randIntBelow(2)==0) 
-  //  raffleOfMesss.play(10, 1+randIntBelow(10), apathy);
-  //rob();
+            //if (randIntBelow(2)==0) 
+            //  raffleOfMesss.play(10, 1+randIntBelow(10), apathy);
+            //rob();
 }
 
 static bool init(void) { onTestTock = tock; openGlobals(); raffleOfMesss_open(); return true; }

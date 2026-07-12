@@ -207,7 +207,6 @@ void showPile(Pilehead * ph, V_I_P showSlot, bool onlyToUsr) {
   printf("%5d | %5d | %5d | %5d | %5d | %5d\n\n", ph->rec, ph->top, ph->usr, ph->frn, ph->fri, ph->fro);
   for (Ix i=0;i<(onlyToUsr?ph->usr:ph->top);i++) {
     Free * p = findFreeInPile(ph, i);
-    printf("%5d | ",i);
     // if (p->nextFree & 0x80000000) 
     //   printf("Free: nextFree=%4d | ", p->nextFree & 0x7FFFFFFF);
     showSlot(i, p); // TODO: have this show freeness like the commented out bit above

@@ -124,6 +124,6 @@ bool testLinkPile(void) {
 void cleanupLinkPile(void) { pileOfLinks_close(Hide); }
 bool pile(void) { return bkt("pile", nowt,testLinkPile,cleanupLinkPile); }
 
-void showLink(Link * pLink) {
+void showLink(LinkIx i, Link * pLink) {
   printf("x=%d,next=%d\n", pLink->x, pLink->next.i);
 }

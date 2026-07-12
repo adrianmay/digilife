@@ -19,8 +19,10 @@ static void unlock() {}
 
 Pilehead * headOfXXs = 0;
 const XXIx  badXXIx = (XXIx) {BAD_INDEX};
-extern void showXX(XXIx i, XX * pXX); //Provide this;
+
+void    pileOfXXs_show1(XXIx i, XX * pXX) {showXX(i, pXX); }
 static void showXX_(Ix i, void * p) { showXX( (XXIx){i}, (XX*)p); }
+void pileOfXXs_show(bool u) { showPile(headOfXXs, showXX_, u); }
 
 bool pileOfXXs_open(void) { 
   bool v; 
@@ -66,5 +68,4 @@ void pileOfXXs_forAll(bool u, V_XXI_XXP act) {
   forAllPile(headOfXXs, u, a); 
 }
 
-void pileOfXXs_show(bool u) { showPile(headOfXXs, showXX_, u); }
 

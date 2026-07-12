@@ -1,3 +1,4 @@
+#include <stdatomic.h>
 
 typedef struct {
   Cycles tocksReviewedAt; // Not used in deterministic version.
@@ -6,8 +7,8 @@ typedef struct {
 
 typedef struct __attribute__((aligned(KILO))) {
   int fd; // For globals
-  Tocks lastKnownTock; //
-  Cycles cyclesNotTocked; // Tocks were rounded down, such that this much time was not charged
+  _Atomic Tocks lastKnownTock; //
+  _Atomic Cycles cyclesNotTocked; // Tocks were rounded down, such that this much time was not charged
   TockDuration cyclesPerTock; // Easy way to adjust price per ns, while keeping price per tock fixed.
   TockPrice groatsPerTockPerByte;
 } PersistentGlobals;

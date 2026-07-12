@@ -24,9 +24,7 @@ Cycles cycles;
 Thing * pThing;
 ThingTact tGod, tThing;
 
-static void tock() {
-  hotelOfThings_raid();
-}
+static void tock() { hotelOfThings_raid(); }
 
 void showThing(ThingIx i, Thing * p) {
   printf("name=%d,code=<binary>\n", p->name);
@@ -44,10 +42,10 @@ void cleanupHotel(void) { hotelOfThings_close(Hide); closeGlobals(Hide); }
 
 #define NOTIFY_TOCKS 10
 
-Tocks killTilExtinct(void) {
+Tocks notifyCyclesTilExtinct(void) {
   Tocks started = tocksNow();
   while (true) {
-//    printf("killTilExtinct: tocks=%d, processCycles=%'ld\n", tocksNow(), readProcessCycles());
+//    printf("notifyCyclesTilExtinct: tocks=%d, processCycles=%'ld\n", tocksNow(), readProcessCycles());
     //hotelOfThings_forAll(hotelOfThings_review);
     //hotelOfThings_kill();
     //hotelOfThings_show();
@@ -60,7 +58,7 @@ Tocks killTilExtinct(void) {
 }
 
 bool expectExtinctSoon(Cash cash, int line) {
-  Tocks dur = killTilExtinct();
+  Tocks dur = notifyCyclesTilExtinct();
   Tocks expect;
   if (cash==0) 
     expect = NOTIFY_TOCKS;
@@ -83,7 +81,7 @@ ThingTact make(Ix name, Cash cash) {
 
 bool testNoPop(void) {
   printf("testNoPop\n");
-  Tocks dur = killTilExtinct();
+  Tocks dur = notifyCyclesTilExtinct();
   assertCond(dur, ==0);
   return true;
 }
@@ -273,7 +271,7 @@ void * monkey(void * n) {
     //printf("it=%d things=%d\n", a, hotelOfThings_count() );
 //    hotelOfThings_show();
     int it = atomic_load(&iterations);
-    if (it>=1000000) break;
+    if (it>=100000) break;
     doit(me, randIntBelow(13), it);
     atomic_fetch_add(&iterations, 1);
   }
@@ -287,21 +285,22 @@ bool testMonkey(void) {
   atomic_store(&iterations, 0);
   for (int64_t a=0;a<NUM_THREADS; a++) pthread_create(pids+a, 0, monkey, (void*)a);
   for (int64_t a=0;a<NUM_THREADS; a++) pthread_join(pids[a], 0);
-  printf("Finished\n" );
+  int i = atomic_load(&iterations);
+  printf("Finished %'d iterations\n", i );
   return 0;
 }
 
 bool testHotel(void) { printf("Tock price: %f\n", tockPrice());
   printf("Billable size: %ld\n", billableThingSize);
   return
-    //testNoPop() &&
-    //test1() &&
-    //testEarn() &&
-    //testRob() &&
-    //testGod() &&
-    //testAfterFree() &&
-    //testBusy() &&
-    //testFreeWhenBusy() &&
+    testNoPop() &&
+    test1() &&
+    testEarn() &&
+    testRob() &&
+    testGod() &&
+    testAfterFree() &&
+    testBusy() &&
+    testFreeWhenBusy() &&
     testMonkey() &&
     true;
 }

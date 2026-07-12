@@ -116,8 +116,8 @@ static void drawBelow(XXTicketIx i) {
   if (target < pW->s) {
     Cash cash;
     hotelOfXXTickets_grabIx(i, &cash);
-    onXXRaffleDispatch(&pT->body, cash, claim, unlock);
-    hotelOfXXTickets_drop(i, 0);
+    cash = onXXRaffleDispatch(&pT->body, cash, claim, unlock); 
+    hotelOfXXTickets_drop(i, cash);
     return;
   }
   target -= pW->s;

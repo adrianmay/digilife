@@ -179,7 +179,7 @@ bool testRaffle() {
   return true;
 }
 
-void onMessRaffleDispatch(Mess * pM, Cash cash, V claim, V unlock) {
+Cash onMessRaffleDispatch(Mess * pM, Cash cash, V claim, V unlock) {
   //printf("onMessRaffleDispatch\n");
   claim();
   unlock();
@@ -187,6 +187,7 @@ void onMessRaffleDispatch(Mess * pM, Cash cash, V claim, V unlock) {
   else if (pM->type=='T') t++;
   else if (pM->type=='V') v++;
   else e++;
+  return 0; // Kill the message
   //if (randIntBelow(2)==0) 
   //  raffleOfMesss.play(10, 1+randIntBelow(10), apathy);
   //rob();

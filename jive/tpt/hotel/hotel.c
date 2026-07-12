@@ -73,7 +73,6 @@ Cash hotelOfXXs_rent() { return tockPrice() * billableXXSize; }
 static void rebomb(XXRent * pRent, XXBlobIx i) {
   Tocks expiry = pRent->lastPaidRent + pRent->cash / hotelOfXXs_rent();
   meapOfXXBombs_insert(expiry, i.i, &pRent->bomb); // Do we need the return value?
-  //printf("rebomb: expiry=%d lastPaid=%d cash=%ld\n", expiry, pRent->lastPaidRent, pRent->cash);
 }
  
 XXTact hotelOfXXs_admit(Cash cash, bool isGod, V_XXP stuff, XX ** pp, bool * pRecycled) {
@@ -183,10 +182,14 @@ static bool updateDeath(XXBlob * pBlob) {
   return updateDeathWithBomb(pBlob, iBomb, pBomb);
 }
 
+// While it was grabbed, the grabbing party was responsible for
+// charging memory rent. Pass the right amount of cash with rent
+// paid up to the current tock.
 void hotelOfXXs_drop(XXIx i, Cash cash) {
   XXBlobIx iBlob = (XXBlobIx){i.i};
   XXBlob * pBlob = pileOfXXBlobs_get(iBlob);
   pBlob->rent.cash = cash;
+  pBlob->rent.lastPaidRent = tocksNow();
   Nick was = atomic_fetch_or(&pBlob->rent.nick, NICK_FLAG_BOMBED); // I might be lying about intending to free the bomb,
   if (was & NICK_NAME_GOD) return;                               //  but it stops raid from doing so.
   if (pBlob->rent.cash>0) {         

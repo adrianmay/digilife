@@ -11,7 +11,8 @@ void   raffleOfXXs_show   (void);
 Ix     raffleOfXXs_count  (void);
 bool   raffleOfXXs_empty  (void);
 
-extern void onXXRaffleDispatch(XX * pMsg, Cash c, V claim, V unlock);
+// Return the correct amount of cash assuming rent paid until now...
+extern Cash onXXRaffleDispatch(XX * pMsg, Cash c, V claim, V unlock);
 
 //typedef bool   (*XXRaffleCheck)  (void);
 //typedef Cash   (*XXRaffleRob)    (XX * pXX);

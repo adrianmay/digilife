@@ -10,7 +10,7 @@
 
 static bool extinct = false;
 void onMessTicketHotel_extinct(void) { extinct = true; }
-void onMessTicketHotel_rentCollected(Cash cash) { printf("Rent collected\n");}
+void onMessTicketHotel_rentCollected(Cash cash) { }
 void onMessTicketHotel_rentDefaulted(Cash cash) { }
 
 void showMess(Mess * pMess) {}
@@ -95,6 +95,45 @@ void sample(void) {
 }
 */
 
+
+void empty(void) { while (!raffleOfMesss_empty()) { raffleOfMesss_draw(); }; }
+
+void stuff1(void) {
+  for (int a=0; a<1000; a++) {
+    void stuff(Mess * pT) {
+      pT->serial = a;
+      pT->type = a%3 ? 'T' : 'H';  //Twice as many heads
+    }
+    raffleOfMesss_play(5000, 10, stuff);
+  }
+}
+
+void stuff2(void) {
+  for (int a=0; a<1000; a++) {
+    void stuff(Mess * pT) {
+      pT->serial=a;
+      pT->type = a%2 ? 'T' : 'H';  //Twice as many heads
+    }
+    Weight w = a%2 ? 4 : 8;  //Twice as many heads
+    raffleOfMesss_play(5000, w, stuff);
+  }
+}
+
+void sample(void) {
+  h=0; t=0; v=0; e=0;
+  for (int a=0;a<100;a++) {
+    //notifyCycles(1);
+    bool res = raffleOfMesss_draw();
+    //printf("In sample after draw: %d\n", res);
+    if (!res) {
+      printf("Sampled %d H, %d T, %d virgins and %d errors.\n", h, t, v, e);
+      return;
+    }
+  }
+  printf("Sampled %d H, %d T, %d virgins and %d errors.\n", h, t, v, e);
+}
+
+
 ////////////////////////////////////////////////////////
 
 int bored = 0;
@@ -113,9 +152,7 @@ void * produce(void * p) {
     notifyCycles(300);
     sleepMs(randIntBelow(5));
     if (bored==1) break;
-    printf("A\n");
     raffleOfMesss_play(10, 1+randIntBelow(10), stuffSerial);
-    printf("B\n");
   }
   bored = 1;
   return 0;
@@ -136,9 +173,8 @@ bool testBlock() {
 }
 
 bool testRaffle() {
-//   stuff1(); ch(); sample(); ch(); empty();
-//   stuff2(); ch(); sample(); ch(); empty();
-  //raffleOfMesss.show();
+  stuff1(); sample(); empty();
+  stuff2(); sample(); empty();
   testBlock();
   return true;
 }
@@ -156,11 +192,8 @@ void onMessRaffleDispatch(Mess * pM, Cash cash, V claim, V unlock) {
   //rob();
 }
 
-
 static bool init(void) { onTestTock = tock; openGlobals(); raffleOfMesss_open(); return true; }
 static void cleanup(void) { closeGlobals(Delete); raffleOfMesss_close(Delete); }
 bool raffle(void) { return bkt("raffle", init, testRaffle, cleanup); }
-
-
 
 

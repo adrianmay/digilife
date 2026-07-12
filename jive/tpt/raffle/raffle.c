@@ -88,7 +88,7 @@ Ix raffleOfXXs_count(void) { return hotelOfXXTickets_count(); }
 
   //XX * p = pileOfXXs.get(i);
   //XXRafle * pRaf = &p->body.raffle;
-  //if (pRaf->s == 0) abort();
+  //if (pRaf->s == 0) die();
   //Weight w = pRaf->s;
   //pRaf->s = 0;
   //propagateWeightUp(i, -w);
@@ -201,7 +201,7 @@ void onXXTicketHotel_goDie(XXTicketIx i, XXTicket * pT) {
 //   printf("count: %d\n", pileOfXXs.count());
 //   panicDump_(i);
 //   show();
-//   abort();
+//   die();
 // }
 
 // static bool check_(const char * ctx, XXIx i) {

@@ -16,6 +16,9 @@ int32_t  wrapSub32S (uint32_t a, uint32_t b);
 int64_t  wrapSub64S (uint64_t a, uint64_t b);
 
 int quit(int i);
+int die(const char * file, int line, const char *fmt, ...);
+#define DIE(WHY, ...) die(__FILE__, __LINE__, WHY, ##__VA_ARGS__)
+
 int fileSize(int fd);
 
 uint32_t randInt32Masked(uint32_t mask);

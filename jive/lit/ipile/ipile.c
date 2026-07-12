@@ -162,8 +162,7 @@ void freeInPile(Pilehead * ph, Ix i, void * ghost, int ghostlen) {
   Free * pFree = findFreeInPile(ph,i); // Get the block
   //printf("freeInPile %s %d\n", ph->fn, i);
   if (isInFreeList(ph, i)) {
-    printf("DOUBLE FREE in %s: %d\n", ph->fn, i);
-    abort();
+    DIE("DOUBLE FREE in %s: %d", ph->fn, i);
   }
   //printf("In freeInPile 1: Setting nextFree of %d in %s to %x\n", i, ph->fn, BAD_INDEX);
   pFree->nextFree = BAD_INDEX;
@@ -193,10 +192,7 @@ void modUsr(Pilehead * ph, int32_t u)  { ph->usr += u; }
 
 //act needs its own way to detect free blocks
 void forAllPile(Pilehead * ph, bool onlyToUsr, V_I_P act) {
-  if (!ph) {
-    printf("Pile is closed\n");
-    abort();
-  }
+  if (!ph) DIE("Pile is closed");
   for (Ix i=0;i<(onlyToUsr?ph->usr:ph->top);i++) {
     Free * p = findFreeInPile(ph, i);
     act(i, p);
@@ -206,10 +202,7 @@ void forAllPile(Pilehead * ph, bool onlyToUsr, V_I_P act) {
 // TODO: Could be done with forAllPile:
 void showPile(Pilehead * ph, V_I_P showSlot, bool onlyToUsr) {
   printf("\nPILE: %s\n", ph?ph->fn:"closed.");
-  if (!ph) {
-    printf("Pile is closed\n");
-    abort();
-  }
+  if (!ph) DIE("Pile is closed");
   printf("  REC |   TOP |   USR |   FRN |   FRI |   FRO \n");
   printf("%5d | %5d | %5d | %5d | %5d | %5d\n\n", ph->rec, ph->top, ph->usr, ph->frn, ph->fri, ph->fro);
   for (Ix i=0;i<(onlyToUsr?ph->usr:ph->top);i++) {

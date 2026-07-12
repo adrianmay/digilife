@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include <stdlib.h>
+#include <stdarg.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <sys/random.h>
@@ -26,10 +27,23 @@ int64_t  wrapSub64S (uint64_t a, uint64_t b) { return a - b; }
 
 ////////////////////////////////////////////////////////////////
 
-
 int quit(int i) {
   abort();
-} // { return *((int*)(0)); }
+} 
+
+
+char scratch[256];
+
+int die(const char * file, int line, const char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    int ret = vsprintf(scratch, fmt, ap);
+    va_end(ap);
+    printf("Dying at %s:%d because %s\n", file, line, scratch);
+    abort();
+    return ret;
+}
 
 int fileSize(int fd) {
   struct stat sb;

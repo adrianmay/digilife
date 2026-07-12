@@ -9,10 +9,11 @@
 
 
 static bool extinct = false;
-void onMesssExtinct(void) { extinct = true; }
-void onMessRentCollected(Cash cash) { printf("Rent collected\n");}
-void onMessRentDefaulted(Cash cash) { }
+void onMessTicketHotel_extinct(void) { extinct = true; }
+void onMessTicketHotel_rentCollected(Cash cash) { printf("Rent collected\n");}
+void onMessTicketHotel_rentDefaulted(Cash cash) { }
 
+void showMess(Mess * pMess) {}
 
 
 void tock() { 

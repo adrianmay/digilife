@@ -10,3 +10,4 @@ bool globals(void);
 bool pile(void);
 bool meap(void);
 bool hotel(void);
+bool raffle(void);

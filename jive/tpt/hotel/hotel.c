@@ -217,7 +217,7 @@ void hotelOfXXs_raid(void) {
 
       Nick got = atomic_load(&pBlob->rent.nick); 
       Nick flags = got & NICK_FLAG_MASK;
-      if (!(flags & NICK_FLAG_BOMBED)) abort(); // Either chomp set it or it was set already.
+      if (!(flags & NICK_FLAG_BOMBED)) DIE("should be bombed already"); // Either chomp set it or it was set already.
       if (!(flags & NICK_FLAG_BUSY)) { // Normal, idle rent expiry
         hotelOfXXs_collectRent(&pBlob->rent);
         if (pBlob->rent.cash<0) {

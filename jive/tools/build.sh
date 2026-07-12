@@ -50,22 +50,19 @@ then
   SUPPRESS="`cat exc | paste -sd '|' | grep -v '^$'`"
 fi
 
-echo "SUPPRESS: $SUPPRESS"
-
 if [ -n "$SUPPRESS" ]
 then
   CS=`echo "$ALL_CS" | grep -Pv "$SUPPRESS"`
 else 
   CS=$ALL_CS
 fi
-echo "CS: $CS"
 
 # Compile stuff in parallel, or if serially, it would be nice to do recently modified files first.
 pids=""
 for C in $CS
 do
   O=${C/.c/.o}
-  echo "Compiling C to $O: $CC $CFLAGS -iquote gen -Wall -Werror -c $C -o $O"
+#  echo "Compiling C to $O: $CC $CFLAGS -iquote gen -Wall -Werror -c $C -o $O"
   $CC $CFLAGS -iquote gen -Wall -Werror -c $C -o $O
   pids="$pids $!"
 done
@@ -86,8 +83,9 @@ do
   OS=`find $M -name *.o`
   if [[ -n $OS ]]
   then
-    echo "Building module object $M.o"
-    ld --relocatable -z noexecstack -o $M.o $OS &
+    # echo "Building module object $M.o"
+    # ld --relocatable -z noexecstack -o $M.o $OS &
+    ld --relocatable -o $M.o $OS &
     pids="$pids $!"
   fi
 done
@@ -96,13 +94,15 @@ for p in $pids
 do
   wait "$p" || exit 1
 done
+echo "Done building module objects"
 
 # Suppress an error that occurs if a c file is all commented out:
 touch gen/test.objs gen/hive.objs
 
 # Link the exes, although it's a drag to be building hive when test runs fails
 echo "Building Test"
-$CC $CFLAGS -z noexecstack -o Test bin/test.o $(cat gen/all.objs gen/test.objs | sed 's#^#gen/#; s#$#.o#') || exit 1
+# $CC $CFLAGS -z noexecstack -o Test bin/test.o $(cat gen/all.objs gen/test.objs | sed 's#^#gen/#; s#$#.o#') || exit 1
+$CC $CFLAGS -o Test bin/test.o $(cat gen/all.objs gen/test.objs | sed 's#^#gen/#; s#$#.o#') || exit 1
 # echo "Building Hive"
 # $CC $CFLAGS -o Hive bin/hive.o $(cat gen/all.objs gen/hive.objs | sed 's#^#gen/#; s#$#.o#') || exit 1
 

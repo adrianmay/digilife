@@ -29,7 +29,7 @@ static void bombeeSafe(Ix i, void * p) {
   if (*pB == bombee) {
     printf("In meap: Another bomb for XX %d\n", bombee);
     meapOfXXs_show();
-    abort();
+    //DIE("")
   }
 }
 
@@ -44,7 +44,7 @@ static void markOnce(Ix i, void * p) {
   Ix * pB = (Ix *) p; // Bombee
   if (seen[*pB] != BAD_INDEX) {
     printf("XX meap: checkNoDupes: Saw bombee %d in %d and %d\n", *pB, i, seen[*pB]);
-    abort();
+    //DIE
   }
   seen[*pB]=i;
 }

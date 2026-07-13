@@ -14,7 +14,7 @@ static XXIx parent(XXIx i) {return ( XXIx ){ (i.i-1)/2 };}
 static XXIx left  (XXIx i) {return ( XXIx ){ 2*i.i + 1 };}
 static XXIx right (XXIx i) {return ( XXIx ){ 2*i.i + 2 };}
 
-void meapOfXXs_show(void) { printf("MEAP:"); pileOfXXs_show(false);  }
+void meapOfXXs_show(void) { printf("MEAP: "); pileOfXXs_show(false);  }
 
 static Ix bombee;
 
@@ -183,7 +183,7 @@ bool meapOfXXs_erase(XXIx iCur) {
 Chomped meapOfXXs_chomp(Score thresh, XX * pCopyOut, int pseudoAnimals) {
   Chomped res;
   lock();
-  Ix x = meapOfXXs_size();
+  Ix x = meapOfXXs_count();
   if (x<=pseudoAnimals) { 
     //printf("chomp XX: extinct: x=%d, pseudo=%d\n", x, pseudoAnimals);
     res = Extinct; 
@@ -196,8 +196,10 @@ Chomped meapOfXXs_chomp(Score thresh, XX * pCopyOut, int pseudoAnimals) {
     Score lowestScoreInMeap = p->tocks;
     ScoreDiff sd = wrapSub32S(lowestScoreInMeap, thresh);
     if (sd <= 0) {
-      if (onXXMeap_willErase(i, p))
+      if (onXXMeap_willErase(i, p)) {
+        printf("chomp erasing %d\n", i.i);
         erase_(i);
+      }
       res = Killed;
     } else {
       res = Idle;
@@ -240,9 +242,9 @@ bool meapOfXXs_check(void) {
   return ok;
 }
 
-Ix meapOfXXs_size(void) {  return pileOfXXs_getUsr(); }
-
-bool meapOfXXs_open(void) { return pileOfXXs_open(); }
+Ix   meapOfXXs_count(void) { return pileOfXXs_getUsr(); }
+Ix   meapOfXXs_rec(void)   { return pileOfXXs_rec(); }
+bool meapOfXXs_open(void)  { return pileOfXXs_open(); }
 void meapOfXXs_close(Fate f) { lock(); pileOfXXs_close(f); unlock(); }
 
 

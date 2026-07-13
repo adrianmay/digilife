@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include "types.h"
 #include "misc/api.h"
+#include "globals/api.h"
 #include "XXTicket_hotel/ix.h"
 #include "XXTicket_hotel/api.h"
 #include "ix.h"
@@ -61,7 +62,6 @@ void raffleOfXXs_play(Cash cash, Weight w, WithXX stuff) {
   //char blah[40];
   //checkM("enter1");
   lock();
-  hotelOfXXTickets_raid();
   bool wasEmpty = raffleOfXXs_empty();
   XXTicket * pT;
   bool recycled;
@@ -86,18 +86,9 @@ static bool gottaQuitXX = false;
 
 Ix raffleOfXXs_count(void) { return hotelOfXXTickets_count(); }
 
-  //XX * p = pileOfXXs.get(i);
-  //XXRafle * pRaf = &p->body.raffle;
-  //if (pRaf->s == 0) die();
-  //Weight w = pRaf->s;
-  //pRaf->s = 0;
-  //propagateWeightUp(i, -w);
-
 // Assumes there are tickets. Look out of onXXHotel_extinct
-
-// static bool draw();
-
 static void drawBelow(XXTicketIx i) {
+  //printf("Top of drawBelow: i=%d\n", i.i);
   XXTicket * pT = hotelOfXXTickets_get(i);
   Weights * pW = &pT->weights;
   Weight target = peep();
@@ -112,12 +103,15 @@ static void drawBelow(XXTicketIx i) {
     pW->s = 0;
     propagateWeightUp(i, -w);
   }
+  void drop(Cash cash) {
+    hotelOfXXTickets_drop(i, cash);
+  }
   target -= pW->l;
   if (target < pW->s) {
     Cash cash;
     hotelOfXXTickets_grabIx(i, &cash);
-    cash = onXXRaffle_dispatch(&pT->body, cash, claim, unlock); 
-    hotelOfXXTickets_drop(i, cash);
+    onXXRaffle_dispatch((XXIx){i.i}, &pT->body, cash, claim, unlock, drop); 
+    hotelOfXXTickets_raid();
     return;
   }
   target -= pW->s;
@@ -149,8 +143,7 @@ bool raffleOfXXs_draw() {
   hotelOfXXTickets_raid();
   //checkM("draw 1");
   if (gottaQuitXX)  { gottaQuitXX=false; unlock(); return false; }
-  else if (raffleOfXXs_empty()) { pthread_cond_wait(&cond, &mutex); }
-
+  if (raffleOfXXs_empty()) { pthread_cond_wait(&cond, &mutex); }
   if (gottaQuitXX)  { gottaQuitXX=false; unlock(); return false; }
   // Can't be empty
   drawAssumeNotEmpty(); //unlocks
@@ -159,6 +152,7 @@ bool raffleOfXXs_draw() {
 }
 
 bool raffleOfXXs_open() {
+  printf("raffleOfXXs_open: gottaQuit = %b\n", gottaQuitXX);
   lock();
   bool ret = hotelOfXXTickets_open();
   unlock();
@@ -171,6 +165,8 @@ void raffleOfXXs_close(Fate f) {
 }
 
 void raffleOfXXs_quit() {
+  abort();
+  printf("raffleOfXXs_quit\n");
   gottaQuitXX = true;
   pthread_cond_signal(&cond);
 }
@@ -183,7 +179,12 @@ void showXXTicket(XXTicketIx i, XXTicket * pT) {
   showXX((XXIx){i.i}, &p->body);
 }
 
+
+double raffleOfXXs_rec(void) { return hotelOfXXTickets_rec(); }
+TockPrice raffleOfXXs_rent() { return tockPrice() * raffleOfXXs_rec(); }
+
 void onXXTicketHotel_goDie(XXTicketIx i, XXTicket * pT) {
+  printf("onXXTicketHotel_goDie\n");
   Weight w = pT->weights.s;
   pT->weights.s = 0;
   propagateWeightUp(i, -w);

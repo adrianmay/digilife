@@ -58,6 +58,7 @@ void pileOfXXs_close(Fate fate) {
 bool pileOfXXs_ixValid(XXIx i)  { return (i.i & 0x7FFFFFFF) != 0x7FFFFFFF; }
 Ix pileOfXXs_count(void)       { return countPop(headOfXXs); }
 Ix pileOfXXs_top  (void)       { return topInPile(headOfXXs); }
+Ix pileOfXXs_rec  (void)       { return recInPile(headOfXXs); }
 
 Ix pileOfXXs_getUsr(void)       { return getUsr(headOfXXs); }
 void pileOfXXs_setUsr(Ix u)     { setUsr(headOfXXs, u); }

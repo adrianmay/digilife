@@ -15,9 +15,7 @@ void onMessRaffle_extinct(void) { extinct = true; }
 void showMess(MessIx i, Mess * pMess) {}
 
 
-void tock() { 
-  //  printf("Tock: %d\n", tocksNow()); 
-}
+static void tock() { }
 
 Cash cash;
 
@@ -178,7 +176,7 @@ bool testRaffle() {
   return true;
 }
 
-Cash onMessRaffle_dispatch(Mess * pM, Cash cash, V claim, V unlock) {
+void onMessRaffle_dispatch(MessIx i, Mess * pM, Cash cash, V claim, V unlock, V_C drop) {
   //printf("onMessRaffleDispatch\n");
   claim();
   unlock();
@@ -186,10 +184,7 @@ Cash onMessRaffle_dispatch(Mess * pM, Cash cash, V claim, V unlock) {
   else if (pM->type=='T') t++;
   else if (pM->type=='V') v++;
   else e++;
-  return 0; // Kill the message
-            //if (randIntBelow(2)==0) 
-            //  raffleOfMesss.play(10, 1+randIntBelow(10), apathy);
-            //rob();
+  drop(0);  // Kill the message
 }
 
 static bool init(void) { onTestTock = tock; openGlobals(); raffleOfMesss_open(); return true; }

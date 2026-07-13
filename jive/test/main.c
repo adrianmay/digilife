@@ -33,9 +33,9 @@ int main(int argc, char **argv) {
 //    globals() &&
 //    pile() &&
 //    meap() &&
-    hotel() &&
+//    hotel() &&
 //    raffle() &&
-//    tank() &&
+    tank() &&
 //    exec() &&
 //    equi() &&
     (printf("ALL TESTS SUCCEEDED\n"),true);

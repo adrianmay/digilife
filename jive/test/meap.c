@@ -108,7 +108,7 @@ int setupNum, testNum;
 
 int counts[numMeapSetups ] = {0,1,2,2,2,2,3,3,3,3,3,3,3};
 bool howMany(int killed) {
-  Ix cnt = meapOfJunks_size();
+  Ix cnt = meapOfJunks_count();
   Ix exp = counts[setupNum]-killed;
   assertIntM(cnt, exp);
   return true;
@@ -143,7 +143,7 @@ bool testMeap3(void) {
 
 
 bool testMeap4(void) {
-  Ix cnt = meapOfJunks_size();
+  Ix cnt = meapOfJunks_count();
   if (cnt==0) return true;
   for (int a=0;a<500;a++) {
     JunkIx i = (JunkIx) {a%cnt};

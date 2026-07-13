@@ -186,6 +186,7 @@ void freeInPile(Pilehead * ph, Ix i, void * ghost, int ghostlen) {
 Ix countFree(Pilehead * ph ) { return ph->frn; }
 Ix countPop(Pilehead * ph ) { return ph->top - ph->frn; }
 Ix topInPile(Pilehead * ph ) { return ph->top; }
+Ix recInPile(Pilehead * ph ) { return ph->rec; }
 Ix getUsr(Pilehead * ph) { return ph->usr; }
 void setUsr(Pilehead * ph, Ix u) { ph->usr = u; }
 void modUsr(Pilehead * ph, int32_t u)  { ph->usr += u; }
@@ -201,7 +202,7 @@ void forAllPile(Pilehead * ph, bool onlyToUsr, V_I_P act) {
 
 // TODO: Could be done with forAllPile:
 void showPile(Pilehead * ph, V_I_P showSlot, bool onlyToUsr) {
-  printf("\nPILE: %s\n", ph?ph->fn:"closed.");
+  printf("PILE: %s\n", ph?ph->fn:"closed.");
   if (!ph) DIE("Pile is closed");
   printf("  REC |   TOP |   USR |   FRN |   FRI |   FRO \n");
   printf("%5d | %5d | %5d | %5d | %5d | %5d\n\n", ph->rec, ph->top, ph->usr, ph->frn, ph->fri, ph->fro);
@@ -210,5 +211,6 @@ void showPile(Pilehead * ph, V_I_P showSlot, bool onlyToUsr) {
     // if (p->nextFree & 0x80000000) 
     //   printf("Free: nextFree=%4d | ", p->nextFree & 0x7FFFFFFF);
     showSlot(i, p); // TODO: have this show freeness like the commented out bit above
+    printf("\n");
   }
 }

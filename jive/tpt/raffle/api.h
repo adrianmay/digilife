@@ -12,6 +12,7 @@ Ix        raffleOfXXs_count        (void);
 double    raffleOfXXs_rec          (void);
 TockPrice raffleOfXXs_rent         (void);
 bool      raffleOfXXs_empty        (void);
+bool      raffleOfXXs_check        (void);
 void      showXXTicket             (XXTicketIx i, XXTicket * pT);
 
 // Provide this:

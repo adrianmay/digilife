@@ -34,7 +34,6 @@ bool onXXBombMeap_willErase(XXBombIx i, XXBomb * pBomb) {
   XXBlobIx who = pBomb->who;
   XXBlob * pBlob = pileOfXXBlobs_get(who);
   Nick was = atomic_fetch_or(&pBlob->rent.nick, NICK_FLAG_BOMBED);
-  printf("BOMBING: onXXBombMeap_willErase %d was %08x\n", i.i, was);
   return (!(was & NICK_FLAG_BUSY)); // Comes later
 }
 
@@ -214,7 +213,6 @@ void hotelOfXXs_raid(void) {
       Nick flags = got & NICK_FLAG_MASK;
       if (!(flags & NICK_FLAG_BOMBED)) DIE("should be bombed already"); // Either chomp set it or it was set already.
       if (!(flags & NICK_FLAG_BUSY)) { // Normal, idle rent expiry
-        printf("Killing idle XX %d\n", bomb.who.i);
         hotelOfXXs_collectRent(&pBlob->rent);
         if (pBlob->rent.cash<0) {
           onXXHotel_rentDefaulted(-pBlob->rent.cash); // Should be at the real free
@@ -223,16 +221,15 @@ void hotelOfXXs_raid(void) {
         onXXHotel_goDie((XXIx){bomb.who.i}, &pBlob->body);
         atomic_store(&pBlob->rent.nick, BAD_INDEX); 
         pileOfXXBlobs_free(bomb.who);
-        printf("hotelOfXXs_raid: freed blob\n");
       } else { // Expired when busy. Do nothing - the core will handle it
       }
     }
-    if (ch == Extinct) {
+    else if (ch == Extinct) {
       onXXHotel_extinct(); 
       meapOfXXBombs_check();
       return;
     }
-    return; // Must be Idle
+    else return; // Must be Idle
   }
 }
 
@@ -240,40 +237,29 @@ void hotelOfXXs_raid(void) {
 // charging memory rent. Pass the right amount of cash with rent
 // paid up to the current tock.
 void hotelOfXXs_drop(XXIx i, Cash cash) {
-  printf("Dropping XX %d\n", i.i);
   XXBlobIx iBlob = (XXBlobIx){i.i};
   XXBlob * pBlob = pileOfXXBlobs_get(iBlob);
   pBlob->rent.cash = cash;
   pBlob->rent.lastPaidRent = tocksNow();
-  printf("BOMBING: hotelOfXXs_drop %d\n", i.i);
   Nick was = atomic_fetch_or(&pBlob->rent.nick, NICK_FLAG_BOMBED); // I might be lying about intending to free the bomb, but it stops raid from doing so.
-  printf("Nick was: %-8x\n", was);
   if (was & NICK_NAME_GOD) {
-    printf("It's a god\n");
   }                              
   else if (pBlob->rent.cash>0) {         
     if (was & NICK_FLAG_BOMBED) {
-      printf("Rebombing\n");
       rebomb(&pBlob->rent, iBlob);
     }
     else {
-      printf("Updating\n");
       updateDeath(pBlob);
     }
-    printf("UNBOMBING: hotelOfXXs_drop %d\n", i.i);
     atomic_store(&pBlob->rent.nick, was & NICK_NAME_READ_MASK); // Clear both flags
   } else { // Bankrupted by its own code
-    printf("Skint ... ");
     if (!(was & NICK_FLAG_BOMBED)) {
-      printf("not bombed\n");
       meapOfXXBombs_erase(pBlob->rent.bomb);
     } else {
-      printf("already bombed\n");
     }
     onXXHotel_goDie(i, &pBlob->body);
     atomic_store(&pBlob->rent.nick, BAD_INDEX); 
     pileOfXXBlobs_free(iBlob);
-    printf("hotelOfXXs_drop: freed blob\n");
     // TODO: Book loss
   }
   hotelOfXXs_raid();

@@ -12,7 +12,6 @@
 
 
 void onMobHotel_goDie(MobIx i, Mob * pT) {
-  printf("onMobHotel_goDie\n");
 }
 void onMobHotel_rentCollected (Cash rent) {}
 void onMobHotel_rentDefaulted (Cash rent) {}
@@ -58,18 +57,19 @@ void seed(int n, Cash c, Cash thresh) {
 void loop() { 
   //raffleOfMsgs_show();
   do {
-    printf("\n#####################################################\n\n");
+    if (!raffleOfMsgs_check()) DIE("Raffle check failed\n");
+//    printf("\n");
     printf("Tocks=%d Mobs=%d Msgs=%d\n", tocksNow(), hotelOfMobs_count(), raffleOfMsgs_count()); 
-    hotelOfMobs_show();
-    printf("\n");
-    raffleOfMsgs_show();
-    printf("\n");
-    printf("\n");
+//    printf("\n");
+//    hotelOfMobs_show();
+//    printf("\n");
+//    raffleOfMsgs_show();
+//    printf("\n");
+//    printf("\n#####################################################\n\n");
   } while (raffleOfMsgs_draw()); 
 }
 
 void onMsgRaffle_dispatch(MsgIx i, Msg * pMsg, Cash msgCash, V claim, V unlock, V_C drop) {
-  printf("onMsgRaffle_dispatch: msgIx= %d pMsg->rcvr=%d\n", i.i, pMsg->rcvr.i.i);
   Mob * pMob;
   Cash mobCash;
   if ((pMob = hotelOfMobs_grab(pMsg->rcvr, &mobCash))) {
@@ -79,12 +79,13 @@ void onMsgRaffle_dispatch(MsgIx i, Msg * pMsg, Cash msgCash, V claim, V unlock, 
     unlock();
     if (mobCash > pMob->_.test.spawnThresh) {
       Cash childCash = mobCash/2;
-      printf("onMsgRaffle_dispatch spawn:    mobCash was %ld, childCash is %ld\n", mobCash, childCash);
+      //printf("onMsgRaffle_dispatch spawn:    mobCash was %ld, childCash is %ld\n", mobCash, childCash);
       mobCash -= childCash;
       spawn(childCash, pMob->_.test.spawnThresh);
     }
-    void stuffMsg(Msg * pNewMsg) { memcpy(pNewMsg, pMsg, SIZE_MSG); }
-    printf("onMsgRaffle_dispatch self-msg: mobCash=%ld\n", mobCash);
+    void stuffMsg(Msg * pNewMsg) {
+      memcpy(pNewMsg, pMsg, sizeof(*pMsg)); 
+    }
     raffleOfMsgs_play(mobCash*MSG_PROP, 100, stuffMsg); 
     mobCash -= mobCash*MSG_PROP;
     hotelOfMobs_drop(pMsg->rcvr.i, mobCash);
@@ -98,3 +99,4 @@ void onMsgRaffle_dispatch(MsgIx i, Msg * pMsg, Cash msgCash, V claim, V unlock, 
 }
 
 void onTockTank() {}
+

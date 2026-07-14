@@ -57,6 +57,8 @@ static void propagateWeightUp(XXTicketIx i, Weight w) {
   propagateWeightUp(iP, w);
 }
 
+void raffleOfXXs_show(void)  { hotelOfXXTickets_show(); }
+
 void raffleOfXXs_play(Cash cash, Weight w, WithXX stuff) {
   //printf("play: cash=%ld ", cash);
   //char blah[40];
@@ -65,11 +67,15 @@ void raffleOfXXs_play(Cash cash, Weight w, WithXX stuff) {
   bool wasEmpty = raffleOfXXs_empty();
   XXTicket * pT;
   bool recycled;
-  void stuffTicket(XXTicket * p) { stuff(&p->body); }
+  void stuffTicket(XXTicket * p) { 
+    stuff(&p->body); 
+  }
   XXTicketTact t = hotelOfXXTickets_admit(cash, false, stuffTicket, &pT, &recycled);
   //if (p->rent.cash>10000) { printf("Overrich 1 %d has %'ld from %'ld\n", i.i, p->rent.cash, cash); exit(1); }
   Weights * pW = &pT->weights; 
-  if (!recycled) pW->s = pW->l = pW->r = 0; // Don't really need to zero s
+  if (!recycled) {
+    pW->s = pW->l = pW->r = 0; // Don't really need to zero s
+  }
   //checkM(blah);
   pW->s = w;
   propagateWeightUp(t.i, w);
@@ -80,11 +86,63 @@ void raffleOfXXs_play(Cash cash, Weight w, WithXX stuff) {
   unlock();
 }
 
-void raffleOfXXs_show(void)  { hotelOfXXTickets_show(); }
 
 static bool gottaQuitXX = false;
 
 Ix raffleOfXXs_count(void) { return hotelOfXXTickets_count(); }
+
+static void panicDump_(XXTicketIx i) {
+  XXTicket * pTicket = hotelOfXXTickets_get(i);
+  Weights * pW = &pTicket->weights;
+  printf("In panic: w=%'ld, i=%d, l=%'ld, s=%'ld, r=%'ld\n", peep(), i.i, pW->l, pW->s, pW->r );
+  if (i.i==0) { return; }
+  pop();
+  panicDump_(parent(i));
+}
+
+static void panicDump(XXTicketIx i) {
+  printf("count: %d\n", hotelOfXXTickets_count());
+  panicDump_(i);
+  raffleOfXXs_show();
+  DIE("panicDump %i", i.i);
+}
+
+static bool check_(const char * ctx, XXTicketIx i) {
+  //printf("Checking raffle\n");
+  if (hotelOfXXTickets_top() == 0) return true;
+  Weights * pwCur = &hotelOfXXTickets_get(i)->weights;
+  if (left(i).i < hotelOfXXTickets_top()) {
+    Weights * pwL = &hotelOfXXTickets_get(left(i))->weights;
+    if (totWeightP(pwL) != pwCur->l) 
+      panicDump(i);
+  } else {
+    if (pwCur->l != 0)
+      panicDump(i);
+  } 
+  if (right(i).i < hotelOfXXTickets_top()) {
+    Weights * pwR = &hotelOfXXTickets_get(right(i))->weights;
+    if (totWeightP(pwR) != pwCur->r) 
+      panicDump(i);
+  } else {
+    if (pwCur->r != 0)
+      panicDump(i);
+  }
+  return true;
+}
+
+//static bool checkM(const char * ctx) { return check_(ctx, (XXIx) {0}); }
+bool raffleOfXXs_check() { 
+  for (int a=0;a<hotelOfXXTickets_top();a++)
+    check_("user", (XXTicketIx) {a}); 
+  return true; //It'll have aborted otherwise
+}
+
+
+static void raid() {
+  if (tocksNow()==1007) 
+    printf("break\n");
+  hotelOfXXTickets_raid();
+}
 
 // Assumes there are tickets. Look out of onXXHotel_extinct
 static void drawBelow(XXTicketIx i) {
@@ -111,7 +169,7 @@ static void drawBelow(XXTicketIx i) {
     Cash cash;
     hotelOfXXTickets_grabIx(i, &cash);
     onXXRaffle_dispatch((XXIx){i.i}, &pT->body, cash, claim, unlock, drop); 
-    hotelOfXXTickets_raid();
+    raid();
     return;
   }
   target -= pW->s;
@@ -140,7 +198,7 @@ static void drawAssumeNotEmpty() {
 // If this returns false we're closing down the program
 bool raffleOfXXs_draw() {
   lock();
-  hotelOfXXTickets_raid();
+  raid();
   //checkM("draw 1");
   if (gottaQuitXX)  { gottaQuitXX=false; unlock(); return false; }
   if (raffleOfXXs_empty()) { pthread_cond_wait(&cond, &mutex); }
@@ -165,8 +223,8 @@ void raffleOfXXs_close(Fate f) {
 }
 
 void raffleOfXXs_quit() {
-  abort();
   printf("raffleOfXXs_quit\n");
+  abort();
   gottaQuitXX = true;
   pthread_cond_signal(&cond);
 }
@@ -179,12 +237,10 @@ void showXXTicket(XXTicketIx i, XXTicket * pT) {
   showXX((XXIx){i.i}, &p->body);
 }
 
-
 double raffleOfXXs_rec(void) { return hotelOfXXTickets_rec(); }
 TockPrice raffleOfXXs_rent() { return tockPrice() * raffleOfXXs_rec(); }
 
 void onXXTicketHotel_goDie(XXTicketIx i, XXTicket * pT) {
-  printf("onXXTicketHotel_goDie\n");
   Weight w = pT->weights.s;
   pT->weights.s = 0;
   propagateWeightUp(i, -w);
@@ -215,7 +271,7 @@ void onXXTicketHotel_extinct       (void) { onXXRaffle_extinct(); }
 //   XXRafle * pP = &pileOfXXs.get(i)->body.raffle;
 //   if (left(i).i < pileOfXXs.top()) {
 //     XXRafle * p = &pileOfXXs.get(left (i))->body.raffle;
-//     if (totWeightP(p) != pP->l) 
+//     if (totWeightP(p) != pP->l)
 //       panicDump(i);
 //   } else {
 //     if (pP->l != 0)
@@ -223,7 +279,7 @@ void onXXTicketHotel_extinct       (void) { onXXRaffle_extinct(); }
 //   }
 //   if (right(i).i < pileOfXXs.top()) {
 //     XXRafle * p = &pileOfXXs.get(right(i))->body.raffle;
-//     if (totWeightP(p) != pP->r) 
+//     if (totWeightP(p) != pP->r)
 //       panicDump(i);
 //   } else {
 //     if (pP->r != 0)
@@ -231,8 +287,5 @@ void onXXTicketHotel_extinct       (void) { onXXRaffle_extinct(); }
 //   }
 //   return true;
 // }
-
-// static bool checkM(const char * ctx) { return check_(ctx, (XXIx) {0}); }
-// static bool check() { return check_("user", (XXIx) {0}); }
 
 //openXXRaffle() {openXXHotel();}

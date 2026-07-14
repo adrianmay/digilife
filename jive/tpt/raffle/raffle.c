@@ -137,12 +137,7 @@ bool raffleOfXXs_check() {
   return true; //It'll have aborted otherwise
 }
 
-
-static void raid() {
-  if (tocksNow()==1007) 
-    printf("break\n");
-  hotelOfXXTickets_raid();
-}
+static void raid() { hotelOfXXTickets_raid(); }
 
 // Assumes there are tickets. Look out of onXXHotel_extinct
 static void drawBelow(XXTicketIx i) {
@@ -210,7 +205,6 @@ bool raffleOfXXs_draw() {
 }
 
 bool raffleOfXXs_open() {
-  printf("raffleOfXXs_open: gottaQuit = %b\n", gottaQuitXX);
   lock();
   bool ret = hotelOfXXTickets_open();
   unlock();

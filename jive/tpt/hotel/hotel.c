@@ -87,6 +87,7 @@ TockPrice hotelOfXXs_rent() { return tockPrice() * hotelOfXXs_rec(); }
 
 static void rebomb(XXRent * pRent, XXBlobIx i) {
   Tocks expiry = pRent->lastPaidRent + pRent->cash / hotelOfXXs_rent();
+  //printf("rebomb: expiry: %d cash: %'ld, rent: %f\n", expiry, pRent->cash, hotelOfXXs_rent());
   meapOfXXBombs_insert(expiry, i.i, &pRent->bomb); // Do we need the return value?
 }
  
@@ -164,8 +165,9 @@ XX * hotelOfXXs_grab(XXTact t, Cash * pCash) {
     return &pBlob->body;
   }
   else {
-    if (want == 0xFFFFFFFF) return 0;
-    DIE("hotelOfXXs_grab: failed to grab %d\n", t.i.i);
+    printf("Failed to grab %d\n", t.i.i);
+    //if (want == 0xFFFFFFFF) return 0;
+    //DIE("hotelOfXXs_grab: failed to grab %d\n", t.i.i);
     return 0;
   }
 }
@@ -206,6 +208,7 @@ void hotelOfXXs_raid(void) {
   while (true) { // Returns when nothing to kill for now
     bomb.who = badXXBlobIx; // Prevent false alarms
     Chomped ch = meapOfXXBombs_chomp(now, &bomb, 0); // Locks, so each bomb appears here at most once.
+    //printf("hotelOfXXs_raid: chomp res %d\n", ch);
     if (ch == Killed ) {    // ... Also calls onXXBombMeap_willErase and erases the bomb if it says so.
       XXBlob * pBlob = pileOfXXBlobs_get(bomb.who);
 

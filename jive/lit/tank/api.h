@@ -8,5 +8,5 @@
 #define CYCLES_PER_JOB GUESS_CYCLES_PER_TOCK
 
 void seed(int n, Cash c, Cash thresh);
-void loop(void);
+bool draw(void);
 void onTockTank();

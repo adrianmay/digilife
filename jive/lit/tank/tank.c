@@ -54,20 +54,22 @@ void seed(int n, Cash c, Cash thresh) {
   for (int a=0;a<n;a++) spawn(c, thresh);
 }
 
-void loop() { 
-  //raffleOfMsgs_show();
-  do {
-    if (!raffleOfMsgs_check()) DIE("Raffle check failed\n");
-//    printf("\n");
-    printf("Tocks=%d Mobs=%d Msgs=%d\n", tocksNow(), hotelOfMobs_count(), raffleOfMsgs_count()); 
-//    printf("\n");
-//    hotelOfMobs_show();
-//    printf("\n");
-//    raffleOfMsgs_show();
-//    printf("\n");
-//    printf("\n#####################################################\n\n");
-  } while (raffleOfMsgs_draw()); 
-}
+bool draw() { return raffleOfMsgs_draw(); }
+
+//void loop() { 
+//  //raffleOfMsgs_show();
+//  do {
+//    if (!raffleOfMsgs_check()) DIE("Raffle check failed\n");
+////    printf("\n");
+//    printf("Tocks=%d Mobs=%d Msgs=%d\n", tocksNow(), hotelOfMobs_count(), raffleOfMsgs_count()); 
+////    printf("\n");
+////    hotelOfMobs_show();
+////    printf("\n");
+////    raffleOfMsgs_show();
+////    printf("\n");
+////    printf("\n#####################################################\n\n");
+//  } while (raffleOfMsgs_draw()); 
+//}
 
 void onMsgRaffle_dispatch(MsgIx i, Msg * pMsg, Cash msgCash, V claim, V unlock, V_C drop) {
   Mob * pMob;

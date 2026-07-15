@@ -1,4 +1,3 @@
-
 #include "types.h"
 #include "misc/api.h"
 #include "globals/api.h"
@@ -11,18 +10,6 @@
 #include "ix.h"
 #include "api.h"
 
-// Assumes some mutex is held, despite the name
-// That's true because onXXMeap_new only called from meap's insert
-//   which for the hotel is only called from hotel's admit
-// We know it exists, and it doesn't have or need money
-void onXXBombMeap_new(XXBomb * pBomb, Ix hint) {
-  pBomb->who = (XXBlobIx){hint};
-//  XX * p = pileOfXXs_get(pBomb->who);
-//  p->rent.bomb = iBomb;
-//  updateDeathWithXXAndBomb_(p, pBomb);
-//  meapOfXXBombs_check();
-}
-
 // Similarly thread safe already, I think?
 void onXXBombMeap_move(XXBomb * pBomb, XXBombIx to) {
   XXBlob * pBlob = pileOfXXBlobs_get(pBomb->who);
@@ -30,6 +17,50 @@ void onXXBombMeap_move(XXBomb * pBomb, XXBombIx to) {
   meapOfXXBombs_check();
 }
 
+void onXXBombMeap_new(XXBomb * pBomb, XXBombIx i, Ix hint) {
+  pBomb->who = (XXBlobIx){hint};
+  onXXBombMeap_move(pBomb, i);
+}
+
+static bool eraseBombForBlob(XXBlob * pBlob, V erase) {
+  // Gods have -2 for rent.bomb
+  XXBombIx set = (XXBombIx){BAD_INDEX};
+  XXBombIx was = atomic_exchange(&pBlob->rent.bomb, set); // I kill bomb first
+  if (was != set && was != GOD_BOMB) erase();
+  return (was != set); // Got an exclusive lock
+}
+
+static bool eraseBombForTact(XXTact * t, V erase) {
+}
+
+void onXXBombMeap_timeout(XXBomb * pBomb, XXBombIx i, V erase) {
+  eraseBombForBlob(pileOfXXBlobs_get(pBomb->who), erase); //Must exist if the bomb does
+}
+
+bool hotelOfXXs_grabIx(XXIx i, XX * p, Cash * pCash) {
+  XXBlob * pBlob = pileOfXXBlobs_get((XXBlobIx){i.i});
+  void erase(void) { meapOfXXBombs_erase(pBlob->rent.bomb); }
+  return eraseBombForBlob(pBlob, erase);
+}
+
+Woth hotelOfXXs_grab(XXTact t, XX * p, Cash * pCash) {
+  XXBlob * pBlob = pileOfXXBlobs_get((XXBlobIx){t.i.i});
+  if (pBlob->rent.name != t.n) return Dead;
+  Nick want, set; 
+  want = t.n; set = t.n | NICK_FLAG_BUSY; 
+  if (atomic_compare_exchange_strong(&pBlob->rent.nick, &want, set)) {
+    hotelOfXXs_collectRent(&pBlob->rent);
+    *pCash = pBlob->rent.cash;
+    return &pBlob->body;
+  }
+  else {
+    printf("Failed to grab %d\n", t.i.i);
+    //if (want == 0xFFFFFFFF) return 0;
+    //DIE("hotelOfXXs_grab: failed to grab %d\n", t.i.i);
+    return 0;
+  }
+}
+ 
 int hotelOfXXs_showsTact(char * cursor, XXTact t) {
   return sprintf(cursor, "%-8x=%d", t.n, t.i.i);
 }
@@ -79,8 +110,8 @@ TockPrice hotelOfXXs_rent() { return tockPrice() * hotelOfXXs_rec(); }
 
 static void rebomb(XXRent * pRent, XXBlobIx i) {
   Tocks expiry = pRent->lastPaidRent + pRent->cash / hotelOfXXs_rent();
-  //printf("rebomb: expiry: %d cash: %'ld, rent: %f\n", expiry, pRent->cash, hotelOfXXs_rent());
   meapOfXXBombs_insert(expiry, i.i, &pRent->bomb); // Do we need the return value?
+  //printf("rebomb: expiry: %d cash: %'ld, rent: %f\n", expiry, pRent->cash, hotelOfXXs_rent());
 }
  
 XXTact hotelOfXXs_admit(Cash cash, bool isGod, V_XXP stuff, XX ** pp, bool * pRecycled) {
@@ -129,50 +160,8 @@ void hotelOfXXs_collectRent(XXRent * pRent) {
 
 XX * hotelOfXXs_get(XXIx i) { 
   XXBlob * pBlob = pileOfXXBlobs_get((XXBlobIx){i.i});
-  return &pBlob->body;
-    
+
 }
-
-// GRAB AND RAID SYNCHRONISATION:
-
-// When starting a job, the sum of the msg and mob cash is initialised in the core
-//   without changing them in the msg/mob.
-// Then money is received in subsidies and/or spent on actions in the mob code.
-// After the job ends, the msg is left bankrupt and the mob keeps whatever money it should.
-// At this point both bombs are talking rubbish. I considered deleting both bombs 
-//   at the start of the job but this way is more efficient.
-// A raid might have tried to destroy the mob or msg in the meantime but backed off
-//   seeing them busy and marked them bombed. 
-// drop puts everything to rights. It's not to be used unless a job just happened.
-
-// AFAIK this is just for running a job
-// If the XX is not busy, not doomed, and has the passed nick, mark it busy and return a pointer to it
-XX * hotelOfXXs_grab(XXTact t, Cash * pCash) {
-  XXBlob * pBlob = pileOfXXBlobs_get((XXBlobIx){t.i.i});
-  Nick want, set; 
-  want = t.n; set = t.n | NICK_FLAG_BUSY; 
-  if (atomic_compare_exchange_strong(&pBlob->rent.nick, &want, set)) {
-    hotelOfXXs_collectRent(&pBlob->rent);
-    *pCash = pBlob->rent.cash;
-    return &pBlob->body;
-  }
-  else {
-    printf("Failed to grab %d\n", t.i.i);
-    //if (want == 0xFFFFFFFF) return 0;
-    //DIE("hotelOfXXs_grab: failed to grab %d\n", t.i.i);
-    return 0;
-  }
-}
- 
-// As above if you don't know the nick cos you're the bomb.
-// I don't want to bloat the bombs. 
-// Since only raid removes XXs, I think I can assume the nick is correct.
-XX * hotelOfXXs_grabIx(XXIx i, Cash * pCash) {
-  XXBlob * pBlob = pileOfXXBlobs_get((XXBlobIx){i.i});
-  XXTact t = (XXTact){i, pBlob->rent.nick};
-  return hotelOfXXs_grab(t, pCash);
-}
-
 void hotelOfXXs_raid(void) {
   XXBomb bomb; // Bomb copied out to here
   Tocks now = tocksNow();
@@ -225,5 +214,3 @@ void hotelOfXXs_drop(XXIx i, Cash cash) {
   }
   hotelOfXXs_raid();
 }
-
-

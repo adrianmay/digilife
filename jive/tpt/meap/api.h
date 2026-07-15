@@ -6,21 +6,21 @@ typedef enum {Extinct, Idle, Killed} Chomped;
 
 bool    meapOfXXs_open      (void);
 void    meapOfXXs_close     (Fate fate);
-bool    meapOfXXs_insert    (Tocks expiry, Ix hint, XXIx * pI);
-XX *    meapOfXXs_get       (XXIx i);
-bool    meapOfXXs_editTocks (XXIx i, Score when);
-bool    meapOfXXs_erase     (XXIx i);
-Chomped meapOfXXs_chomp     (Score thresh, XX * p, int pseudoAnimals);
-void    meapOfXXs_forAll    (V_I_P);
 Ix      meapOfXXs_count     (void);
 Ix      meapOfXXs_rec       (void);
 void    meapOfXXs_show      (void);
+XX *    meapOfXXs_get       (XXIx i);
+void    meapOfXXs_insert    (Tocks expiry, Ix hint);
+void    meapOfXXs_erase     (XXIx i);
+Chomped meapOfXXs_chomp     (Score thresh, XX * p, int pseudoAnimals);
+void    meapOfXXs_forAll    (V_I_P);
 bool    meapOfXXs_check     (void);
 void    showXX              (XXIx i, XX * pXX);
 
 extern const XXIx badXXIx;
 
 // The caller should define these:
+extern void onXXMeap_new(XX * p, XXIx i, Ix hint); // Update records of where p's meap is.
 extern void onXXMeap_move(XX * p, XXIx to); // Update records of where p's meap is.
-extern void onXXMeap_new(XX * p, Ix hint); // Update records of where p's meap is.
+extern void onXXMeap_timeout(XX * p, XXIx is, V erase); 
 

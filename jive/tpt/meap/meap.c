@@ -115,7 +115,7 @@ static void siftDown(XXIx iCur) {
 }
 
 // Returns whether or not the lowest changed.
-bool meapOfXXs_insert(Tocks expiry, Ix hint) {
+void meapOfXXs_insert(Tocks expiry, Ix hint) {
   XXIx i;
   XX * pNew;
   bombee = hint;
@@ -124,7 +124,7 @@ bool meapOfXXs_insert(Tocks expiry, Ix hint) {
   Ix meapTop = pileOfXXs_getUsr();    //meapish size
   if (meapTop < pileOfXXs_count()) {  // That's pile's top minus pile's free count. But we'll never use free in this pile anyway.
     i.i = meapTop;                  // Got meapish spares so just return one
-    pNew = pileOfXXs_get(*pI);
+    pNew = pileOfXXs_get(i);
   }
   else
     i = pileOfXXs_alloc(&pNew, 0);
@@ -132,7 +132,7 @@ bool meapOfXXs_insert(Tocks expiry, Ix hint) {
   pNew->tocks = expiry;
   onXXMeap_new(pNew, i, hint);
   pileOfXXs_modUsr(1);
-  if (pI->i > 0) siftUp(*pI);   
+  if (i.i > 0) siftUp(i);   
   unlock();
 }
 

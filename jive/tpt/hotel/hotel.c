@@ -13,7 +13,7 @@
 // Similarly thread safe already, I think?
 void onXXBombMeap_move(XXBomb * pBomb, XXBombIx to) {
   XXBlob * pBlob = pileOfXXBlobs_get(pBomb->who);
-  pBlob->rent.bomb = to;
+  pBlob->rent.inb.nb.b = to;
   meapOfXXBombs_check();
 }
 
@@ -22,15 +22,29 @@ void onXXBombMeap_new(XXBomb * pBomb, XXBombIx i, Ix hint) {
   onXXBombMeap_move(pBomb, i);
 }
 
+uint64_t n_b2i(Nick n, XXBombIx i) { XXInb inb; inb.nb.n = n; inb.nb.i = i; return inb.i; }
+uint64_t nb2i(XXNb nb) { XXInb inb; inb.nb = nb; return inb.i; }
+XXNb i2nb(uint64_t i ) { XXInb inb; inb.i = i; return inb.nb; }
+
 static bool eraseBombForBlob(XXBlob * pBlob, V erase) {
   // Gods have -2 for rent.bomb
-  XXBombIx set = (XXBombIx){BAD_INDEX};
-  XXBombIx was = atomic_exchange(&pBlob->rent.bomb, set); // I kill bomb first
-  if (was != set && was != GOD_BOMB) erase();
-  return (was != set); // Got an exclusive lock
 }
 
-static bool eraseBombForTact(XXTact * t, V erase) {
+static Woth eraseBombForTact(XXTact * t, V erase) {
+  uint64_t set = n_b2i(0, 0xFFFFFFFF);
+  uint64_t wasi = atomic_fetch_or(&pBlob->rent.inb.i, set);
+  XXNb wasnb = i2nb(wasi);
+  if (wasnb.n != t.n) {
+    atomic_store(&pBlob->rent.inb.i, wasi);
+    return Dead;
+  }
+  if (wasnb.b == 0xFFFFFFFF) {
+    atomic_store(&pBlob->rent.inb.i, wasi);
+    return Busy;
+  }
+  bool match = wasnb.n == t.n && wasnb.b != 0xFFFFFFFF;
+  if (wasnb.b =!= set.i && was.i != GOD_BOMB) erase();
+  return (was != set); // Got an exclusive lock
 }
 
 void onXXBombMeap_timeout(XXBomb * pBomb, XXBombIx i, V erase) {

@@ -16,6 +16,7 @@
 #define SECS_PER_MONTH (SECS_PER_YEAR/12.0)
 
 #define BAD_INDEX UINT32_MAX
+#define GOD_BOMB 0xfffffffe
 #define MAX_FILENAME 256
 #define PAGE 4096
 #define KILO 1024ull

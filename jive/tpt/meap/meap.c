@@ -196,9 +196,7 @@ Chomped meapOfXXs_chomp(Score thresh, XX * pCopyOut, int pseudoAnimals) {
     Score lowestScoreInMeap = p->tocks;
     ScoreDiff sd = wrapSub32S(lowestScoreInMeap, thresh);
     if (sd <= 0) {
-      if (onXXMeap_willErase(i, p)) {
-        erase_(i);
-      }
+      erase_(i);
       res = Killed;
     } else {
       res = Idle;

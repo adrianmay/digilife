@@ -30,23 +30,15 @@ void onXXBombMeap_move(XXBomb * pBomb, XXBombIx to) {
   meapOfXXBombs_check();
 }
 
-bool onXXBombMeap_willErase(XXBombIx i, XXBomb * pBomb) {
-  XXBlobIx who = pBomb->who;
-  XXBlob * pBlob = pileOfXXBlobs_get(who);
-  Nick was = atomic_fetch_or(&pBlob->rent.nick, NICK_FLAG_BOMBED);
-  return (!(was & NICK_FLAG_BUSY)); // Comes later
-}
-
 int hotelOfXXs_showsTact(char * cursor, XXTact t) {
   return sprintf(cursor, "%-8x=%d", t.n, t.i.i);
 }
 
 void showXXBlob(XXBlobIx i, XXBlob * p) {
   char busy   = (p->rent.nick & NICK_FLAG_BUSY  ) ? 'U' : 'u';
-  char bombed = (p->rent.nick & NICK_FLAG_BOMBED) ? 'O' : 'o';
   char god    = (p->rent.nick & NICK_NAME_GOD   ) ? 'G' : 'g';
   Ix base     = (p->rent.nick & NICK_NAME_RAND_MASK);
-  printf("ix=%-4d nick=%c%c%c`%07x|lastPaidRent=%-5d cash=%-8ld bomb=%-2d ", i.i, busy, bombed, god, base, p->rent.lastPaidRent, p->rent.cash, p->rent.bomb.i);
+  printf("ix=%-4d nick=%c%c`%07x|lastPaidRent=%-5d cash=%-8ld bomb=%-2d ", i.i, busy, god, base, p->rent.lastPaidRent, p->rent.cash, p->rent.bomb.i);
   showXX((XXIx){i.i}, &p->body);
 }
 
@@ -181,27 +173,6 @@ XX * hotelOfXXs_grabIx(XXIx i, Cash * pCash) {
   return hotelOfXXs_grab(t, pCash);
 }
 
-static bool updateDeathWithBomb(XXBlob * p, XXBombIx iBomb, XXBomb * pBomb) {
-  Cash cash = p->rent.cash;
-  Tocks ttl = cash / hotelOfXXs_rent();
-  Tocks death = tocksNow() + ttl;
-//  printf("updateDeathWithBomb: ttl=%d death=%d\n", ttl, death);
-  meapOfXXBombs_check();
-  // This changes bomb time and reorders meap:
-  bool res = false;
-  if (p->rent.bomb.i == iBomb.i) // Redundant if grabbed.
-    res  = meapOfXXBombs_editTocks(p->rent.bomb, death); // Locks the meap itself
-  meapOfXXBombs_check();
-  return res;
-  // The meap is now properly reordered but nobody called kill
-}
-
-static bool updateDeath(XXBlob * pBlob) {
-  XXBombIx iBomb = pBlob->rent.bomb;
-  XXBomb * pBomb = meapOfXXBombs_get(iBomb); // Assumes grabbed.
-  return updateDeathWithBomb(pBlob, iBomb, pBomb);
-}
-
 void hotelOfXXs_raid(void) {
   XXBomb bomb; // Bomb copied out to here
   Tocks now = tocksNow();
@@ -209,13 +180,10 @@ void hotelOfXXs_raid(void) {
     bomb.who = badXXBlobIx; // Prevent false alarms
     Chomped ch = meapOfXXBombs_chomp(now, &bomb, 0); // Locks, so each bomb appears here at most once.
     //printf("hotelOfXXs_raid: chomp res %d\n", ch);
-    if (ch == Killed ) {    // ... Also calls onXXBombMeap_willErase and erases the bomb if it says so.
+    if (ch == Killed ) { 
       XXBlob * pBlob = pileOfXXBlobs_get(bomb.who);
-
-      Nick got = atomic_load(&pBlob->rent.nick); 
-      Nick flags = got & NICK_FLAG_MASK;
-      if (!(flags & NICK_FLAG_BOMBED)) DIE("should be bombed already"); // Either chomp set it or it was set already.
-      if (!(flags & NICK_FLAG_BUSY)) { // Normal, idle rent expiry
+      Nick got = atomic_fetch_or(&pBlob->rent.nick, NICK_FLAG_BUSY); 
+      if (!(got & NICK_FLAG_BUSY)) { // Normal, idle rent expiry
         hotelOfXXs_collectRent(&pBlob->rent);
         if (pBlob->rent.cash<0) {
           onXXHotel_rentDefaulted(-pBlob->rent.cash); // Should be at the real free
@@ -244,22 +212,12 @@ void hotelOfXXs_drop(XXIx i, Cash cash) {
   XXBlob * pBlob = pileOfXXBlobs_get(iBlob);
   pBlob->rent.cash = cash;
   pBlob->rent.lastPaidRent = tocksNow();
-  Nick was = atomic_fetch_or(&pBlob->rent.nick, NICK_FLAG_BOMBED); // I might be lying about intending to free the bomb, but it stops raid from doing so.
   if (was & NICK_NAME_GOD) {
   }                              
   else if (pBlob->rent.cash>0) {         
-    if (was & NICK_FLAG_BOMBED) {
-      rebomb(&pBlob->rent, iBlob);
-    }
-    else {
-      updateDeath(pBlob);
-    }
+    rebomb(&pBlob->rent, iBlob);
     atomic_store(&pBlob->rent.nick, was & NICK_NAME_READ_MASK); // Clear both flags
   } else { // Bankrupted by its own code
-    if (!(was & NICK_FLAG_BOMBED)) {
-      meapOfXXBombs_erase(pBlob->rent.bomb);
-    } else {
-    }
     onXXHotel_goDie(i, &pBlob->body);
     atomic_store(&pBlob->rent.nick, BAD_INDEX); 
     pileOfXXBlobs_free(iBlob);

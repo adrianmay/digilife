@@ -7,7 +7,6 @@
 
 void onJunkMeap_new(Junk * pJ, Ix hint) { pJ->hint=hint;}
 void onJunkMeap_move(Junk * pJ, JunkIx to) { }
-bool onJunkMeap_willErase(JunkIx i, Junk * p) { return true; }
 
 #define assertWholeMeap(pExp, N) { \
   printf("Meap setup %d: ", setupNum); \

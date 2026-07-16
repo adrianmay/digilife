@@ -23,11 +23,12 @@ static bool isChild(XXTicketIx i) { return i.i>0; }
 static bool isChildRightChild(XXTicketIx i) {return i.i%2==0; } //Whole approach could have fewer ifs
 
 // This is just so we can debug the recursion 
-static Weight stack[100];
-static int si=0;
-static Weight peep()       { return stack[si-1]; }
-static void push(Weight w) { stack[si++]=w; }
-static void pop()          { si--; }
+
+#define STACK_SIZE 200
+typedef struct Stack { int depth; Weight data[STACK_SIZE]; } Stack;
+static Weight peep(Stack * pSt)         { return pSt->data[pSt->depth - 1]; }
+static void push(Stack * pSt, Weight w) { pSt->data[pSt->depth++]=w; }
+static void pop(Stack * pSt)            { pSt->depth--; }
 
 static Weight totWeightP(Weights * p) { return p->l + p->s + p->r; }
 
@@ -90,63 +91,63 @@ void raffleOfXXs_play(Cash cash, Weight w, WithXX stuff) {
 
 Ix raffleOfXXs_count(void) { return hotelOfXXTickets_count(); }
 
-static void panicDump_(XXTicketIx i) {
+static void panicDump_(Stack * pSt, XXTicketIx i) {
   XXTicket * pTicket = hotelOfXXTickets_get(i);
   Weights * pW = &pTicket->weights;
-  printf("In panic: w=%'ld, i=%d, l=%'ld, s=%'ld, r=%'ld\n", peep(), i.i, pW->l, pW->s, pW->r );
+  printf("In panic: w=%'ld, i=%d, l=%'ld, s=%'ld, r=%'ld\n", peep(pSt), i.i, pW->l, pW->s, pW->r );
   if (i.i==0) { return; }
-  pop();
-  panicDump_(parent(i));
+  pop(pSt);
+  panicDump_(pSt, parent(i));
 }
 
-static void panicDump(XXTicketIx i) {
+static void panicDump(Stack * pSt, XXTicketIx i) {
   printf("count: %d\n", hotelOfXXTickets_count());
-  panicDump_(i);
+  panicDump_(pSt, i);
   raffleOfXXs_show();
   DIE("panicDump %i", i.i);
 }
 
-static bool check_(const char * ctx, XXTicketIx i) {
+static bool check_(Stack * pSt, const char * ctx, XXTicketIx i) {
   //printf("Checking raffle\n");
   if (hotelOfXXTickets_top() == 0) return true;
   Weights * pwCur = &hotelOfXXTickets_get(i)->weights;
   if (left(i).i < hotelOfXXTickets_top()) {
     Weights * pwL = &hotelOfXXTickets_get(left(i))->weights;
     if (totWeightP(pwL) != pwCur->l) 
-      panicDump(i);
+      panicDump(pSt, i);
   } else {
     if (pwCur->l != 0)
-      panicDump(i);
+      panicDump(pSt, i);
   } 
   if (right(i).i < hotelOfXXTickets_top()) {
     Weights * pwR = &hotelOfXXTickets_get(right(i))->weights;
     if (totWeightP(pwR) != pwCur->r) 
-      panicDump(i);
+      panicDump(pSt, i);
   } else {
     if (pwCur->r != 0)
-      panicDump(i);
+      panicDump(pSt, i);
   }
   return true;
 }
 
 //static bool checkM(const char * ctx) { return check_(ctx, (XXIx) {0}); }
-bool raffleOfXXs_check() { 
+bool raffleOfXXs_check(Stack * pSt) { 
   for (int a=0;a<hotelOfXXTickets_top();a++)
-    check_("user", (XXTicketIx) {a}); 
+    check_(pSt, "user", (XXTicketIx) {a}); 
   return true; //It'll have aborted otherwise
 }
 
 static void raid() { hotelOfXXTickets_raid(); }
 
 // Assumes there are tickets. Look out of onXXHotel_extinct
-static void drawBelow(XXTicketIx i) {
+static void drawBelow(Stack * pSt, XXTicketIx i) {
   XXTicket * pT = hotelOfXXTickets_get(i);
   Weights * pW = &pT->weights;
-  Weight target = peep();
+  Weight target = peep(pSt);
   if (pW->l > 0 && target < pW->l) {
-    push(target); 
-    drawBelow(left(i));
-    pop();
+    push(pSt, target); 
+    drawBelow(pSt, left(i));
+    pop(pSt);
     return; 
   }
   void claim(void) {
@@ -168,24 +169,25 @@ static void drawBelow(XXTicketIx i) {
   target -= pW->s;
   if (pW->r == 0) {
     printf("Bailing from drawBelow\n");
-    //panicDump(i);
+    panicDump(pSt, i);
     raffleOfXXs_show();
     exit(10);
   }
-  push(target);
-  drawBelow(right(i));
-  pop();
+  push(pSt, target);
+  drawBelow(pSt, right(i));
+  pop(pSt);
 }
 
 static void drawAssumeNotEmpty() {
+  Stack st = {0};
   XXTicketIx i0 = (XXTicketIx){0};
   //check(); 
   Weight tw = totWeightI(i0);
   uint64_t w = randIntBelow(tw);
   //printf("Rolled w=%ld of %ld\n", w, tw);
-  push(w);
-  drawBelow(i0);
-  pop();
+  push(&st, w);
+  drawBelow(&st, i0);
+  pop(&st);
 }
 
 static bool gottaQuitXX = false; // Cos we block for msgs

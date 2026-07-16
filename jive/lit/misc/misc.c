@@ -41,6 +41,7 @@ int die(const char * file, int line, const char *fmt, ...)
     int ret = vsprintf(scratch, fmt, ap);
     va_end(ap);
     printf("Dying at %s:%d because %s\n", file, line, scratch);
+    dumpPiles();
     abort();
     return ret;
 }

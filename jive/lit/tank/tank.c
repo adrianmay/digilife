@@ -16,6 +16,7 @@ void onMobHotel_goDie(MobIx i, Mob * pT) {
 void onMobHotel_rentCollected (Cash rent) {}
 void onMobHotel_rentDefaulted (Cash rent) {}
 void onMobHotel_extinct       (void) { raffleOfMsgs_quit(); }
+void onMobHotel_funeral(MobIx, Mob * pMob) {}
 
 void onMsgRaffle_extinct() { raffleOfMsgs_quit();  } // Not when we have external msg sources
 
@@ -56,6 +57,14 @@ void seed(int n, Cash c, Cash thresh) {
 
 bool draw() { return raffleOfMsgs_draw(); }
 
+void dumpPiles(void) {
+  printf("\n");
+  hotelOfMobs_show();
+  printf("\n");
+  raffleOfMsgs_show();
+  printf("\n");
+}
+
 //void loop() { 
 //  //raffleOfMsgs_show();
 //  do {
@@ -71,32 +80,34 @@ bool draw() { return raffleOfMsgs_draw(); }
 //  } while (raffleOfMsgs_draw()); 
 //}
 
-void onMsgRaffle_dispatch(MsgIx i, Msg * pMsg, Cash msgCash, V claim, V unlock, V_C drop) {
+Cash run(Msg * pMsg, Mob * pMob, Cash cash) {
+  cash += DOLE;
+  if (cash > pMob->_.test.spawnThresh) {
+    Cash childCash = cash/2;
+    cash -= childCash;
+    spawn(childCash, pMob->_.test.spawnThresh);
+  }
+  void stuffMsg(Msg * pNewMsg) {
+    memcpy(pNewMsg, pMsg, sizeof(*pMsg)); 
+  }
+  raffleOfMsgs_play(cash*MSG_PROP, 100, stuffMsg); 
+  cash -= cash*MSG_PROP;
+  hotelOfMobs_drop(pMsg->rcvr.i, cash);
+  notifyCycles(CYCLES_PER_JOB);
+  return cash;
+}
+
+Cash onMsgRaffle_dispatch(MsgIx i, Msg * pMsg, Cash msgCash, V claim, V unlock) {
   Mob * pMob;
   Cash mobCash;
-  if ((Ok==hotelOfMobs_grab(pMsg->rcvr, &pMob, &mobCash))) {
-    mobCash += msgCash + DOLE;
-    msgCash = 0;
-    claim();
-    unlock();
-    if (mobCash > pMob->_.test.spawnThresh) {
-      Cash childCash = mobCash/2;
-      //printf("onMsgRaffle_dispatch spawn:    mobCash was %ld, childCash is %ld\n", mobCash, childCash);
-      mobCash -= childCash;
-      spawn(childCash, pMob->_.test.spawnThresh);
-    }
-    void stuffMsg(Msg * pNewMsg) {
-      memcpy(pNewMsg, pMsg, sizeof(*pMsg)); 
-    }
-    raffleOfMsgs_play(mobCash*MSG_PROP, 100, stuffMsg); 
-    mobCash -= mobCash*MSG_PROP;
-    hotelOfMobs_drop(pMsg->rcvr.i, mobCash);
-    drop(0); // Kill msg
-    notifyCycles(CYCLES_PER_JOB);
-  } else { 
-    unlock();
-    drop(msgCash); 
-  }
+  Woth w = hotelOfMobs_grab(pMsg->rcvr, &pMob, &mobCash);
+  if (w==Dead) { unlock(); return 0; }       // Bankrupt msg
+  if (w==Busy) { unlock(); return msgCash; } // Leave msg alone
+  // So we got it
+  claim();
+  unlock();
+  run(pMsg, pMob, msgCash + mobCash);
+  return 0; 
   hotelOfMobs_raid();
 }
 

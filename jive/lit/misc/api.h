@@ -15,6 +15,7 @@ int8_t   wrapSub8S  (uint8_t  a, uint8_t  b);
 int32_t  wrapSub32S (uint32_t a, uint32_t b);
 int64_t  wrapSub64S (uint64_t a, uint64_t b);
 
+void dumpPiles(void); // Defined in tank.c
 int quit(int i);
 int die(const char * file, int line, const char *fmt, ...);
 #define DIE(WHY, ...) die(__FILE__, __LINE__, WHY, ##__VA_ARGS__)

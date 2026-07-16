@@ -175,16 +175,16 @@ bool testRaffle() {
   testBlock();
   return true;
 }
-
-void onMessRaffle_dispatch(MessIx i, Mess * pM, Cash cash, V claim, V unlock, V_C drop) {
+Cash onMessRaffle_dispatch(MessIx i, Mess * pM, Cash cash, V claim, V unlock) {
   //printf("onMessRaffleDispatch\n");
   claim();
+  printf("Unlocking in onMessRaffle_dispatch\n");
   unlock();
   if (pM->type=='H') h++;
   else if (pM->type=='T') t++;
   else if (pM->type=='V') v++;
   else e++;
-  drop(0);  // Kill the message
+  return 0;
 }
 
 static bool init(void) { onTestTock = tock; openGlobals(); raffleOfMesss_open(); return true; }

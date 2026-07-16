@@ -22,6 +22,7 @@ static XXTicketIx parent(XXTicketIx i) {return ( XXTicketIx ){ (i.i-1)/2 };}
 static bool isChild(XXTicketIx i) { return i.i>0; }
 static bool isChildRightChild(XXTicketIx i) {return i.i%2==0; } //Whole approach could have fewer ifs
 
+// This is just so we can debug the recursion 
 static Weight stack[100];
 static int si=0;
 static Weight peep()       { return stack[si-1]; }
@@ -74,7 +75,7 @@ void raffleOfXXs_play(Cash cash, Weight w, WithXX stuff) {
   //if (p->rent.cash>10000) { printf("Overrich 1 %d has %'ld from %'ld\n", i.i, p->rent.cash, cash); exit(1); }
   Weights * pW = &pT->weights; 
   if (!recycled) {
-    pW->s = pW->l = pW->r = 0; // Don't really need to zero s
+    pW->l = pW->r = 0;
   }
   //checkM(blah);
   pW->s = w;
@@ -86,8 +87,6 @@ void raffleOfXXs_play(Cash cash, Weight w, WithXX stuff) {
   unlock();
 }
 
-
-static bool gottaQuitXX = false;
 
 Ix raffleOfXXs_count(void) { return hotelOfXXTickets_count(); }
 
@@ -141,7 +140,6 @@ static void raid() { hotelOfXXTickets_raid(); }
 
 // Assumes there are tickets. Look out of onXXHotel_extinct
 static void drawBelow(XXTicketIx i) {
-  //printf("Top of drawBelow: i=%d\n", i.i);
   XXTicket * pT = hotelOfXXTickets_get(i);
   Weights * pW = &pT->weights;
   Weight target = peep();
@@ -156,15 +154,15 @@ static void drawBelow(XXTicketIx i) {
     pW->s = 0;
     propagateWeightUp(i, -w);
   }
-  void drop(Cash cash) {
-    hotelOfXXTickets_drop(i, cash);
-  }
   target -= pW->l;
   if (target < pW->s) {
     Cash cash;
-    hotelOfXXTickets_grabIx(i, 0, &cash);
-    onXXRaffle_dispatch((XXIx){i.i}, &pT->body, cash, claim, unlock, drop); 
-    raid();
+    if (hotelOfXXTickets_grabIx(i, 0, &cash)) {
+      cash = onXXRaffle_dispatch((XXIx){i.i}, &pT->body, cash, claim, unlock); 
+      hotelOfXXTickets_drop(i, cash);
+    } else {
+      unlock();
+    }
     return;
   }
   target -= pW->s;
@@ -189,6 +187,8 @@ static void drawAssumeNotEmpty() {
   drawBelow(i0);
   pop();
 }
+
+static bool gottaQuitXX = false; // Cos we block for msgs
 
 // If this returns false we're closing down the program
 bool raffleOfXXs_draw() {
@@ -217,7 +217,6 @@ void raffleOfXXs_close(Fate f) {
 }
 
 void raffleOfXXs_quit() {
-  printf("raffleOfXXs_quit\n");
   abort();
   gottaQuitXX = true;
   pthread_cond_signal(&cond);
@@ -234,15 +233,15 @@ void showXXTicket(XXTicketIx i, XXTicket * pT) {
 double raffleOfXXs_rec(void) { return hotelOfXXTickets_rec(); }
 TockPrice raffleOfXXs_rent() { return tockPrice() * raffleOfXXs_rec(); }
 
-void onXXTicketHotel_goDie(XXTicketIx i, XXTicket * pT) {
+void onXXTicketHotel_funeral(XXTicketIx i, XXTicket * pT) {
   Weight w = pT->weights.s;
   pT->weights.s = 0;
   propagateWeightUp(i, -w);
 }
 
-void onXXTicketHotel_rentCollected (Cash rent) {}
-void onXXTicketHotel_rentDefaulted (Cash rent) {}
-void onXXTicketHotel_extinct       (void) { onXXRaffle_extinct(); }
+void onXXTicketHotel_rentCollected(Cash rent) {}
+void onXXTicketHotel_rentDefaulted(Cash rent) {}
+void onXXTicketHotel_extinct(void) { onXXRaffle_extinct(); }
 
 // static void panicDump_(XXIx i) {
 //   XX * pB = pileOfXXs.get(i);

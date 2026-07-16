@@ -18,7 +18,7 @@ void      showXXTicket             (XXTicketIx i, XXTicket * pT);
 // Provide this:
 void showXX(XXIx i, XX * pXX);
 // Return the correct amount of cash assuming rent paid until now...
-extern void onXXRaffle_dispatch(XXIx i, XX * pMsg, Cash c, V claim, V unlock, V_C drop);
+extern Cash onXXRaffle_dispatch(XXIx i, XX * pMsg, Cash c, V claim, V unlock);
 extern void onXXRaffle_extinct();
 
 //typedef bool   (*XXRaffleCheck)  (void);

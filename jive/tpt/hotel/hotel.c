@@ -49,8 +49,9 @@ static bool eraseBombForBlob(XXBlob * pBlob, V erase) {
   XXNb wasnb = i2nb(wasi);
   if (wasnb.b.i == BAD_INDEX)
     return false; // Already locked
-  if (wasnb.b.i != GOD_BOMB) 
+  if (wasnb.b.i != GOD_BOMB)  {
     erase();
+  }
   return true;
 }
 
@@ -89,9 +90,12 @@ void hotelOfXXs_collectRent(XXRent * pRent) {
 bool hotelOfXXs_grabIx(XXIx i, XX ** ppXX, Cash * pCash) {
   if (ppXX) *ppXX = 0;
   XXBlob * pBlob = pileOfXXBlobs_get((XXBlobIx){i.i});
-  void erase(void) { meapOfXXBombs_erase(pBlob->rent.inb.nb.b); }
-  if (!eraseBombForBlob(pBlob, erase)) 
+  XXBombIx iBomb = pBlob->rent.inb.nb.b;
+  void erase(void) { meapOfXXBombs_erase(iBomb); }
+
+  if (!eraseBombForBlob(pBlob, erase)) {
     return false;
+  }
   if (ppXX) *ppXX = &pBlob->body;
   hotelOfXXs_collectRent(&pBlob->rent);
   *pCash = pBlob->rent.cash;
@@ -101,7 +105,8 @@ bool hotelOfXXs_grabIx(XXIx i, XX ** ppXX, Cash * pCash) {
 Woth hotelOfXXs_grab(XXTact t, XX ** ppXX, Cash * pCash) {
   if (ppXX) *ppXX = 0;
   XXBlob * pBlob = pileOfXXBlobs_get((XXBlobIx){t.i.i});
-  void erase(void) { meapOfXXBombs_erase(pBlob->rent.inb.nb.b); }
+  XXBombIx iBomb = pBlob->rent.inb.nb.b;
+  void erase(void) { meapOfXXBombs_erase(iBomb); }
   Woth w = eraseBombForTact(t, erase);
   if (w != Ok) return w;
   if (ppXX) *ppXX = &pBlob->body;
@@ -130,7 +135,7 @@ void showXXPair(XXIx i, XX * p) {
   XXBlob * pBlob = pileOfXXBlobs_get((XXBlobIx){i.i});
   XXBomb * pBomb = meapOfXXBombs_get(pBlob->rent.inb.nb.b);
   showXXBlob((XXBlobIx){i.i} , pBlob);
-  printf(" @ ");
+  printf("¬");
   showXXBomb(pBlob->rent.inb.nb.b, pBomb);
 }
 

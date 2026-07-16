@@ -7,15 +7,19 @@
 #include "YY"
 
 static pthread_mutex_t mutex=PTHREAD_MUTEX_INITIALIZER;
-static void lock() { pthread_mutex_lock(&mutex); }
-static void unlock() { pthread_mutex_unlock(&mutex); }
+static void lock(int line) { 
+  pthread_mutex_lock(&mutex); 
+}
+static void unlock() { 
+  pthread_mutex_unlock(&mutex); 
+}
 
 static XXIx parent(XXIx i) {return ( XXIx ){ (i.i-1)/2 };}
 static XXIx left  (XXIx i) {return ( XXIx ){ 2*i.i + 1 };}
 static XXIx right (XXIx i) {return ( XXIx ){ 2*i.i + 2 };}
 
 bool meapOfXXs_open(void)    { return pileOfXXs_open(); }
-void meapOfXXs_close(Fate f) { lock(); pileOfXXs_close(f); }
+void meapOfXXs_close(Fate f) { lock(__LINE__); pileOfXXs_close(f); }
 Ix   meapOfXXs_count(void)   { return pileOfXXs_getUsr(); }
 Ix   meapOfXXs_rec(void)     { return pileOfXXs_rec(); }
 void meapOfXXs_show(void)    { printf("MEAP: "); pileOfXXs_show(false);  }
@@ -122,7 +126,7 @@ void meapOfXXs_insert(Tocks expiry, Ix hint) {
   XX * pNew;
   //bombee = hint;
   //meapOfXXs_forAll(bombeeSafe);
-  lock();
+  lock(__LINE__);
   Ix meapTop = pileOfXXs_getUsr();    //meapish size
   if (meapTop < pileOfXXs_count()) {  // That's pile's top minus pile's free count. But we'll never use free in this pile anyway.
     i.i = meapTop;                  // Got meapish spares so just return one
@@ -141,29 +145,31 @@ void meapOfXXs_insert(Tocks expiry, Ix hint) {
 // Assume already locked
 static void erase_(XXIx iCur) {
   Ix cnt = pileOfXXs_getUsr();
-  if (iCur.i >= cnt) DIE("Meap erase_ index out of bounds");
+  if (iCur.i >= cnt) DIE("Meap erase_ index out of bounds: %d", iCur.i);
   //bombee = pI[0];
   Ix iLast = cnt-1;
   swap((XXIx){iLast}, iCur); // Calls on move for erasee but I think it's harmless
   pileOfXXs_modUsr(-1);
   siftDown(iCur); //Not calling review cos I'd need a recursive mutex
   siftUp(iCur);
-//  meapOfXXs_forAll(bombeeSafe);
-//  checkNoDupes();
+  //  meapOfXXs_forAll(bombeeSafe);
+  //  checkNoDupes();
 }
 
 void meapOfXXs_erase(XXIx iCur) {
-  lock();
+  //  lock();
   erase_(iCur);
-  unlock();
+  //  unlock();
 }
 
 Chomped meapOfXXs_chomp(Score thresh, XX * pCopyOut) {
   Chomped res;
-  lock();
+  lock(__LINE__);
   Ix x = meapOfXXs_count();
-  if (x<=0) { res = Extinct; }
-  else {
+  if (x<=0) { 
+    unlock();
+    res = Extinct; 
+  } else {
     XXIx i = (XXIx) {0};
     XX * pBomb = pileOfXXs_get(i);
     memcpy(pCopyOut, pBomb, sizeof(XX)); //Might want to peep
@@ -174,6 +180,7 @@ Chomped meapOfXXs_chomp(Score thresh, XX * pCopyOut) {
       onXXMeap_timeout(pBomb, i, erase, unlock);
       res = Killed;
     } else {
+      unlock();
       res = Idle;
     }
   }

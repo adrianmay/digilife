@@ -9,6 +9,7 @@ static bool extinct=true;
 void onThingHotel_extinct(void) { extinct = true; }
 void onThingHotel_rentCollected(Cash cash) { }
 void onThingHotel_rentDefaulted(Cash cash) { }
+void onThingHotel_funeral(ThingIx, Thing * pThing) {}
 
 //void onThingHotel_goDie(ThingIx i, Thing * pThing) {
 //  St want = Idle;

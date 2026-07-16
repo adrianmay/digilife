@@ -14,23 +14,23 @@ static XXIx parent(XXIx i) {return ( XXIx ){ (i.i-1)/2 };}
 static XXIx left  (XXIx i) {return ( XXIx ){ 2*i.i + 1 };}
 static XXIx right (XXIx i) {return ( XXIx ){ 2*i.i + 2 };}
 
-bool meapOfXXs_open(void)  { return pileOfXXs_open(); }
+bool meapOfXXs_open(void)    { return pileOfXXs_open(); }
 void meapOfXXs_close(Fate f) { lock(); pileOfXXs_close(f); }
-Ix   meapOfXXs_count(void) { return pileOfXXs_getUsr(); }
-Ix   meapOfXXs_rec(void)   { return pileOfXXs_rec(); }
-void meapOfXXs_show(void) { printf("MEAP: "); pileOfXXs_show(false);  }
-XX * meapOfXXs_get(XXIx i) { return pileOfXXs_get(i); }
+Ix   meapOfXXs_count(void)   { return pileOfXXs_getUsr(); }
+Ix   meapOfXXs_rec(void)     { return pileOfXXs_rec(); }
+void meapOfXXs_show(void)    { printf("MEAP: "); pileOfXXs_show(false);  }
+XX * meapOfXXs_get(XXIx i)   { return pileOfXXs_get(i); }
 
-static Ix bombee;
-static void bombeeSafe(Ix i, void * p) { 
-  return;
-  Ix * pB = (Ix *) p;
-  if (*pB == bombee) {
-    printf("In meap: Another bomb for XX %d\n", bombee);
-    meapOfXXs_show();
-    //DIE("")
-  }
-}
+// static Ix bombee;
+// static void bombeeSafe(Ix i, void * p) { 
+//   return;
+//   Ix * pB = (Ix *) p;
+//   if (*pB == bombee) {
+//     printf("In meap: Another bomb for XX %d\n", bombee);
+//     meapOfXXs_show();
+//     //DIE("")
+//   }
+// }
 
 void meapOfXXs_forAll(void (*cb)(Ix, void *) ) {
   Ix cnt = pileOfXXs_getUsr();
@@ -54,6 +54,8 @@ static void checkNoDupes() //TODO: reinstate this
   memset(seen, BAD_INDEX, sizeof(seen));
   meapOfXXs_forAll(markOnce);
 }
+
+// Starts here
 
 static void swap(XXIx i1, XXIx i2) {
   if (i1.i==i2.i) return;
@@ -118,8 +120,8 @@ static void siftDown(XXIx iCur) {
 void meapOfXXs_insert(Tocks expiry, Ix hint) {
   XXIx i;
   XX * pNew;
-  bombee = hint;
-  meapOfXXs_forAll(bombeeSafe);
+  //bombee = hint;
+  //meapOfXXs_forAll(bombeeSafe);
   lock();
   Ix meapTop = pileOfXXs_getUsr();    //meapish size
   if (meapTop < pileOfXXs_count()) {  // That's pile's top minus pile's free count. But we'll never use free in this pile anyway.
@@ -130,21 +132,19 @@ void meapOfXXs_insert(Tocks expiry, Ix hint) {
     i = pileOfXXs_alloc(&pNew, 0);
   // pNew is now correct either way.
   pNew->tocks = expiry;
-  onXXMeap_new(pNew, i, hint);
-  pileOfXXs_modUsr(1);
-  if (i.i > 0) siftUp(i);   
+  pileOfXXs_modUsr(1); // This is the count of XXs
+  onXXMeap_new(pNew, i, hint); // This should store the index ...
+  if (i.i > 0) siftUp(i);      // ... cos this only calls onMove if there's a swap
   unlock();
 }
 
 // Assume already locked
 static void erase_(XXIx iCur) {
   Ix cnt = pileOfXXs_getUsr();
-  if (!cnt) return; 
-  XX * p = pileOfXXs_get(iCur);
-  Ix * pI = (Ix *) p;
-  bombee = pI[0];
+  if (iCur.i >= cnt) DIE("Meap erase_ index out of bounds");
+  //bombee = pI[0];
   Ix iLast = cnt-1;
-  swap((XXIx){iLast}, iCur);
+  swap((XXIx){iLast}, iCur); // Calls on move for erasee but I think it's harmless
   pileOfXXs_modUsr(-1);
   siftDown(iCur); //Not calling review cos I'd need a recursive mutex
   siftUp(iCur);
@@ -166,7 +166,7 @@ Chomped meapOfXXs_chomp(Score thresh, XX * pCopyOut) {
   else {
     XXIx i = (XXIx) {0};
     XX * pBomb = pileOfXXs_get(i);
-    memcpy(pCopyOut, pBomb, sizeof(XX));
+    memcpy(pCopyOut, pBomb, sizeof(XX)); //Might want to peep
     Score lowestScoreInMeap = pBomb->tocks;
     ScoreDiff sd = wrapSub32S(lowestScoreInMeap, thresh);
     if (sd <= 0) {

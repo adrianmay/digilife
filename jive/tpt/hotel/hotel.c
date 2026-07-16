@@ -22,8 +22,8 @@ void onXXBombMeap_new(XXBomb * pBomb, XXBombIx i, Ix hint) {
   onXXBombMeap_move(pBomb, i);
 }
 
-uint64_t nb2i(Nick n, XXBombIx b) { XXInb inb; inb.nb.n = n; inb.nb.b = b; return inb.i; }
-XXNb i2nb(uint64_t i ) { XXInb inb; inb.i = i; return inb.nb; }
+static uint64_t nb2i(Nick n, XXBombIx b) { XXInb inb; inb.nb.n = n; inb.nb.b = b; return inb.i; }
+static XXNb i2nb(uint64_t i ) { XXInb inb; inb.i = i; return inb.nb; }
 
 static Woth eraseBombForTact(XXTact t, V erase) {
   XXBlob * pBlob = pileOfXXBlobs_get((XXBlobIx){t.i.i});
@@ -61,7 +61,7 @@ void onXXBombMeap_timeout(XXBomb * pBomb, XXBombIx i, V erase, V unlock) {
     unlock();
     onXXHotel_funeral((XXIx){iBlob.i}, &pBlob->body);
     pileOfXXBlobs_free(iBlob);
-  } // Otherwise it's up to the thing that locked the blob by deleting the bomb
+  } else unlock(); // Otherwise it's up to the thing that locked the blob by deleting the bomb
 }
 
 static bool isGod(XXRent * pRent) { return pRent->inb.nb.n & NICK_NAME_GOD ; }
@@ -115,8 +115,8 @@ int hotelOfXXs_showsTact(char * cursor, XXTact t) {
 }
 
 void showXXBlob(XXBlobIx i, XXBlob * p) {
-  char busy   = (p->rent.inb.nb.n & NICK_FLAG_BUSY  ) ? 'U' : 'u';
-  char god    = (p->rent.inb.nb.n & NICK_NAME_GOD   ) ? 'G' : 'g';
+  char busy   = (p->rent.inb.nb.b.i == BAD_INDEX) ? 'U' : 'u';
+  char god    = (isGod(&p->rent)                ) ? 'G' : 'g';
   Ix base     = (p->rent.inb.nb.n & NICK_NAME_RAND_MASK);
   printf("ix=%-4d nick=%c%c`%07x|lastPaidRent=%-5d cash=%-8ld bomb=%-2d ", i.i, busy, god, base, p->rent.lastPaidRent, p->rent.cash, p->rent.inb.nb.b.i);
   showXX((XXIx){i.i}, &p->body);

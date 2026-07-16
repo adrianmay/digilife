@@ -26,14 +26,8 @@
 #define B16 (B8*B8)
 #define B32 (B16*B16)
 
-#define NICK_FLAG_BUSY   0x80000000
-// This is part of the name:
 #define NICK_NAME_GOD    0x10000000
-// When you only want the multithreading flags:
-#define NICK_FLAG_MASK NICK_FLAG_BUSY
-// When you want the whole existing name:
-#define NICK_NAME_READ_MASK (~(NICK_FLAG_MASK))
-// When you make up a random new name:    
+// Todo: extend this when other stuff done:
 #define NICK_NAME_RAND_MASK 0x0FFFFFFF
 
 // Ought to be using the FPU here

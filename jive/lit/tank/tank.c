@@ -74,7 +74,7 @@ bool draw() { return raffleOfMsgs_draw(); }
 void onMsgRaffle_dispatch(MsgIx i, Msg * pMsg, Cash msgCash, V claim, V unlock, V_C drop) {
   Mob * pMob;
   Cash mobCash;
-  if ((pMob = hotelOfMobs_grab(pMsg->rcvr, &mobCash))) {
+  if ((Ok==hotelOfMobs_grab(pMsg->rcvr, &pMob, &mobCash))) {
     mobCash += msgCash + DOLE;
     msgCash = 0;
     claim();

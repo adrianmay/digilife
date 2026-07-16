@@ -171,14 +171,14 @@ Chomped meapOfXXs_chomp(Score thresh, XX * pCopyOut) {
     ScoreDiff sd = wrapSub32S(lowestScoreInMeap, thresh);
     if (sd <= 0) {
       void erase(void) {erase_(i); }
-      onXXMeap_timeout(pBomb, i, erase);
+      onXXMeap_timeout(pBomb, i, erase, unlock);
       res = Killed;
     } else {
       res = Idle;
     }
   }
   checkNoDupes();
-  unlock();
+  //unlock(); timeout handler must do this
   return res;
 }
 

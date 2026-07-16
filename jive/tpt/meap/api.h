@@ -11,7 +11,7 @@ Ix      meapOfXXs_rec       (void);
 void    meapOfXXs_show      (void);
 XX *    meapOfXXs_get       (XXIx i);
 void    meapOfXXs_insert    (Tocks expiry, Ix hint);
-void    meapOfXXs_erase     (XXIx i);
+void    meapOfXXs_erase     (XXIx i); // Danger - call after locking XXInb only
 Chomped meapOfXXs_chomp     (Score thresh, XX * p);
 void    meapOfXXs_forAll    (V_I_P);
 bool    meapOfXXs_check     (void);
@@ -22,5 +22,5 @@ extern const XXIx badXXIx;
 // The caller should define these:
 extern void onXXMeap_new(XX * p, XXIx i, Ix hint); // Update records of where p's meap is.
 extern void onXXMeap_move(XX * p, XXIx to); // Update records of where p's meap is.
-extern void onXXMeap_timeout(XX * p, XXIx is, V erase); 
+extern void onXXMeap_timeout(XX * p, XXIx is, V erase, V unlock); 
 

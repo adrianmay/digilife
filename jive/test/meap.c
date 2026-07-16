@@ -5,7 +5,7 @@
 #include "Junk_meap/api.h"
 #include "bit/Junk.h"
 
-void onJunkMeap_new(Junk * pJ, Ix hint) { pJ->hint=hint;}
+void onJunkMeap_new(Junk * pJ, JunkIx i, Ix hint) { pJ->hint=hint;}
 void onJunkMeap_move(Junk * pJ, JunkIx to) { }
 
 #define assertWholeMeap(pExp, N) { \
@@ -25,7 +25,6 @@ void onJunkMeap_move(Junk * pJ, JunkIx to) { }
 }
 
 Junk * pJunk;
-JunkIx iJunk;
 
 #define CHOMPNOTHING 1
 int doWhat;
@@ -37,7 +36,7 @@ bool setupEmpty(void) { meapOfJunks_open(); return true; }
 
 bool setupSingleton(void) {
   setupEmpty();
-  meapOfJunks_insert(0x88, 1, &iJunk);
+  meapOfJunks_insert(0x88, 1);
   expect(CHOMPNOTHING);
   expectFullChomp(1, (Score []){0x88});
   return true;
@@ -45,28 +44,28 @@ bool setupSingleton(void) {
 
 bool setup2Inc(void) {
   setupSingleton();
-  meapOfJunks_insert(0xc8, 2, &iJunk);
+  meapOfJunks_insert(0xc8, 2);
   expect(CHOMPNOTHING);
   expectFullChomp(2, (Score []){0x88, 0xc8});
   return true;
 }
 bool setup2Dec(void) {
   setupSingleton();
-  meapOfJunks_insert(0x48, 3, &iJunk);
+  meapOfJunks_insert(0x48, 3);
   expect(CHOMPNOTHING);
   expectFullChomp(2, (Score []){0x48, 0x88});
   return true;
 }
 bool setup2CloseInc(void) {
   setupSingleton();
-  meapOfJunks_insert(0x89, 4, &iJunk);
+  meapOfJunks_insert(0x89, 4);
   expect(CHOMPNOTHING);
   expectFullChomp(2, (Score []){0x88, 0x89});
   return true;
 }
 bool setup2CloseDec(void) {
   setupSingleton();
-  meapOfJunks_insert(0x87, 5, &iJunk);
+  meapOfJunks_insert(0x87, 5);
   expectFullChomp(2, (Score []){0x88, 0x87}); // Cos score (/16) is same
   expect(CHOMPNOTHING);
   return true;
@@ -74,9 +73,9 @@ bool setup2CloseDec(void) {
 
 bool setup3(Score a, Score b, Score c) {
   setupEmpty();
-  meapOfJunks_insert(a, 6, &iJunk);
-  meapOfJunks_insert(b, 7, &iJunk);
-  meapOfJunks_insert(c, 8, &iJunk);
+  meapOfJunks_insert(a, 6);
+  meapOfJunks_insert(b, 7);
+  meapOfJunks_insert(c, 8);
   expectFullChomp(3, (Score []){0x18, 0x28, 0x38});
   return true;
 }
@@ -133,26 +132,13 @@ bool testMeap2(void) {
 }
 
 bool testMeap3(void) {
+  meapOfJunks_erase((JunkIx){2});
   return
-    (meapOfJunks_erase((JunkIx){2})) &&
     howMany(setupNum>0 ? 1 : 0) &&
     ordered() &&
     true;
 }
 
-
-bool testMeap4(void) {
-  Ix cnt = meapOfJunks_count();
-  if (cnt==0) return true;
-  for (int a=0;a<500;a++) {
-    JunkIx i = (JunkIx) {a%cnt};
-    meapOfJunks_editTocks(i,rand()%0x100);
-    ordered();
-  }
-  return true;
-}
-
-//bool testMeap5(void) { }
 
 void cleanupMeap(void) { meapOfJunks_close(Hide); }
 
@@ -160,22 +146,22 @@ bool chompT(void) {
   Junk j;
   Chomped res;
   setupEmpty();
-  j = (Junk){0}; res = meapOfJunks_chomp(8, &j, 0);
+  j = (Junk){0}; res = meapOfJunks_chomp(8, &j);
   assertIntM(res, Extinct);
   cleanupMeap();
   setup123();
   meapOfJunks_show();
-  j = (Junk){0}; res = meapOfJunks_chomp(8, &j, 0);
+  j = (Junk){0}; res = meapOfJunks_chomp(8, &j);
   assertIntM(res, Idle); assertIntM(j.tocks, 0x18);
-  j = (Junk){0}; res = meapOfJunks_chomp(0x18, &j, 0);
+  j = (Junk){0}; res = meapOfJunks_chomp(0x18, &j);
   assertIntM(res, Killed); assertIntM(j.tocks, 0x18);
-  j = (Junk){0}; res = meapOfJunks_chomp(0x18, &j, 0);
+  j = (Junk){0}; res = meapOfJunks_chomp(0x18, &j);
   assertIntM(res, Idle); assertIntM(j.tocks, 0x28);
-  j = (Junk){0}; res = meapOfJunks_chomp(0x98, &j, 0);
+  j = (Junk){0}; res = meapOfJunks_chomp(0x98, &j);
   assertIntM(res, Killed); assertIntM(j.tocks, 0x28);
-  j = (Junk){0}; res = meapOfJunks_chomp(0x98, &j, 0);
+  j = (Junk){0}; res = meapOfJunks_chomp(0x98, &j);
   assertIntM(res, Killed); assertIntM(j.tocks, 0x38);
-  j = (Junk){0}; res = meapOfJunks_chomp(0x98, &j, 0);
+  j = (Junk){0}; res = meapOfJunks_chomp(0x98, &j);
   assertIntM(res, Extinct); assertIntM(j.tocks, 0);
   meapOfJunks_show();
   return true;
@@ -185,7 +171,7 @@ bool chompTest(void) {
   return bkt("chompTest",nowt, chompT, cleanupMeap);
 }
 
-B testers[] = {testMeap1, testMeap2, testMeap3, testMeap4}; //, testMeap3, testMeap4};
+B testers[] = {testMeap1, testMeap2, testMeap3}; //, testMeap3, testMeap4};
 #define numMeapTesters (sizeof(testers)/sizeof(B))
 
 

@@ -5,8 +5,8 @@ void      hotelOfXXs_show1        (XXIx);
 bool      hotelOfXXs_open         (void);
 XXTact    hotelOfXXs_admit        (Cash cash, bool isGod, V_XXP stuff, XX ** pp, bool * pRecycled); //Cash = 0 -> God
 XX *      hotelOfXXs_get          (XXIx); // Unsafe
-XX *      hotelOfXXs_grab         (XXTact, Cash *);
-XX *      hotelOfXXs_grabIx       (XXIx, Cash *);
+Woth      hotelOfXXs_grab         (XXTact, XX ** ppXX, Cash *);
+bool      hotelOfXXs_grabIx       (XXIx,   XX ** ppXX, Cash *);
 void      hotelOfXXs_drop         (XXIx, Cash);
 void      hotelOfXXs_raid         (void);
 Ix        hotelOfXXs_count        (void);
@@ -21,5 +21,5 @@ extern void showXX(XXIx i, XX * p);
 extern void onXXHotel_rentCollected (Cash rent);
 extern void onXXHotel_rentDefaulted (Cash rent); 
 extern void onXXHotel_extinct       (void); 
-extern void onXXHotel_goDie         (XXIx, XX * pXX); // Provide this.
+extern void onXXHotel_funeral       (XXIx, XX * pXX); // Provide this.
 

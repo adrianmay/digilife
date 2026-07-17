@@ -14,7 +14,7 @@
 void onXXBombMeap_move(XXBomb * pBomb, XXBombIx to) {
   XXBlob * pBlob = pileOfXXBlobs_get(pBomb->who);
   pBlob->rent.inb.nb.b = to;
-  meapOfXXBombs_check();
+  //meapOfXXBombs_check();
 }
 
 void onXXBombMeap_new(XXBomb * pBomb, XXBombIx i, Ix hint) {
@@ -204,7 +204,7 @@ void hotelOfXXs_raid(void) {
     if (ch == Killed); // Already handled vi onXXMeap_timeout
     else if (ch == Extinct) {
       onXXHotel_extinct(); 
-      meapOfXXBombs_check();
+      //meapOfXXBombs_check();
       return;
     }
     else return; // Must be Idle

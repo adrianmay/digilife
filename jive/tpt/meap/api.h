@@ -14,7 +14,7 @@ void    meapOfXXs_insert    (Tocks expiry, Ix hint);
 void    meapOfXXs_erase     (XXIx i); // Danger - call after locking XXInb only
 Chomped meapOfXXs_chomp     (Score thresh, XX * p);
 void    meapOfXXs_forAll    (V_I_P);
-bool    meapOfXXs_check     (void);
+//bool    meapOfXXs_check     (void);
 void    showXX              (XXIx i, XX * pXX);
 
 extern const XXIx badXXIx;

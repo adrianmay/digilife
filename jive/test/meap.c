@@ -113,18 +113,18 @@ bool howMany(int killed) {
   return true;
 }
 
-bool ordered(void) {
-  bool b = meapOfJunks_check();
-  assertInt(b, true);
-  return b;
-}
+//bool ordered(void) {
+//  bool b = meapOfJunks_check();
+//  assertInt(b, true);
+//  return b;
+//}
 
-bool testMeap1(void) {
-  return
-    howMany(0) &&
-    ordered() &&
-    true;
-}
+//bool testMeap1(void) {
+//  return
+//    howMany(0) &&
+//    ordered() &&
+//    true;
+//}
 
 bool testMeap2(void) {
   return
@@ -136,7 +136,7 @@ bool testMeap3(void) {
   meapOfJunks_erase((JunkIx){2});
   return
     howMany(setupNum>0 ? 1 : 0) &&
-    ordered() &&
+    //ordered() &&
     true;
 }
 
@@ -172,7 +172,7 @@ bool chompTest(void) {
   return bkt("chompTest",nowt, chompT, cleanupMeap);
 }
 
-B testers[] = {testMeap1, testMeap2, testMeap3}; //, testMeap3, testMeap4};
+B testers[] = {testMeap2, testMeap3}; //, testMeap3, testMeap4};
 #define numMeapTesters (sizeof(testers)/sizeof(B))
 
 

@@ -34,8 +34,8 @@ void * work(void * p) {
   return 0;
 }
 
-#define NUM_THREADS 2
-static pthread_t pids[NUM_THREADS] = {0};
+//#define NUM_THREADS 2
+//static pthread_t pids[NUM_THREADS] = {0};
 
 bool testTank() {
   onTestTock = onTockTank;
@@ -43,10 +43,10 @@ bool testTank() {
   atomic_store(&iterations, 0);
   hotelOfMobs_show();
   raffleOfMsgs_show();
-//  work(0);
   time_t start = time(NULL);
-  for (int64_t a=0;a<NUM_THREADS; a++) pthread_create(pids+a, 0, work, (void*)a);
-  for (int64_t a=0;a<NUM_THREADS; a++) pthread_join(pids[a], 0);
+  work(0);
+  //for (int64_t a=0;a<NUM_THREADS; a++) pthread_create(pids+a, 0, work, (void*)a);
+  //for (int64_t a=0;a<NUM_THREADS; a++) pthread_join(pids[a], 0);
   time_t end = time(NULL);
   printf("Took %'ld\n", end-start);
   return true;

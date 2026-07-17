@@ -38,7 +38,10 @@ XXIx pileOfXXs_alloc(XX ** pNew, bool * pRecyc) {
 }
 
 XX * pileOfXXs_get(XXIx i) { 
-  return (XX*)findInPile(headOfXXs, i.i); 
+  //lock(); 
+  XX * p = (XX*)findInPile(headOfXXs, i.i); 
+  //unlock(); 
+  return p;
 }
 
 //void * withXX(XXIx i, F_XX f, void * u)       { return withInPile(headOfXXs, i.i, (F)f, u); }
@@ -52,7 +55,6 @@ void pileOfXXs_close(Fate fate) {
   lock(); 
   closePile(headOfXXs, fate);
   headOfXXs = 0; 
-  unlock(); 
 }
 
 bool pileOfXXs_ixValid(XXIx i)  { return (i.i & 0x7FFFFFFF) != 0x7FFFFFFF; }

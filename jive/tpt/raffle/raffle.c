@@ -219,7 +219,6 @@ void raffleOfXXs_close(Fate f) {
 }
 
 void raffleOfXXs_quit() {
-  abort();
   gottaQuitXX = true;
   pthread_cond_signal(&cond);
 }
@@ -242,7 +241,7 @@ void onXXTicketHotel_funeral(XXTicketIx i, XXTicket * pT) {
 }
 
 void onXXTicketHotel_rentCollected(Cash rent) {}
-void onXXTicketHotel_rentDefaulted(Cash rent) {}
+void onXXTicketHotel_rentDefaulted(Cash rent) { printf("XX rent defaulted: %'ld\n", rent); }
 void onXXTicketHotel_extinct(void) { onXXRaffle_extinct(); }
 
 // static void panicDump_(XXIx i) {

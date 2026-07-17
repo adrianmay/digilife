@@ -22,13 +22,11 @@ static void cleanup(void) {
   hotelOfMobs_close(Delete); 
 }
 
-static _Atomic int iterations;
-
 void * work(void * p) {
 //  while(iterations < 100000 && draw())  {
   while(draw())  {
-    //if (iterations % 1 == 0)
-      printf("Tocks=%d Mobs=%d Msgs=%d\n", tocksNow(), hotelOfMobs_count(), raffleOfMsgs_count()); 
+    //if (iterations < 1000 || iterations % 1000 == 0)
+    //  printf("Its=%d, Tocks=%d Mobs=%d Msgs=%d\n", iterations, tocksNow(), hotelOfMobs_count(), raffleOfMsgs_count()); 
     atomic_fetch_add(&iterations,1);
   }
   return 0;
@@ -39,17 +37,36 @@ void * work(void * p) {
 
 bool testTank() {
   onTestTock = onTockTank;
-  seed(5, 1000000, 5000);
+  seed(5, 1000000, 20'000'000); // Number of mobs, starting cash, spawn threshold
   atomic_store(&iterations, 0);
-  hotelOfMobs_show();
-  raffleOfMsgs_show();
   time_t start = time(NULL);
   work(0);
   //for (int64_t a=0;a<NUM_THREADS; a++) pthread_create(pids+a, 0, work, (void*)a);
   //for (int64_t a=0;a<NUM_THREADS; a++) pthread_join(pids[a], 0);
   time_t end = time(NULL);
+  hotelOfMobs_show();
+  raffleOfMsgs_show();
   printf("Took %'ld\n", end-start);
   return true;
 }
 
 bool tank(void) { return bkt("raffle", init, testTank, cleanup); }
+
+// Expt 1 result:
+// Its=109,600,000, Rent=1,280 Means: pop=762.80, cash=9,432,386, thresh=20,000,000
+// Expected pop = dole/rent but that would be 781.25
+// Diff = 18.45 = 2.36%
+// Probably dying with -ve cash
+
+// Histogram of excess cash at want-to-spawn test:
+// 0-100000       : 37210     
+// 100000-200000  : 33267
+// 200000-300000  : 29551
+// 300000-400000  : 25703
+// 400000-500000  : 21618
+// 500000-600000  : 17984
+// 600000-700000  : 13914
+// 700000-800000  : 9898 
+// 800000-900000  : 5918 
+// 900000-1000000 : 1996
+

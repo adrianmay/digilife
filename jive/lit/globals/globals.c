@@ -11,7 +11,7 @@
 
 #define GLOBALS_FILENAME "Globals.pile"
 
-int iter=0;
+_Atomic uint64_t iterations;
 
 VolatileGlobals vg;
 PersistentGlobals * pg;

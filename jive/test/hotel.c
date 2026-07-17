@@ -261,8 +261,6 @@ void doit(int me, int dowhat, int it) {
         break; }
   }
 }
-_Atomic int iterations;
-
 void * monkey(void * n) {
   int me = (int)( (int64_t) n);
   for (int a=0; a<10; a++) {

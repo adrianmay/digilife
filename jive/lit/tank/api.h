@@ -4,7 +4,8 @@
 #define SIZE_BOTH (SIZE_MOB+SIZE_MSG)  
 #define MOB_PROP (SIZE_MOB/SIZE_BOTH)  
 #define MSG_PROP (SIZE_MSG/SIZE_BOTH)  
-#define DOLE 100000000
+#define DOLE 1000000
+#define SPAWN_COST 5000000
 #define CYCLES_PER_JOB GUESS_CYCLES_PER_TOCK
 
 void seed(int n, Cash c, Cash thresh);

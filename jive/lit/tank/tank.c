@@ -43,9 +43,9 @@ void showMsg(MsgIx i, Msg * p) {
 void spawn(Cash c, Cash thresh) {
   void stuff(Mob * p) { 
     p->phylum = PhyTest;
-//    Cash vm = thresh*0.03;
-//    Cash vd = (randIntBelow(5)-2)*vm; 
-    p->_.test.spawnThresh = thresh; // + vd; 
+    Cash vm = thresh*0.03;
+    Cash vd = (randIntBelow(5)-2)*vm; 
+    p->_.test.spawnThresh = thresh + vd; 
   }
   MobTact tNewMob = hotelOfMobs_admit(c*MOB_PROP, false, stuff, 0, 0);
   void stuffMsg(Msg * p) { p->cpuBid = 0; p->sndr = p->rcvr = tNewMob; }

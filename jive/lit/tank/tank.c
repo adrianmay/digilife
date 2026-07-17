@@ -67,21 +67,6 @@ void dumpPiles(void) {
   printf("\n");
 }
 
-//void loop() { 
-//  //raffleOfMsgs_show();
-//  do {
-//    if (!raffleOfMsgs_check()) DIE("Raffle check failed\n");
-////    printf("\n");
-//    printf("Tocks=%d Mobs=%d Msgs=%d\n", tocksNow(), hotelOfMobs_count(), raffleOfMsgs_count()); 
-////    printf("\n");
-////    hotelOfMobs_show();
-////    printf("\n");
-////    raffleOfMsgs_show();
-////    printf("\n");
-////    printf("\n#####################################################\n\n");
-//  } while (raffleOfMsgs_draw()); 
-//}
-
 #define SAMPLER(NAME, SPEED) \
   double NAME##Mean; \
   int NAME##Samples=0; \
@@ -92,12 +77,12 @@ void dumpPiles(void) {
     NAME##Mean = speed*val + (1.0-speed)*NAME##Mean; \
   }
 
-SAMPLER(msgcash, 0.00000001)
-SAMPLER(mobcash, 0.00000001)
-SAMPLER(childcash, 0.00000001)
-SAMPLER(thresh, 0.0001)
-SAMPLER(pop, 0.00000001)
-SAMPLER(spawned, 0.00000001)
+SAMPLER(msgcash,   0.000000001)
+SAMPLER(mobcash,   0.000000001)
+SAMPLER(childcash, 0.000000001)
+SAMPLER(thresh,    0.000000001)
+SAMPLER(pop,       0.000000001)
+SAMPLER(spawned,   0.000000001)
 
 #define HISTOGRAM(NAME, BUCKETS, BOT, STEP) \
   int NAME##Buckets[BUCKETS]={0};  \
@@ -108,6 +93,10 @@ SAMPLER(spawned, 0.00000001)
 HISTOGRAM(spare, 30, -1000000.0, 100000.0)
 
 Cash run(Msg * pMsg, Mob * pMob, Cash msgCash, Cash mobCash) {
+  if (randIntBelow(20)==0) {
+    hotelOfMobs_drop(pMsg->rcvr.i, 0);
+    return 0; // Murderer
+  }
   Cash cash = msgCash + mobCash;
   msgcashSample(msgCash);
   mobcashSample(mobCash);

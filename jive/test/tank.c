@@ -37,7 +37,7 @@ void * work(void * p) {
 
 bool testTank() {
   onTestTock = onTockTank;
-  seed(5, 1000000, 20'000'000); // Number of mobs, starting cash, spawn threshold
+  seed(50, 1000000, 20'000'000); // Number of mobs, starting cash, spawn threshold
   atomic_store(&iterations, 0);
   time_t start = time(NULL);
   work(0);
@@ -52,20 +52,7 @@ bool testTank() {
 
 bool tank(void) { return bkt("raffle", init, testTank, cleanup); }
 
-// Expt 1 result:
-// Its=100,000,000, Rent=1,000, thresh=20,000,000; Means: pop=975.21, spawnOdds=201.71355, childCash=7,667,410 msgCash=5,896,447, mobCash=3,537,868, totCash=9,434,315
-// Cos cash in per rep = 1m - 5m/201.5 = 975186
-// math/a.c shows that this is correct cos   
-
-// Histogram of excess cash at want-to-spawn test:
-// 0-100000       : 37210     
-// 100000-200000  : 33267
-// 200000-300000  : 29551
-// 300000-400000  : 25703
-// 400000-500000  : 21618
-// 500000-600000  : 17984
-// 600000-700000  : 13914
-// 700000-800000  : 9898 
-// 800000-900000  : 5918 
-// 900000-1000000 : 1996
+// Expt 2 result:
+// Apply 1:20 murder rate per job. Thresh settles low with 1:16 spawn rate. 43% chance surviving til spawn - not.
+// Its=200,000,000, Rent=1,000, thresh=8,115,720; Means: pop=488.25, spawnOdds=16.30214, childCash=1,675,726 msgCash=2,443,428, mobCash=1,466,057, totCash=3,909,484
 

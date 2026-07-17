@@ -53,7 +53,7 @@ void spawn(Cash c, Cash thresh) {
 }
 
 void seed(int n, Cash c, Cash thresh) {
-  hotelOfMobs_admit(0, true, 0, 0, 0);
+  //hotelOfMobs_admit(0, true, 0, 0, 0);
   for (int a=0;a<n;a++) spawn(c, thresh);
 }
 
@@ -86,6 +86,7 @@ void dumpPiles(void) {
   double NAME##Mean; \
   int NAME##Samples=0; \
   void NAME##Sample(double val) { \
+    if (iterations < 1000000) return; \
     NAME##Samples++; \
     double speed = MAX(SPEED, 1.0/NAME##Samples); \
     NAME##Mean = speed*val + (1.0-speed)*NAME##Mean; \
@@ -112,7 +113,7 @@ Cash run(Msg * pMsg, Mob * pMob, Cash msgCash, Cash mobCash) {
   mobcashSample(mobCash);
   cash += DOLE;
   notifyCycles(CYCLES_PER_JOB);
-  //cash -= tankRent(); // Cos both msg and mob will miss out on the tock we expend in here
+  cash -= tankRent(); // Cos both msg and mob will miss out on the tock we expend in here
   Cash spare = cash - pMob->_.test.spawnThresh;
   if (spare >= 0) {
     if (iterations > 1000000)
@@ -135,8 +136,8 @@ Cash run(Msg * pMsg, Mob * pMob, Cash msgCash, Cash mobCash) {
   threshSample(pMob->_.test.spawnThresh);
   popSample(hotelOfMobs_count());
   if (iterations < 1000 || iterations % 100000 == 0) 
-    printf("Its=%'ld, Rent=%'.0f Means: pop=%'.2f, childCash=%'.0f msgCash=%'.0f, mobCash=%'.0f, totCash=%'.0f, thresh=%'.0f, spawnOdds=%'.5f\n",
-        iterations, tankRent(), popMean, childcashMean, msgcashMean, mobcashMean, msgcashMean+mobcashMean, threshMean, 1.0/spawnedMean);
+    printf("Its=%'ld, Rent=%'.0f, thresh=%'.0f; Means: pop=%'.2f, spawnOdds=%'.5f, childCash=%'.0f msgCash=%'.0f, mobCash=%'.0f, totCash=%'.0f\n",
+        iterations, tankRent(), threshMean, popMean, 1.0/spawnedMean, childcashMean, msgcashMean, mobcashMean, msgcashMean+mobcashMean);
   return cash;
 }
 

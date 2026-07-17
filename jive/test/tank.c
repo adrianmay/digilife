@@ -53,10 +53,9 @@ bool testTank() {
 bool tank(void) { return bkt("raffle", init, testTank, cleanup); }
 
 // Expt 1 result:
-// Its=109,600,000, Rent=1,280 Means: pop=762.80, cash=9,432,386, thresh=20,000,000
-// Expected pop = dole/rent but that would be 781.25
-// Diff = 18.45 = 2.36%
-// Probably dying with -ve cash
+// Its=100,000,000, Rent=1,000, thresh=20,000,000; Means: pop=975.21, spawnOdds=201.71355, childCash=7,667,410 msgCash=5,896,447, mobCash=3,537,868, totCash=9,434,315
+// Cos cash in per rep = 1m - 5m/201.5 = 975186
+// math/a.c shows that this is correct cos   
 
 // Histogram of excess cash at want-to-spawn test:
 // 0-100000       : 37210     

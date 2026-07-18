@@ -1,0 +1,53 @@
+
+
+2 ###################################
+Goal:  Evolve spawn threshold
+Lang:  Just a number
+
+2a ###################################
+Goal:  As 2 but with code
+Lang1: All of 2 as instruction with thresh param
+Lang2: Lots of climate registers
+       Roll prefix with mu and sigma and register comparison
+       Post and spawn instructions
+       Auto-post to child for now
+       Mutation
+Lang3: Tax away auto-self-post 
+
+3 ###################################
+Goal:  Post to others for a reward
+Lang:  Post1 with rcvr param: me, current or recently noted sndr, random
+       Note climate stuff, children
+       Tax away auto-post to child
+       Gods post to mortals
+
+4 ###################################
+Goal:  Yield
+Lang:  Times out til msg cash exhausted without explicit yield       
+
+5 ###################################
+Goal:  Reply verbatim
+Lang:  Lots of gods posting data to mortals, reply verbatim to get rich msg next
+       
+
+6 ###################################
+Goal:  Reply transformed
+Lang:  
+
+7: ###################################
+Goal:  Spam war
+Lang:  
+
+8: ###################################
+Goal:  Subcontract
+Lang:  
+
+9: ###################################
+Goal:  Subscriptions
+Lang:  
+
+10: ###################################
+Goal: Yellow pages 
+Lang:  
+
+

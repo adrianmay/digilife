@@ -1,218 +1,148 @@
-#include "Mob_pile/1.h"
-#include "Msg_pile/1.h"
-#include "Mob_pile/2.h"
-#include "Mob_hotel/h.h"
-#include "Msg_pile/2.h"
-#include "Msg_raffle/h.h"
-#include "globals/h.h"
-#include "misc/h.h"
-#include "h.h"
+#include <string.h>
+#include "types.h"
+#include "globals/api.h"
+#include "misc/api.h"
+#include "Mob.h"
+#include "Msg.h"
+#include "Mob_hotel/api.h"
+#include "Msg_raffle/ix.h"
+#include "Msg_raffle/api.h"
+#include "api.h"
 
-void showMobTact(MobTact t) {
-  printf("Tact {%d,%x}\n", t.i.i, t.n);
-}
 
-void showTank() {
-  hotelOfMobs.show();
-  raffleOfMsgs.show();
-}
+TockPrice tankRent() { return hotelOfMobs_rent() + raffleOfMsgs_rent(); }
 
-MobTact makeGod() {
-  void stuffGod(MobBody * pB) {pB->phylum=PHY_GOD;}
-  Mob * p;
-  hotelOfMobs.checkHotel(0);
-  MobTact tChild = hotelOfMobs.admit(0, stuffGod, &p, 0);
-  return tChild;
-}
+void onMobHotel_goDie(MobIx i, Mob * pT) { }
+void onMobHotel_rentCollected (Cash rent) {}
+void onMobHotel_rentDefaulted (Cash rent) { printf("Mob rent defaulted: %'ld\n", rent); }
+void onMobHotel_extinct       (void) { raffleOfMsgs_quit(); }
+void onMobHotel_funeral(MobIx, Mob * pMob) {}
 
-MobTact 
-tInvestor, tSales, 
-  tMemCosts, tMemLost, 
-  tCpuCosts, tCpuLost, tCpuFines, 
-  tUndeliverables;
+void onMsgRaffle_extinct() { raffleOfMsgs_quit();  } // Not when we have external msg sources
 
-void makeVirginTank() {
-  tInvestor       = makeGod(); 
-  tSales          = makeGod(); 
-  tMemCosts       = makeGod(); 
-  tMemLost        = makeGod(); 
-  tCpuCosts       = makeGod(); 
-  tCpuLost        = makeGod(); 
-  tCpuFines       = makeGod(); 
-  tUndeliverables = makeGod();
-}
-
-bool openTank() {
-  openGlobals();
-  bool virgin = hotelOfMobs.open();
-  if (virgin) makeVirginTank();
-  raffleOfMsgs.open();
-  return virgin;
-}
-
-void closeTank(FATE f) {
-  raffleOfMsgs.close(f);
-  hotelOfMobs.close(f);
-  closeGlobals(f);
-}
-
-void choose() {raffleOfMsgs.draw();}
-
-void onMobRentCollected(Cash cash) {
-  void f(Mob * p) {hotelOfMobs.richer(p, cash);}
-  hotelOfMobs.with(tMemCosts,f);
-}
-
-void onMobRentDefaulted(Cash cash) {
-  void f(Mob * p) {hotelOfMobs.richer(p, cash);}
-  hotelOfMobs.with(tMemLost,f);
-}
-
-void onMsgRentCollected(Cash cash) {
-  void f(Mob * p) {hotelOfMobs.richer(p, cash);}
-  hotelOfMobs.with(tMemCosts,f);
-}
-
-void onMsgRentDefaulted(Cash cash) {
-  void f(Mob * p) {hotelOfMobs.richer(p, cash);}
-  hotelOfMobs.with(tMemLost,f);
-}
-
-void burned(Core * pC, Cycles cycles, int line) {
-  pC->msgCash -= cycles * pC->bid;
-  if (pC->msgCash < 0) {
-    longjmp(pC->jmpbuf, cycles); // Notify them in the catch after stopping job
+void showMob(MobIx i, Mob * p) {
+  switch (p->phylum) { 
+    case PhyGod:
+      break;
+    case PhyTest:
+      TestMob * pTestMob = &p->_.test; 
+      printf("spawnThresh=%ld", pTestMob->spawnThresh);
+      break;
+    default:
+      DIE("Unknown phylum\n");
   }
-  notifyCycles(cycles);
 }
-
-bool spending(Core * pC, Cash cash, bool (*act)(void)) {
-  if (cash <= pC->mobCash) { pC->mobCash -= cash; return act(); }
-  else return false;
-}
-
-
-bool spawn(Core * pC, Cash cash, WithMobBody stuffBody, MobTact * ptChild) {
-  //printf("Spawn cash=%ld\n", cash);
-  bool f(void) {  
-    void stuff(MobBody * pB) { if (stuffBody) stuffBody(pB); }
-    *ptChild = hotelOfMobs.admit(cash, stuff, 0, 0);
-    return true;
-  }
-  return spending(pC, cash, f);  
-}
-
-Weight bidToWeight(Cash c) { return 1; }
-
-bool post(Core * pC, Cash cash, CpuBid bid, MobTact tR, WithPayload stuffPayload) {
-  //printf("post:f: mob cash=%ld\n", pSender->rent.cash);
-  if (tR.i.i == BAD_INDEX) {
-    printf("post: bad rcvr index\n");
-    return false;
-  }
-  void nowt(Mob * pMob) { }
-  if (Dead == hotelOfMobs.with(tR, nowt)) {
-    printf("post: dead rcvr\n");
-    return false;
-  }
-  bool f(void) {
-    void stuff(MsgTicket * pT) {
-      pT->cpuBid = bid;
-      pT->rcvr = tR;
-      pT->sndr = pC->tMob;
-      if (stuffPayload) stuffPayload(&pT->payload);
-    }
-    raffleOfMsgs.play(cash, bidToWeight(bid), stuff);
-    return true;
-  }
-  return spending(pC, cash, f);
-}
-
-void mutMob(MobBody * pDst, Mob * pSrc) {
-  pDst->phylum = PHY_B;
-}
-
-bool runMob(Core * pC, Mob * pMob, Msg * pMsg) {
-  void stuffMob(MobBody * pMB) { mutMob(pMB, pMob); }
-  void stuffPayload(MsgPayload * pP) { }
-  CpuBid bid = 0;
-  MobBody * pMB = &pMob->body;
-  //printf("runMob start: i=%d cash=%ld\n", pC->tMob.i.i, pMob->rent.cash);
-  if (pMB->phylum != PHY_B) abort();
-  pC->mobCash += PAY;
-  burned(pC, CYCLES_IDLE, __LINE__);
-  PhyB * pB = &pMB->p.b;
-  if (pC->mobCash > pB->spawnThresh) {
-    burned(pC, CYCLES_EXTRA_SPAWN, __LINE__);
-    Cash forChildTot = pC->mobCash/2;
-    Cash forChildMob = forChildTot * (1.0 - MSG_PROP);
-    Cash forChildMsg = forChildTot * MSG_PROP;
-    //printf("Spawning: mycash=%ld forChildMob=%ld forChildMsg=%ld\n", pMob->rent.cash, forChildMob, forChildMsg);
-    MobTact tChild;
-    if (spawn(pC, forChildMob, stuffMob, &tChild))
-      post(pC, forChildMsg, bid, tChild, stuffPayload);
-  } 
-  post(pC, pMob->rent.cash*MSG_PROP, bid, pMsg->body.ticket.rcvr, stuffPayload);
-  return true;
-}
-
-void job(MobTact tMob, Mob * pMob, Msg* pMsg) {
-  hotelOfMobs.collectRent(pMob, true);
-  Core core;
-  core.tMob = tMob;
-  core.msgCash = pMsg->rent.cash;
-  core.mobCash = pMob->rent.cash;
-  MsgTicket * pTicket = &pMsg->body.ticket;
-  core.bid = pTicket->cpuBid;
-  int jmp = setjmp(core.jmpbuf);
-  if (jmp == 0)  runMob(&core, pMob, pMsg);
   
-  Cash change = core.mobCash + core.msgCash;
-  pMob->rent.cash = change;
-
-//  if (core.jobCash>0) hotelOfMobs.richer(pMob,   core.jobCash);
-//  if (core.jobCash<0) { 
-//    Cash over = -core.jobCash;
-//    Cash couldAfford = hotelOfMobs.poorer(pMob, over, Ono);
-//    if (couldAfford < over) {
-//      void f(Mob * pMemLost) { hotelOfMobs.poorer(pMemLost, over - couldAfford, Exact); }
-//      hotelOfMobs.with(tMemLost, f);
-//    } else {
-//      Cash fine = -core.jobCash*FINE_FACTOR;
-//      hotelOfMobs.poorer(pMob, fine, Ono);
-//    }
-//  }
+void showMsg(MsgIx i, Msg * p) {
+  char r[50], s[50];
+  hotelOfMobs_showsTact(r, p->rcvr);
+  hotelOfMobs_showsTact(s, p->sndr);
+  printf("bid=%.3f %s %s", p->cpuBid, r, s);
 }
-
-void onMsgRaffleDispatch(MsgIx i, Msg * pMsg, VV claim, VV unlock, VV rob) {
-  MobTact tMob = pMsg->body.ticket.rcvr;
-  void f(Mob * pMob) { 
-    claim();
-    unlock();
-    job(tMob, pMob, pMsg); //
+  
+void spawn(Cash c, Cash thresh) {
+  void stuff(Mob * p) { 
+    p->phylum = PhyTest;
+    Cash vm = thresh*0.03;
+    Cash vd = (randIntBelow(5)-2)*vm; 
+    p->_.test.spawnThresh = thresh + vd; 
   }
-  Woth woth = hotelOfMobs.with(tMob, f);
-  if (woth != Busy) {
-    rob();
+  MobTact tNewMob = hotelOfMobs_admit(c*MOB_PROP, false, stuff, 0, 0);
+  void stuffMsg(Msg * p) { p->cpuBid = 0; p->sndr = p->rcvr = tNewMob; }
+  raffleOfMsgs_play(c*MSG_PROP, 100, stuffMsg); 
+}
+
+void seed(int n, Cash c, Cash thresh) {
+  //hotelOfMobs_admit(0, true, 0, 0, 0);
+  for (int a=0;a<n;a++) spawn(c, thresh);
+}
+
+bool draw() { return raffleOfMsgs_draw(); }
+
+void dumpPiles(void) {
+  printf("\n");
+  hotelOfMobs_show();
+  printf("\n");
+  raffleOfMsgs_show();
+  printf("\n");
+}
+
+#define SAMPLER(NAME, SPEED) \
+  double NAME##Mean; \
+  int NAME##Samples=0; \
+  void NAME##Sample(double val) { \
+    if (iterations < 1000000) return; \
+    NAME##Samples++; \
+    double speed = MAX(SPEED, 1.0/NAME##Samples); \
+    NAME##Mean = speed*val + (1.0-speed)*NAME##Mean; \
   }
 
+SAMPLER(msgcash,   0.000000001)
+SAMPLER(mobcash,   0.000000001)
+SAMPLER(childcash, 0.000000001)
+SAMPLER(thresh,    0.000000001)
+SAMPLER(pop,       0.000000001)
+SAMPLER(spawned,   0.000000001)
+
+#define HISTOGRAM(NAME, BUCKETS, BOT, STEP) \
+  int NAME##Buckets[BUCKETS]={0};  \
+  void NAME##Plop(double val) { int b = (val - BOT) / STEP; NAME##Buckets[b]++; } \
+  void NAME##Hist##Show() { for (int a=0;a<BUCKETS;a++) \
+    { printf("%.0f-%.0f : %d\n", BOT+STEP*a, BOT+STEP*(a+1), NAME##Buckets[a]); }}
+  
+HISTOGRAM(spare, 30, -1000000.0, 100000.0)
+
+Cash run(Msg * pMsg, Mob * pMob, Cash msgCash, Cash mobCash) {
+  if (randIntBelow(20)==0) {
+    hotelOfMobs_drop(pMsg->rcvr.i, 0);
+    return 0; // Murderer
+  }
+  Cash cash = msgCash + mobCash;
+  msgcashSample(msgCash);
+  mobcashSample(mobCash);
+  cash += DOLE;
+  notifyCycles(CYCLES_PER_JOB);
+  cash -= tankRent(); // Cos both msg and mob will miss out on the tock we expend in here
+  Cash spare = cash - pMob->_.test.spawnThresh;
+  if (spare >= 0) {
+    if (iterations > 1000000)
+      sparePlop(spare);
+    //if (iterations >= 20000000)
+    //  spareHistShow();
+    cash -= SPAWN_COST;
+    Cash childCash = cash/2; // - spare/2;
+    childcashSample(childCash);
+    cash -= childCash;
+    spawn(childCash, pMob->_.test.spawnThresh);
+    spawnedSample(1);
+  } else spawnedSample(0);
+  void stuffMsg(Msg * pNewMsg) {
+    memcpy(pNewMsg, pMsg, sizeof(*pMsg)); 
+  }
+  raffleOfMsgs_play(cash*MSG_PROP, 100, stuffMsg); 
+  cash -= cash*MSG_PROP;
+  hotelOfMobs_drop(pMsg->rcvr.i, cash);
+  threshSample(pMob->_.test.spawnThresh);
+  popSample(hotelOfMobs_count());
+  if (iterations < 1000 || iterations % 100000 == 0) 
+    printf("Its=%'ld, Rent=%'.0f, thresh=%'.0f; Means: pop=%'.2f, spawnOdds=%'.5f, childCash=%'.0f msgCash=%'.0f, mobCash=%'.0f, totCash=%'.0f\n",
+        iterations, tankRent(), threshMean, popMean, 1.0/spawnedMean, childcashMean, msgcashMean, mobcashMean, msgcashMean+mobcashMean);
+  return cash;
 }
 
-void onMobHotelGoDie(MobIx i, Mob * p) {}
-
-
-
-/*
-int samples=0;
-Avg avg;
-
-#define MIX(F) \
-  avg.F = ( samples*avg.F + ((double)pB->p.b.F)) / ((double)(samples+1)) ;
-
-void smple(MobBody* pB) {
-  MIX(spawnThresh)
-  MIX(payMsg)
-  MIX(bid)
-  if (samples<100) samples++;
+Cash onMsgRaffle_dispatch(MsgIx i, Msg * pMsg, Cash msgCash, V claim, V unlock) {
+  Mob * pMob;
+  Cash mobCash;
+  Woth w = hotelOfMobs_grab(pMsg->rcvr, &pMob, &mobCash);
+  if (w==Dead) { unlock(); return 0; }       // Bankrupt msg
+  if (w==Busy) { unlock(); return msgCash; } // Leave msg alone
+  // So we got it
+  claim();
+  unlock();
+  run(pMsg, pMob, msgCash, mobCash);
+  return 0; 
+  hotelOfMobs_raid();
 }
-*/
+
+void onTockTank() {}
+

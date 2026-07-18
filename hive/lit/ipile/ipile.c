@@ -6,9 +6,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include "types.h"
-#include "misc/h.h"
-#include "args/h.h"
-#include "h.h"
+#include "misc/api.h"
+#include "args/api.h"
+#include "api.h"
 #include "structs.h"
 #define MAX_FULL_PATH (MAX_FILENAME+DATA_DIR_MAX)
 
@@ -75,15 +75,15 @@ Pilehead * openPile(const char * basefilename, uint32_t rec, uint32_t stp, Ix li
   return ph;
 }
 
-void closePile(Pilehead * ph, FATE fate) {
+void closePile(Pilehead * ph, Fate fate) {
   if (!ph) return;
   int fd = ph->fd;
   if (fd == -1) return;
   close(fd);
   char src[MAX_FULL_PATH];
   snprintf(src, MAX_FULL_PATH, "%s/%s", getDataDir(), ph->fn);
-  if (fate==DELETE) unlink(src);
-  if (fate==HIDE) {
+  if (fate==Delete) unlink(src);
+  if (fate==Hide) {
     char dest[MAX_FULL_PATH+1];
     snprintf(dest, MAX_FULL_PATH+1, "%s/.%s", getDataDir(), ph->fn);
     rename(src, dest);
@@ -113,7 +113,7 @@ void * findInPile(Pilehead * ph, Ix i) { return (((void*)(ph+1)) + i*ph->rec); }
 // If it's free, we know we're pointing at an index of another free block or BAD_INDEX, so cast it:
 Free * findFreeInPile(Pilehead * ph, Ix i) { return (Free*) findInPile(ph,i); }
 
-void * withInPile(Pilehead * ph, Ix i, F f, void * u) {
+void * withInPile(Pilehead * ph, Ix i, P_P_P f, void * u) {
   void * p = findInPile(ph, i);
   void * ret = f(p, u);
   return ret;
@@ -162,8 +162,7 @@ void freeInPile(Pilehead * ph, Ix i, void * ghost, int ghostlen) {
   Free * pFree = findFreeInPile(ph,i); // Get the block
   //printf("freeInPile %s %d\n", ph->fn, i);
   if (isInFreeList(ph, i)) {
-    printf("DOUBLE FREE in %s: %d\n", ph->fn, i);
-    abort();
+    DIE("DOUBLE FREE in %s: %d", ph->fn, i);
   }
   //printf("In freeInPile 1: Setting nextFree of %d in %s to %x\n", i, ph->fn, BAD_INDEX);
   pFree->nextFree = BAD_INDEX;
@@ -187,16 +186,14 @@ void freeInPile(Pilehead * ph, Ix i, void * ghost, int ghostlen) {
 Ix countFree(Pilehead * ph ) { return ph->frn; }
 Ix countPop(Pilehead * ph ) { return ph->top - ph->frn; }
 Ix topInPile(Pilehead * ph ) { return ph->top; }
+Ix recInPile(Pilehead * ph ) { return ph->rec; }
 Ix getUsr(Pilehead * ph) { return ph->usr; }
 void setUsr(Pilehead * ph, Ix u) { ph->usr = u; }
 void modUsr(Pilehead * ph, int32_t u)  { ph->usr += u; }
 
 //act needs its own way to detect free blocks
-void forAllPile(Pilehead * ph, bool onlyToUsr, VIP act) {
-  if (!ph) {
-    printf("Pile is closed\n");
-    abort();
-  }
+void forAllPile(Pilehead * ph, bool onlyToUsr, V_I_P act) {
+  if (!ph) DIE("Pile is closed");
   for (Ix i=0;i<(onlyToUsr?ph->usr:ph->top);i++) {
     Free * p = findFreeInPile(ph, i);
     act(i, p);
@@ -204,19 +201,16 @@ void forAllPile(Pilehead * ph, bool onlyToUsr, VIP act) {
 }
 
 // TODO: Could be done with forAllPile:
-void showPile(Pilehead * ph, VIP showSlot, bool onlyToUsr) {
-  printf("\nPILE: %s\n", ph?ph->fn:"closed.");
-  if (!ph) {
-    printf("Pile is closed\n");
-    abort();
-  }
+void showPile(Pilehead * ph, V_I_P showSlot, bool onlyToUsr) {
+  printf("PILE: %s\n", ph?ph->fn:"closed.");
+  if (!ph) DIE("Pile is closed");
   printf("  REC |   TOP |   USR |   FRN |   FRI |   FRO \n");
   printf("%5d | %5d | %5d | %5d | %5d | %5d\n\n", ph->rec, ph->top, ph->usr, ph->frn, ph->fri, ph->fro);
   for (Ix i=0;i<(onlyToUsr?ph->usr:ph->top);i++) {
     Free * p = findFreeInPile(ph, i);
-    printf("%5d | ",i);
     // if (p->nextFree & 0x80000000) 
     //   printf("Free: nextFree=%4d | ", p->nextFree & 0x7FFFFFFF);
     showSlot(i, p); // TODO: have this show freeness like the commented out bit above
+    printf("\n");
   }
 }

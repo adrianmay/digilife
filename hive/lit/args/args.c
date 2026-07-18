@@ -2,7 +2,7 @@
 #include <argp.h>
 #include <stdlib.h>
 #include <string.h>
-#include "h.h"
+#include "api.h"
 
 static Args args = {
   .dataDir = "",

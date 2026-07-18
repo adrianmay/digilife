@@ -1,7 +1,5 @@
-globals
 ipile
 misc
-perf
 args
-core
+globals
 tank

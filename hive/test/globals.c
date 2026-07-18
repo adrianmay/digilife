@@ -1,5 +1,5 @@
-#include "test.h"
-#include "globals/h.h"
+#include "h.h"
+#include "globals/api.h"
 #include "globals/structs.h"
 
 
@@ -7,7 +7,7 @@ bool testGlobals(void) {
   bool v = openGlobals();
   assertInt(v, true);
   uint64_t i = pg->lastKnownTock + vg.tocksReviewedAt + pg->cyclesPerTock;
-  assertLong(i, 1000L);
+  assertLong(i, 2000L);
   vg.tocksReviewedAt = 2;
   pg->lastKnownTock = 1;
   pg->cyclesPerTock = 3;
@@ -21,4 +21,3 @@ bool testGlobals(void) {
 
 void cleanupGlobals(void) { closeGlobals(1); }
 bool globals(void) { return bkt("globals", nowt,testGlobals,cleanupGlobals); }
-

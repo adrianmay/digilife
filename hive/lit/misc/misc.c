@@ -1,3 +1,6 @@
+#define _GNU_SOURCE
+#include <stdlib.h>
+#include <stdarg.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <sys/random.h>
@@ -6,7 +9,7 @@
 #include <math.h>
 #include <string.h>
 #include "types.h"
-#include "h.h"
+#include "api.h"
 
 ////////////////////////////////////////////////////////////////
 
@@ -24,15 +27,33 @@ int64_t  wrapSub64S (uint64_t a, uint64_t b) { return a - b; }
 
 ////////////////////////////////////////////////////////////////
 
-
 int quit(int i) {
   abort();
-} // { return *((int*)(0)); }
+} 
+
+
+char scratch[256];
+
+int die(const char * file, int line, const char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    int ret = vsprintf(scratch, fmt, ap);
+    va_end(ap);
+    printf("Dying at %s:%d because %s\n", file, line, scratch);
+    dumpPiles();
+    abort();
+    return ret;
+}
 
 int fileSize(int fd) {
   struct stat sb;
   if (fstat(fd, &sb) == -1) { printf("Can't stat fd=%d\n", fd); quit(1); }
   return sb.st_size;
+}
+
+uint32_t randInt32Masked(uint32_t mask) {
+  return rand() & mask;
 }
 
 uint64_t randIntBelow(uint64_t lim) {
@@ -82,3 +103,19 @@ double gaussian_random(double mean, double stddev) {
 double clampProb(double p) {
   return MAX(0,MIN(1,p));
 }
+
+void nsToTs(uint64_t ns, struct timespec * pTs) {
+  memset(pTs, 0, sizeof(*pTs));
+  lldiv_t qr = lldiv(ns, 1000000000);
+  pTs->tv_sec = qr.quot;
+  pTs->tv_nsec= qr.rem;
+}
+
+void sleepNs(uint64_t ns) {
+  struct timespec ts;
+  nsToTs(ns, &ts);
+  clock_nanosleep(CLOCK_REALTIME, 0, &ts, 0);
+}
+
+void sleepMs(uint64_t ms) { sleepNs(1000000*ms); }
+

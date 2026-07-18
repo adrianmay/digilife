@@ -3,14 +3,15 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include "types.h"
 #include "structs.h"
-#include "h.h"
-#include "perf/h.h"
-#include "misc/h.h"
+#include "api.h"
+//#include "perf/api.h"
+#include "misc/api.h"
 
 #define GLOBALS_FILENAME "Globals.pile"
 
-int iter=0;
+_Atomic uint64_t iterations;
 
 VolatileGlobals vg;
 PersistentGlobals * pg;
@@ -20,7 +21,7 @@ static void lock() { pthread_mutex_lock(&mutex); }
 static void unlock() { pthread_mutex_unlock(&mutex); }
 
 static void initVirginPersistentGlobals(void) {
-  pg->lastKnownTock = 1000;
+  pg->lastKnownTock = FIRST_TOCK;
   pg->cyclesNotTocked = 0;
   pg->cyclesPerTock = GUESS_CYCLES_PER_TOCK; //Don't ignore animal for more than 2**32/nsPerTock
   pg->groatsPerTockPerByte = GUESS_GROATS_PER_TOCK_PER_BYTE; //min_groats_per_nanosecond * GUESS_NS_PER_TOCK;
@@ -47,12 +48,12 @@ static void * openGlobals_(uint64_t len, bool * virgin) {
 }
 
 // Close and maybe delete the file
-static void closeGlobals_(int fd, FATE fate) {
+static void closeGlobals_(int fd, Fate fate) {
   if (fd == -1) return;
   //munmap(ph); //TODO: I thought I needed this
   close(fd);
-  if (fate==DELETE) unlink(GLOBALS_FILENAME);
-  if (fate==HIDE) {
+  if (fate==Delete) unlink(GLOBALS_FILENAME);
+  if (fate==Hide) {
     char dest[MAX_FILENAME+1];
     *dest='.';
     strcpy(dest+1,GLOBALS_FILENAME);

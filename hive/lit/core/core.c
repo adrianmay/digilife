@@ -9,7 +9,6 @@
 #include "Msg_raffle/api.h"
 #include "api.h"
 
-
 TockPrice totRent() { return hotelOfMobs_rent() + raffleOfMsgs_rent(); }
 
 void onMobHotel_goDie(MobIx i, Mob * pT) { }
@@ -103,18 +102,17 @@ Cash onMsgRaffle_dispatch(MsgIx i, Msg * pMsg, Cash msgCash, V claim, V unlock) 
   // So we got it
   claim();
   unlock();
-  run(pMsg, pMob, msgCash, mobCash);
+  if (randIntBelow(MURDER_RATE)==0) 
+    hotelOfMobs_drop(pMsg->rcvr.i, 0);
+  else
+    run(pMsg, pMob, msgCash, mobCash);
   return 0; 
-  hotelOfMobs_raid();
+  //hotelOfMobs_raid();
 }
 
 void onTockCore() {}
 
 Cash run(Msg * pMsg, Mob * pMob, Cash msgCash, Cash mobCash) {
-  if (randIntBelow(20)==0) {
-    hotelOfMobs_drop(pMsg->rcvr.i, 0);
-    return 0; // Murderer
-  }
   Cash cash = msgCash + mobCash;
   msgcashSample(msgCash);
   mobcashSample(mobCash);
@@ -147,17 +145,34 @@ Cash run(Msg * pMsg, Mob * pMob, Cash msgCash, Cash mobCash) {
 }
 
 typedef struct Core {
+  bool quit;
+  int depth; 
+  Cash cash;
+  int ip;
+  Msg * pMsg;
+  Mob * pMob;
 } Core;
 
 typedef void (*Op)(Core *);
-void nop0(Core * pC);
-void nopn(Core * pC);
-void yield0(Core * pC);
-void yield1(Core * pC);
-void roll(Core * pC);
-void rollcash(Core * pC); // This will get taxed away for something more general
-void end(Core * pC);
+
+void nop0(Core * pC) {}
+void nopn(Core * pC) {} //TODO: chomp n, then n bytes
+void yield0(Core * pC) { pC->quit = true; }
+void yield1(Core * pC) { yield0(pC); }
+void doFirst() {
+}
+void rollCash(Core * pC) {
+  pC->ip++;
+  double mu, amgis;  // Inverso of sigma
+  memcpy((char*)&mu, (char*)&pC->pMob->code[pC->ip], sizeof(mu));
+  pC->ip += sizeof(double);
+  memcpy((char*)&amgis, (char*)&pC->pMob->code[pC->ip], sizeof(amgis));
+  bool roll = rollCumGauss(pC->cash, mu, amgis);
+  if (roll) doFirst(); 
+  else doSecond(); 
+} // After reading something
 void snd(Core * pC);
+void end(Core * pC);
 void spawn0(Core * pC);
 void spawn1(Core * pC);
 void spawn2(Core * pC);
@@ -188,3 +203,5 @@ Op ops[256] = {
   spawn0, spawn1, spawn2, spawn3, /**/ spawn0, spawn1, spawn2, spawn3, /**/ post0, post1,    post2, post3,    /**/ post0, post1, post2, post3,
   spawn0, spawn1, spawn2, spawn3, /**/ spawn0, spawn1, spawn2, spawn3, /**/ post0, post1,    post2, post3,    /**/ post0, post1, post2, post3,
 }; 
+
+

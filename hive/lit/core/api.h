@@ -6,6 +6,7 @@
 #define MSG_PROP (SIZE_MSG/SIZE_BOTH)  
 #define DOLE 1000000
 #define SPAWN_COST 5000000
+#define MURDER_RATE 20
 #define CYCLES_PER_JOB GUESS_CYCLES_PER_TOCK
 
 void seed(int n, Cash c, Cash thresh);

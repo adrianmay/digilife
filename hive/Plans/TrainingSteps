@@ -1,7 +1,7 @@
 
 
 2 ###################################
-Goal:  Evolve spawn threshold
+Goal:  Evolve spawn threshold with murderer
 Lang:  Just a number
 
 2a ###################################
@@ -19,35 +19,29 @@ Goal:  Post to others for a reward
 Lang:  Post1 with rcvr param: me, current or recently noted sndr, random
        Note climate stuff, children
        Tax away auto-post to child
+       Replace dole with incoming rich messages
        Gods post to mortals
 
 4 ###################################
 Goal:  Yield
 Lang:  Times out til msg cash exhausted without explicit yield       
+         or just tax crashing off end.
 
 5 ###################################
 Goal:  Reply verbatim
 Lang:  Lots of gods posting data to mortals, reply verbatim to get rich msg next
-       
 
 6 ###################################
 Goal:  Reply transformed
 Lang:  
 
 7: ###################################
-Goal:  Spam war
+Goal:  Spam war: pretend to be rewarder. Nick&Ix reliable within a hive
 Lang:  
 
-8: ###################################
-Goal:  Subcontract
-Lang:  
-
-9: ###################################
-Goal:  Subscriptions
-Lang:  
-
-10: ###################################
-Goal: Yellow pages 
-Lang:  
-
+Thereafter: #####################
+Goals: Subscriptions
+       Specialisations & subcontracting
+       Sharing clients with children
+       Yellow pages?
 

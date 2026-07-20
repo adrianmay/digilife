@@ -146,3 +146,45 @@ Cash run(Msg * pMsg, Mob * pMob, Cash msgCash, Cash mobCash) {
   return cash;
 }
 
+typedef struct Core {
+} Core;
+
+typedef void (*Op)(Core *);
+void nop0(Core * pC);
+void nopn(Core * pC);
+void yield0(Core * pC);
+void yield1(Core * pC);
+void roll(Core * pC);
+void rollcash(Core * pC); // This will get taxed away for something more general
+void end(Core * pC);
+void snd(Core * pC);
+void spawn0(Core * pC);
+void spawn1(Core * pC);
+void spawn2(Core * pC);
+void spawn3(Core * pC);
+void post0(Core * pC);
+void post1(Core * pC);
+void post2(Core * pC);
+void post3(Core * pC);
+
+Op ops[256] = {
+  nop0,   nopn,   nop0,   nopn,   /**/ yield0, yield1, yield0, yield1, /**/ roll,  rollcash, roll,  rollcash, /**/ end,   snd,   end,   snd,
+  nop0,   nopn,   nop0,   nopn,   /**/ yield0, yield1, yield0, yield1, /**/ roll,  rollcash, roll,  rollcash, /**/ end,   snd,   end,   snd,
+  spawn0, spawn1, spawn2, spawn3, /**/ spawn0, spawn1, spawn2, spawn3, /**/ post0, post1,    post2, post3,    /**/ post0, post1, post2, post3,
+  spawn0, spawn1, spawn2, spawn3, /**/ spawn0, spawn1, spawn2, spawn3, /**/ post0, post1,    post2, post3,    /**/ post0, post1, post2, post3,
+
+  nop0,   nopn,   nop0,   nopn,   /**/ yield0, yield1, yield0, yield1, /**/ roll,  rollcash, roll,  rollcash, /**/ end,   snd,   end,   snd,
+  nop0,   nopn,   nop0,   nopn,   /**/ yield0, yield1, yield0, yield1, /**/ roll,  rollcash, roll,  rollcash, /**/ end,   snd,   end,   snd,
+  spawn0, spawn1, spawn2, spawn3, /**/ spawn0, spawn1, spawn2, spawn3, /**/ post0, post1,    post2, post3,    /**/ post0, post1, post2, post3,
+  spawn0, spawn1, spawn2, spawn3, /**/ spawn0, spawn1, spawn2, spawn3, /**/ post0, post1,    post2, post3,    /**/ post0, post1, post2, post3,
+
+  nop0,   nopn,   nop0,   nopn,   /**/ yield0, yield1, yield0, yield1, /**/ roll,  rollcash, roll,  rollcash, /**/ end,   snd,   end,   snd,
+  nop0,   nopn,   nop0,   nopn,   /**/ yield0, yield1, yield0, yield1, /**/ roll,  rollcash, roll,  rollcash, /**/ end,   snd,   end,   snd,
+  spawn0, spawn1, spawn2, spawn3, /**/ spawn0, spawn1, spawn2, spawn3, /**/ post0, post1,    post2, post3,    /**/ post0, post1, post2, post3,
+  spawn0, spawn1, spawn2, spawn3, /**/ spawn0, spawn1, spawn2, spawn3, /**/ post0, post1,    post2, post3,    /**/ post0, post1, post2, post3,
+
+  nop0,   nopn,   nop0,   nopn,   /**/ yield0, yield1, yield0, yield1, /**/ roll,  rollcash, roll,  rollcash, /**/ end,   snd,   end,   snd,
+  nop0,   nopn,   nop0,   nopn,   /**/ yield0, yield1, yield0, yield1, /**/ roll,  rollcash, roll,  rollcash, /**/ end,   snd,   end,   snd,
+  spawn0, spawn1, spawn2, spawn3, /**/ spawn0, spawn1, spawn2, spawn3, /**/ post0, post1,    post2, post3,    /**/ post0, post1, post2, post3,
+  spawn0, spawn1, spawn2, spawn3, /**/ spawn0, spawn1, spawn2, spawn3, /**/ post0, post1,    post2, post3,    /**/ post0, post1, post2, post3,
+}; 

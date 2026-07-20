@@ -1,84 +1,101 @@
 
 Like machine code. variable length instructions. 
-Or maybe all 2 bytes.
 
-Registers:
-  Env: | READ        | WRITE
-  --------------------------------     
-       | mobcash     | childcash     
-       | msgcash     | msgcash     
-       |             | 
-       |             | 
-  --------------------------------     
-       | curbid      | postbid      
-       | avgbid      | rollprob     
-       | memprice    | count     
-       | inetprice   |  
-  --------------------------------     
-       | cursndr     | postrcvr     
-       | curmsgbody  | postmsgbody 
-       | parent      |      
-       | lastchild   |      
-  --------------------------------     
-       | 4 GP registers  
+Types:
+  NickIx
+  Cash
+  Probability
+  Time
+  UTF8
+  Misc double?
+  Code offset?
 
 
+Climate registers:
+  All can be noted in a stack which can be peeped, popped, counted, averaged, rolled, etc.
+  Defaults can evolve.
 
-Op codes:                    Instr.      Params       Notes
-Odd means >0 params                             
-     ------------------------------------------------------------------------------------------------------------     
- 00  0000 0000            |  nop0            
- 01  0000 0001  xxxx xxxx |  nop1        Dummy
- 02  0000 0010            |  
- 03  0000 0011  .... .... |  
- 04  0000 0100            |  yield0                   Auto-self-post, expensive. Can't mutate to have no yield at all 
- 05  0000 0101  .... .... |  
- 06  0000 0110            |  yield2                   No auto-self-post, cheap                                                         
- 07  0000 0111  .... .... |                   
- 08  0000 1000            |  roll0                    
- 09  0000 1001  .... .... |  roll...     Variants for immediate and/or register mu and sigma
- 0A  0000 1010            |  
- 0B  0000 1011  .... .... |  
- 0C  0000 1100            |  
- 0D  0000 1101  .... .... |  
- 0E  0000 1110            |  
- 0F  0000 1111  .... .... |                   
+ # | READ        | WRITE       | Urgency 
+-------------------------------|---------  
+ 0 | totcash     |             | 1    
+ 1 |             |             |         
+ 2 | mobcash     | childcash   |         
+ 3 | msgcash     | msgcash     |         
+-------------------------------|---------  
+ 4 | curbid      | postbid     |         
+ 5 | waitforbidc | roll µ      | 1: roll defaults mutate
+ 6 | waitforbidm | roll σ      |    and affect roll op        
+ 7 | memprice    | count       |         
+-------------------------------|---------  
+ 8 | cursndr     | postrcvr    |                     
+ 9 | parent      |             |         
+ A | lastchild   |             |         
+ B | curmsgbody  | postmsgbody |         
+-------------------------------|---------  
+ C | Reserved                           
+ D | Reserved                           
+ E | Reserved                           
+ F | Reserved                           
 
- 1.  0001 ....  .... .... |                   
 
- 20  0010 0000            |  spawn0                   Cash split 50/50, auto-boot-msg
- 21  0010 0001  .... .... |  spawn1      Split        Auto-boot
- 22  0010 0010            |  
- 23  0010 0011  .... .... |  spawn3      Split        No auto-boot                 
- 24  0010 0100            |  
- 25  0010 0101  .... .... |  
- 26  0010 0110            |  
- 27  0010 0111  .... .... |  
- 28  0010 1000            |  post0                    To self, split money by size, use body built already
- 29  0010 1001  .... .... |  post1       Rcvr         Split money by size
- 2A  0010 1010            |  
- 2B  0010 1011  .... .... |  post3       Rcvr, split         
- 2C  0010 1100            |  
- 2D  0010 1101  .... .... |  
- 2E  0010 1110            |  
- 2F  0010 1111  .... .... |  
+Op codes:
 
- 3.  0011 ....  .... .... |  
+Urgency |                |  Instr.      Params       Notes
+--------|-----------------------------------------------------------------------------------------     
+        | 00  0000 0000  |  nop0            
+        | 01  0000 0001  |  nopn        How many bytes to skip
+        | 02  0000 0010  |  
+        | 03  0000 0011  |  
+   1    | 04  0000 0100  |  yield0                   Auto-self-post, expensive. Can't mutate to have no yield at all 
+        | 05  0000 0101  |  yield1                   No auto-self-post, cheap                                                         
+        | 06  0000 0110  |  
+        | 07  0000 0111  |                   
+   1    | 08  0000 1000  |  roll                      Use roll registers for µ and σ. Has if and else parts.
+   1    | 09  0000 1001  |  rollcash                  Compare cash with roll
+        | 0A  0000 1010  |                           
+        | 0B  0000 1011  |   
+        | 0C  0000 1100  |   
+        | 0D  0000 1101  |   
+   1    | 0E  0000 1110  |  end block             
+   1    | 0F  0000 1111  |  snd block (e.g. else)                  
+        |
+        | 1.  0001 ....  |                   
+        |
+   1    | 20  0010 0000  |  spawn0                   Cash split 50/50, auto-boot-msg
+        | 21  0010 0001  |  spawn1      Split        Auto-boot
+        | 22  0010 0010  |  spawn2      Split        No auto-boot                 
+        | 23  0010 0011  |  
+        | 24  0010 0100  |  
+        | 25  0010 0101  |  
+        | 26  0010 0110  |  
+        | 27  0010 0111  |  
+   1    | 28  0010 1000  |  post0                    To self, split money by size, use body built already
+        | 29  0010 1001  |  post1       Rcvr         Split money by size
+        | 2A  0010 1010  |  post2       Rcvr, split         
+        | 2B  0010 1011  |  
+        | 2C  0010 1100  |  
+        | 2D  0010 1101  |  
+        | 2E  0010 1110  |  
+        | 2F  0010 1111  |  
+        |
+        | 3.  0011 ....  |  
 
- 4-  0100 ....  .... .... |  Stuff...                 Gradually build outgoing message body
- 5.  0101 ....  .... .... |                                                                    
- 6-  0110 ....  Src. Dest |  Registers                                                
- 7.  0111 ....  .... .... |                                                                    
+Or maybe this is all forth:
 
- 8-  1000 ....  Reg  .... |  Own code R/W   Read, write, use count register                                         
- 9.  1001 ....  .... .... |  
- A.  1010 ....  .... .... |  ALU            Add etc                                                                                                     
- B.  1011 ....  .... .... |  
+ 4-  0100 ....  |  Stuff...                 Gradually build outgoing message body
+ 5.  0101 ....  |                                                                    
+ 6-  0110 ....  |  Registers                                                
+ 7.  0111 ....  |                                                                    
 
- C.  1100 ....  .... .... |  Regex                                                                                                                                                                                                        
- D.  1101 ....  .... .... |                                                             
- E.  1110 ....  .... .... |                                                             
- F.  1111 ....  .... .... |                                                             
+ 8-  1000 ....  |  Own code R/W   Read, write, use count register                                         
+ 9.  1001 ....  |  
+ A.  1010 ....  |  ALU            Add etc                                                                                                     
+ B.  1011 ....  |  
+
+ C.  1100 ....  |  Regex                                                                                                                                                                                                        
+ D.  1101 ....  |                                                             
+ E.  1110 ....  |                                                             
+ F.  1111 ....  |                                                             
 
 
  

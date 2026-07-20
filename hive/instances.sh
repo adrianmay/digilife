@@ -10,9 +10,9 @@ tools/make_hotel.sh  Thing bit/Thing.h  GIGA 1 &
 pids="$pids $!"
 tools/make_raffle.sh Mess  bit/Mess.h   GIGA &
 pids="$pids $!"
-tools/make_hotel.sh  Mob   tank/Mob.h GIGA 1 &
+tools/make_hotel.sh  Mob   core/Mob.h GIGA 1 &
 pids="$pids $!"
-tools/make_raffle.sh Msg   tank/Msg.h  GIGA &
+tools/make_raffle.sh Msg   core/Msg.h  GIGA &
 pids="$pids $!"
 
 

@@ -6,9 +6,9 @@
 #include "Mob_hotel/ix.h"
 #include "Msg_raffle/api.h"
 #include "Mob_hotel/api.h"
-#include "tank/api.h"
-#include "tank/Mob.h"
-#include "tank/Msg.h"
+#include "core/api.h"
+#include "core/Mob.h"
+#include "core/Msg.h"
 
 static bool init(void) { 
   openGlobals(); hotelOfMobs_open(); raffleOfMsgs_open(); 

@@ -10,7 +10,7 @@
 #include "api.h"
 
 
-TockPrice tankRent() { return hotelOfMobs_rent() + raffleOfMsgs_rent(); }
+TockPrice totRent() { return hotelOfMobs_rent() + raffleOfMsgs_rent(); }
 
 void onMobHotel_goDie(MobIx i, Mob * pT) { }
 void onMobHotel_rentCollected (Cash rent) {}
@@ -24,9 +24,9 @@ void showMob(MobIx i, Mob * p) {
   switch (p->phylum) { 
     case PhyGod:
       break;
-    case PhyTest:
-      TestMob * pTestMob = &p->_.test; 
-      printf("spawnThresh=%ld", pTestMob->spawnThresh);
+    case PhyMortal:
+      MortalMob * pMortalMob = &p->_.mortal; 
+      printf("spawnThresh=%ld", pMortalMob->spawnThresh);
       break;
     default:
       DIE("Unknown phylum\n");
@@ -42,10 +42,11 @@ void showMsg(MsgIx i, Msg * p) {
   
 void spawn(Cash c, Cash thresh) {
   void stuff(Mob * p) { 
-    p->phylum = PhyTest;
+    p->phylum = PhyMortal;
+    memset(&p->_.mortal.code, 0x55, 472);
     Cash vm = thresh*0.03;
     Cash vd = (randIntBelow(5)-2)*vm; 
-    p->_.test.spawnThresh = thresh + vd; 
+    p->_.mortal.spawnThresh = thresh + vd; 
   }
   MobTact tNewMob = hotelOfMobs_admit(c*MOB_PROP, false, stuff, 0, 0);
   void stuffMsg(Msg * p) { p->cpuBid = 0; p->sndr = p->rcvr = tNewMob; }
@@ -92,44 +93,7 @@ SAMPLER(spawned,   0.000000001)
   
 HISTOGRAM(spare, 30, -1000000.0, 100000.0)
 
-Cash run(Msg * pMsg, Mob * pMob, Cash msgCash, Cash mobCash) {
-  if (randIntBelow(20)==0) {
-    hotelOfMobs_drop(pMsg->rcvr.i, 0);
-    return 0; // Murderer
-  }
-  Cash cash = msgCash + mobCash;
-  msgcashSample(msgCash);
-  mobcashSample(mobCash);
-  cash += DOLE;
-  notifyCycles(CYCLES_PER_JOB);
-  cash -= tankRent(); // Cos both msg and mob will miss out on the tock we expend in here
-  Cash spare = cash - pMob->_.test.spawnThresh;
-  if (spare >= 0) {
-    if (iterations > 1000000)
-      sparePlop(spare);
-    //if (iterations >= 20000000)
-    //  spareHistShow();
-    cash -= SPAWN_COST;
-    Cash childCash = cash/2; // - spare/2;
-    childcashSample(childCash);
-    cash -= childCash;
-    spawn(childCash, pMob->_.test.spawnThresh);
-    spawnedSample(1);
-  } else spawnedSample(0);
-  void stuffMsg(Msg * pNewMsg) {
-    memcpy(pNewMsg, pMsg, sizeof(*pMsg)); 
-  }
-  raffleOfMsgs_play(cash*MSG_PROP, 100, stuffMsg); 
-  cash -= cash*MSG_PROP;
-  hotelOfMobs_drop(pMsg->rcvr.i, cash);
-  threshSample(pMob->_.test.spawnThresh);
-  popSample(hotelOfMobs_count());
-  if (iterations < 1000 || iterations % 100000 == 0) 
-    printf("Its=%'ld, Rent=%'.0f, thresh=%'.0f; Means: pop=%'.2f, spawnOdds=%'.5f, childCash=%'.0f msgCash=%'.0f, mobCash=%'.0f, totCash=%'.0f\n",
-        iterations, tankRent(), threshMean, popMean, 1.0/spawnedMean, childcashMean, msgcashMean, mobcashMean, msgcashMean+mobcashMean);
-  return cash;
-}
-
+Cash run(Msg * pMsg, Mob * pMob, Cash msgCash, Cash mobCash);
 Cash onMsgRaffle_dispatch(MsgIx i, Msg * pMsg, Cash msgCash, V claim, V unlock) {
   Mob * pMob;
   Cash mobCash;
@@ -144,5 +108,41 @@ Cash onMsgRaffle_dispatch(MsgIx i, Msg * pMsg, Cash msgCash, V claim, V unlock) 
   hotelOfMobs_raid();
 }
 
-void onTockTank() {}
+void onTockCore() {}
+
+Cash run(Msg * pMsg, Mob * pMob, Cash msgCash, Cash mobCash) {
+  if (randIntBelow(20)==0) {
+    hotelOfMobs_drop(pMsg->rcvr.i, 0);
+    return 0; // Murderer
+  }
+  Cash cash = msgCash + mobCash;
+  msgcashSample(msgCash);
+  mobcashSample(mobCash);
+  cash += DOLE;
+  notifyCycles(CYCLES_PER_JOB);
+  cash -= totRent(); // Cos both msg and mob will miss out on the tock we expend in here
+  Cash spare = cash - pMob->_.mortal.spawnThresh;
+  if (spare >= 0) {
+    if (iterations > 1000000)
+      sparePlop(spare);
+    cash -= SPAWN_COST;
+    Cash childCash = cash/2; // - spare/2;
+    childcashSample(childCash);
+    cash -= childCash;
+    spawn(childCash, pMob->_.mortal.spawnThresh);
+    spawnedSample(1);
+  } else spawnedSample(0);
+  void stuffMsg(Msg * pNewMsg) {
+    memcpy(pNewMsg, pMsg, sizeof(*pMsg)); 
+  }
+  raffleOfMsgs_play(cash*MSG_PROP, 100, stuffMsg); 
+  cash -= cash*MSG_PROP;
+  hotelOfMobs_drop(pMsg->rcvr.i, cash);
+  threshSample(pMob->_.mortal.spawnThresh);
+  popSample(hotelOfMobs_count());
+  if (iterations < 1000 || iterations % 100000 == 0) 
+    printf("Its=%'ld, Rent=%'.0f, thresh=%'.0f; Means: pop=%'.2f, spawnOdds=%'.5f, childCash=%'.0f msgCash=%'.0f, mobCash=%'.0f, totCash=%'.0f\n",
+        iterations, totRent(), threshMean, popMean, 1.0/spawnedMean, childcashMean, msgcashMean, mobcashMean, msgcashMean+mobcashMean);
+  return cash;
+}
 

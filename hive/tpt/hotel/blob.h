@@ -4,5 +4,5 @@
 
 typedef struct XXNb   { Nick n; XXBombIx b; } XXNb; 
 typedef union  XXInb  { _Atomic uint64_t i; XXNb nb; } XXInb;
-typedef struct XXRent { XXInb inb; Tocks lastPaidRent; Cash cash; } XXRent;
+typedef struct XXRent { XXInb inb; Cash cash; Tocks lastPaidRent; } XXRent;
 typedef struct XXBlob { XXRent rent; XX body; } XXBlob;

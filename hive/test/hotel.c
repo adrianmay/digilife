@@ -64,7 +64,7 @@ bool expectExtinctSoon(Cash cash, int line) {
   if (cash==0) 
     expect = NOTIFY_TOCKS;
   else {
-    Tocks expectIdeal = cash / ( hotelOfThings_rec() * tockPrice() );
+    Tocks expectIdeal = cash / ( hotelOfThings_recBoth() * tockPrice() );
     expect = NOTIFY_TOCKS + ((expectIdeal - 1) / NOTIFY_TOCKS + 1) * NOTIFY_TOCKS ;
     printf("expectIdeal=%d expect=%d\n", expectIdeal, expect);
   }
@@ -291,7 +291,7 @@ bool testMonkey(void) {
 }
 
 bool testHotel(void) { printf("Tock price: %f\n", tockPrice());
-  printf("Billable size: %f\n", hotelOfThings_rec());
+  printf("Billable size: %d\n", hotelOfThings_recBoth());
   return
     testNoPop() &&
     test1() &&

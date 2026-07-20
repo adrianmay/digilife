@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include "types.h"
 #include "misc/api.h"
 #include "globals/api.h"
@@ -159,8 +160,12 @@ void hotelOfXXs_close(Fate fate) {
   meapOfXXBombs_close(fate);
 }
 
-double hotelOfXXs_rec(void) { return pileOfXXBlobs_rec() + meapOfXXBombs_rec(); }
-TockPrice hotelOfXXs_rent() { return tockPrice() * hotelOfXXs_rec(); }
+Ix hotelOfXXs_recBlob(void) { return pileOfXXBlobs_rec(); }
+Ix hotelOfXXs_recBomb(void) { return meapOfXXBombs_rec(); }
+Ix hotelOfXXs_recBoth(void) { return pileOfXXBlobs_rec() + meapOfXXBombs_rec(); }
+TockPrice hotelOfXXs_rent(void)    { return tockPrice() * hotelOfXXs_recBoth(); }
+Ix        hotelOfXXs_bodyat(void)  { return offsetof(XXBlob, body); }
+Ix        hotelOfXXs_bodylen(void) { return sizeof(XX); }
 
 static void rebomb(XXRent * pRent, XXBlobIx i) {
   Tocks expiry = pRent->lastPaidRent + pRent->cash / hotelOfXXs_rent();

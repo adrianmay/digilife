@@ -25,8 +25,11 @@ V onTestTock;
 void onTock() {onTestTock();}
 
 int main(int argc, char **argv) {
+  printf("STARTING TESTS ... \n");
   parseArgs(argc, argv);
+  printf(" A\n");
   initEverything();
+  printf(" B\n");
   bool suc =
 //    wrap() &&
 //    perf() &&
@@ -35,10 +38,11 @@ int main(int argc, char **argv) {
 //    meap() &&
 //    hotel() &&
 //    raffle() &&
-    tank() &&
+    core() &&
 //    exec() &&
 //    equi() &&
-    (printf("ALL TESTS SUCCEEDED\n"),true);
+    true; 
+  printf("TESTS %s\n", suc ? "SUCCEEDED" : "FAILED");
   return suc?0:1;
 }
 

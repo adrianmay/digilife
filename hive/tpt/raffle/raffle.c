@@ -231,7 +231,7 @@ void showXXTicket(XXTicketIx i, XXTicket * pT) {
   showXX((XXIx){i.i}, &p->body);
 }
 
-double raffleOfXXs_rec(void) { return hotelOfXXTickets_rec(); }
+double raffleOfXXs_rec(void) { return hotelOfXXTickets_recBoth(); }
 TockPrice raffleOfXXs_rent() { return tockPrice() * raffleOfXXs_rec(); }
 
 void onXXTicketHotel_funeral(XXTicketIx i, XXTicket * pT) {

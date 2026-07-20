@@ -1,6 +1,6 @@
 
-#define SIZE_MOB ((double) hotelOfMobs_rec()) 
-#define SIZE_MSG ((double)raffleOfMsgs_rec()) 
+#define SIZE_MOB ((double) hotelOfMobs_recBoth()) 
+#define SIZE_MSG ((double) raffleOfMsgs_rec()) 
 #define SIZE_BOTH (SIZE_MOB+SIZE_MSG)  
 #define MOB_PROP (SIZE_MOB/SIZE_BOTH)  
 #define MSG_PROP (SIZE_MSG/SIZE_BOTH)  
@@ -10,4 +10,4 @@
 
 void seed(int n, Cash c, Cash thresh);
 bool draw(void);
-void onTockTank();
+void onTockCore();

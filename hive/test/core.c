@@ -1,4 +1,5 @@
 #include <time.h>
+#include <stddef.h>
 #include <stdatomic.h>
 #include "h.h"
 #include "globals/api.h"
@@ -35,8 +36,12 @@ void * work(void * p) {
 //#define NUM_THREADS 2
 //static pthread_t pids[NUM_THREADS] = {0};
 
-bool testTank() {
-  onTestTock = onTockTank;
+bool testCore() {
+  onTestTock = onTockCore;
+  assertInt (hotelOfMobs_bodyat(),  MOB_HEADER_SIZE);
+  assertInt (hotelOfMobs_recBlob(), MOB_GROSS_SIZE);
+  assertInt (hotelOfMobs_bodylen(), MOB_BODY_SIZE);
+  //assertInt (MOB_GROSS_SIZE, MOB_HEADER_SIZE + MOB_CODE_SIZE);
   seed(50, 1000000, 20'000'000); // Number of mobs, starting cash, spawn threshold
   atomic_store(&iterations, 0);
   time_t start = time(NULL);
@@ -50,7 +55,7 @@ bool testTank() {
   return true;
 }
 
-bool tank(void) { return bkt("raffle", init, testTank, cleanup); }
+bool core(void) { return bkt("raffle", init, testCore, cleanup); }
 
 // Expt 2 result:
 // Apply 1:20 murder rate per job. Thresh settles low with 1:16 spawn rate. 43% chance surviving til spawn - not.

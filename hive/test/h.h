@@ -11,4 +11,4 @@ bool pile(void);
 bool meap(void);
 bool hotel(void);
 bool raffle(void);
-bool tank(void);
+bool core(void);

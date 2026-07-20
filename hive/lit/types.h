@@ -29,6 +29,10 @@
 #define NICK_NAME_GOD    0x10000000
 // Todo: extend this when other stuff done:
 #define NICK_NAME_RAND_MASK 0x0FFFFFFF
+#define MOB_GROSS_SIZE 512
+#define MOB_HEADER_SIZE 24
+#define MOB_BODY_SIZE  488
+
 
 // Ought to be using the FPU here
 typedef uint64_t Cycles;

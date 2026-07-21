@@ -27,9 +27,7 @@ void onTock() {onTestTock();}
 int main(int argc, char **argv) {
   printf("STARTING TESTS ... \n");
   parseArgs(argc, argv);
-  printf(" A\n");
   initEverything();
-  printf(" B\n");
   bool suc =
 //    wrap() &&
 //    perf() &&

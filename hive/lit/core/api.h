@@ -12,3 +12,11 @@
 void seed(int n, Cash c, Cash thresh);
 bool draw(void);
 void onTockCore();
+Cash runInCore(Cash cash, Mob * pMob, Msg * pMsg, char * out, int outlen);
+
+
+#define _0 "\x00"
+#define _end "\x04"
+#define _snd "\x0F"
+#define _print0 "\x2C"
+#define _rollCash "\x09"

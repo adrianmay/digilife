@@ -121,6 +121,7 @@ void sleepMs(uint64_t ms) { sleepNs(1000000*ms); }
 
 bool rollCumGauss(double x, double mu, double amgis) {
   double prob = 0.5 * (1.0 + erf((x-mu) * amgis / M_SQRT2));
+  //printf("rollCumGauss: x=%f, mu=%f, am=%f, prob=%f\n", x, mu, amgis, prob);
   int thresh = prob * 1000000.0;
   return randIntBelow(1000000) < thresh;
 }

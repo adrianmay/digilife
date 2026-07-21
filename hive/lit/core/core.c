@@ -42,7 +42,7 @@ void showMsg(MsgIx i, Msg * p) {
 void spawn(Cash c, Cash thresh) {
   void stuff(Mob * p) { 
     p->phylum = PhyMortal;
-    memset(&p->_.mortal.code, 0x55, 472);
+    memset(&p->_.mortal.program, 0x55, 472);
     Cash vm = thresh*0.03;
     Cash vd = (randIntBelow(5)-2)*vm; 
     p->_.mortal.spawnThresh = thresh + vd; 
@@ -144,64 +144,129 @@ Cash run(Msg * pMsg, Mob * pMob, Cash msgCash, Cash mobCash) {
   return cash;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
 typedef struct Core {
-  bool quit;
-  int depth; 
   Cash cash;
-  int ip;
-  Msg * pMsg;
   Mob * pMob;
+  Msg * pMsg;
+  int ip;
+  char * out;
+  int outlen;
+  int outcur;
 } Core;
 
-typedef void (*Op)(Core *);
 
-void nop0(Core * pC) {}
-void nopn(Core * pC) {} //TODO: chomp n, then n bytes
-void yield0(Core * pC) { pC->quit = true; }
-void yield1(Core * pC) { yield0(pC); }
-void doFirst() {
+//typedef enum Ret {Quit, Cont} Ret;
+
+typedef int Ret;
+
+typedef Ret (*Instruction)(Core *, bool * doit);
+typedef struct Op {
+  char name[10];
+  Instruction inst;
+} Op;
+
+Op ops[256];
+
+Ret doBlock(Core * pC, bool * doit);
+
+void incIP(Core * pC, int n) { 
+  pC->ip += n; 
 }
-void rollCash(Core * pC) {
-  pC->ip++;
-  double mu, amgis;  // Inverso of sigma
-  memcpy((char*)&mu, (char*)&pC->pMob->code[pC->ip], sizeof(mu));
-  pC->ip += sizeof(double);
-  memcpy((char*)&amgis, (char*)&pC->pMob->code[pC->ip], sizeof(amgis));
-  bool roll = rollCumGauss(pC->cash, mu, amgis);
-  if (roll) doFirst(); 
-  else doSecond(); 
-} // After reading something
-void snd(Core * pC);
-void end(Core * pC);
-void spawn0(Core * pC);
-void spawn1(Core * pC);
-void spawn2(Core * pC);
-void spawn3(Core * pC);
-void post0(Core * pC);
-void post1(Core * pC);
-void post2(Core * pC);
-void post3(Core * pC);
+
+Ret nop0(Core * pC, bool * doit) { incIP(pC, 1); return 0; }
+Ret nopn(Core * pC, bool * doit) { return 0; } //TODO: chomp n, then n bytes
+Ret end   (Core * pC, bool * doit) { incIP(pC, 1); return -1; }
+Ret snd   (Core * pC, bool * doit) { incIP(pC, 1); *doit = !*doit; return 0; }
+Ret spawn0(Core * pC, bool * doit) { return 0; }
+Ret spawn1(Core * pC, bool * doit) { return 0; }
+Ret spawn2(Core * pC, bool * doit) { return 0; }
+Ret spawn3(Core * pC, bool * doit) { return 0; }
+Ret post0 (Core * pC, bool * doit) { return 0; }
+Ret post1 (Core * pC, bool * doit) { return 0; }
+Ret post2 (Core * pC, bool * doit) { return 0; }
+Ret post3 (Core * pC, bool * doit) { return 0; }
+
+
+uint8_t * getRawOpCodeP(Core * pC) { 
+  uint8_t * pI = &pC->pMob->_.mortal.program[pC->ip];
+  return pI; 
+}
+
+Instruction getInstruction(Core * pC) {
+  sleepNs(1000000);
+  if (pC->ip < sizeof(Program)) {
+    //printf("Inst: %.2x\n", *getRawOpCodeP(pC));
+    return ops[*getRawOpCodeP(pC)].inst;
+  }
+  else return end;
+}
+
+
+Ret print0(Core * pC, bool * doit) { 
+  incIP(pC, 1);
+  int len = strlen((char*)getRawOpCodeP(pC));
+  if (*doit) {
+    //printf("Print %s\n", (char*)getRawOpCodeP(pC));
+    int n = snprintf(pC->out+pC->outcur, pC->outlen-pC->outcur, "%s", getRawOpCodeP(pC));
+    pC->outcur += n;
+  }
+  incIP(pC, len+1); // Terminator
+  return 0; 
+}
+
+Ret doBlock(Core * pC, bool * _doit) { // false means skip
+  bool doit=*_doit;
+  int level = 1;                                  
+  while (level>0) {
+    level += getInstruction(pC)(pC, &doit);
+  }
+  return -1;
+}
+
+Ret roll_(double x, Core * pC, bool * doit) {
+  incIP(pC, 1);
+  double mu, amgis;  // Inverse of sigma, -ve for if (!...)
+  memcpy((char*)&mu, (char*)&pC->pMob->_.mortal.program[pC->ip], sizeof(mu));
+  incIP(pC, sizeof(double));
+  memcpy((char*)&amgis, (char*)&pC->pMob->_.mortal.program[pC->ip], sizeof(amgis));
+  incIP(pC, sizeof(double));
+  *doit = rollCumGauss(x, mu, amgis);
+  //printf("Rolled: %b\n", *doit);
+  return doBlock(pC, doit);
+}
+Ret rollCash(Core * pC, bool * doit) { return roll_(pC->cash, pC, doit); }
+Ret roll(Core * pC, bool * doit) { return 0; }
+
+Cash runInCore(Cash cash, Mob * pMob, Msg * pMsg, char * out, int outlen) {
+  Core core = (Core){cash, pMob, pMsg, 0, out, outlen, 0};
+  bool doit = true;
+  doBlock(&core, &doit);
+  return core.cash;
+}
+
+#define _(NAME) { #NAME, NAME }
 
 Op ops[256] = {
-  nop0,   nopn,   nop0,   nopn,   /**/ yield0, yield1, yield0, yield1, /**/ roll,  rollcash, roll,  rollcash, /**/ end,   snd,   end,   snd,
-  nop0,   nopn,   nop0,   nopn,   /**/ yield0, yield1, yield0, yield1, /**/ roll,  rollcash, roll,  rollcash, /**/ end,   snd,   end,   snd,
-  spawn0, spawn1, spawn2, spawn3, /**/ spawn0, spawn1, spawn2, spawn3, /**/ post0, post1,    post2, post3,    /**/ post0, post1, post2, post3,
-  spawn0, spawn1, spawn2, spawn3, /**/ spawn0, spawn1, spawn2, spawn3, /**/ post0, post1,    post2, post3,    /**/ post0, post1, post2, post3,
-
-  nop0,   nopn,   nop0,   nopn,   /**/ yield0, yield1, yield0, yield1, /**/ roll,  rollcash, roll,  rollcash, /**/ end,   snd,   end,   snd,
-  nop0,   nopn,   nop0,   nopn,   /**/ yield0, yield1, yield0, yield1, /**/ roll,  rollcash, roll,  rollcash, /**/ end,   snd,   end,   snd,
-  spawn0, spawn1, spawn2, spawn3, /**/ spawn0, spawn1, spawn2, spawn3, /**/ post0, post1,    post2, post3,    /**/ post0, post1, post2, post3,
-  spawn0, spawn1, spawn2, spawn3, /**/ spawn0, spawn1, spawn2, spawn3, /**/ post0, post1,    post2, post3,    /**/ post0, post1, post2, post3,
-
-  nop0,   nopn,   nop0,   nopn,   /**/ yield0, yield1, yield0, yield1, /**/ roll,  rollcash, roll,  rollcash, /**/ end,   snd,   end,   snd,
-  nop0,   nopn,   nop0,   nopn,   /**/ yield0, yield1, yield0, yield1, /**/ roll,  rollcash, roll,  rollcash, /**/ end,   snd,   end,   snd,
-  spawn0, spawn1, spawn2, spawn3, /**/ spawn0, spawn1, spawn2, spawn3, /**/ post0, post1,    post2, post3,    /**/ post0, post1, post2, post3,
-  spawn0, spawn1, spawn2, spawn3, /**/ spawn0, spawn1, spawn2, spawn3, /**/ post0, post1,    post2, post3,    /**/ post0, post1, post2, post3,
-
-  nop0,   nopn,   nop0,   nopn,   /**/ yield0, yield1, yield0, yield1, /**/ roll,  rollcash, roll,  rollcash, /**/ end,   snd,   end,   snd,
-  nop0,   nopn,   nop0,   nopn,   /**/ yield0, yield1, yield0, yield1, /**/ roll,  rollcash, roll,  rollcash, /**/ end,   snd,   end,   snd,
-  spawn0, spawn1, spawn2, spawn3, /**/ spawn0, spawn1, spawn2, spawn3, /**/ post0, post1,    post2, post3,    /**/ post0, post1, post2, post3,
-  spawn0, spawn1, spawn2, spawn3, /**/ spawn0, spawn1, spawn2, spawn3, /**/ post0, post1,    post2, post3,    /**/ post0, post1, post2, post3,
+  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll),  _(rollCash), _(roll),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
+  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll),  _(rollCash), _(roll),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
+  _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(post0), _(post1),    _(post2), _(post3),    /**/ _(print0),  _(post1), _(post2), _(post3),
+  _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(post0), _(post1),    _(post2), _(post3),    /**/ _(post0),   _(post1), _(post2), _(post3),
+  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll),  _(rollCash), _(roll),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
+  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll),  _(rollCash), _(roll),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
+  _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(post0), _(post1),    _(post2), _(post3),    /**/ _(post0),   _(post1), _(post2), _(post3),
+  _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(post0), _(post1),    _(post2), _(post3),    /**/ _(post0),   _(post1), _(post2), _(post3),
+  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll),  _(rollCash), _(roll),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
+  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll),  _(rollCash), _(roll),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
+  _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(post0), _(post1),    _(post2), _(post3),    /**/ _(post0),   _(post1), _(post2), _(post3),
+  _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(post0), _(post1),    _(post2), _(post3),    /**/ _(post0),   _(post1), _(post2), _(post3),
+  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll),  _(rollCash), _(roll),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
+  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll),  _(rollCash), _(roll),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
+  _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(post0), _(post1),    _(post2), _(post3),    /**/ _(post0),   _(post1), _(post2), _(post3),
+  _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(post0), _(post1),    _(post2), _(post3),    /**/ _(post0),   _(post1), _(post2), _(post3),
 }; 
-
+#undef _
 

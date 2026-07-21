@@ -6,17 +6,20 @@
 #define MSG_PROP (SIZE_MSG/SIZE_BOTH)  
 #define DOLE 1000000
 #define SPAWN_COST 5000000
+#define POST_COST 500000
 #define MURDER_RATE 20
 #define CYCLES_PER_JOB GUESS_CYCLES_PER_TOCK
 
 void seed(int n, Cash c, Cash thresh);
 bool draw(void);
 void onTockCore();
-Cash runInCore(Cash cash, Mob * pMob, Msg * pMsg, char * out, int outlen);
-
+Cash runInCore(Cash cash, MobTact tMob, Mob * pMob, Msg * pMsg, char * out, int outlen);
 
 #define _0 "\x00"
 #define _end "\x04"
+#define _rollCash "\x09"
 #define _snd "\x0F"
 #define _print0 "\x2C"
-#define _rollCash "\x09"
+#define _spawn0 "\x20"
+#define _post0 "\x28"
+

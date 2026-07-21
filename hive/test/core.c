@@ -65,6 +65,8 @@ Program testProgs[] = {
   "",
   "",
   "",
+  _spawn0 _end,
+  _post0 _end,
 };
 
 #define NUM_TEST_PROGS (sizeof(testProgs)/sizeof(Program))
@@ -93,11 +95,12 @@ static bool testCode() {
   buildRollTest(3, &smallMu, &bigNegAmgis, false);
   buildRollTest(4, &bigMu,   &bigNegAmgis, true);
   Mob mob;
+  MobTact tMob = (MobTact){{8}, 0x12345678};
   bool res = true;
   for (int t=0;t<NUM_TEST_PROGS;t++) {
     printf("testCode: #%d\n", t);
     memcpy((char*)mob._.mortal.program, (char*)testProgs[t], sizeof(mob._.mortal.program));
-    runInCore(1'000'000, &mob, 0, out, CORE_OUT_LEN);
+    runInCore(1'000'000, tMob, &mob, 0, out, CORE_OUT_LEN);
     if (0!=strcmp(out, testExpectations[t])) {
       printf("testCode #%d Failed: want: '%s', got: '%s'\n", t, testExpectations[t], out);
       res = false;

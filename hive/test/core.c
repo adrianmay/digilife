@@ -1,4 +1,6 @@
 #pragma GCC diagnostic ignored "-Wunused-function"
+#pragma GCC diagnostic ignored "-Wparentheses"
+
 #include <time.h>
 #include <string.h>
 #include <stddef.h>
@@ -14,7 +16,13 @@
 #include "core/Mob.h"
 #include "core/Msg.h"
 
+void showCore() {
+  hotelOfMobs_show();
+  raffleOfMsgs_show();
+}
+
 static bool init(void) { 
+  onTestTock = onTockCore;
   openGlobals(); hotelOfMobs_open(); raffleOfMsgs_open(); 
   //printf("Sizes: mob=%f,msg=%f,tot=%f; Props: mob=%f,msg=%f\n", SIZE_MOB, SIZE_MSG, SIZE_BOTH, MOB_PROP, MSG_PROP);
   return true;
@@ -41,7 +49,6 @@ void * work(void * p) {
 
 static bool testForever() {
   printf("testForever\n");
-  onTestTock = onTockCore;
   assertInt (hotelOfMobs_bodyat(),  MOB_HEADER_SIZE);
   assertInt (hotelOfMobs_recBlob(), MOB_GROSS_SIZE);
   assertInt (hotelOfMobs_bodylen(), MOB_BODY_SIZE);
@@ -111,7 +118,7 @@ static bool testCode() {
   return res;
 }
 
-#define BIRTH_CASH 10'000'000L
+#define BIRTH_CASH 100'000'000L
 
 static bool testSpawn() {
   printf("testSpawn\n");
@@ -125,9 +132,10 @@ static bool testSpawn() {
   // Make one real mob from this imaginary mob
   runInCore(birthCash, tMob, &mob, 0);
   // Check the populations
-  Ix popMobs = hotelOfMobs_count();
+  Ix popMobs, popMsgs;
+  popMobs = hotelOfMobs_count();
   assertInt(popMobs, 1);
-  Ix popMsgs = raffleOfMsgs_count();
+  popMsgs = raffleOfMsgs_count();
   assertInt(popMsgs, 1);
   // Inspect it
   MobTact tMob0 = (MobTact){(MobIx){0},0};
@@ -138,6 +146,15 @@ static bool testSpawn() {
   Cash expect = ((birthCash-SPAWN_COST)/2)*MOB_PROP;
   assertLong(cash, expect);
   hotelOfMobs_drop(tMob0.i, cash);
+  // Run the one mob in the hotel:
+  draw();
+  draw();
+  draw();
+  // Check the populations // raid
+  popMobs = hotelOfMobs_count();
+  assertInt(popMobs, 4);
+  popMsgs = raffleOfMsgs_count();
+  assertInt(popMsgs, 1);
 
   //showMsgTicket((MsgTicketIx){0},0); printf("\n");
   return true;
@@ -155,7 +172,7 @@ bool testCore() {
     //testRun1() &&
     testPost() &&
 //    testForever() && 
-    true;
+    true || (showCore(), false);
 }
 
 bool core(void) { return bkt("core", init, testCore, cleanup); }

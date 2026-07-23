@@ -201,6 +201,7 @@ XX * hotelOfXXs_get(XXIx i) {
 }
 
 void hotelOfXXs_raid(void) {
+  printf("Raiding XXs\n");
   XXBomb bomb; // Bomb copied out to here
   Tocks now = tocksNow();
   while (true) { // Returns when nothing to kill for now

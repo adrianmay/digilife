@@ -137,7 +137,9 @@ bool raffleOfXXs_check(Stack * pSt) {
   return true; //It'll have aborted otherwise
 }
 
-static void raid() { hotelOfXXTickets_raid(); }
+static void raid() { 
+  hotelOfXXTickets_raid(); 
+}
 
 // Assumes there are tickets. Look out of onXXHotel_extinct
 static void drawBelow(Stack * pSt, XXTicketIx i) {

@@ -25,7 +25,9 @@ Cycles cycles;
 Thing * pThing;
 ThingTact tGod, tThing;
 
-static void tock() { hotelOfThings_raid(); }
+static void tock() { 
+  hotelOfThings_raid(); 
+}
 
 void showThing(ThingIx i, Thing * p) { printf("name=%d,code=<binary>\n", p->name); }
 

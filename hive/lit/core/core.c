@@ -27,7 +27,6 @@ void showMob(MobIx i, Mob * p) {
       MortalMob * pMortalMob = &p->_.mortal; 
       printf("spawnThresh=%ld code=", pMortalMob->spawnThresh);
       for (int i=0;i<sizeof(Program);i++) printf("%.2X ", pMortalMob->program[i]);
-      printf("\n");
       break;
     default:
       DIE("Unknown phylum: %d\n", p->phylum);
@@ -237,8 +236,6 @@ Cash run(MobTact tMob, Mob * pMob, Msg * pMsg, Cash mobCash, Cash msgCash) {
 //  } else spawnedSample(0);
 //  cash -= cash*MSG_PROP;
 
-  void stuffMsg(Msg * pNewMsg) { memcpy(pNewMsg, pMsg, sizeof(*pMsg)); }
-  raffleOfMsgs_play(cash*MSG_PROP, 100, stuffMsg); 
   hotelOfMobs_drop(pMsg->rcvr.i, cash);
   threshSample(pMob->_.mortal.spawnThresh);
   popSample(hotelOfMobs_count());
@@ -249,6 +246,7 @@ Cash run(MobTact tMob, Mob * pMob, Msg * pMsg, Cash mobCash, Cash msgCash) {
 }
 
 Cash onMsgRaffle_dispatch(MsgTicketTact t, Msg * pMsg, Cash msgCash, V claim, V unlock) {
+  printf("Raffle dispatch msg %d\n", t.i.i);
   Mob * pMob;
   Cash mobCash;
   Woth w = hotelOfMobs_grab(&pMsg->rcvr, &pMob, &mobCash);

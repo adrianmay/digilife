@@ -5,8 +5,8 @@ void      hotelOfXXs_show1        (XXIx);
 bool      hotelOfXXs_open         (void);
 XXTact    hotelOfXXs_admit        (Cash cash, bool isGod, V_XXP stuff, XX ** pp, bool * pRecycled); //Cash = 0 -> God
 XX *      hotelOfXXs_get          (XXIx); // Unsafe
-Woth      hotelOfXXs_grab         (XXTact, XX ** ppXX, Cash *);
-bool      hotelOfXXs_grabIx       (XXIx,   XX ** ppXX, Cash *);
+Woth      hotelOfXXs_grab         (XXTact *, XX ** ppXX, Cash *);
+bool      hotelOfXXs_grabIx       (XXTact *, XX ** ppXX, Cash *);
 void      hotelOfXXs_drop         (XXIx, Cash);
 void      hotelOfXXs_raid         (void);
 Ix        hotelOfXXs_count        (void);

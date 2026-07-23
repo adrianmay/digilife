@@ -16,9 +16,9 @@ void onTockCore();
 Cash runInCore(Cash cash, MobTact tMob, Mob * pMob, Msg * pMsg, char * out, int outlen);
 
 #define _0 "\x00"
-#define _end "\x04"
+#define _end "\x0C"
+#define _snd "\x0D"
 #define _rollCash "\x09"
-#define _snd "\x0F"
 #define _print0 "\x2C"
 #define _spawn0 "\x20"
 #define _post0 "\x28"

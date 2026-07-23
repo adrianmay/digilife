@@ -1,8 +1,10 @@
+#pragma GCC diagnostic ignored "-Wunused-function"
 #include <time.h>
 #include <string.h>
 #include <stddef.h>
 #include <stdatomic.h>
 #include "h.h"
+#include "misc/api.h"
 #include "globals/api.h"
 #include "Msg_raffle/ix.h"
 #include "Mob_hotel/ix.h"
@@ -19,9 +21,9 @@ static bool init(void) {
 }
 
 static void cleanup(void) { 
-  closeGlobals(Delete); 
-  raffleOfMsgs_close(Delete); 
-  hotelOfMobs_close(Delete); 
+  closeGlobals(Hide); 
+  raffleOfMsgs_close(Hide); 
+  hotelOfMobs_close(Hide); 
 }
 
 void * work(void * p) {
@@ -37,24 +39,25 @@ void * work(void * p) {
 //#define NUM_THREADS 2
 //static pthread_t pids[NUM_THREADS] = {0};
 
-// static bool testForever() {
-//   onTestTock = onTockCore;
-//   assertInt (hotelOfMobs_bodyat(),  MOB_HEADER_SIZE);
-//   assertInt (hotelOfMobs_recBlob(), MOB_GROSS_SIZE);
-//   assertInt (hotelOfMobs_bodylen(), MOB_BODY_SIZE);
-//   //assertInt (MOB_GROSS_SIZE, MOB_HEADER_SIZE + MOB_CODE_SIZE);
-//   seed(50, 1000000, 20'000'000); // Number of mobs, starting cash, spawn threshold
-//   atomic_store(&iterations, 0);
-//   time_t start = time(NULL);
-//   work(0);
-//   //for (int64_t a=0;a<NUM_THREADS; a++) pthread_create(pids+a, 0, work, (void*)a);
-//   //for (int64_t a=0;a<NUM_THREADS; a++) pthread_join(pids[a], 0);
-//   time_t end = time(NULL);
-//   hotelOfMobs_show();
-//   raffleOfMsgs_show();
-//   printf("Took %'ld\n", end-start);
-//   return true;
-// }
+static bool testForever() {
+  printf("testForever\n");
+  onTestTock = onTockCore;
+  assertInt (hotelOfMobs_bodyat(),  MOB_HEADER_SIZE);
+  assertInt (hotelOfMobs_recBlob(), MOB_GROSS_SIZE);
+  assertInt (hotelOfMobs_bodylen(), MOB_BODY_SIZE);
+  //assertInt (MOB_GROSS_SIZE, MOB_HEADER_SIZE + MOB_CODE_SIZE);
+  seed(50, 1000000, 20'000'000); // Number of mobs, starting cash, spawn threshold
+  atomic_store(&iterations, 0);
+  time_t start = time(NULL);
+  work(0);
+  //for (int64_t a=0;a<NUM_THREADS; a++) pthread_create(pids+a, 0, work, (void*)a);
+  //for (int64_t a=0;a<NUM_THREADS; a++) pthread_join(pids[a], 0);
+  time_t end = time(NULL);
+  hotelOfMobs_show();
+  raffleOfMsgs_show();
+  printf("Took %'ld\n", end-start);
+  return true;
+}
 
 #define CORE_OUT_LEN 100
 char out[CORE_OUT_LEN];
@@ -65,8 +68,6 @@ Program testProgs[] = {
   "",
   "",
   "",
-  _spawn0 _end,
-  _post0 _end,
 };
 
 #define NUM_TEST_PROGS (sizeof(testProgs)/sizeof(Program))
@@ -109,10 +110,50 @@ static bool testCode() {
   return res;
 }
 
+#define BIRTH_CASH 10'000'000L
+
+static bool testSpawn() {
+  printf("testSpawn\n");
+  Cash birthCash = BIRTH_CASH + randIntBelow(BIRTH_CASH);
+  MobTact tMob = (MobTact){{8}, 0x12345678};
+  Mob mob;
+  mob.phylum = PhyMortal;
+  mob._.mortal.spawnThresh = 123;
+  Program spawner = _spawn0 _end;
+  memcpy((char*)mob._.mortal.program, spawner, sizeof(mob._.mortal.program));
+  // Make one real mob from this imaginary mob
+  runInCore(birthCash, tMob, &mob, 0, out, CORE_OUT_LEN);
+  // Check the populations
+  Ix popMobs = hotelOfMobs_count();
+  assertInt(popMobs, 1);
+  Ix popMsgs = raffleOfMsgs_count();
+  assertInt(popMsgs, 1);
+  // Inspect it
+  MobTact tMob0 = (MobTact){(MobIx){0},0};
+  Mob * pMob; Cash cash;
+  hotelOfMobs_grabIx(&tMob0, &pMob, &cash);
+  //showMob(iMob0, pMob);
+  assertLong(pMob->_.mortal.spawnThresh, 123L);
+  Cash expect = ((birthCash-SPAWN_COST)/2)*MOB_PROP;
+  assertLong(cash, expect);
+  hotelOfMobs_drop(tMob0.i, cash);
+
+  //showMsgTicket((MsgTicketIx){0},0); printf("\n");
+  return true;
+}
+
+static bool testPost() {
+  printf("testPost\n");
+  return true;
+}
+
 bool testCore() {
   return 
-    testCode() &&
-    //testForever() && 
+//    testCode() &&
+    testSpawn() &&
+    //testRun1() &&
+    testPost() &&
+//    testForever() && 
     true;
 }
 

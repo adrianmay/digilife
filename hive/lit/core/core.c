@@ -25,10 +25,12 @@ void showMob(MobIx i, Mob * p) {
       break;
     case PhyMortal:
       MortalMob * pMortalMob = &p->_.mortal; 
-      printf("spawnThresh=%ld", pMortalMob->spawnThresh);
+      printf("spawnThresh=%ld code=", pMortalMob->spawnThresh);
+      for (int i=0;i<sizeof(Program);i++) printf("%.2X ", pMortalMob->program[i]);
+      printf("\n");
       break;
     default:
-      DIE("Unknown phylum\n");
+      DIE("Unknown phylum: %d\n", p->phylum);
   }
 }
   
@@ -92,57 +94,8 @@ SAMPLER(spawned,   0.000000001)
   
 HISTOGRAM(spare, 30, -1000000.0, 100000.0)
 
-Cash run(Msg * pMsg, Mob * pMob, Cash msgCash, Cash mobCash);
-Cash onMsgRaffle_dispatch(MsgIx i, Msg * pMsg, Cash msgCash, V claim, V unlock) {
-  Mob * pMob;
-  Cash mobCash;
-  Woth w = hotelOfMobs_grab(pMsg->rcvr, &pMob, &mobCash);
-  if (w==Dead) { unlock(); return 0; }       // Bankrupt msg
-  if (w==Busy) { unlock(); return msgCash; } // Leave msg alone
-  // So we got it
-  claim();
-  unlock();
-  if (randIntBelow(MURDER_RATE)==0) 
-    hotelOfMobs_drop(pMsg->rcvr.i, 0);
-  else
-    run(pMsg, pMob, msgCash, mobCash);
-  return 0; 
-  //hotelOfMobs_raid();
-}
-
 void onTockCore() {}
 
-Cash run(Msg * pMsg, Mob * pMob, Cash msgCash, Cash mobCash) {
-  Cash cash = msgCash + mobCash;
-  msgcashSample(msgCash);
-  mobcashSample(mobCash);
-  cash += DOLE;
-  notifyCycles(CYCLES_PER_JOB);
-  cash -= totRent(); // Cos both msg and mob will miss out on the tock we expend in here
-  Cash spare = cash - pMob->_.mortal.spawnThresh;
-  if (spare >= 0) {
-    if (iterations > 1000000)
-      sparePlop(spare);
-    cash -= SPAWN_COST;
-    Cash childCash = cash/2; // - spare/2;
-    childcashSample(childCash);
-    cash -= childCash;
-    spawn(childCash, pMob->_.mortal.spawnThresh);
-    spawnedSample(1);
-  } else spawnedSample(0);
-  void stuffMsg(Msg * pNewMsg) {
-    memcpy(pNewMsg, pMsg, sizeof(*pMsg)); 
-  }
-  raffleOfMsgs_play(cash*MSG_PROP, 100, stuffMsg); 
-  cash -= cash*MSG_PROP;
-  hotelOfMobs_drop(pMsg->rcvr.i, cash);
-  threshSample(pMob->_.mortal.spawnThresh);
-  popSample(hotelOfMobs_count());
-  if (iterations < 1000 || iterations % 100000 == 0) 
-    printf("Its=%'ld, Rent=%'.0f, thresh=%'.0f; Means: pop=%'.2f, spawnOdds=%'.5f, childCash=%'.0f msgCash=%'.0f, mobCash=%'.0f, totCash=%'.0f\n",
-        iterations, totRent(), threshMean, popMean, 1.0/spawnedMean, childcashMean, msgcashMean, mobcashMean, msgcashMean+mobcashMean);
-  return cash;
-}
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -195,10 +148,11 @@ int spawn0(Core * pC, bool * doit) {
   incIP(pC, 1);
   if (!*doit) return 0;
   pC->cash -= SPAWN_COST;
+  //printf("A: %'ld\n", pC->cash);
   Cash childCash = pC->cash/2;
   pC->cash -= childCash;
-  Cash chMobCash = childCash*MOB_PROP;
-  Cash chMsgCash = childCash = chMobCash;
+  Cash chMobCash = childCash * MOB_PROP;
+  Cash chMsgCash = childCash - chMobCash;
   void stuffMob(Mob * p) { memcpy(p, pC->pMob, sizeof(Mob)); }
   MobTact tNewMob = hotelOfMobs_admit(chMobCash, false, stuffMob, 0, 0);
   void stuffMsg(Msg * p) { p->cpuBid = 0; p->sndr = pC->tMob; p->rcvr = tNewMob; }
@@ -247,7 +201,7 @@ int roll_(double x, Core * pC, bool * doit) {
   memcpy((char*)&amgis, (char*)&pC->pMob->_.mortal.program[pC->ip], sizeof(amgis));
   incIP(pC, sizeof(double));
   *doit = rollCumGauss(x, mu, amgis);
-  printf("Rolled: %b\n", *doit);
+  //printf("Rolled: %b\n", *doit);
   return doBlock(pC, doit);
 }
 int rollCash(Core * pC, bool * doit) { return roll_(pC->cash, pC, doit); }
@@ -260,6 +214,57 @@ Cash runInCore(Cash cash, MobTact tMob, Mob * pMob, Msg * pMsg, char * out, int 
   doBlock(&core, &doit);
   return core.cash;
 }
+
+Cash run(Mob * pMob, Msg * pMsg, Cash mobCash, Cash msgCash) {
+  Cash cash = msgCash + mobCash;
+  msgcashSample(msgCash);
+  mobcashSample(mobCash);
+  cash += DOLE;
+  notifyCycles(CYCLES_PER_JOB);
+  cash -= totRent(); // Cos both msg and mob will miss out on the tock we expend in here
+                     //
+  Cash spare = cash - pMob->_.mortal.spawnThresh;
+  if (spare >= 0) {
+    if (iterations > 1000000)
+      sparePlop(spare);
+    cash -= SPAWN_COST;
+    Cash childCash = cash/2; // - spare/2;
+    childcashSample(childCash);
+    cash -= childCash;
+    spawn(childCash, pMob->_.mortal.spawnThresh);
+    spawnedSample(1);
+  } else spawnedSample(0);
+  void stuffMsg(Msg * pNewMsg) { memcpy(pNewMsg, pMsg, sizeof(*pMsg)); }
+  cash -= cash*MSG_PROP;
+
+  raffleOfMsgs_play(cash*MSG_PROP, 100, stuffMsg); 
+  hotelOfMobs_drop(pMsg->rcvr.i, cash);
+  threshSample(pMob->_.mortal.spawnThresh);
+  popSample(hotelOfMobs_count());
+  if (iterations < 1000 || iterations % 100000 == 0) 
+    printf("Its=%'ld, Rent=%'.0f, thresh=%'.0f; Means: pop=%'.2f, spawnOdds=%'.5f, childCash=%'.0f msgCash=%'.0f, mobCash=%'.0f, totCash=%'.0f\n",
+        iterations, totRent(), threshMean, popMean, 1.0/spawnedMean, childcashMean, msgcashMean, mobcashMean, msgcashMean+mobcashMean);
+  return cash;
+}
+
+Cash onMsgRaffle_dispatch(MsgIx i, Msg * pMsg, Cash msgCash, V claim, V unlock) {
+  Mob * pMob;
+  Cash mobCash;
+  Woth w = hotelOfMobs_grab(&pMsg->rcvr, &pMob, &mobCash);
+  if (w==Dead) { unlock(); return 0; }       // Bankrupt msg
+  if (w==Busy) { unlock(); return msgCash; } // Leave msg alone
+  // So we got it
+  claim();
+  unlock();
+  if (randIntBelow(MURDER_RATE)==0) 
+    hotelOfMobs_drop(pMsg->rcvr.i, 0);
+  else
+    run(pMob, pMsg, mobCash, msgCash);
+  return 0; 
+  //hotelOfMobs_raid();
+}
+
+
 
 #define _(NAME) { #NAME, NAME }
 

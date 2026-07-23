@@ -27,9 +27,7 @@ ThingTact tGod, tThing;
 
 static void tock() { hotelOfThings_raid(); }
 
-void showThing(ThingIx i, Thing * p) {
-  printf("name=%d,code=<binary>\n", p->name);
-}
+void showThing(ThingIx i, Thing * p) { printf("name=%d,code=<binary>\n", p->name); }
 
 static bool init(void) {
   onTestTock = tock;
@@ -99,7 +97,7 @@ bool testEarn(void) {
   printf("testEarn\n");
   make(4, 30'000'000);
   Cash cash;
-  hotelOfThings_grab(tThing, 0, &cash);
+  hotelOfThings_grab(&tThing, 0, &cash);
   cash += 20'000'000; 
   hotelOfThings_drop(tThing.i, cash);
   expectExtinctSoon(50'000'000, __LINE__);
@@ -110,7 +108,7 @@ bool testRob(void) {
   printf("testRob\n");
   make(5, 9000);
   Cash cash;
-  hotelOfThings_grab(tThing, 0, &cash);
+  hotelOfThings_grab(&tThing, 0, &cash);
   cash = 0; 
   hotelOfThings_drop(tThing.i, cash);
   expectExtinctSoon(0, __LINE__);
@@ -125,7 +123,7 @@ bool testGod(void) {
   Cash cash;
   expectExtinctSoon(10'000'000, __LINE__);
   printf("It's: %d\n", tocksNow());
-  hotelOfThings_grab(tThing, 0, &cash); //  hotelOfXXs_grab
+  hotelOfThings_grab(&tThing, 0, &cash); //  hotelOfXXs_grab
   Cash expect =  - (hotelOfThings_rent()*(tocksNow()-start));
   assertLong(cash, expect);
   hotelOfThings_drop(tThing.i, cash);
@@ -138,7 +136,7 @@ bool testAfterFree(void) {
   expectExtinctSoon(10'000'000, __LINE__);
   Cash cash;
   Thing * p;
-  hotelOfThings_grab(tThing, &p, &cash);
+  hotelOfThings_grab(&tThing, &p, &cash);
   hotelOfThings_drop(tThing.i, cash);
   assertCond((int)(long)p, ==0);
   return true;
@@ -148,9 +146,9 @@ bool testBusy(void) {
   printf("testBusy\n");
   make(9, 10'000'000);
   Cash cash;
-  hotelOfThings_grab(tThing, &pThing, &cash);
+  hotelOfThings_grab(&tThing, &pThing, &cash);
   assertCond((int)(long)pThing, !=0);
-  hotelOfThings_grab(tThing, &pThing, &cash);
+  hotelOfThings_grab(&tThing, &pThing, &cash);
   assertCond((int)(long)pThing, ==0);
   hotelOfThings_drop(tThing.i, cash);
   return true;
@@ -163,7 +161,7 @@ bool testFreeWhenBusy(void) {
   ThingTact tThing = make(10, hotelOfThings_rent());
   bool sameIndex2;
   Cash cash;
-  hotelOfThings_grab(tThing, &pThing, &cash);
+  hotelOfThings_grab(&tThing, &pThing, &cash);
   notifyCycles(2*GUESS_CYCLES_PER_TOCK); 
   ThingTact t2 = make(11, 1'000'000);
   sameIndex2 = t2.i.i == tThing.i.i;
@@ -230,7 +228,7 @@ void doit(int me, int dowhat, int it) {
     case 4:
       { int i = chSt(Idle, UsedBy+me);
         if (i!=-1) {
-          hotelOfThings_grab(ths[i].t, &ths[i].p, &ths[i].c);
+          hotelOfThings_grab(&ths[i].t, &ths[i].p, &ths[i].c);
           if (!ths[i].p) atomic_store(&ths[i].st, Idle);
         }
         break; }

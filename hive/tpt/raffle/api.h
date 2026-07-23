@@ -13,7 +13,7 @@ double    raffleOfXXs_rec          (void);
 TockPrice raffleOfXXs_rent         (void);
 bool      raffleOfXXs_empty        (void);
 //bool      raffleOfXXs_check        (void);
-void      showXXTicket             (XXTicketIx i, XXTicket * pT);
+void      showXXTicket             (XXTicketIx i, XXTicket * pT); // TODO: Remove pT parameter
 
 // Provide this:
 void showXX(XXIx i, XX * pXX);

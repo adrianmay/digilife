@@ -158,7 +158,9 @@ static void drawBelow(Stack * pSt, XXTicketIx i) {
   target -= pW->l;
   if (target < pW->s) {
     Cash cash;
-    if (hotelOfXXTickets_grabIx(i, 0, &cash)) {
+    XXTicketTact tact;
+    tact.i = i;
+    if (hotelOfXXTickets_grabIx(&tact, 0, &cash)) {
       cash = onXXRaffle_dispatch((XXIx){i.i}, &pT->body, cash, claim, unlock); 
       hotelOfXXTickets_drop(i, cash);
     } else {
@@ -223,12 +225,17 @@ void raffleOfXXs_quit() {
   pthread_cond_signal(&cond);
 }
 
-void showXXTicket(XXTicketIx i, XXTicket * pT) {
-  XXTicket * p = hotelOfXXTickets_get(i);
+
+void showXXTicket(XXTicketIx i, XXTicket * p) {
   printf("l=%-4ld s=%-4ld r=%-4ld ⇑=%-3d ⇙=%-3d ⇘=%-3d ", 
          p->weights.l, p->weights.s, p->weights.r, 
          (i.i==0)?(-1):(parent(i).i), left(i).i, right(i).i);
   showXX((XXIx){i.i}, &p->body);
+}
+
+void hotelOfXXTickets_show1(XXTicketIx i) {
+  XXTicket * p = hotelOfXXTickets_get(i);
+  showXXTicket(i, p);
 }
 
 double raffleOfXXs_rec(void) { return hotelOfXXTickets_recBoth(); }

@@ -88,9 +88,10 @@ void hotelOfXXs_collectRent(XXRent * pRent) {
   if (defaulted) onXXHotel_rentDefaulted(defaulted);
 }
 
-bool hotelOfXXs_grabIx(XXIx i, XX ** ppXX, Cash * pCash) {
+bool hotelOfXXs_grabIx(XXTact * pTact, XX ** ppXX, Cash * pCash) {
   if (ppXX) *ppXX = 0;
-  XXBlob * pBlob = pileOfXXBlobs_get((XXBlobIx){i.i});
+  XXBlob * pBlob = pileOfXXBlobs_get((XXBlobIx){pTact->i.i});
+  pTact->n = pBlob->rent.inb.nb.n;
   XXBombIx iBomb = pBlob->rent.inb.nb.b;
   void erase(void) { meapOfXXBombs_erase(iBomb); }
 
@@ -103,12 +104,12 @@ bool hotelOfXXs_grabIx(XXIx i, XX ** ppXX, Cash * pCash) {
   return true;
 }
 
-Woth hotelOfXXs_grab(XXTact t, XX ** ppXX, Cash * pCash) {
+Woth hotelOfXXs_grab(XXTact * pTact, XX ** ppXX, Cash * pCash) {
   if (ppXX) *ppXX = 0;
-  XXBlob * pBlob = pileOfXXBlobs_get((XXBlobIx){t.i.i});
+  XXBlob * pBlob = pileOfXXBlobs_get((XXBlobIx){pTact->i.i});
   XXBombIx iBomb = pBlob->rent.inb.nb.b;
   void erase(void) { meapOfXXBombs_erase(iBomb); }
-  Woth w = eraseBombForTact(t, erase);
+  Woth w = eraseBombForTact(*pTact, erase);
   if (w != Ok) return w;
   if (ppXX) *ppXX = &pBlob->body;
   hotelOfXXs_collectRent(&pBlob->rent);

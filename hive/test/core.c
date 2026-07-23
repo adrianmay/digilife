@@ -16,6 +16,8 @@
 #include "core/Mob.h"
 #include "core/Msg.h"
 
+#define BIRTH_CASH 1000'000'000L
+
 void showCore() {
   hotelOfMobs_show();
   raffleOfMsgs_show();
@@ -24,7 +26,7 @@ void showCore() {
 static bool init(void) { 
   onTestTock = onTockCore;
   openGlobals(); hotelOfMobs_open(); raffleOfMsgs_open(); 
-  //printf("Sizes: mob=%f,msg=%f,tot=%f; Props: mob=%f,msg=%f\n", SIZE_MOB, SIZE_MSG, SIZE_BOTH, MOB_PROP, MSG_PROP);
+  printf("Sizes: mob=%f,msg=%f,tot=%f; Props: mob=%f,msg=%f\n", SIZE_MOB, SIZE_MSG, SIZE_BOTH, MOB_PROP, MSG_PROP);
   return true;
 }
 
@@ -118,32 +120,32 @@ static bool testCode() {
   return res;
 }
 
-#define BIRTH_CASH 100'000'000L
 
-static bool testSpawn() {
+static bool testSpawnAndPost() {
   printf("testSpawn\n");
   Cash birthCash = BIRTH_CASH + randIntBelow(BIRTH_CASH);
-  MobTact tMob = (MobTact){{8}, 0x12345678};
-  Mob mob;
-  mob.phylum = PhyMortal;
-  mob._.mortal.spawnThresh = 123;
-  Program spawner = _spawn0 _end;
-  memcpy((char*)mob._.mortal.program, spawner, sizeof(mob._.mortal.program));
+  seed(10, birthCash, 123);
+  //MobTact tMob = (MobTact){{8}, 0x12345678};
+  //Mob mob;
+  //mob.phylum = PhyMortal;
+  //mob._.mortal.spawnThresh = 123;
+  //Program spawner = _spawn0 _post0 _end;
+  //memcpy((char*)mob._.mortal.program, spawner, sizeof(mob._.mortal.program));
   // Make one real mob from this imaginary mob
-  runInCore(birthCash, tMob, &mob, 0);
+  //runInCore(birthCash, tMob, &mob, 0);
   // Check the populations
   Ix popMobs, popMsgs;
   popMobs = hotelOfMobs_count();
-  assertInt(popMobs, 1);
+  assertInt(popMobs, 10);
   popMsgs = raffleOfMsgs_count();
-  assertInt(popMsgs, 1);
+  assertInt(popMsgs, 10);
   // Inspect it
   MobTact tMob0 = (MobTact){(MobIx){0},0};
   Mob * pMob; Cash cash;
   hotelOfMobs_grabIx(&tMob0, &pMob, &cash);
   //showMob(iMob0, pMob);
   assertLong(pMob->_.mortal.spawnThresh, 123L);
-  Cash expect = ((birthCash-SPAWN_COST)/2)*MOB_PROP;
+  Cash expect = birthCash*MOB_PROP;
   assertLong(cash, expect);
   hotelOfMobs_drop(tMob0.i, cash);
   // Run the one mob in the hotel:
@@ -152,26 +154,20 @@ static bool testSpawn() {
   draw();
   // Check the populations // raid
   popMobs = hotelOfMobs_count();
-  assertInt(popMobs, 4);
+  assertInt(popMobs, 13);
   popMsgs = raffleOfMsgs_count();
-  assertInt(popMsgs, 1);
-
+  assertInt(popMsgs, 13);
   //showMsgTicket((MsgTicketIx){0},0); printf("\n");
   return true;
 }
 
-static bool testPost() {
-  printf("testPost\n");
-  return true;
-}
 
 bool testCore() {
   return 
 //    testCode() &&
-    testSpawn() &&
+    testSpawnAndPost() &&
     //testRun1() &&
-    testPost() &&
-//    testForever() && 
+    testForever() && 
     true || (showCore(), false);
 }
 

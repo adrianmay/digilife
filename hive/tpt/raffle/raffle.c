@@ -62,7 +62,7 @@ static void propagateWeightUp(XXTicketIx i, Weight w) {
 void raffleOfXXs_show(void)  { hotelOfXXTickets_show(); }
 
 void raffleOfXXs_play(Cash cash, Weight w, WithXX stuff) {
-  //printf("play: cash=%ld ", cash);
+  printf("play: cash=%ld ", cash);
   //char blah[40];
   //checkM("enter1");
   lock();

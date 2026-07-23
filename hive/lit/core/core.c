@@ -40,24 +40,6 @@ void showMsg(MsgIx i, Msg * p) {
   printf("bid=%.3f %s %s", p->cpuBid, r, s);
 }
   
-void spawn(Cash c, Cash thresh) {
-  void stuff(Mob * p) { 
-    p->phylum = PhyMortal;
-    memset(&p->_.mortal.program, 0x55, 472);
-    Cash vm = thresh*0.03;
-    Cash vd = (randIntBelow(5)-2)*vm; 
-    p->_.mortal.spawnThresh = thresh + vd; 
-  }
-  MobTact tNewMob = hotelOfMobs_admit(c*MOB_PROP, false, stuff, 0, 0);
-  void stuffMsg(Msg * p) { p->cpuBid = 0; p->sndr = p->rcvr = tNewMob; }
-  raffleOfMsgs_play(c*MSG_PROP, 100, stuffMsg); 
-}
-
-void seed(int n, Cash c, Cash thresh) {
-  //hotelOfMobs_admit(0, true, 0, 0, 0);
-  for (int a=0;a<n;a++) spawn(c, thresh);
-}
-
 bool draw() { return raffleOfMsgs_draw(); }
 
 void dumpPiles(void) {
@@ -261,6 +243,25 @@ Cash onMsgRaffle_dispatch(MsgTicketTact t, Msg * pMsg, Cash msgCash, V claim, V 
     run(pMsg->rcvr, pMob, pMsg, mobCash, msgCash);
   return 0; 
   //hotelOfMobs_raid();
+}
+
+void create(Cash c, Cash thresh) {
+  void stuff(Mob * p) { 
+    p->phylum = PhyMortal;
+    char code[] = _spawn0 _post0 _end;
+    memcpy((char*)p->_.mortal.program, code, sizeof(code));
+    //Cash vm = thresh*0.03;
+    //Cash vd = (randIntBelow(5)-2)*vm; 
+    p->_.mortal.spawnThresh = thresh; // + vd; 
+  }
+  MobTact tNewMob = hotelOfMobs_admit(c*MOB_PROP, false, stuff, 0, 0);
+  void stuffMsg(Msg * p) { p->cpuBid = 0; p->sndr = p->rcvr = tNewMob; }
+  raffleOfMsgs_play(c*MSG_PROP, 100, stuffMsg); 
+}
+
+void seed(int n, Cash c, Cash thresh) {
+  //hotelOfMobs_admit(0, true, 0, 0, 0);
+  for (int a=0;a<n;a++) create(c, thresh);
 }
 
 

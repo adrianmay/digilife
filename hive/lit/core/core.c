@@ -235,7 +235,7 @@ Ret roll_(double x, Core * pC, bool * doit) {
   memcpy((char*)&amgis, (char*)&pC->pMob->_.mortal.program[pC->ip], sizeof(amgis));
   incIP(pC, sizeof(double));
   *doit = rollCumGauss(x, mu, amgis);
-  //printf("Rolled: %b\n", *doit);
+  printf("Rolled: %b\n", *doit);
   return doBlock(pC, doit);
 }
 Ret rollCash(Core * pC, bool * doit) { return roll_(pC->cash, pC, doit); }

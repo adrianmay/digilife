@@ -44,8 +44,8 @@ Urgency |                |  Instr.      Params       Notes
 --------|-----------------------------------------------------------------------------------------     
         | 00  0000 0000  |  nop0            
         | 01  0000 0001  |  nopn        How many bytes to skip
-        | 02  0000 0010  |  
-        | 03  0000 0011  |  
+        | 02  0000 0010  |  end block             
+        | 03  0000 0011  |  snd block (e.g. else)                  
    1    | 04  0000 0100  |  yield0                   Auto-self-post, expensive. Can't mutate to have no yield at all 
         | 05  0000 0101  |  yield1                   No auto-self-post, cheap                                                         
         | 06  0000 0110  |  
@@ -54,10 +54,10 @@ Urgency |                |  Instr.      Params       Notes
    1    | 09  0000 1001  |  rollcash                  Compare cash with roll
         | 0A  0000 1010  |                           
         | 0B  0000 1011  |   
-        | 0C  0000 1100  |   
+        | 0C  0000 1100  |  
         | 0D  0000 1101  |   
-   1    | 0E  0000 1110  |  end block             
-   1    | 0F  0000 1111  |  snd block (e.g. else)                  
+   1    | 0E  0000 1110  |  
+   1    | 0F  0000 1111  |  
         |
         | 1.  0001 ....  |                   
         |
@@ -73,7 +73,7 @@ Urgency |                |  Instr.      Params       Notes
         | 29  0010 1001  |  post1       Rcvr         Split money by size
         | 2A  0010 1010  |  post2       Rcvr, split         
         | 2B  0010 1011  |  
-        | 2C  0010 1100  |  
+        | 2C  0010 1100  |  print0      Null-terminated format string then params
         | 2D  0010 1101  |  
         | 2E  0010 1110  |  
         | 2F  0010 1111  |  

@@ -144,12 +144,14 @@ Cash run(Msg * pMsg, Mob * pMob, Cash msgCash, Cash mobCash) {
   return cash;
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 typedef struct Core {
   Cash cash;
+  MobTact tMob;
   Mob * pMob;
   Msg * pMsg;
   int ip;
@@ -158,38 +160,54 @@ typedef struct Core {
   int outcur;
 } Core;
 
-
-//typedef enum Ret {Quit, Cont} Ret;
-
-typedef int Ret;
-
-typedef Ret (*Instruction)(Core *, bool * doit);
+typedef int (*Instruction)(Core *, bool * doit);
 typedef struct Op {
   char name[10];
   Instruction inst;
 } Op;
 
 Op ops[256];
+int doBlock(Core * pC, bool * doit);
 
-Ret doBlock(Core * pC, bool * doit);
+void incIP(Core * pC, int n) { pC->ip += n; }
 
-void incIP(Core * pC, int n) { 
-  pC->ip += n; 
+int nop0(Core * pC, bool * doit) { incIP(pC, 1); return 0; }
+int nopn(Core * pC, bool * doit) { return nop0(pC, doit); } //TODO: chomp n, then n bytes
+int end   (Core * pC, bool * doit) { incIP(pC, 1); return -1; }
+int snd   (Core * pC, bool * doit) { incIP(pC, 1); *doit = !*doit; return 0; }
+
+int post_(MobTact rcvr, Cash cash, Core * pC, bool * doit) {
+  incIP(pC, 1);
+  if (!*doit) return 0;
+  Cash bill = POST_COST + cash;
+  if (pC->cash < bill) return 0;
+  pC->cash -= bill;
+  void stuffMsg(Msg * p) { p->cpuBid = 0; p->sndr = pC->tMob; p->rcvr = rcvr; }
+  raffleOfMsgs_play(cash, 100, stuffMsg); 
+  return 0; 
 }
+int post0(Core * pC, bool * doit) { return post_(pC->tMob, pC->cash*MSG_PROP, pC, doit); }
+int post1(Core * pC, bool * doit) { return post0(pC, doit); }
+int post2(Core * pC, bool * doit) { return post0(pC, doit); }
+int post3(Core * pC, bool * doit) { return post0(pC, doit); }
 
-Ret nop0(Core * pC, bool * doit) { incIP(pC, 1); return 0; }
-Ret nopn(Core * pC, bool * doit) { return 0; } //TODO: chomp n, then n bytes
-Ret end   (Core * pC, bool * doit) { incIP(pC, 1); return -1; }
-Ret snd   (Core * pC, bool * doit) { incIP(pC, 1); *doit = !*doit; return 0; }
-Ret spawn0(Core * pC, bool * doit) { return 0; }
-Ret spawn1(Core * pC, bool * doit) { return 0; }
-Ret spawn2(Core * pC, bool * doit) { return 0; }
-Ret spawn3(Core * pC, bool * doit) { return 0; }
-Ret post0 (Core * pC, bool * doit) { return 0; }
-Ret post1 (Core * pC, bool * doit) { return 0; }
-Ret post2 (Core * pC, bool * doit) { return 0; }
-Ret post3 (Core * pC, bool * doit) { return 0; }
-
+int spawn0(Core * pC, bool * doit) { 
+  incIP(pC, 1);
+  if (!*doit) return 0;
+  pC->cash -= SPAWN_COST;
+  Cash childCash = pC->cash/2;
+  pC->cash -= childCash;
+  Cash chMobCash = childCash*MOB_PROP;
+  Cash chMsgCash = childCash = chMobCash;
+  void stuffMob(Mob * p) { memcpy(p, pC->pMob, sizeof(Mob)); }
+  MobTact tNewMob = hotelOfMobs_admit(chMobCash, false, stuffMob, 0, 0);
+  void stuffMsg(Msg * p) { p->cpuBid = 0; p->sndr = pC->tMob; p->rcvr = tNewMob; }
+  raffleOfMsgs_play(chMsgCash, 100, stuffMsg); 
+  return 0; 
+}
+int spawn1(Core * pC, bool * doit) { return spawn0(pC, doit); }
+int spawn2(Core * pC, bool * doit) { return spawn0(pC, doit); }
+int spawn3(Core * pC, bool * doit) { return spawn0(pC, doit); }
 
 uint8_t * getRawOpCodeP(Core * pC) { 
   uint8_t * pI = &pC->pMob->_.mortal.program[pC->ip];
@@ -198,15 +216,11 @@ uint8_t * getRawOpCodeP(Core * pC) {
 
 Instruction getInstruction(Core * pC) {
   sleepNs(1000000);
-  if (pC->ip < sizeof(Program)) {
-    //printf("Inst: %.2x\n", *getRawOpCodeP(pC));
-    return ops[*getRawOpCodeP(pC)].inst;
-  }
+  if (pC->ip < sizeof(Program)) { return ops[*getRawOpCodeP(pC)].inst; }
   else return end;
 }
 
-
-Ret print0(Core * pC, bool * doit) { 
+int print0(Core * pC, bool * doit) { 
   incIP(pC, 1);
   int len = strlen((char*)getRawOpCodeP(pC));
   if (*doit) {
@@ -218,16 +232,14 @@ Ret print0(Core * pC, bool * doit) {
   return 0; 
 }
 
-Ret doBlock(Core * pC, bool * _doit) { // false means skip
+int doBlock(Core * pC, bool * _doit) { // false means skip
   bool doit=*_doit;
   int level = 1;                                  
-  while (level>0) {
-    level += getInstruction(pC)(pC, &doit);
-  }
+  while (level>0) { level += getInstruction(pC)(pC, &doit); }
   return -1;
 }
 
-Ret roll_(double x, Core * pC, bool * doit) {
+int roll_(double x, Core * pC, bool * doit) {
   incIP(pC, 1);
   double mu, amgis;  // Inverse of sigma, -ve for if (!...)
   memcpy((char*)&mu, (char*)&pC->pMob->_.mortal.program[pC->ip], sizeof(mu));
@@ -238,11 +250,12 @@ Ret roll_(double x, Core * pC, bool * doit) {
   printf("Rolled: %b\n", *doit);
   return doBlock(pC, doit);
 }
-Ret rollCash(Core * pC, bool * doit) { return roll_(pC->cash, pC, doit); }
-Ret roll(Core * pC, bool * doit) { return 0; }
+int rollCash(Core * pC, bool * doit) { return roll_(pC->cash, pC, doit); }
+int roll(Core * pC, bool * doit) { return 0; }
 
-Cash runInCore(Cash cash, Mob * pMob, Msg * pMsg, char * out, int outlen) {
-  Core core = (Core){cash, pMob, pMsg, 0, out, outlen, 0};
+Cash runInCore(Cash cash, MobTact tMob, Mob * pMob, Msg * pMsg, char * out, int outlen) {
+  memset(out, 0, outlen);
+  Core core = (Core){cash, tMob, pMob, pMsg, 0, out, outlen, 0};
   bool doit = true;
   doBlock(&core, &doit);
   return core.cash;
@@ -268,5 +281,4 @@ Op ops[256] = {
   _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(post0), _(post1),    _(post2), _(post3),    /**/ _(post0),   _(post1), _(post2), _(post3),
   _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(post0), _(post1),    _(post2), _(post3),    /**/ _(post0),   _(post1), _(post2), _(post3),
 }; 
-#undef _
 

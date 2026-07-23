@@ -175,7 +175,7 @@ bool testRaffle() {
   testBlock();
   return true;
 }
-Cash onMessRaffle_dispatch(MessIx i, Mess * pM, Cash cash, V claim, V unlock) {
+Cash onMessRaffle_dispatch(MessTicketTact tact, Mess * pM, Cash cash, V claim, V unlock) {
   //printf("onMessRaffleDispatch\n");
   claim();
   printf("Unlocking in onMessRaffle_dispatch\n");

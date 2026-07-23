@@ -61,6 +61,7 @@ static bool testForever() {
 
 #define CORE_OUT_LEN 100
 char out[CORE_OUT_LEN];
+int outlen = CORE_OUT_LEN;
 
 Program testProgs[] = {
   _print0 "Foo" _0 _print0 "Bar" _0 _end,
@@ -101,7 +102,7 @@ static bool testCode() {
   for (int t=0;t<NUM_TEST_PROGS;t++) {
     printf("testCode: #%d\n", t);
     memcpy((char*)mob._.mortal.program, (char*)testProgs[t], sizeof(mob._.mortal.program));
-    runInCore(1'000'000, tMob, &mob, 0, out, CORE_OUT_LEN);
+    runInCore(1'000'000, tMob, &mob, 0);
     if (0!=strcmp(out, testExpectations[t])) {
       printf("testCode #%d Failed: want: '%s', got: '%s'\n", t, testExpectations[t], out);
       res = false;
@@ -122,7 +123,7 @@ static bool testSpawn() {
   Program spawner = _spawn0 _end;
   memcpy((char*)mob._.mortal.program, spawner, sizeof(mob._.mortal.program));
   // Make one real mob from this imaginary mob
-  runInCore(birthCash, tMob, &mob, 0, out, CORE_OUT_LEN);
+  runInCore(birthCash, tMob, &mob, 0);
   // Check the populations
   Ix popMobs = hotelOfMobs_count();
   assertInt(popMobs, 1);

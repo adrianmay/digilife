@@ -13,7 +13,9 @@
 void seed(int n, Cash c, Cash thresh);
 bool draw(void);
 void onTockCore();
-Cash runInCore(Cash cash, MobTact tMob, Mob * pMob, Msg * pMsg, char * out, int outlen);
+Cash runInCore(Cash cash, MobTact tMob, Mob * pMob, Msg * pMsg);
+extern char out[];
+extern int outlen;
 
 #define _0 "\x00"
 #define _end "\x0C"

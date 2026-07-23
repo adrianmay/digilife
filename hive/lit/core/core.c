@@ -207,7 +207,7 @@ int roll_(double x, Core * pC, bool * doit) {
 int rollCash(Core * pC, bool * doit) { return roll_(pC->cash, pC, doit); }
 int roll(Core * pC, bool * doit) { return 0; }
 
-Cash runInCore(Cash cash, MobTact tMob, Mob * pMob, Msg * pMsg, char * out, int outlen) {
+Cash runInCore(Cash cash, MobTact tMob, Mob * pMob, Msg * pMsg) {
   memset(out, 0, outlen);
   Core core = (Core){cash, tMob, pMob, pMsg, 0, out, outlen, 0};
   bool doit = true;
@@ -215,7 +215,7 @@ Cash runInCore(Cash cash, MobTact tMob, Mob * pMob, Msg * pMsg, char * out, int 
   return core.cash;
 }
 
-Cash run(Mob * pMob, Msg * pMsg, Cash mobCash, Cash msgCash) {
+Cash run(MobTact tMob, Mob * pMob, Msg * pMsg, Cash mobCash, Cash msgCash) {
   Cash cash = msgCash + mobCash;
   msgcashSample(msgCash);
   mobcashSample(mobCash);
@@ -223,20 +223,21 @@ Cash run(Mob * pMob, Msg * pMsg, Cash mobCash, Cash msgCash) {
   notifyCycles(CYCLES_PER_JOB);
   cash -= totRent(); // Cos both msg and mob will miss out on the tock we expend in here
                      //
-  Cash spare = cash - pMob->_.mortal.spawnThresh;
-  if (spare >= 0) {
-    if (iterations > 1000000)
-      sparePlop(spare);
-    cash -= SPAWN_COST;
-    Cash childCash = cash/2; // - spare/2;
-    childcashSample(childCash);
-    cash -= childCash;
-    spawn(childCash, pMob->_.mortal.spawnThresh);
-    spawnedSample(1);
-  } else spawnedSample(0);
-  void stuffMsg(Msg * pNewMsg) { memcpy(pNewMsg, pMsg, sizeof(*pMsg)); }
-  cash -= cash*MSG_PROP;
+  cash = runInCore(cash, tMob, pMob, pMsg);
+//  Cash spare = cash - pMob->_.mortal.spawnThresh;
+//  if (spare >= 0) {
+//    if (iterations > 1000000)
+//      sparePlop(spare);
+//    cash -= SPAWN_COST;
+//    Cash childCash = cash/2; // - spare/2;
+//    childcashSample(childCash);
+//    cash -= childCash;
+//    spawn(childCash, pMob->_.mortal.spawnThresh);
+//    spawnedSample(1);
+//  } else spawnedSample(0);
+//  cash -= cash*MSG_PROP;
 
+  void stuffMsg(Msg * pNewMsg) { memcpy(pNewMsg, pMsg, sizeof(*pMsg)); }
   raffleOfMsgs_play(cash*MSG_PROP, 100, stuffMsg); 
   hotelOfMobs_drop(pMsg->rcvr.i, cash);
   threshSample(pMob->_.mortal.spawnThresh);
@@ -247,7 +248,7 @@ Cash run(Mob * pMob, Msg * pMsg, Cash mobCash, Cash msgCash) {
   return cash;
 }
 
-Cash onMsgRaffle_dispatch(MsgIx i, Msg * pMsg, Cash msgCash, V claim, V unlock) {
+Cash onMsgRaffle_dispatch(MsgTicketTact t, Msg * pMsg, Cash msgCash, V claim, V unlock) {
   Mob * pMob;
   Cash mobCash;
   Woth w = hotelOfMobs_grab(&pMsg->rcvr, &pMob, &mobCash);
@@ -259,7 +260,7 @@ Cash onMsgRaffle_dispatch(MsgIx i, Msg * pMsg, Cash msgCash, V claim, V unlock) 
   if (randIntBelow(MURDER_RATE)==0) 
     hotelOfMobs_drop(pMsg->rcvr.i, 0);
   else
-    run(pMob, pMsg, mobCash, msgCash);
+    run(pMsg->rcvr, pMob, pMsg, mobCash, msgCash);
   return 0; 
   //hotelOfMobs_raid();
 }

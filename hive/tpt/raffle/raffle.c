@@ -161,7 +161,7 @@ static void drawBelow(Stack * pSt, XXTicketIx i) {
     XXTicketTact tact;
     tact.i = i;
     if (hotelOfXXTickets_grabIx(&tact, 0, &cash)) {
-      cash = onXXRaffle_dispatch((XXIx){i.i}, &pT->body, cash, claim, unlock); 
+      cash = onXXRaffle_dispatch(tact, &pT->body, cash, claim, unlock); 
       hotelOfXXTickets_drop(i, cash);
     } else {
       unlock();

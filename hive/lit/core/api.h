@@ -1,6 +1,6 @@
 
-#define SIZE_MOB ((double) hotelOfMobs_recBoth()) 
-#define SIZE_MSG ((double) raffleOfMsgs_rec()) 
+#define SIZE_MOB ((float) hotelOfMobs_recBoth()) 
+#define SIZE_MSG ((float) raffleOfMsgs_rec()) 
 #define SIZE_BOTH (SIZE_MOB+SIZE_MSG)  
 #define MOB_PROP (SIZE_MOB/SIZE_BOTH)  
 #define MSG_PROP (SIZE_MSG/SIZE_BOTH)  
@@ -20,6 +20,7 @@ extern int outlen;
 #define _0 "\x00"
 #define _end "\x0C"
 #define _snd "\x0D"
+#define _roll0 "\x08"
 #define _rollCash "\x09"
 #define _print0 "\x2C"
 #define _spawn0 "\x20"

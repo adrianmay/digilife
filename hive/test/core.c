@@ -74,42 +74,92 @@ int outlen = CORE_OUT_LEN;
 
 Program testProgs[] = {
   _print0 "Foo" _0 _print0 "Bar" _0 _end,
-  "",
-  "",
-  "",
-  "",
+  "", //Roll test 1
+  "", //Roll test 2
+  "", //Roll test 3
+  "", //Roll test 4
+  "", //Nested roll test 5
+  "", //Nested roll test 6
+  "", //Nested roll test 7
+  "", //Nested roll test 8
+  "", //Nested roll test 9
+  "", //Nested roll test 10
+  "", //Nested roll test 11
+  "", //Nested roll test 12
 };
 
 #define NUM_TEST_PROGS (sizeof(testProgs)/sizeof(Program))
 
 char testExpectations[NUM_TEST_PROGS][CORE_OUT_LEN] = { "FooBar", };
 
-double bigAmgis = 1;
-double bigNegAmgis = -1;
-double bigMu = 1000000000;
-double smallMu = 10;
+float bigAmgis = 1;
+float bigNegAmgis = -1;
+float bigMu = 1000000000;
+float smallMu = 10;
 
-void buildRollTest(int t, double * mu, double * amgis, bool which) {
-  char * p = (char*) &testProgs[t];
-  *p++ = *_rollCash;
-  memcpy(p, (char*)mu, sizeof(double));
-  p+=sizeof(double);
-  memcpy(p, (char*)amgis, sizeof(double));
-  p+=sizeof(double);
-  memcpy(p, _print0 "H" _0 _snd _print0 "L" _0 _end, 9);
-  memcpy(testExpectations[t], which ? "H" : "L", 2);
+void injectOp(char ** p, uint8_t op)  { *(*p)++ = op; }
+void injectOps(char ** p, char * ops, int count)  { memcpy(*p, ops, count); *p += count; }
+void injectFloatPair(char ** p, float mu, float amgis)  {
+  memcpy(*p, (char*)&mu, sizeof(float));
+  (*p)+=sizeof(float);
+  memcpy(*p, (char*)&amgis, sizeof(float));
+  (*p)+=sizeof(float);
+}
+
+#define YEAORNAY(YEA, NAY) injectOps(&p, _print0 YEA _0 _snd _print0 NAY _0 _end, 8);
+
+void buildRollTest(int *t, float mu, float amgis, bool which) {
+  char * p = (char*) &testProgs[*t];
+  injectOp(&p, *_rollCash);
+  injectFloatPair(&p, mu, amgis);
+  YEAORNAY("H", "L")
+  injectOp(&p, *_end);
+  memcpy(testExpectations[*t], which ? "H" : "L", 2);
+  (*t)++;
+}
+
+void buildNestedRollTest(int *t, int a, int b, int c, char e) {
+  char * p = (char*) &testProgs[*t];
+  injectOp(&p, *_roll0);
+  injectFloatPair(&p, a, 1000000);
+    injectOp(&p, *_roll0);
+    injectFloatPair(&p, b, 1000000);
+    YEAORNAY("A", "B")
+  injectOp(&p, *_snd);
+    injectOp(&p, *_roll0);
+    injectFloatPair(&p, c, 1000000);
+    YEAORNAY("C", "D")
+  injectOp(&p, *_end);
+  injectOp(&p, *_end);
+  char ex[2] = {e,0};  
+  memcpy(testExpectations[*t], ex, 2);
+  (*t)++;
 }
 
 static bool testCode() {
-  buildRollTest(1, &smallMu, &bigAmgis, true);
-  buildRollTest(2, &bigMu,   &bigAmgis, false);
-  buildRollTest(3, &smallMu, &bigNegAmgis, false);
-  buildRollTest(4, &bigMu,   &bigNegAmgis, true);
+  int t = 1;
+  buildRollTest(&t, smallMu, bigAmgis, true);
+  buildRollTest(&t, bigMu,   bigAmgis, false);
+  buildRollTest(&t, smallMu, bigNegAmgis, false);
+  buildRollTest(&t, bigMu,   bigNegAmgis, true);
+
+  buildNestedRollTest(&t, -1, -1, -1, 'A');
+  buildNestedRollTest(&t, -1,  1, -1, 'B');
+  buildNestedRollTest(&t, -1, -1,  1, 'A');
+  buildNestedRollTest(&t, -1,  1,  1, 'B');
+
+  buildNestedRollTest(&t,  1, -1, -1, 'C');
+  buildNestedRollTest(&t,  1,  1, -1, 'C');
+  buildNestedRollTest(&t,  1, -1,  1, 'D');
+  buildNestedRollTest(&t,  1,  1,  1, 'D');
+
+  printf("%s\n", testExpectations[0]);
+
   Mob mob;
   MobTact tMob = (MobTact){{8}, 0x12345678};
   bool res = true;
-  for (int t=0;t<NUM_TEST_PROGS;t++) {
-    printf("testCode: #%d\n", t);
+  for (t=0;t<NUM_TEST_PROGS;t++) {
+    printf("####### testCode: #%d\n", t);
     memcpy((char*)mob._.mortal.program, (char*)testProgs[t], sizeof(mob._.mortal.program));
     runInCore(1'000'000, tMob, &mob, 0);
     if (0!=strcmp(out, testExpectations[t])) {
@@ -164,10 +214,10 @@ static bool testSpawnAndPost() {
 
 bool testCore() {
   return 
-//    testCode() &&
-    testSpawnAndPost() &&
+    testCode() &&
+//    testSpawnAndPost() &&
     //testRun1() &&
-    testForever() && 
+//    testForever() && 
     true || (showCore(), false);
 }
 

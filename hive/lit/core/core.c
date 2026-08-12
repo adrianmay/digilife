@@ -40,7 +40,6 @@ void showMsg(MsgIx i, Msg * p) {
   printf("bid=%.3f %s %s", p->cpuBid, r, s);
 }
   
-bool draw() { return raffleOfMsgs_draw(); }
 
 void dumpPiles(void) {
   printf("\n");
@@ -51,12 +50,12 @@ void dumpPiles(void) {
 }
 
 #define SAMPLER(NAME, SPEED) \
-  double NAME##Mean; \
+  float NAME##Mean; \
   int NAME##Samples=0; \
-  void NAME##Sample(double val) { \
+  void NAME##Sample(float val) { \
     if (iterations < 1000000) return; \
     NAME##Samples++; \
-    double speed = MAX(SPEED, 1.0/NAME##Samples); \
+    float speed = MAX(SPEED, 1.0/NAME##Samples); \
     NAME##Mean = speed*val + (1.0-speed)*NAME##Mean; \
   }
 
@@ -69,7 +68,7 @@ SAMPLER(spawned,   0.000000001)
 
 #define HISTOGRAM(NAME, BUCKETS, BOT, STEP) \
   int NAME##Buckets[BUCKETS]={0};  \
-  void NAME##Plop(double val) { int b = (val - BOT) / STEP; NAME##Buckets[b]++; } \
+  void NAME##Plop(float val) { int b = (val - BOT) / STEP; NAME##Buckets[b]++; } \
   void NAME##Hist##Show() { for (int a=0;a<BUCKETS;a++) \
     { printf("%.0f-%.0f : %d\n", BOT+STEP*a, BOT+STEP*(a+1), NAME##Buckets[a]); }}
   
@@ -77,7 +76,7 @@ HISTOGRAM(spare, 30, -1000000.0, 100000.0)
 
 void onTockCore() {}
 
-
+bool draw() { return raffleOfMsgs_draw(); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -88,31 +87,34 @@ typedef struct Core {
   MobTact tMob;
   Mob * pMob;
   Msg * pMsg;
-  int ip;
+  int ip; // Instruction pointer
   char * out;
   int outlen;
   int outcur;
 } Core;
 
-typedef int (*Instruction)(Core *, bool * doit);
+// Returns change of scope depth
+// doit is false when skipping 'then' or 'else' blocks.
+typedef int (*Instruction)(Core *, bool doit);
+
 typedef struct Op {
   char name[10];
   Instruction inst;
 } Op;
 
 Op ops[256];
-int doBlock(Core * pC, bool * doit);
+int doBlock(Core * pC, bool doit);
 
-void incIP(Core * pC, int n) { pC->ip += n; }
+void incIP(Core * pC, int n) { pC->ip += n; } // Overrun protection is in getInstruction below
 
-int nop0(Core * pC, bool * doit) { incIP(pC, 1); return 0; }
-int nopn(Core * pC, bool * doit) { return nop0(pC, doit); } //TODO: chomp n, then n bytes
-int end   (Core * pC, bool * doit) { incIP(pC, 1); return -1; }
-int snd   (Core * pC, bool * doit) { incIP(pC, 1); *doit = !*doit; return 0; }
+int nop0(Core * pC, bool doit) { incIP(pC, 1); return 0; }
+int nopn(Core * pC, bool doit) { return nop0(pC, doit); } //TODO: chomp n, then n bytes
+int end   (Core * pC, bool doit) { incIP(pC, 1); return -1; }
+int snd   (Core * pC, bool doit) { incIP(pC, 1); doit = !doit; return -1; }
 
-int post_(MobTact rcvr, Cash cash, Core * pC, bool * doit) {
+int post_(MobTact rcvr, Cash cash, Core * pC, bool doit) {
   incIP(pC, 1);
-  if (!*doit) return 0;
+  if (!doit) return 0;
   Cash bill = POST_COST + cash;
   if (pC->cash < bill) return 0;
   pC->cash -= bill;
@@ -120,14 +122,14 @@ int post_(MobTact rcvr, Cash cash, Core * pC, bool * doit) {
   raffleOfMsgs_play(cash, 100, stuffMsg); 
   return 0; 
 }
-int post0(Core * pC, bool * doit) { return post_(pC->tMob, pC->cash*MSG_PROP, pC, doit); }
-int post1(Core * pC, bool * doit) { return post0(pC, doit); }
-int post2(Core * pC, bool * doit) { return post0(pC, doit); }
-int post3(Core * pC, bool * doit) { return post0(pC, doit); }
+int post0(Core * pC, bool doit) { return post_(pC->tMob, pC->cash*MSG_PROP, pC, doit); }
+int post1(Core * pC, bool doit) { return post0(pC, doit); }
+int post2(Core * pC, bool doit) { return post0(pC, doit); }
+int post3(Core * pC, bool doit) { return post0(pC, doit); }
 
-int spawn0(Core * pC, bool * doit) { 
+int spawn0(Core * pC, bool doit) { 
   incIP(pC, 1);
-  if (!*doit) return 0;
+  if (!doit) return 0;
   pC->cash -= SPAWN_COST;
   //printf("A: %'ld\n", pC->cash);
   Cash childCash = pC->cash/2;
@@ -140,25 +142,31 @@ int spawn0(Core * pC, bool * doit) {
   raffleOfMsgs_play(chMsgCash, 100, stuffMsg); 
   return 0; 
 }
-int spawn1(Core * pC, bool * doit) { return spawn0(pC, doit); }
-int spawn2(Core * pC, bool * doit) { return spawn0(pC, doit); }
-int spawn3(Core * pC, bool * doit) { return spawn0(pC, doit); }
+int spawn1(Core * pC, bool doit) { return spawn0(pC, doit); }
+int spawn2(Core * pC, bool doit) { return spawn0(pC, doit); }
+int spawn3(Core * pC, bool doit) { return spawn0(pC, doit); }
 
 uint8_t * getRawOpCodeP(Core * pC) { 
   uint8_t * pI = &pC->pMob->_.mortal.program[pC->ip];
   return pI; 
 }
 
-Instruction getInstruction(Core * pC) {
-  sleepNs(1000000);
-  if (pC->ip < sizeof(Program)) { return ops[*getRawOpCodeP(pC)].inst; }
-  else return end;
+Instruction getInstruction(Core * pC, bool doit) { // doit just for debugging
+  sleepNs(1000000); // So I can hit Ctrl-C
+  if (pC->ip < sizeof(Program)) {
+    //printf("getInstruction with ip=%d and doit=%b returning: %s\n", pC->ip, doit, ops[*getRawOpCodeP(pC)].name);
+    return ops[*getRawOpCodeP(pC)].inst; 
+  }
+  else {
+    printf("getInstruction with ip=%d returning auto end\n", pC->ip);
+    return end; // TODO: Should apply overrun fine here
+  }
 }
 
-int print0(Core * pC, bool * doit) { 
+int print0(Core * pC, bool doit) { 
   incIP(pC, 1);
   int len = strlen((char*)getRawOpCodeP(pC));
-  if (*doit) {
+  if (doit) {
     //printf("Print %s\n", (char*)getRawOpCodeP(pC));
     int n = snprintf(pC->out+pC->outcur, pC->outlen-pC->outcur, "%s", getRawOpCodeP(pC));
     pC->outcur += n;
@@ -167,32 +175,47 @@ int print0(Core * pC, bool * doit) {
   return 0; 
 }
 
-int doBlock(Core * pC, bool * _doit) { // false means skip
-  bool doit=*_doit;
+int doBlock(Core * pC, bool doit) { // false means skip
   int level = 1;                                  
-  while (level>0) { level += getInstruction(pC)(pC, &doit); }
+  while (level>0) { level += getInstruction(pC, doit)(pC, doit); }
   return -1;
 }
 
-int roll_(double x, Core * pC, bool * doit) {
-  incIP(pC, 1);
-  double mu, amgis;  // Inverse of sigma, -ve for if (!...)
-  memcpy((char*)&mu, (char*)&pC->pMob->_.mortal.program[pC->ip], sizeof(mu));
-  incIP(pC, sizeof(double));
-  memcpy((char*)&amgis, (char*)&pC->pMob->_.mortal.program[pC->ip], sizeof(amgis));
-  incIP(pC, sizeof(double));
-  *doit = rollCumGauss(x, mu, amgis);
-  //printf("Rolled: %b\n", *doit);
-  return doBlock(pC, doit);
+bool doThen(Core * pC, bool doit) { // return whether ended with snd
+  int level = 1;                                  
+  Instruction inst;
+  while (level>0) { 
+    inst = getInstruction(pC, doit);
+    level += inst(pC, doit); 
+  }
+  return (inst == snd);
 }
-int rollCash(Core * pC, bool * doit) { return roll_(pC->cash, pC, doit); }
-int roll(Core * pC, bool * doit) { return 0; }
+
+int roll_(float x, Core * pC, bool doit) {
+  if (!doit) {
+    incIP(pC, 1 + 2*sizeof(float)); 
+    if (doThen(pC, false)) doThen(pC, false);
+  } else {
+    incIP(pC, 1);
+    float mu, amgis;  // Inverse of sigma, -ve for if (!...)
+    memcpy((char*)&mu, (char*)&pC->pMob->_.mortal.program[pC->ip], sizeof(mu));
+    incIP(pC, sizeof(float));
+    memcpy((char*)&amgis, (char*)&pC->pMob->_.mortal.program[pC->ip], sizeof(amgis));
+    incIP(pC, sizeof(float));
+    bool lucky = rollCumGauss(x, mu, amgis);
+    //printf("Rolled: %b\n", lucky);
+    if (doThen(pC, lucky)) doThen(pC, !lucky);
+  }
+  return 0;
+
+}
+int rollCash(Core * pC, bool doit) { return roll_(pC->cash, pC, doit); }
+int roll0(Core * pC, bool doit) { return roll_(0, pC, doit); }
 
 Cash runInCore(Cash cash, MobTact tMob, Mob * pMob, Msg * pMsg) {
   memset(out, 0, outlen);
   Core core = (Core){cash, tMob, pMob, pMsg, 0, out, outlen, 0};
-  bool doit = true;
-  doBlock(&core, &doit);
+  doBlock(&core, true);
   return core.cash;
 }
 
@@ -203,21 +226,7 @@ Cash run(MobTact tMob, Mob * pMob, Msg * pMsg, Cash mobCash, Cash msgCash) {
   cash += DOLE;
   notifyCycles(CYCLES_PER_JOB);
   cash -= totRent(); // Cos both msg and mob will miss out on the tock we expend in here
-                     //
   cash = runInCore(cash, tMob, pMob, pMsg);
-//  Cash spare = cash - pMob->_.mortal.spawnThresh;
-//  if (spare >= 0) {
-//    if (iterations > 1000000)
-//      sparePlop(spare);
-//    cash -= SPAWN_COST;
-//    Cash childCash = cash/2; // - spare/2;
-//    childcashSample(childCash);
-//    cash -= childCash;
-//    spawn(childCash, pMob->_.mortal.spawnThresh);
-//    spawnedSample(1);
-//  } else spawnedSample(0);
-//  cash -= cash*MSG_PROP;
-
   hotelOfMobs_drop(pMsg->rcvr.i, cash);
   threshSample(pMob->_.mortal.spawnThresh);
   popSample(hotelOfMobs_count());
@@ -242,7 +251,6 @@ Cash onMsgRaffle_dispatch(MsgTicketTact t, Msg * pMsg, Cash msgCash, V claim, V 
   else
     run(pMsg->rcvr, pMob, pMsg, mobCash, msgCash);
   return 0; 
-  //hotelOfMobs_raid();
 }
 
 void create(Cash c, Cash thresh) {
@@ -265,24 +273,23 @@ void seed(int n, Cash c, Cash thresh) {
 }
 
 
-
 #define _(NAME) { #NAME, NAME }
 
 Op ops[256] = {
-  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll),  _(rollCash), _(roll),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
-  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll),  _(rollCash), _(roll),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
+  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll0),  _(rollCash), _(roll0),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
+  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll0),  _(rollCash), _(roll0),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
   _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(post0), _(post1),    _(post2), _(post3),    /**/ _(print0),  _(post1), _(post2), _(post3),
   _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(post0), _(post1),    _(post2), _(post3),    /**/ _(post0),   _(post1), _(post2), _(post3),
-  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll),  _(rollCash), _(roll),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
-  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll),  _(rollCash), _(roll),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
+  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll0),  _(rollCash), _(roll0),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
+  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll0),  _(rollCash), _(roll0),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
   _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(post0), _(post1),    _(post2), _(post3),    /**/ _(post0),   _(post1), _(post2), _(post3),
   _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(post0), _(post1),    _(post2), _(post3),    /**/ _(post0),   _(post1), _(post2), _(post3),
-  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll),  _(rollCash), _(roll),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
-  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll),  _(rollCash), _(roll),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
+  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll0),  _(rollCash), _(roll0),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
+  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll0),  _(rollCash), _(roll0),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
   _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(post0), _(post1),    _(post2), _(post3),    /**/ _(post0),   _(post1), _(post2), _(post3),
   _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(post0), _(post1),    _(post2), _(post3),    /**/ _(post0),   _(post1), _(post2), _(post3),
-  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll),  _(rollCash), _(roll),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
-  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll),  _(rollCash), _(roll),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
+  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll0),  _(rollCash), _(roll0),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
+  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll0),  _(rollCash), _(roll0),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
   _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(post0), _(post1),    _(post2), _(post3),    /**/ _(post0),   _(post1), _(post2), _(post3),
   _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(post0), _(post1),    _(post2), _(post3),    /**/ _(post0),   _(post1), _(post2), _(post3),
 }; 

@@ -12,9 +12,9 @@
 #include "Mob_hotel/ix.h"
 #include "Msg_raffle/api.h"
 #include "Mob_hotel/api.h"
-#include "core/api.h"
 #include "core/Mob.h"
 #include "core/Msg.h"
+#include "core/api.h"
 
 #define BIRTH_CASH 1000'000'000L
 
@@ -36,37 +36,8 @@ static void cleanup(void) {
   hotelOfMobs_close(Hide); 
 }
 
-void * work(void * p) {
-//  while(iterations < 100000 && draw())  {
-  while(draw())  {
-    //if (iterations < 1000 || iterations % 1000 == 0)
-    //  printf("Its=%d, Tocks=%d Mobs=%d Msgs=%d\n", iterations, tocksNow(), hotelOfMobs_count(), raffleOfMsgs_count()); 
-    atomic_fetch_add(&iterations,1);
-  }
-  return 0;
-}
-
 //#define NUM_THREADS 2
 //static pthread_t pids[NUM_THREADS] = {0};
-
-static bool testForever() {
-  printf("testForever\n");
-  assertInt (hotelOfMobs_bodyat(),  MOB_HEADER_SIZE);
-  assertInt (hotelOfMobs_recBlob(), MOB_GROSS_SIZE);
-  assertInt (hotelOfMobs_bodylen(), MOB_BODY_SIZE);
-  //assertInt (MOB_GROSS_SIZE, MOB_HEADER_SIZE + MOB_CODE_SIZE);
-  seed(50, 1000000, 20'000'000); // Number of mobs, starting cash, spawn threshold
-  atomic_store(&iterations, 0);
-  time_t start = time(NULL);
-  work(0);
-  //for (int64_t a=0;a<NUM_THREADS; a++) pthread_create(pids+a, 0, work, (void*)a);
-  //for (int64_t a=0;a<NUM_THREADS; a++) pthread_join(pids[a], 0);
-  time_t end = time(NULL);
-  hotelOfMobs_show();
-  raffleOfMsgs_show();
-  printf("Took %'ld\n", end-start);
-  return true;
-}
 
 #define CORE_OUT_LEN 100
 char out[CORE_OUT_LEN];
@@ -153,8 +124,6 @@ static bool testCode() {
   buildNestedRollTest(&t,  1, -1,  1, 'D');
   buildNestedRollTest(&t,  1,  1,  1, 'D');
 
-  printf("%s\n", testExpectations[0]);
-
   Mob mob;
   MobTact tMob = (MobTact){{8}, 0x12345678};
   bool res = true;
@@ -172,9 +141,11 @@ static bool testCode() {
 
 
 static bool testSpawnAndPost() {
-  printf("testSpawn\n");
+  printf("testSpawnAndPost\n");
   Cash birthCash = BIRTH_CASH + randIntBelow(BIRTH_CASH);
-  seed(10, birthCash, 123);
+  void stuffProg(Program * pProg) {
+  }
+  seed(10, birthCash, stuffProg);
   //MobTact tMob = (MobTact){{8}, 0x12345678};
   //Mob mob;
   //mob.phylum = PhyMortal;
@@ -194,7 +165,7 @@ static bool testSpawnAndPost() {
   Mob * pMob; Cash cash;
   hotelOfMobs_grabIx(&tMob0, &pMob, &cash);
   //showMob(iMob0, pMob);
-  assertLong(pMob->_.mortal.spawnThresh, 123L);
+  //assertLong(pMob->_.mortal.spawnThresh, 123L);
   Cash expect = birthCash*MOB_PROP;
   assertLong(cash, expect);
   hotelOfMobs_drop(tMob0.i, cash);
@@ -211,13 +182,50 @@ static bool testSpawnAndPost() {
   return true;
 }
 
+void * work(void * p) {
+  while(iterations < 100000 && draw())  {
+//  while(draw())  {
+    //if (iterations < 1000 || iterations % 1000 == 0)
+    //  printf("Its=%d, Tocks=%d Mobs=%d Msgs=%d\n", iterations, tocksNow(), hotelOfMobs_count(), raffleOfMsgs_count()); 
+    atomic_fetch_add(&iterations,1);
+  }
+  return 0;
+}
+
+static bool testForever() {
+  printf("testForever\n");
+  assertInt (hotelOfMobs_bodyat(),  MOB_HEADER_SIZE);
+  assertInt (hotelOfMobs_recBlob(), MOB_GROSS_SIZE);
+  assertInt (hotelOfMobs_bodylen(), MOB_BODY_SIZE);
+  //assertInt (MOB_GROSS_SIZE, MOB_HEADER_SIZE + MOB_CODE_SIZE);
+  void stuffProg(Program * pProg) {
+    char * p = (char *) pProg;
+    injectOp(&p, *_rollCash);
+    injectFloatPair(&p, 3000000, 0.00001);
+    injectOp(&p, *_spawn0);
+    injectOp(&p, *_end);
+    injectOp(&p, *_post0);
+    injectOp(&p, *_end);
+  }
+  seed(50, 1000000, stuffProg); // Number of mobs, starting cash, spawn threshold
+  atomic_store(&iterations, 0);
+  time_t start = time(NULL);
+  work(0);
+  //for (int64_t a=0;a<NUM_THREADS; a++) pthread_create(pids+a, 0, work, (void*)a);
+  //for (int64_t a=0;a<NUM_THREADS; a++) pthread_join(pids[a], 0);
+  time_t end = time(NULL);
+  hotelOfMobs_show();
+  raffleOfMsgs_show();
+  printf("Took %'ld\n", end-start);
+  return true;
+}
+
 
 bool testCore() {
   return 
     testCode() &&
 //    testSpawnAndPost() &&
-    //testRun1() &&
-//    testForever() && 
+    testForever() && 
     true || (showCore(), false);
 }
 

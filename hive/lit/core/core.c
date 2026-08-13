@@ -25,8 +25,10 @@ void showMob(MobIx i, Mob * p) {
       break;
     case PhyMortal:
       MortalMob * pMortalMob = &p->_.mortal; 
-      printf("spawnThresh=%ld code=", pMortalMob->spawnThresh);
-      for (int i=0;i<sizeof(Program);i++) printf("%.2X ", pMortalMob->program[i]);
+      printf("code=");
+      int i, lastNonZero;
+      for (i=0;i<sizeof(Program);i++) if (pMortalMob->program[i]) lastNonZero=i; 
+      for (i=0;i<=lastNonZero+1;i++) printf("%.2X ", pMortalMob->program[i]);
       break;
     default:
       DIE("Unknown phylum: %d\n", p->phylum);
@@ -53,7 +55,7 @@ void dumpPiles(void) {
   float NAME##Mean; \
   int NAME##Samples=0; \
   void NAME##Sample(float val) { \
-    if (iterations < 1000000) return; \
+    if (iterations < 0) return; \
     NAME##Samples++; \
     float speed = MAX(SPEED, 1.0/NAME##Samples); \
     NAME##Mean = speed*val + (1.0-speed)*NAME##Mean; \
@@ -131,7 +133,7 @@ int spawn0(Core * pC, bool doit) {
   incIP(pC, 1);
   if (!doit) return 0;
   pC->cash -= SPAWN_COST;
-  //printf("A: %'ld\n", pC->cash);
+  //printf("Spawned: %'ld\n", pC->cash);
   Cash childCash = pC->cash/2;
   pC->cash -= childCash;
   Cash chMobCash = childCash * MOB_PROP;
@@ -152,7 +154,7 @@ uint8_t * getRawOpCodeP(Core * pC) {
 }
 
 Instruction getInstruction(Core * pC, bool doit) { // doit just for debugging
-  sleepNs(1000000); // So I can hit Ctrl-C
+  sleepNs(10000); // So I can hit Ctrl-C
   if (pC->ip < sizeof(Program)) {
     //printf("getInstruction with ip=%d and doit=%b returning: %s\n", pC->ip, doit, ops[*getRawOpCodeP(pC)].name);
     return ops[*getRawOpCodeP(pC)].inst; 
@@ -228,16 +230,16 @@ Cash run(MobTact tMob, Mob * pMob, Msg * pMsg, Cash mobCash, Cash msgCash) {
   cash -= totRent(); // Cos both msg and mob will miss out on the tock we expend in here
   cash = runInCore(cash, tMob, pMob, pMsg);
   hotelOfMobs_drop(pMsg->rcvr.i, cash);
-  threshSample(pMob->_.mortal.spawnThresh);
+  //threshSample(pMob->_.mortal.spawnThresh);
   popSample(hotelOfMobs_count());
-  if (iterations < 1000 || iterations % 100000 == 0) 
+  if (iterations < 1000 || iterations % 1000 == 0) 
     printf("Its=%'ld, Rent=%'.0f, thresh=%'.0f; Means: pop=%'.2f, spawnOdds=%'.5f, childCash=%'.0f msgCash=%'.0f, mobCash=%'.0f, totCash=%'.0f\n",
         iterations, totRent(), threshMean, popMean, 1.0/spawnedMean, childcashMean, msgcashMean, mobcashMean, msgcashMean+mobcashMean);
   return cash;
 }
 
 Cash onMsgRaffle_dispatch(MsgTicketTact t, Msg * pMsg, Cash msgCash, V claim, V unlock) {
-  printf("Raffle dispatch msg %d\n", t.i.i);
+  //printf("Raffle dispatch msg %d\n", t.i.i);
   Mob * pMob;
   Cash mobCash;
   Woth w = hotelOfMobs_grab(&pMsg->rcvr, &pMob, &mobCash);
@@ -253,23 +255,21 @@ Cash onMsgRaffle_dispatch(MsgTicketTact t, Msg * pMsg, Cash msgCash, V claim, V 
   return 0; 
 }
 
-void create(Cash c, Cash thresh) {
-  void stuff(Mob * p) { 
+
+void create(Cash c, ProgStuffer stuffProg) {
+  void stuffMob(Mob * p) { 
     p->phylum = PhyMortal;
-    char code[] = _spawn0 _post0 _end;
-    memcpy((char*)p->_.mortal.program, code, sizeof(code));
-    //Cash vm = thresh*0.03;
-    //Cash vd = (randIntBelow(5)-2)*vm; 
-    p->_.mortal.spawnThresh = thresh; // + vd; 
+    stuffProg(&p->_.mortal.program);
+    //memcpy((char*)p->_.mortal.program, code, sizeof(code));
   }
-  MobTact tNewMob = hotelOfMobs_admit(c*MOB_PROP, false, stuff, 0, 0);
+  MobTact tNewMob = hotelOfMobs_admit(c*MOB_PROP, false, stuffMob, 0, 0);
   void stuffMsg(Msg * p) { p->cpuBid = 0; p->sndr = p->rcvr = tNewMob; }
   raffleOfMsgs_play(c*MSG_PROP, 100, stuffMsg); 
 }
 
-void seed(int n, Cash c, Cash thresh) {
+void seed(int n, Cash c, ProgStuffer stuffProg) {
   //hotelOfMobs_admit(0, true, 0, 0, 0);
-  for (int a=0;a<n;a++) create(c, thresh);
+  for (int a=0;a<n;a++) create(c, stuffProg);
 }
 
 

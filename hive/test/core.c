@@ -183,7 +183,7 @@ static bool testSpawnAndPost() {
 }
 
 void * work(void * p) {
-  while(iterations < 100000 && draw())  {
+  while(iterations < 100000000 && draw())  {
 //  while(draw())  {
     //if (iterations < 1000 || iterations % 1000 == 0)
     //  printf("Its=%d, Tocks=%d Mobs=%d Msgs=%d\n", iterations, tocksNow(), hotelOfMobs_count(), raffleOfMsgs_count()); 

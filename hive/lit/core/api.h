@@ -8,6 +8,7 @@
 #define SPAWN_COST 500000
 #define POST_COST 50000
 #define MURDER_RATE 20
+#define MUTE_RATE 0.3
 #define CYCLES_PER_JOB GUESS_CYCLES_PER_TOCK
 
 typedef void (*ProgStuffer)(Program * pProg);

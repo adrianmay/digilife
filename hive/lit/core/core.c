@@ -138,7 +138,15 @@ int spawn0(Core * pC, bool doit) {
   pC->cash -= childCash;
   Cash chMobCash = childCash * MOB_PROP;
   Cash chMsgCash = childCash - chMobCash;
-  void stuffMob(Mob * p) { memcpy(p, pC->pMob, sizeof(Mob)); }
+  void stuffMob(Mob * p) { 
+    memcpy(p, pC->pMob, sizeof(Mob)); 
+    Program * pProg = &p->_.mortal.program;          
+    void * pVoid = (void*)pProg;
+    float * pThresh = (float*)(pVoid+1);
+    int r = randIntBelow(301) - 150;
+    *pThresh = *pThresh + MUTE_RATE/150.0 * ((float)r) * ((float)(*pThresh));
+    //printf("Mutating to %f\n", *pThresh);
+  }
   MobTact tNewMob = hotelOfMobs_admit(chMobCash, false, stuffMob, 0, 0);
   void stuffMsg(Msg * p) { p->cpuBid = 0; p->sndr = pC->tMob; p->rcvr = tNewMob; }
   raffleOfMsgs_play(chMsgCash, 100, stuffMsg); 
@@ -230,11 +238,15 @@ Cash run(MobTact tMob, Mob * pMob, Msg * pMsg, Cash mobCash, Cash msgCash) {
   cash -= totRent(); // Cos both msg and mob will miss out on the tock we expend in here
   cash = runInCore(cash, tMob, pMob, pMsg);
   hotelOfMobs_drop(pMsg->rcvr.i, cash);
-  //threshSample(pMob->_.mortal.spawnThresh);
+  Program * pProg = &pMob->_.mortal.program;          
+  void * pVoid = (void *) pProg;
+  float * pThresh = (float*) (pVoid+1);
+  threshSample(*pThresh);
   popSample(hotelOfMobs_count());
-  if (iterations < 1000 || iterations % 1000 == 0) 
-    printf("Its=%'ld, Rent=%'.0f, thresh=%'.0f; Means: pop=%'.2f, spawnOdds=%'.5f, childCash=%'.0f msgCash=%'.0f, mobCash=%'.0f, totCash=%'.0f\n",
+  if (iterations < 1000 || iterations % 1000 == 0) {
+    printf("Its=%'ld, Rent=%'.0f, threshMean=%'.0f; Means: pop=%'.2f, spawnOdds=%'.5f, childCash=%'.0f msgCash=%'.0f, mobCash=%'.0f, totCash=%'.0f\n",
         iterations, totRent(), threshMean, popMean, 1.0/spawnedMean, childcashMean, msgcashMean, mobcashMean, msgcashMean+mobcashMean);
+  }
   return cash;
 }
 

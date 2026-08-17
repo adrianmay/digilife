@@ -7,6 +7,9 @@ Lang:  Just a number
 2a ###################################
 Goal:  As 2 but with code
 Lang1: All of 2 as instruction with thresh param
+---------- Commit 047e181: 
+           Program is rollCash <mutable thresh> 1/100000 spawn end post end
+           Settles with thresh approx 4000000 and pop=454
 Lang2: Lots of climate registers
        Roll prefix with mu and sigma and register comparison
        Post and spawn instructions

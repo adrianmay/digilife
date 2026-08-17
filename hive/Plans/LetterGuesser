@@ -1,0 +1,32 @@
+
+Reduce English alphabet to about 10 symbols by combining rare ones, but we still want a spread of frequency. Keep punctuation and spaces. No capitals.
+  Maybe start with much simpler grammar with easy rules, e.g., table of allowable pairs/triplets.
+    Maybe start with pure frequencies irrespective of history.
+
+Individual simplified letters in novel posted to (fixed or changing) subset of mobs.
+  Or recent novel history in registers and new-letter message to selected receivers.
+Another subset can post to (i.e. knows the name of) the bookie god to place a bet on the next letter. 
+Odds are visible in registers and set like a bookie with zero profit, starting with global frequency of the letter.
+Death duties minus enforcement losses go to bookie who distributes them by being generous.
+Performance of system is accuracy of dynamic odds.
+Rewards posted to winning animals.
+Limited language and code space / mutation range to force team work
+
+BUT FIRST
+
+Need culture of speculative messaging and learning effects per peer. (Choose random live, mortal recipient.)
+  That can require reproduction, which means no need for an individual to learn, i.e., no code mod, but we can have states (persistent IP?)
+
+Language needs:
+  Mutate rcvr to random live mortal
+  Persistent RW variables: state, peers, joy, 
+  Conditions on environment and state variables
+
+
+
+
+
+
+
+
+

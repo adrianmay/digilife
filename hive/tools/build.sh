@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 CC=gcc
 CFLAGS="-O0 -pthread -g -lm -std=c23"
  
@@ -8,11 +9,14 @@ CFLAGS="-O0 -pthread -g -lm -std=c23"
 # Always start with a clean slate.
 tools/clean.sh
 rm -rf gen bin
+
+make -C corpus
 mkdir gen bin
 
 # Copy simple stuff into build area
 cp -r lit/* gen 
 cp -r test hive bin
+tools/make_ops.sh
 
 # Stop me editing that stuff by accident
 find gen bin -type f | xargs chmod -w

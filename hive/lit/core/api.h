@@ -18,13 +18,6 @@ void onTockCore();
 Cash runInCore(Cash cash, MobTact tMob, Mob * pMob, Msg * pMsg);
 extern char out[];
 extern int outlen;
+struct Core;
 
-#define _0 "\x00"
-#define _end "\x0C"
-#define _snd "\x0D"
-#define _roll0 "\x08"
-#define _rollCash "\x09"
-#define _print0 "\x2C"
-#define _spawn0 "\x20"
-#define _post0 "\x28"
-
+#include "ops.h"

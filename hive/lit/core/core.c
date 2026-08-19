@@ -51,6 +51,8 @@ void dumpPiles(void) {
   printf("\n");
 }
 
+//////////////////////////////////////////////////////////
+
 #define SAMPLER(NAME, SPEED) \
   float NAME##Mean; \
   int NAME##Samples=0; \
@@ -95,22 +97,12 @@ typedef struct Core {
   int outcur;
 } Core;
 
-// Returns change of scope depth
-// doit is false when skipping 'then' or 'else' blocks.
-typedef int (*Instruction)(Core *, bool doit);
-
-typedef struct Op {
-  char name[10];
-  Instruction inst;
-} Op;
-
-Op ops[256];
 int doBlock(Core * pC, bool doit);
 
 void incIP(Core * pC, int n) { pC->ip += n; } // Overrun protection is in getInstruction below
 
-int nop0(Core * pC, bool doit) { incIP(pC, 1); return 0; }
-int nopn(Core * pC, bool doit) { return nop0(pC, doit); } //TODO: chomp n, then n bytes
+int nop   (Core * pC, bool doit) { incIP(pC, 1); return 0; }
+int nopn  (Core * pC, bool doit) { return nop(pC, doit); } //TODO: chomp n, then n bytes
 int end   (Core * pC, bool doit) { incIP(pC, 1); return -1; }
 int snd   (Core * pC, bool doit) { incIP(pC, 1); doit = !doit; return -1; }
 
@@ -161,11 +153,11 @@ uint8_t * getRawOpCodeP(Core * pC) {
   return pI; 
 }
 
-Instruction getInstruction(Core * pC, bool doit) { // doit just for debugging
+Instruction * getInstruction(Core * pC, bool doit) { // doit just for debugging
   sleepNs(10000); // So I can hit Ctrl-C
   if (pC->ip < sizeof(Program)) {
     //printf("getInstruction with ip=%d and doit=%b returning: %s\n", pC->ip, doit, ops[*getRawOpCodeP(pC)].name);
-    return ops[*getRawOpCodeP(pC)].inst; 
+    return opfuncs[*getRawOpCodeP(pC)]; 
   }
   else {
     printf("getInstruction with ip=%d returning auto end\n", pC->ip);
@@ -193,7 +185,7 @@ int doBlock(Core * pC, bool doit) { // false means skip
 
 bool doThen(Core * pC, bool doit) { // return whether ended with snd
   int level = 1;                                  
-  Instruction inst;
+  Instruction * inst;
   while (level>0) { 
     inst = getInstruction(pC, doit);
     level += inst(pC, doit); 
@@ -285,24 +277,5 @@ void seed(int n, Cash c, ProgStuffer stuffProg) {
 }
 
 
-#define _(NAME) { #NAME, NAME }
 
-Op ops[256] = {
-  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll0),  _(rollCash), _(roll0),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
-  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll0),  _(rollCash), _(roll0),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
-  _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(post0), _(post1),    _(post2), _(post3),    /**/ _(print0),  _(post1), _(post2), _(post3),
-  _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(post0), _(post1),    _(post2), _(post3),    /**/ _(post0),   _(post1), _(post2), _(post3),
-  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll0),  _(rollCash), _(roll0),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
-  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll0),  _(rollCash), _(roll0),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
-  _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(post0), _(post1),    _(post2), _(post3),    /**/ _(post0),   _(post1), _(post2), _(post3),
-  _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(post0), _(post1),    _(post2), _(post3),    /**/ _(post0),   _(post1), _(post2), _(post3),
-  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll0),  _(rollCash), _(roll0),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
-  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll0),  _(rollCash), _(roll0),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
-  _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(post0), _(post1),    _(post2), _(post3),    /**/ _(post0),   _(post1), _(post2), _(post3),
-  _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(post0), _(post1),    _(post2), _(post3),    /**/ _(post0),   _(post1), _(post2), _(post3),
-  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll0),  _(rollCash), _(roll0),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
-  _(nop0),   _(nopn),   _(nop0),   _(nopn),   /**/ _(end),    _(end),    _(end),    _(end),    /**/ _(roll0),  _(rollCash), _(roll0),  _(rollCash), /**/ _(end),     _(snd),   _(end),   _(snd),
-  _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(post0), _(post1),    _(post2), _(post3),    /**/ _(post0),   _(post1), _(post2), _(post3),
-  _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(spawn0), _(spawn1), _(spawn2), _(spawn3), /**/ _(post0), _(post1),    _(post2), _(post3),    /**/ _(post0),   _(post1), _(post2), _(post3),
-}; 
 

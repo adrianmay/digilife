@@ -1,5 +1,5 @@
 
-Reduce English alphabet to about 10 symbols by combining rare ones, but we still want a spread of frequency. Keep punctuation and spaces. No capitals.
+Reduce English alphabet to about 30 symbols by combining rare ones, but we still want a spread of frequency. Keep punctuation and spaces. No capitals.
   Maybe start with much simpler grammar with easy rules, e.g., table of allowable pairs/triplets.
     Maybe start with pure frequencies irrespective of history.
 
@@ -18,6 +18,8 @@ Need culture of speculative messaging and learning effects per peer. (Choose ran
   That can require reproduction, which means no need for an individual to learn, i.e., no code mod, but we can have states (persistent IP?)
 
 Language needs:
+  Expressions for all numbers e.g. multiply, random, read register, etc
+  Loops: breakif
   Mutate rcvr to random live mortal
   Persistent RW variables: state, peers, joy, 
   Conditions on environment and state variables

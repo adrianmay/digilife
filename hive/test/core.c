@@ -44,7 +44,7 @@ char out[CORE_OUT_LEN];
 int outlen = CORE_OUT_LEN;
 
 Program testProgs[] = {
-  _print0 "Foo" _0 _print0 "Bar" _0 _end,
+  _print0 "Foo" _nop _print0 "Bar" _nop _end,
   "", //Roll test 1
   "", //Roll test 2
   "", //Roll test 3
@@ -77,7 +77,7 @@ void injectFloatPair(char ** p, float mu, float amgis)  {
   (*p)+=sizeof(float);
 }
 
-#define YEAORNAY(YEA, NAY) injectOps(&p, _print0 YEA _0 _snd _print0 NAY _0 _end, 8);
+#define YEAORNAY(YEA, NAY) injectOps(&p, _print0 YEA _nop _snd _print0 NAY _nop _end, 8);
 
 void buildRollTest(int *t, float mu, float amgis, bool which) {
   char * p = (char*) &testProgs[*t];

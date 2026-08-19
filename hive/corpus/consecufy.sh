@@ -1,3 +1,3 @@
-tr "aiknprstv01239., \n-" "abcdefghijklmnopqrs" 
+tr "aoueipckjqtvvlmnrhsx0129., \n-" "abcdefghijklmnopqrstuvwxyz{|}" 
 
 

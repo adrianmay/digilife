@@ -1,23 +1,20 @@
 all: 1.histo 2.histo 3.histo
 
-3.histo: 3.prob buckets.sh
+%.histo: %.probs
 	cat $< | ./buckets.sh > $@
 
-3.prob: train.txt tripProb.sh
-	cat $< | ./tripProb.sh  > $@
+perplexity 1.probs 2.probs 3.probs &:	stats train.txt
+	cat train.txt | ./stats | tee perplexity
 
-2.histo: 2.prob buckets.sh
-	cat $< | ./buckets.sh > $@
-
-2.prob: train.txt pairProb.sh
-	cat $< | ./pairProb.sh  > $@
-
-1.histo: train.txt letterProb.sh
-	cat $< | ./letterProb.sh > $@
+stats: stats.c
+	gcc -lm -o stats stats.c
 
 train.txt: simplified.txt consecufy.sh
 	cat $< | ./consecufy.sh > $@
 
-simplified.txt: english.txt simplify.sh
+simplified.txt: english.txt simplify.sh Makefile
 	cat $< | ./simplify.sh > $@
+
+clean:
+	rm -f *.histo *.probs perplexity simplified.txt train.txt stats
 

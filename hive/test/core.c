@@ -44,7 +44,7 @@ char out[CORE_OUT_LEN];
 int outlen = CORE_OUT_LEN;
 
 Program testProgs[] = {
-  _print0 "Foo" _nop _print0 "Bar" _nop _end,
+  _print "Foo" _nop _print "Bar" _nop _end,
   "", //Roll test 1
   "", //Roll test 2
   "", //Roll test 3
@@ -77,7 +77,7 @@ void injectFloatPair(char ** p, float mu, float amgis)  {
   (*p)+=sizeof(float);
 }
 
-#define YEAORNAY(YEA, NAY) injectOps(&p, _print0 YEA _nop _snd _print0 NAY _nop _end, 8);
+#define YEAORNAY(YEA, NAY) injectOps(&p, _print YEA _nop _snd _print NAY _nop _end, 8);
 
 void buildRollTest(int *t, float mu, float amgis, bool which) {
   char * p = (char*) &testProgs[*t];
@@ -91,13 +91,13 @@ void buildRollTest(int *t, float mu, float amgis, bool which) {
 
 void buildNestedRollTest(int *t, int a, int b, int c, char e) {
   char * p = (char*) &testProgs[*t];
-  injectOp(&p, *_roll0);
+  injectOp(&p, *_roll);
   injectFloatPair(&p, a, 1000000);
-    injectOp(&p, *_roll0);
+    injectOp(&p, *_roll);
     injectFloatPair(&p, b, 1000000);
     YEAORNAY("A", "B")
   injectOp(&p, *_snd);
-    injectOp(&p, *_roll0);
+    injectOp(&p, *_roll);
     injectFloatPair(&p, c, 1000000);
     YEAORNAY("C", "D")
   injectOp(&p, *_end);
@@ -202,9 +202,9 @@ static bool testForever() {
     char * p = (char *) pProg;
     injectOp(&p, *_rollCash);
     injectFloatPair(&p, 3000000, 0.00001);
-    injectOp(&p, *_spawn0);
+    injectOp(&p, *_spawn);
     injectOp(&p, *_end);
-    injectOp(&p, *_post0);
+    injectOp(&p, *_post);
     injectOp(&p, *_end);
   }
   seed(50, 1000000, stuffProg); // Number of mobs, starting cash, spawn threshold

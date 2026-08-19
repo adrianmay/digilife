@@ -116,12 +116,9 @@ int post_(MobTact rcvr, Cash cash, Core * pC, bool doit) {
   raffleOfMsgs_play(cash, 100, stuffMsg); 
   return 0; 
 }
-int post0(Core * pC, bool doit) { return post_(pC->tMob, pC->cash*MSG_PROP, pC, doit); }
-int post1(Core * pC, bool doit) { return post0(pC, doit); }
-int post2(Core * pC, bool doit) { return post0(pC, doit); }
-int post3(Core * pC, bool doit) { return post0(pC, doit); }
+int post(Core * pC, bool doit) { return post_(pC->tMob, pC->cash*MSG_PROP, pC, doit); }
 
-int spawn0(Core * pC, bool doit) { 
+int spawn(Core * pC, bool doit) { 
   incIP(pC, 1);
   if (!doit) return 0;
   pC->cash -= SPAWN_COST;
@@ -144,9 +141,6 @@ int spawn0(Core * pC, bool doit) {
   raffleOfMsgs_play(chMsgCash, 100, stuffMsg); 
   return 0; 
 }
-int spawn1(Core * pC, bool doit) { return spawn0(pC, doit); }
-int spawn2(Core * pC, bool doit) { return spawn0(pC, doit); }
-int spawn3(Core * pC, bool doit) { return spawn0(pC, doit); }
 
 uint8_t * getRawOpCodeP(Core * pC) { 
   uint8_t * pI = &pC->pMob->_.mortal.program[pC->ip];
@@ -165,7 +159,7 @@ Instruction * getInstruction(Core * pC, bool doit) { // doit just for debugging
   }
 }
 
-int print0(Core * pC, bool doit) { 
+int print(Core * pC, bool doit) { 
   incIP(pC, 1);
   int len = strlen((char*)getRawOpCodeP(pC));
   if (doit) {
@@ -212,7 +206,7 @@ int roll_(float x, Core * pC, bool doit) {
 
 }
 int rollCash(Core * pC, bool doit) { return roll_(pC->cash, pC, doit); }
-int roll0(Core * pC, bool doit) { return roll_(0, pC, doit); }
+int roll(Core * pC, bool doit) { return roll_(0, pC, doit); }
 
 Cash runInCore(Cash cash, MobTact tMob, Mob * pMob, Msg * pMsg) {
   memset(out, 0, outlen);

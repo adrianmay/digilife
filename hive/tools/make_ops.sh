@@ -14,7 +14,7 @@ function make_h_tables() {
   for X in ${!V}; do echo "$1 ${X};"; done
   echo
   N=0
-  for X in ${!V}; do printf "#define _${X} \"\\\\x%.2X\"\n" $N; N=$((N+1)); done
+  for X in ${!V}; do printf "#define ${X^^} \"\\\\x%.2X\"\n" $N; N=$((N+1)); done
   echo
 }
 

@@ -1,5 +1,6 @@
 Insts="nop end iff elsif print" # roll spawn post"
 Tests="no yes like gt but"
+Floats="zero imm mul rndl rndg reg"
 
 function make_h_tables() {
   V="${1}s"
@@ -23,6 +24,7 @@ function make_h() {
   echo
   make_h_tables Inst void
   make_h_tables Test bool
+  make_h_tables Float float
 }
 
 function make_c_tables() {
@@ -40,6 +42,7 @@ function make_c() {
   echo
   make_c_tables Inst void
   make_c_tables Test bool
+  make_c_tables Float float
   echo
 }
 

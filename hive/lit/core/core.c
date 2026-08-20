@@ -1,3 +1,17 @@
+// TODO
+//   Lang:
+//     Elsif
+//     All floats from prefix representation: immf, arith, rnd.., register
+//     Same for bools, peers, etc
+//     Eager to mutate
+//     Absolute recipient
+//     Mutate to random recipient
+//     Loop, break
+//     Persistent registers
+//     Incoming msg body processing
+//     Ougoing msg body production
+
+
 #include <string.h>
 #include "types.h"
 #include "globals/api.h"
@@ -10,13 +24,11 @@
 #include "api.h"
 
 TockPrice totRent() { return hotelOfMobs_rent() + raffleOfMsgs_rent(); }
-
 void onMobHotel_goDie(MobIx i, Mob * pT) { }
 void onMobHotel_rentCollected (Cash rent) {}
 void onMobHotel_rentDefaulted (Cash rent) { printf("Mob rent defaulted: %'ld\n", rent); }
 void onMobHotel_extinct       (void) { raffleOfMsgs_quit(); }
 void onMobHotel_funeral(MobIx, Mob * pMob) {}
-
 void onMsgRaffle_extinct() { raffleOfMsgs_quit();  } // Not when we have external msg sources
 
 void showMob(MobIx i, Mob * p) {
@@ -91,16 +103,74 @@ typedef struct Core {
   MobTact tMob;
   Mob * pMob;
   Msg * pMsg;
-  int ip; // Instruction pointer
+  int ip; // Inst pointer
   char * out;
   int outlen;
   int outcur;
 } Core;
 
-int doBlock(Core * pC, bool doit);
+void incIP(Core * pC, int n) { pC->ip += n; }
 
-void incIP(Core * pC, int n) { pC->ip += n; } // Overrun protection is in getInstruction below
+uint8_t * getRawOpCodeP(Core * pC) { 
+  uint8_t * pI = &pC->pMob->_.mortal.program[pC->ip];
+  return pI; 
+}
 
+uint8_t pIP(Core * pC, Doit doit) { // doit just for debugging
+  sleepNs(10000); // So I can hit Ctrl-C
+  if (pC->ip < sizeof(Program)) {
+    //printf("getInst with ip=%d and doit=%d returning: %s/%s\n", pC->ip, doit, opnames[*getRawOpCodeP(pC)], testnames[*getRawOpCodeP(pC)]);
+    return *getRawOpCodeP(pC); 
+  } else {
+    printf("getInst with ip=%d returning auto end\n", pC->ip);
+    return __end; // TODO: Should apply overrun fine here
+  }
+}
+
+Inst * getInst(Core * pC, Doit doit) {
+  return opfuncs[pIP(pC, doit)];
+}
+                                              
+void doInst(Core * pC, Doit doit) { Inst * i = getInst(pC, doit); incIP(pC, 1); i(pC, doit); }
+
+void print(Core * pC, Doit doit) { 
+  int len = strlen((char*)getRawOpCodeP(pC));
+  if (doit==doingit) {
+    //printf("Print %s\n", (char*)getRawOpCodeP(pC));
+    int n = snprintf(pC->out+pC->outcur, pC->outlen-pC->outcur, "%s", getRawOpCodeP(pC));
+    pC->outcur += n;
+  }
+  incIP(pC, len+1); // Terminator
+  doInst(pC, doit);
+}
+
+// New if block, maybe already passive cos of surrounding ifels stuff
+Doit onIff  [3][2] = { { todoit, doingit } // Surroundings normal, do it if true, or allow future ifels
+                     , { doneit, doneit  } // Surroundings inhibitory, keep whole block inhibited
+                     , { doneit, doneit  } // Surroundings inhibitory, keep whole block inhibited
+                     };
+Doit onElsif[3][2] = { { doneit, doneit  } // Already doing something, this ifels is ruled out
+                     , { doneit, doneit  } // Already done it, also ruled out
+                     , { todoit, doingit } // Still looking for matching ifels, so do it or stay in same state 
+                     };
+
+bool runTest(Core * pC, Doit doit) {
+  uint8_t o = pIP(pC, doit);
+  incIP(pC, 1);
+  return testfuncs[o](pC, doit);
+}
+bool yes (Core * pC, Doit doit) {return true;}
+bool no  (Core * pC, Doit doit) {return false;}
+bool but (Core * pC, Doit doit) {return !runTest(pC, doit);}
+bool gt  (Core * pC, Doit doit) {return false;}
+bool like(Core * pC, Doit doit) {return false;}
+
+void nop   (Core * pC, Doit doit) { doInst(pC, doit); } // Tail-recurse to next instruction
+void end   (Core * pC, Doit doit) { } // Return to calling block or end of program
+void iff   (Core * pC, Doit doit) { bool b = runTest(pC, doit); doInst(pC, onIff  [doit][b]); doInst(pC, doit); }
+void elsif (Core * pC, Doit doit) { bool b = runTest(pC, doit); doInst(pC, onElsif[doit][b]); } // Fall back to the iff which does next instruction
+
+/*
 int nop   (Core * pC, bool doit) { incIP(pC, 1); return 0; }
 int nopn  (Core * pC, bool doit) { return nop(pC, doit); } //TODO: chomp n, then n bytes
 int end   (Core * pC, bool doit) { incIP(pC, 1); return -1; }
@@ -142,35 +212,6 @@ int spawn(Core * pC, bool doit) {
   return 0; 
 }
 
-uint8_t * getRawOpCodeP(Core * pC) { 
-  uint8_t * pI = &pC->pMob->_.mortal.program[pC->ip];
-  return pI; 
-}
-
-Instruction * getInstruction(Core * pC, bool doit) { // doit just for debugging
-  sleepNs(10000); // So I can hit Ctrl-C
-  if (pC->ip < sizeof(Program)) {
-    //printf("getInstruction with ip=%d and doit=%b returning: %s\n", pC->ip, doit, ops[*getRawOpCodeP(pC)].name);
-    return opfuncs[*getRawOpCodeP(pC)]; 
-  }
-  else {
-    printf("getInstruction with ip=%d returning auto end\n", pC->ip);
-    return end; // TODO: Should apply overrun fine here
-  }
-}
-
-int print(Core * pC, bool doit) { 
-  incIP(pC, 1);
-  int len = strlen((char*)getRawOpCodeP(pC));
-  if (doit) {
-    //printf("Print %s\n", (char*)getRawOpCodeP(pC));
-    int n = snprintf(pC->out+pC->outcur, pC->outlen-pC->outcur, "%s", getRawOpCodeP(pC));
-    pC->outcur += n;
-  }
-  incIP(pC, len+1); // Terminator
-  return 0; 
-}
-
 int doBlock(Core * pC, bool doit) { // false means skip
   int level = 1;                                  
   while (level>0) { level += getInstruction(pC, doit)(pC, doit); }
@@ -179,7 +220,7 @@ int doBlock(Core * pC, bool doit) { // false means skip
 
 bool doThen(Core * pC, bool doit) { // return whether ended with snd
   int level = 1;                                  
-  Instruction * inst;
+  Inst * inst;
   while (level>0) { 
     inst = getInstruction(pC, doit);
     level += inst(pC, doit); 
@@ -207,11 +248,12 @@ int roll_(float x, Core * pC, bool doit) {
 }
 int rollCash(Core * pC, bool doit) { return roll_(pC->cash, pC, doit); }
 int roll(Core * pC, bool doit) { return roll_(0, pC, doit); }
+*/
 
 Cash runInCore(Cash cash, MobTact tMob, Mob * pMob, Msg * pMsg) {
   memset(out, 0, outlen);
   Core core = (Core){cash, tMob, pMob, pMsg, 0, out, outlen, 0};
-  doBlock(&core, true);
+  doInst(&core, doingit); 
   return core.cash;
 }
 

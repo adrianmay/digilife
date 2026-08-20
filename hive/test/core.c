@@ -45,23 +45,32 @@ int outlen = CORE_OUT_LEN;
 
 Program testProgs[] = {
   _print "Foo" _nop _print "Bar" _nop _end,
-  "", //Roll test 1
-  "", //Roll test 2
-  "", //Roll test 3
-  "", //Roll test 4
-  "", //Nested roll test 5
-  "", //Nested roll test 6
-  "", //Nested roll test 7
-  "", //Nested roll test 8
-  "", //Nested roll test 9
-  "", //Nested roll test 10
-  "", //Nested roll test 11
-  "", //Nested roll test 12
+  _iff _yes _print "A" _nop _elsif _no  _print "B" _nop _end _end,
+  _iff _yes _print "A" _nop _elsif _yes _print "B" _nop _end _end,
+  _iff _no  _print "A" _nop _elsif _yes _print "B" _nop _end _end,
+  _iff _no  _print "A" _nop _elsif _no  _print "B" _nop _elsif _yes  _print "C" _nop _end _end,
+  _iff _yes _print "A" _nop _elsif _no  _print "B" _nop _elsif _yes  _print "C" _nop _end _end,
+  _iff _yes _print "A" _nop _elsif _no  _print "B" _nop _end  _print "Z" _nop _end,
+  _iff _yes _print "A" _nop _elsif _no  _iff _yes _print "C" _nop _elsif _no  _print "D" _nop _end _end  _print "Z" _nop _end,
+  _iff _no  _print "A" _nop _elsif _yes _iff _yes _print "C" _nop _elsif _no  _print "D" _nop _end _end  _print "Z" _nop _end,
+  _iff _no  _print "A" _nop _elsif _yes _iff _no  _print "C" _nop _elsif _yes _print "D" _nop _end _end  _print "Z" _nop _end,
+  
 };
 
 #define NUM_TEST_PROGS (sizeof(testProgs)/sizeof(Program))
 
-char testExpectations[NUM_TEST_PROGS][CORE_OUT_LEN] = { "FooBar", };
+char testExpectations[NUM_TEST_PROGS][CORE_OUT_LEN] = { 
+  "FooBar", 
+  "A",
+  "A",
+  "B",
+  "C",
+  "A",
+  "AZ",
+  "AZ",
+  "CZ",
+  "DZ",
+};
 
 float bigAmgis = 1;
 float bigNegAmgis = -1;
@@ -77,57 +86,57 @@ void injectFloatPair(char ** p, float mu, float amgis)  {
   (*p)+=sizeof(float);
 }
 
-#define YEAORNAY(YEA, NAY) injectOps(&p, _print YEA _nop _snd _print NAY _nop _end, 8);
-
-void buildRollTest(int *t, float mu, float amgis, bool which) {
-  char * p = (char*) &testProgs[*t];
-  injectOp(&p, *_rollCash);
-  injectFloatPair(&p, mu, amgis);
-  YEAORNAY("H", "L")
-  injectOp(&p, *_end);
-  memcpy(testExpectations[*t], which ? "H" : "L", 2);
-  (*t)++;
-}
-
-void buildNestedRollTest(int *t, int a, int b, int c, char e) {
-  char * p = (char*) &testProgs[*t];
-  injectOp(&p, *_roll);
-  injectFloatPair(&p, a, 1000000);
-    injectOp(&p, *_roll);
-    injectFloatPair(&p, b, 1000000);
-    YEAORNAY("A", "B")
-  injectOp(&p, *_snd);
-    injectOp(&p, *_roll);
-    injectFloatPair(&p, c, 1000000);
-    YEAORNAY("C", "D")
-  injectOp(&p, *_end);
-  injectOp(&p, *_end);
-  char ex[2] = {e,0};  
-  memcpy(testExpectations[*t], ex, 2);
-  (*t)++;
-}
+// #define YEAORNAY(YEA, NAY) injectOps(&p, _print YEA _nop _elsif _yes _print NAY _nop _end, 8);
+// 
+// void buildRollTest(int *t, float mu, float amgis, bool which) {
+//   char * p = (char*) &testProgs[*t];
+//   injectOp(&p, *_rollCash);
+//   injectFloatPair(&p, mu, amgis);
+//   YEAORNAY("H", "L")
+//   injectOp(&p, *_end);
+//   memcpy(testExpectations[*t], which ? "H" : "L", 2);
+//   (*t)++;
+// }
+// 
+// void buildNestedRollTest(int *t, int a, int b, int c, char e) {
+//   char * p = (char*) &testProgs[*t];
+//   injectOp(&p, *_roll);
+//   injectFloatPair(&p, a, 1000000);
+//     injectOp(&p, *_roll);
+//     injectFloatPair(&p, b, 1000000);
+//     YEAORNAY("A", "B")
+//   injectOp(&p, *_snd);
+//     injectOp(&p, *_roll);
+//     injectFloatPair(&p, c, 1000000);
+//     YEAORNAY("C", "D")
+//   injectOp(&p, *_end);
+//   injectOp(&p, *_end);
+//   char ex[2] = {e,0};  
+//   memcpy(testExpectations[*t], ex, 2);
+//   (*t)++;
+// }
 
 static bool testCode() {
-  int t = 1;
-  buildRollTest(&t, smallMu, bigAmgis, true);
-  buildRollTest(&t, bigMu,   bigAmgis, false);
-  buildRollTest(&t, smallMu, bigNegAmgis, false);
-  buildRollTest(&t, bigMu,   bigNegAmgis, true);
-
-  buildNestedRollTest(&t, -1, -1, -1, 'A');
-  buildNestedRollTest(&t, -1,  1, -1, 'B');
-  buildNestedRollTest(&t, -1, -1,  1, 'A');
-  buildNestedRollTest(&t, -1,  1,  1, 'B');
-
-  buildNestedRollTest(&t,  1, -1, -1, 'C');
-  buildNestedRollTest(&t,  1,  1, -1, 'C');
-  buildNestedRollTest(&t,  1, -1,  1, 'D');
-  buildNestedRollTest(&t,  1,  1,  1, 'D');
+//  int t = 1;
+//  buildRollTest(&t, smallMu, bigAmgis, true);
+//  buildRollTest(&t, bigMu,   bigAmgis, false);
+//  buildRollTest(&t, smallMu, bigNegAmgis, false);
+//  buildRollTest(&t, bigMu,   bigNegAmgis, true);
+//
+//  buildNestedRollTest(&t, -1, -1, -1, 'A');
+//  buildNestedRollTest(&t, -1,  1, -1, 'B');
+//  buildNestedRollTest(&t, -1, -1,  1, 'A');
+//  buildNestedRollTest(&t, -1,  1,  1, 'B');
+//
+//  buildNestedRollTest(&t,  1, -1, -1, 'C');
+//  buildNestedRollTest(&t,  1,  1, -1, 'C');
+//  buildNestedRollTest(&t,  1, -1,  1, 'D');
+//  buildNestedRollTest(&t,  1,  1,  1, 'D');
 
   Mob mob;
   MobTact tMob = (MobTact){{8}, 0x12345678};
   bool res = true;
-  for (t=0;t<NUM_TEST_PROGS;t++) {
+  for (int t=0;t<NUM_TEST_PROGS;t++) {
     printf("####### testCode: #%d\n", t);
     memcpy((char*)mob._.mortal.program, (char*)testProgs[t], sizeof(mob._.mortal.program));
     runInCore(1'000'000, tMob, &mob, 0);
@@ -192,40 +201,39 @@ void * work(void * p) {
   return 0;
 }
 
-static bool testForever() {
-  printf("testForever\n");
-  assertInt (hotelOfMobs_bodyat(),  MOB_HEADER_SIZE);
-  assertInt (hotelOfMobs_recBlob(), MOB_GROSS_SIZE);
-  assertInt (hotelOfMobs_bodylen(), MOB_BODY_SIZE);
-  //assertInt (MOB_GROSS_SIZE, MOB_HEADER_SIZE + MOB_CODE_SIZE);
-  void stuffProg(Program * pProg) {
-    char * p = (char *) pProg;
-    injectOp(&p, *_rollCash);
-    injectFloatPair(&p, 3000000, 0.00001);
-    injectOp(&p, *_spawn);
-    injectOp(&p, *_end);
-    injectOp(&p, *_post);
-    injectOp(&p, *_end);
-  }
-  seed(50, 1000000, stuffProg); // Number of mobs, starting cash, spawn threshold
-  atomic_store(&iterations, 0);
-  time_t start = time(NULL);
-  work(0);
-  //for (int64_t a=0;a<NUM_THREADS; a++) pthread_create(pids+a, 0, work, (void*)a);
-  //for (int64_t a=0;a<NUM_THREADS; a++) pthread_join(pids[a], 0);
-  time_t end = time(NULL);
-  hotelOfMobs_show();
-  raffleOfMsgs_show();
-  printf("Took %'ld\n", end-start);
-  return true;
-}
+// static bool testForever() {
+//   printf("testForever\n");
+//   assertInt (hotelOfMobs_bodyat(),  MOB_HEADER_SIZE);
+//   assertInt (hotelOfMobs_recBlob(), MOB_GROSS_SIZE);
+//   assertInt (hotelOfMobs_bodylen(), MOB_BODY_SIZE);
+//   //assertInt (MOB_GROSS_SIZE, MOB_HEADER_SIZE + MOB_CODE_SIZE);
+//   void stuffProg(Program * pProg) {
+//     char * p = (char *) pProg;
+//     injectOp(&p, *_rollCash);
+//     injectFloatPair(&p, 3000000, 0.00001);
+//     injectOp(&p, *_spawn);
+//     injectOp(&p, *_end);
+//     injectOp(&p, *_post);
+//     injectOp(&p, *_end);
+//   }
+//   seed(50, 1000000, stuffProg); // Number of mobs, starting cash, spawn threshold
+//   atomic_store(&iterations, 0);
+//   time_t start = time(NULL);
+//   work(0);
+//   //for (int64_t a=0;a<NUM_THREADS; a++) pthread_create(pids+a, 0, work, (void*)a);
+//   //for (int64_t a=0;a<NUM_THREADS; a++) pthread_join(pids[a], 0);
+//   time_t end = time(NULL);
+//   hotelOfMobs_show();
+//   raffleOfMsgs_show();
+//   printf("Took %'ld\n", end-start);
+//   return true;
+// }
 
 
 bool testCore() {
   return 
     testCode() &&
-//    testSpawnAndPost() &&
-    testForever() && 
+//    testForever() && 
     true || (showCore(), false);
 }
 

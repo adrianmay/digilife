@@ -44,18 +44,25 @@ char out[CORE_OUT_LEN];
 int outlen = CORE_OUT_LEN;
 
 Program testProgs[] = {
-  _print "Foo" _nop _print "Bar" _nop _end,
-  _iff _yes _print "A" _nop _elsif _no  _print "B" _nop _end _end,
-  _iff _yes _print "A" _nop _elsif _yes _print "B" _nop _end _end,
-  _iff _no  _print "A" _nop _elsif _yes _print "B" _nop _end _end,
-  _iff _no  _print "A" _nop _elsif _no  _print "B" _nop _elsif _yes  _print "C" _nop _end _end,
-  _iff _yes _print "A" _nop _elsif _no  _print "B" _nop _elsif _yes  _print "C" _nop _end _end,
-  _iff _yes _print "A" _nop _elsif _no  _print "B" _nop _end  _print "Z" _nop _end,
-  _iff _yes _print "A" _nop _elsif _no  _iff _yes _print "C" _nop _elsif _no  _print "D" _nop _end _end  _print "Z" _nop _end,
-  _iff _no  _print "A" _nop _elsif _yes _iff _yes _print "C" _nop _elsif _no  _print "D" _nop _end _end  _print "Z" _nop _end,
-  _iff _no  _print "A" _nop _elsif _yes _iff _no  _print "C" _nop _elsif _yes _print "D" _nop _end _end  _print "Z" _nop _end,
-  _iff _but _yes _print "A" _nop _elsif _yes _print "B" _nop _end _end,
-  _iff _but _but _yes _print "A" _nop _elsif _yes _print "B" _nop _end _end,
+  _prs "Foo" _nop _prs "Bar" _nop _end,
+  _iff _yes _prs "A" _nop _elsif _no  _prs "B" _nop _end _end,
+  _iff _yes _prs "A" _nop _elsif _yes _prs "B" _nop _end _end,
+  _iff _no  _prs "A" _nop _elsif _yes _prs "B" _nop _end _end,
+  _iff _no  _prs "A" _nop _elsif _no  _prs "B" _nop _elsif _yes  _prs "C" _nop _end _end,
+  _iff _yes _prs "A" _nop _elsif _no  _prs "B" _nop _elsif _yes  _prs "C" _nop _end _end,
+  _iff _yes _prs "A" _nop _elsif _no  _prs "B" _nop _end  _prs "Z" _nop _end,
+  _iff _yes _prs "A" _nop _elsif _no  _iff _yes _prs "C" _nop _elsif _no  _prs "D" _nop _end _end  _prs "Z" _nop _end,
+  _iff _no  _prs "A" _nop _elsif _yes _iff _yes _prs "C" _nop _elsif _no  _prs "D" _nop _end _end  _prs "Z" _nop _end,
+  _iff _no  _prs "A" _nop _elsif _yes _iff _no  _prs "C" _nop _elsif _yes _prs "D" _nop _end _end  _prs "Z" _nop _end,
+  _iff _not _yes _prs "A" _nop _elsif _yes _prs "B" _nop _end _end,
+  _iff _not _not _yes _prs "A" _nop _elsif _yes _prs "B" _nop _end _end,
+  _prf _zero _end,
+  _prf _one _end,
+  _prf _mul _two _add _two _one _end,
+  _prf _mul _two _inv _add _two _one _end,
+  _prf _add _two _neg _add _two _one _end,
+  _iff _gt _zero _one _prs "A" _nop _elsif _yes _prs "B" _nop _end _end,
+  _iff _like _mul _one _inv _add _two _two _one _two _prs "A" _nop _elsif _yes _prs "B" _nop _end _end,
 };
 
 #define NUM_TEST_PROGS (sizeof(testProgs)/sizeof(Program))
@@ -73,6 +80,13 @@ char testExpectations[NUM_TEST_PROGS][CORE_OUT_LEN] = {
   "DZ",
   "B",
   "A",
+  "0.000000",
+  "1.000000",
+  "6.000000",
+  "0.666667",
+  "-1.000000",
+  "A",
+  "B",
 };
 
 float bigAmgis = 1;

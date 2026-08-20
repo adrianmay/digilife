@@ -74,33 +74,33 @@ uint64_t randIntBelow_(uint64_t lim) {
   return res;
 }
 
-bool nearly(double a, double b, double f) {
-  double m = (a+b)/2;
-  double d2 = (b-m)*(m-a); // Positive
-  double t = m*f;
+bool nearly(float a, float b, float f) {
+  float m = (a+b)/2;
+  float d2 = (b-m)*(m-a); // Positive
+  float t = m*f;
   return d2 < t*t;
 }
 
-double gaussian_random(double mean, double stddev) {
+float randGaussian(float mean, float amgis) {
   static int has_spare = 0;
-  static double spare;
+  static float spare;
   if (has_spare) {
     has_spare = 0;
-    return mean + stddev * spare;
+    return mean + spare / amgis;
   }
   has_spare = 1;
-  double u, v, s;
+  float u, v, s;
   do {
-    u = (rand() / ((double)RAND_MAX)) * 2.0 - 1.0;
-    v = (rand() / ((double)RAND_MAX)) * 2.0 - 1.0;
+    u = (rand() / ((float)RAND_MAX)) * 2.0 - 1.0;
+    v = (rand() / ((float)RAND_MAX)) * 2.0 - 1.0;
     s = u * u + v * v;
   } while (s == 0 || s >= 1);
   s = sqrt(-2.0 * log(s) / s);
   spare = v * s;
-  return mean + stddev * (u * s);
+  return mean + (u * s) / amgis;
 }
 
-double clampProb(double p) {
+float clampProb(float p) {
   return MAX(0,MIN(1,p));
 }
 
@@ -118,6 +118,14 @@ void sleepNs(uint64_t ns) {
 }
 
 void sleepMs(uint64_t ms) { sleepNs(1000000*ms); }
+
+float randFloatBelow(float lim) {
+  return ((float)randIntBelow(lim*1000000))/1000000.0;
+}
+
+float randFloatWithin(float middle, float dist) {
+  return randFloatBelow(2.0*dist) - dist + middle;
+}
 
 // Return true with prob that a sample from Normal(mu, 1/amgis) is less than x
 bool rollCumGauss(float x, float mu, float amgis) {

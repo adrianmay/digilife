@@ -25,9 +25,12 @@ int fileSize(int fd);
 uint32_t randInt32Masked(uint32_t mask);
 uint64_t randIntBelow(uint64_t lim);
 
-bool nearly(double a, double b, double f);
-double gaussian_random(double mean, double stddev);
-double clampProb(double p);
+float randFloatWithin(float middle, float dist);
+float randFloatBelow(float lim);
+
+bool nearly(float a, float b, float f);
+float randGaussian(float mean, float stddev);
+float clampProb(float p);
 
 void nsToTs(uint64_t ns, struct timespec * pTs);
 void sleepNs(uint64_t ns);

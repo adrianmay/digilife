@@ -1,6 +1,6 @@
-Insts="nop end iff elsif print" # roll spawn post"
-Tests="no yes like gt but"
-Floats="zero imm mul rndl rndg reg"
+Insts="nop end iff elsif prs prf" # roll spawn post"
+Tests="no yes like gt not"
+Floats="zero one two imm cmsg cmob rndl rndl_ rndg nimp add mul inv neg"
 
 function make_h_tables() {
   V="${1}s"

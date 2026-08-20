@@ -136,10 +136,44 @@ Inst * getInst(Core * pC, Doit doit) {
 void doInst(Core * pC, Doit doit) { Inst * i = getInst(pC, doit); incIP(pC, 1); i(pC, doit); }
 
 //////////////////////////////////////////////////////////
+/// INSTRUCTIONS : FLOATS  ///////////////////////////////
+//////////////////////////////////////////////////////////
+
+float getFloat(Core * pC, Doit doit) {
+  uint8_t o = pIP(pC, doit);
+  incIP(pC, 1);
+  return funcsForFloats[o](pC, doit);
+}
+float zero(Core * pC, Doit doit) { return 0; }
+float one (Core * pC, Doit doit) { return 1; }
+float two (Core * pC, Doit doit) { return 2; }
+float nimp(Core * pC, Doit doit) { return 0; }
+float imm (Core * pC, Doit doit) { 
+  float f;  // Inverse of sigma, -ve for if (!...)
+  memcpy((char*)&f, (char*)&pC->pMob->_.mortal.program[pC->ip], sizeof(f));
+  incIP(pC, sizeof(float));
+  return f; }
+float cmsg(Core * pC, Doit doit) { return 0; }
+float cmob(Core * pC, Doit doit) { return 0; }
+typedef float Binop(float, float);
+float doBinop (Core * pC, Doit doit, Binop bop) { 
+  float a = getFloat(pC, doit);
+  float b = getFloat(pC, doit);
+  return bop(a, b); }
+float rndl (Core * pC, Doit doit) { return randFloatBelow (   getFloat(pC, doit)); }
+float rndl_(Core * pC, Doit doit) { return randFloatWithin(0, getFloat(pC, doit)); }
+float rndg (Core * pC, Doit doit) { return randGaussian(0, getFloat(pC, doit)); }
+float add  (Core * pC, Doit doit) { float op(float a, float b) {return a+b;} return doBinop(pC, doit, op); }
+float mul  (Core * pC, Doit doit) { float op(float a, float b) {return a*b;} return doBinop(pC, doit, op); }
+float neg  (Core * pC, Doit doit) { return 0   - getFloat(pC, doit); }
+float inv  (Core * pC, Doit doit) { return 1.0 / getFloat(pC, doit); }
+float reg  (Core * pC, Doit doit) { return 0; }
+
+//////////////////////////////////////////////////////////
 /// INSTRUCTIONS : MISC  /////////////////////////////////
 //////////////////////////////////////////////////////////
 
-void print(Core * pC, Doit doit) { 
+void prs(Core * pC, Doit doit) { 
   int len = strlen((char*)getRawOpCodeP(pC));
   if (doit==doingit) {
     //printf("Print %s\n", (char*)getRawOpCodeP(pC));
@@ -150,21 +184,18 @@ void print(Core * pC, Doit doit) {
   doInst(pC, doit);
 }
 
-//////////////////////////////////////////////////////////
-/// INSTRUCTIONS : FLOATS  ///////////////////////////////
-//////////////////////////////////////////////////////////
-
-float zero(Core * pC, Doit doit) { return 0; }
-float imm (Core * pC, Doit doit) { return 0; }
-float mul (Core * pC, Doit doit) { return 0; }
-float rndl(Core * pC, Doit doit) { return 0; }
-float rndg(Core * pC, Doit doit) { return 0; }
-float reg (Core * pC, Doit doit) { return 0; }
-
+void prf(Core * pC, Doit doit) { 
+  float f = getFloat(pC, doit);
+  if (doit==doingit) {
+    int n = snprintf(pC->out+pC->outcur, pC->outlen-pC->outcur, "%f", f);
+    pC->outcur += n;
+  }
+  doInst(pC, doit);
+}
+ 
 //////////////////////////////////////////////////////////
 /// INSTRUCTIONS : CONDITIONAL  //////////////////////////
 //////////////////////////////////////////////////////////
-
 
 // New if block, maybe already passive cos of surrounding ifels stuff
 Doit onIff  [3][2] = { { todoit, doingit } // Surroundings normal, do it if true, or allow future ifels
@@ -176,17 +207,17 @@ Doit onElsif[3][2] = { { doneit, doneit  } // Already doing something, this ifel
                      , { todoit, doingit } // Still looking for matching ifels, so do it or stay in same state 
                      };
 
-//getFloat
 bool runTest(Core * pC, Doit doit) {
   uint8_t o = pIP(pC, doit);
   incIP(pC, 1);
-  return funcsForTests[o](pC, doit);
-}
-bool yes (Core * pC, Doit doit) {return true;}
-bool no  (Core * pC, Doit doit) {return false;}
-bool but (Core * pC, Doit doit) {return !runTest(pC, doit);}
-bool gt  (Core * pC, Doit doit) {return false;}
-bool like(Core * pC, Doit doit) {return false;}
+  return funcsForTests[o](pC, doit); }
+bool yes   (Core * pC, Doit doit) { return true;  }
+bool no    (Core * pC, Doit doit) { return false; }
+bool not   (Core * pC, Doit doit) { return !runTest(pC, doit); }
+bool gt    (Core * pC, Doit doit) { float a = getFloat(pC, doit); float b = getFloat(pC, doit); 
+                                    return b > a; } // Ordering deliberate
+bool like  (Core * pC, Doit doit) { float a = getFloat(pC, doit); float b = getFloat(pC, doit); float c = getFloat(pC, doit); 
+                                    return abs(c-b) <= a; }
 
 void nop   (Core * pC, Doit doit) { doInst(pC, doit); } // Tail-recurse to next instruction
 void end   (Core * pC, Doit doit) { } // Return to calling block or end of program
@@ -194,11 +225,6 @@ void iff   (Core * pC, Doit doit) { bool b = runTest(pC, doit); doInst(pC, onIff
 void elsif (Core * pC, Doit doit) { bool b = runTest(pC, doit); doInst(pC, onElsif[doit][b]); } // Fall back to the iff which does next instruction
 
 /*
-int nop   (Core * pC, bool doit) { incIP(pC, 1); return 0; }
-int nopn  (Core * pC, bool doit) { return nop(pC, doit); } //TODO: chomp n, then n bytes
-int end   (Core * pC, bool doit) { incIP(pC, 1); return -1; }
-int snd   (Core * pC, bool doit) { incIP(pC, 1); doit = !doit; return -1; }
-
 int post_(MobTact rcvr, Cash cash, Core * pC, bool doit) {
   incIP(pC, 1);
   if (!doit) return 0;

@@ -54,7 +54,8 @@ Program testProgs[] = {
   _iff _yes _print "A" _nop _elsif _no  _iff _yes _print "C" _nop _elsif _no  _print "D" _nop _end _end  _print "Z" _nop _end,
   _iff _no  _print "A" _nop _elsif _yes _iff _yes _print "C" _nop _elsif _no  _print "D" _nop _end _end  _print "Z" _nop _end,
   _iff _no  _print "A" _nop _elsif _yes _iff _no  _print "C" _nop _elsif _yes _print "D" _nop _end _end  _print "Z" _nop _end,
-  
+  _iff _but _yes _print "A" _nop _elsif _yes _print "B" _nop _end _end,
+  _iff _but _but _yes _print "A" _nop _elsif _yes _print "B" _nop _end _end,
 };
 
 #define NUM_TEST_PROGS (sizeof(testProgs)/sizeof(Program))
@@ -70,6 +71,8 @@ char testExpectations[NUM_TEST_PROGS][CORE_OUT_LEN] = {
   "AZ",
   "CZ",
   "DZ",
+  "B",
+  "A",
 };
 
 float bigAmgis = 1;

@@ -128,7 +128,7 @@ uint8_t pIP(Core * pC, Doit doit) { // doit just for debugging
 }
 
 Inst * getInst(Core * pC, Doit doit) {
-  return opfuncs[pIP(pC, doit)];
+  return funcsForInsts[pIP(pC, doit)];
 }
                                               
 void doInst(Core * pC, Doit doit) { Inst * i = getInst(pC, doit); incIP(pC, 1); i(pC, doit); }
@@ -144,6 +144,8 @@ void print(Core * pC, Doit doit) {
   doInst(pC, doit);
 }
 
+
+
 // New if block, maybe already passive cos of surrounding ifels stuff
 Doit onIff  [3][2] = { { todoit, doingit } // Surroundings normal, do it if true, or allow future ifels
                      , { doneit, doneit  } // Surroundings inhibitory, keep whole block inhibited
@@ -154,10 +156,11 @@ Doit onElsif[3][2] = { { doneit, doneit  } // Already doing something, this ifel
                      , { todoit, doingit } // Still looking for matching ifels, so do it or stay in same state 
                      };
 
+//getFloat
 bool runTest(Core * pC, Doit doit) {
   uint8_t o = pIP(pC, doit);
   incIP(pC, 1);
-  return testfuncs[o](pC, doit);
+  return funcsForTests[o](pC, doit);
 }
 bool yes (Core * pC, Doit doit) {return true;}
 bool no  (Core * pC, Doit doit) {return false;}

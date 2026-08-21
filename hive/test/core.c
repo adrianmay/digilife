@@ -15,6 +15,7 @@
 #include "core/Mob.h"
 #include "core/Msg.h"
 #include "core/api.h"
+#include "core/ops.h"
 
 #define BIRTH_CASH 1000'000'000L
 

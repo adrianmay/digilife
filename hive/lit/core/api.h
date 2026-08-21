@@ -1,4 +1,3 @@
-
 #define SIZE_MOB ((float) hotelOfMobs_recBoth()) 
 #define SIZE_MSG ((float) raffleOfMsgs_rec()) 
 #define SIZE_BOTH (SIZE_MOB+SIZE_MSG)  
@@ -18,6 +17,5 @@ void onTockCore();
 Cash runInCore(Cash mobCash, Cash msgCash, MobTact tMob, Mob * pMob, Msg * pMsg);
 extern char out[];
 extern int outlen;
-struct Core;
+typedef enum { doingit, doneit, todoit } Doit;
 
-#include "ops.h"

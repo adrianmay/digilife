@@ -22,6 +22,7 @@
 #include "Msg_raffle/ix.h"
 #include "Msg_raffle/api.h"
 #include "api.h"
+#include "ops.h"
 
 TockPrice totRent() { return hotelOfMobs_rent() + raffleOfMsgs_rent(); }
 void onMobHotel_goDie(MobIx i, Mob * pT) { }
@@ -111,6 +112,8 @@ typedef struct Core {
   int outlen;
   int outcur;
 } Core;
+
+#include "ops.cc"
 
 void incIP(Core * pC, int n) { pC->ip += n; }
 
@@ -356,7 +359,6 @@ void seed(int n, Cash c, ProgStuffer stuffProg) {
   //hotelOfMobs_admit(0, true, 0, 0, 0);
   for (int a=0;a<n;a++) create(c, stuffProg);
 }
-
 
 
 

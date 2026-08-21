@@ -239,3 +239,12 @@ void hotelOfXXs_drop(XXIx i, Cash cash) {
   }
   hotelOfXXs_raid();
 }
+
+XXTact hotelOfXXs_randLiveMortal(void) {
+  XXBlobIx i = (XXBlobIx){randIntBelow(pileOfXXBlobs_top())};
+  XXBlob * pBlob = pileOfXXBlobs_get(i);
+  if ( !(pBlob->rent.inb.nb.b.i & 0x80000000) ) { // Neither god nor dead
+    return (XXTact){(XXIx){i.i}, pBlob->rent.inb.nb.n};
+  }
+  return hotelOfXXs_randLiveMortal();
+}

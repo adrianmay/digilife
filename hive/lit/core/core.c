@@ -130,9 +130,7 @@ uint8_t pIP(Core * pC, Doit doit) { // doit just for debugging
   }
 }
 
-Inst * getInst(Core * pC, Doit doit) {
-  return funcsForInsts[pIP(pC, doit)];
-}
+Inst * getInst(Core * pC, Doit doit) { return funcsForInsts[pIP(pC, doit)]; }
                                               
 void doInst(Core * pC, Doit doit) { Inst * i = getInst(pC, doit); incIP(pC, 1); i(pC, doit); }
 

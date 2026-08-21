@@ -19,6 +19,7 @@ Ix        hotelOfXXs_bodylen      (void);
 TockPrice hotelOfXXs_rent         (void);
 void      hotelOfXXs_close        (Fate);
 int       hotelOfXXs_showsTact    (char * cursor, XXTact);
+XXTact    hotelOfXXs_randLiveMortal (void);
 
 // Provide these:
 extern void showXX(XXIx i, XX * p);

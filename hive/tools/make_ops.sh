@@ -1,8 +1,7 @@
 Insts="nop end iff elsif prs prf" # roll spawn post"
 Tests="no yes like gt not"
 Floats="zero one two imm cmob cmsg rndl rndl_ rndg add mul inv neg"
-Rcvrs="me sndr child rndrc rc0 rc1 rc2 rc3"
-
+Peers="me sndr child rndpeer peer0 peer1 peer2 peer3"
 
 function make_h_tables() {
   V="${1}s"

@@ -55,7 +55,6 @@ void showMsg(MsgIx i, Msg * p) {
   printf("bid=%.3f %s %s", p->cpuBid, r, s);
 }
   
-
 void dumpPiles(void) {
   printf("\n");
   hotelOfMobs_show();
@@ -169,6 +168,26 @@ float mul  (Core * pC, Doit doit) { float op(float a, float b) {return a*b;} ret
 float neg  (Core * pC, Doit doit) { return   0 - getFloat(pC, doit); }
 float inv  (Core * pC, Doit doit) { return 1.0 / getFloat(pC, doit); }
 float reg  (Core * pC, Doit doit) { return 0; }
+
+//////////////////////////////////////////////////////////
+/// INSTRUCTIONS : PEERS  ///////////////////////////////
+//////////////////////////////////////////////////////////
+
+MobTact getPeer(Core * pC, Doit doit) {
+  uint8_t o = pIP(pC, doit);
+  incIP(pC, 1);
+  return funcsForPeers[o](pC, doit);
+}
+MobTact me     (Core * pC, Doit doit) { return (MobTact){(MobIx){0},0}; }
+MobTact sndr   (Core * pC, Doit doit) { return (MobTact){(MobIx){0},0}; }
+MobTact child  (Core * pC, Doit doit) { return (MobTact){(MobIx){0},0}; }
+MobTact rndpeer(Core * pC, Doit doit) { return (MobTact){(MobIx){0},0}; }
+MobTact peer0  (Core * pC, Doit doit) { return (MobTact){(MobIx){0},0}; }
+MobTact peer1  (Core * pC, Doit doit) { return (MobTact){(MobIx){0},0}; }
+MobTact peer2  (Core * pC, Doit doit) { return (MobTact){(MobIx){0},0}; }
+MobTact peer3  (Core * pC, Doit doit) { return (MobTact){(MobIx){0},0}; }
+
+
 
 //////////////////////////////////////////////////////////
 /// INSTRUCTIONS : MISC  /////////////////////////////////

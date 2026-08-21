@@ -15,7 +15,7 @@ typedef void (*ProgStuffer)(Program * pProg);
 void seed(int n, Cash c, ProgStuffer stuffProg);
 bool draw(void);
 void onTockCore();
-Cash runInCore(Cash cash, MobTact tMob, Mob * pMob, Msg * pMsg);
+Cash runInCore(Cash mobCash, Cash msgCash, MobTact tMob, Mob * pMob, Msg * pMsg);
 extern char out[];
 extern int outlen;
 struct Core;

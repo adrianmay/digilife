@@ -101,7 +101,8 @@ bool draw() { return raffleOfMsgs_draw(); }
 //////////////////////////////////////////////////////////
 
 typedef struct Core {
-  Cash cash;
+  Cash mobCash;
+  Cash msgCash;
   MobTact tMob;
   Mob * pMob;
   Msg * pMsg;
@@ -147,14 +148,13 @@ float getFloat(Core * pC, Doit doit) {
 float zero(Core * pC, Doit doit) { return 0; }
 float one (Core * pC, Doit doit) { return 1; }
 float two (Core * pC, Doit doit) { return 2; }
-float nimp(Core * pC, Doit doit) { return 0; }
 float imm (Core * pC, Doit doit) { 
   float f;  // Inverse of sigma, -ve for if (!...)
   memcpy((char*)&f, (char*)&pC->pMob->_.mortal.program[pC->ip], sizeof(f));
   incIP(pC, sizeof(float));
   return f; }
-float cmsg(Core * pC, Doit doit) { return 0; }
-float cmob(Core * pC, Doit doit) { return 0; }
+float cmob(Core * pC, Doit doit) { return (float) pC->mobCash; }
+float cmsg(Core * pC, Doit doit) { return (float) pC->msgCash; }
 typedef float Binop(float, float);
 float doBinop (Core * pC, Doit doit, Binop bop) { 
   float a = getFloat(pC, doit);
@@ -165,7 +165,7 @@ float rndl_(Core * pC, Doit doit) { return randFloatWithin(0, getFloat(pC, doit)
 float rndg (Core * pC, Doit doit) { return randGaussian(0, getFloat(pC, doit)); }
 float add  (Core * pC, Doit doit) { float op(float a, float b) {return a+b;} return doBinop(pC, doit, op); }
 float mul  (Core * pC, Doit doit) { float op(float a, float b) {return a*b;} return doBinop(pC, doit, op); }
-float neg  (Core * pC, Doit doit) { return 0   - getFloat(pC, doit); }
+float neg  (Core * pC, Doit doit) { return   0 - getFloat(pC, doit); }
 float inv  (Core * pC, Doit doit) { return 1.0 / getFloat(pC, doit); }
 float reg  (Core * pC, Doit doit) { return 0; }
 
@@ -299,22 +299,21 @@ int rollCash(Core * pC, bool doit) { return roll_(pC->cash, pC, doit); }
 int roll(Core * pC, bool doit) { return roll_(0, pC, doit); }
 */
 
-Cash runInCore(Cash cash, MobTact tMob, Mob * pMob, Msg * pMsg) {
+Cash runInCore(Cash mobCash, Cash msgCash, MobTact tMob, Mob * pMob, Msg * pMsg) {
   memset(out, 0, outlen);
-  Core core = (Core){cash, tMob, pMob, pMsg, 0, out, outlen, 0};
+  Core core = (Core){mobCash, msgCash, tMob, pMob, pMsg, 0, out, outlen, 0};
   doInst(&core, doingit); 
-  return core.cash;
+  return core.mobCash + core.msgCash;
 }
 
-Cash run(MobTact tMob, Mob * pMob, Msg * pMsg, Cash mobCash, Cash msgCash) {
-  Cash cash = msgCash + mobCash;
+void run(MobTact tMob, Mob * pMob, Msg * pMsg, Cash mobCash, Cash msgCash) {
   msgcashSample(msgCash);
   mobcashSample(mobCash);
-  cash += DOLE;
+  mobCash += DOLE;
   notifyCycles(CYCLES_PER_JOB);
-  cash -= totRent(); // Cos both msg and mob will miss out on the tock we expend in here
-  cash = runInCore(cash, tMob, pMob, pMsg);
-  hotelOfMobs_drop(pMsg->rcvr.i, cash);
+  mobCash -= totRent(); // Cos both msg and mob will miss out on the tock we expend in here
+  Cash finalCash = runInCore(mobCash, msgCash, tMob, pMob, pMsg);
+  hotelOfMobs_drop(pMsg->rcvr.i, finalCash);
   Program * pProg = &pMob->_.mortal.program;          
   void * pVoid = (void *) pProg;
   float * pThresh = (float*) (pVoid+1);
@@ -324,7 +323,6 @@ Cash run(MobTact tMob, Mob * pMob, Msg * pMsg, Cash mobCash, Cash msgCash) {
     printf("Its=%'ld, Rent=%'.0f, threshMean=%'.0f; Means: pop=%'.2f, spawnOdds=%'.5f, childCash=%'.0f msgCash=%'.0f, mobCash=%'.0f, totCash=%'.0f\n",
         iterations, totRent(), threshMean, popMean, 1.0/spawnedMean, childcashMean, msgcashMean, mobcashMean, msgcashMean+mobcashMean);
   }
-  return cash;
 }
 
 Cash onMsgRaffle_dispatch(MsgTicketTact t, Msg * pMsg, Cash msgCash, V claim, V unlock) {

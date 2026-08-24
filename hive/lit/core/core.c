@@ -1,16 +1,20 @@
 // TODO
 //   Lang:
-//     Elsif
-//     All floats from prefix representation: immf, arith, rnd.., register
-//     Same for bools, peers, etc
-//     Eager to mutate
-//     Absolute recipient
-//     Mutate to random recipient
+//     Roll
+//     Pray: post to god without nick
+//     Peer list: cash as function of number, select randomly from
+//     Linear random always takes both limits
+//     Recent senders, rcvrs, children
+//     Cash read always takes param for mob/msg balance
+//     Polynomials
+//     Mutation, eagerness to mutate
+//     Read registers
 //     Loop, break
 //     Persistent registers
 //     Incoming msg body processing
 //     Ougoing msg body production
-
+//   Letter guesser:  
+//     bookie god per letter
 
 #include <string.h>
 #include "types.h"
@@ -107,6 +111,8 @@ typedef struct Core {
   Mob * pMob;
   Msg * pMsg;
   int ip; // Inst pointer
+  Mob * pChild;
+  int childIp; // Inst pointer
   char * out;
   int outlen;
   int outcur;
@@ -178,16 +184,14 @@ MobTact getPeer(Core * pC, Doit doit) {
   incIP(pC, 1);
   return funcsForPeers[o](pC, doit);
 }
-MobTact me     (Core * pC, Doit doit) { return (MobTact){(MobIx){0},0}; }
-MobTact sndr   (Core * pC, Doit doit) { return (MobTact){(MobIx){0},0}; }
+MobTact me     (Core * pC, Doit doit) { return pC->tMob; }
+MobTact sndr   (Core * pC, Doit doit) { return pC->pMsg->sndr; }
 MobTact child  (Core * pC, Doit doit) { return (MobTact){(MobIx){0},0}; }
-MobTact rndpeer(Core * pC, Doit doit) { return (MobTact){(MobIx){0},0}; }
+//MobTact rndpeer(Core * pC, Doit doit) { return (MobTact){(MobIx){0},0}; }
 MobTact peer0  (Core * pC, Doit doit) { return (MobTact){(MobIx){0},0}; }
-MobTact peer1  (Core * pC, Doit doit) { return (MobTact){(MobIx){0},0}; }
-MobTact peer2  (Core * pC, Doit doit) { return (MobTact){(MobIx){0},0}; }
-MobTact peer3  (Core * pC, Doit doit) { return (MobTact){(MobIx){0},0}; }
-
-
+MobTact peer1  (Core * pC, Doit doit) { return (MobTact){(MobIx){1},0}; }
+MobTact peer2  (Core * pC, Doit doit) { return (MobTact){(MobIx){2},0}; }
+MobTact peer3  (Core * pC, Doit doit) { return (MobTact){(MobIx){3},0}; }
 
 //////////////////////////////////////////////////////////
 /// INSTRUCTIONS : MISC  /////////////////////////////////
@@ -234,94 +238,68 @@ bool runTest(Core * pC, Doit doit) {
 bool yes   (Core * pC, Doit doit) { return true;  }
 bool no    (Core * pC, Doit doit) { return false; }
 bool not   (Core * pC, Doit doit) { return !runTest(pC, doit); }
-bool gt    (Core * pC, Doit doit) { float a = getFloat(pC, doit); float b = getFloat(pC, doit); 
-                                    return b > a; } // Ordering deliberate
-bool like  (Core * pC, Doit doit) { float a = getFloat(pC, doit); float b = getFloat(pC, doit); float c = getFloat(pC, doit); 
-                                    return abs(c-b) <= a; }
-
+bool gt    (Core * pC, Doit doit) { float a = getFloat(pC, doit); float b = getFloat(pC, doit); return b > a; } // Ordering deliberate
+bool like  (Core * pC, Doit doit) { float a = getFloat(pC, doit); float b = getFloat(pC, doit); float c = getFloat(pC, doit); return abs(c-b) <= a; }
 void nop   (Core * pC, Doit doit) { doInst(pC, doit); } // Tail-recurse to next instruction
 void end   (Core * pC, Doit doit) { } // Return to calling block or end of program
 void iff   (Core * pC, Doit doit) { bool b = runTest(pC, doit); doInst(pC, onIff  [doit][b]); doInst(pC, doit); }
 void elsif (Core * pC, Doit doit) { bool b = runTest(pC, doit); doInst(pC, onElsif[doit][b]); } // Fall back to the iff which does next instruction
 
-/*
-int post_(MobTact rcvr, Cash cash, Core * pC, bool doit) {
-  incIP(pC, 1);
-  if (!doit) return 0;
+
+void post(Core * pC, Doit doit) {
+  MobTact rcvr = getPeer(pC, doit);
+  float cash = getFloat(pC, doit);
+  if (doit != doingit) return;
   Cash bill = POST_COST + cash;
-  if (pC->cash < bill) return 0;
-  pC->cash -= bill;
+  if (pC->mobCash < bill) return;
+  pC->mobCash -= bill;
   void stuffMsg(Msg * p) { p->cpuBid = 0; p->sndr = pC->tMob; p->rcvr = rcvr; }
   raffleOfMsgs_play(cash, 100, stuffMsg); 
-  return 0; 
 }
-int post(Core * pC, bool doit) { return post_(pC->tMob, pC->cash*MSG_PROP, pC, doit); }
 
-int spawn(Core * pC, bool doit) { 
-  incIP(pC, 1);
-  if (!doit) return 0;
-  pC->cash -= SPAWN_COST;
+void mutate(Mob * pChild, Mob * pParent) {
+  memcpy(pChild, pParent, sizeof(Mob)); 
+  // In general: support shrinkage too
+  // Insts: 
+  //   Add preceding nop, post, spawn, print to post body, etc
+  //   Add surrounding iff or elsif
+  //   Simplify rarely used iff cases 
+  // Floats:  
+  //   Vary immediates
+  //   Vary random distribution type
+  //   Insert *1 or +0
+  //   Insert * reg / typical value, etc
+  //   Insert polynomial
+  //   Simplify/remove polynomial with small coefficients
+  //   Change cash type proportion 
+  //   Insert random multiplier/shifter
+  //   Remove factors if random element very high
+  // Tests:
+  //   Not much
+  // Peers, peer list: 
+  //   Grow/shrink
+  //   Mutate to random live mortal
+  //   Recent senders, rcvrs, children
+  //   Gods
+}
+
+void spawn(Core * pC, Doit doit) { 
+  if (doit != doingit) return;
+  pC->mobCash -= SPAWN_COST;
   //printf("Spawned: %'ld\n", pC->cash);
-  Cash childCash = pC->cash/2;
-  pC->cash -= childCash;
+  Cash childCash = pC->mobCash/2;
+  pC->mobCash -= childCash;
   Cash chMobCash = childCash * MOB_PROP;
   Cash chMsgCash = childCash - chMobCash;
-  void stuffMob(Mob * p) { 
-    memcpy(p, pC->pMob, sizeof(Mob)); 
-    Program * pProg = &p->_.mortal.program;          
-    void * pVoid = (void*)pProg;
-    float * pThresh = (float*)(pVoid+1);
-    int r = randIntBelow(301) - 150;
-    *pThresh = *pThresh + MUTE_RATE/150.0 * ((float)r) * ((float)(*pThresh));
-    //printf("Mutating to %f\n", *pThresh);
-  }
+  void stuffMob(Mob * p) { mutate(p, pC->pMob); }
   MobTact tNewMob = hotelOfMobs_admit(chMobCash, false, stuffMob, 0, 0);
   void stuffMsg(Msg * p) { p->cpuBid = 0; p->sndr = pC->tMob; p->rcvr = tNewMob; }
   raffleOfMsgs_play(chMsgCash, 100, stuffMsg); 
-  return 0; 
 }
-
-int doBlock(Core * pC, bool doit) { // false means skip
-  int level = 1;                                  
-  while (level>0) { level += getInstruction(pC, doit)(pC, doit); }
-  return -1;
-}
-
-bool doThen(Core * pC, bool doit) { // return whether ended with snd
-  int level = 1;                                  
-  Inst * inst;
-  while (level>0) { 
-    inst = getInstruction(pC, doit);
-    level += inst(pC, doit); 
-  }
-  return (inst == snd);
-}
-
-int roll_(float x, Core * pC, bool doit) {
-  if (!doit) {
-    incIP(pC, 1 + 2*sizeof(float)); 
-    if (doThen(pC, false)) doThen(pC, false);
-  } else {
-    incIP(pC, 1);
-    float mu, amgis;  // Inverse of sigma, -ve for if (!...)
-    memcpy((char*)&mu, (char*)&pC->pMob->_.mortal.program[pC->ip], sizeof(mu));
-    incIP(pC, sizeof(float));
-    memcpy((char*)&amgis, (char*)&pC->pMob->_.mortal.program[pC->ip], sizeof(amgis));
-    incIP(pC, sizeof(float));
-    bool lucky = rollCumGauss(x, mu, amgis);
-    //printf("Rolled: %b\n", lucky);
-    if (doThen(pC, lucky)) doThen(pC, !lucky);
-  }
-  return 0;
-
-}
-int rollCash(Core * pC, bool doit) { return roll_(pC->cash, pC, doit); }
-int roll(Core * pC, bool doit) { return roll_(0, pC, doit); }
-*/
 
 Cash runInCore(Cash mobCash, Cash msgCash, MobTact tMob, Mob * pMob, Msg * pMsg) {
   memset(out, 0, outlen);
-  Core core = (Core){mobCash, msgCash, tMob, pMob, pMsg, 0, out, outlen, 0};
+  Core core = (Core){mobCash, msgCash, tMob, pMob, pMsg, 0, 0, 0, out, outlen, 0};
   doInst(&core, doingit); 
   return core.mobCash + core.msgCash;
 }

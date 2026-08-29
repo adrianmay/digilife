@@ -17,6 +17,7 @@
 //     bookie god per letter
 
 #include <string.h>
+#include <setjmp.h>
 #include "types.h"
 #include "globals/api.h"
 #include "misc/api.h"
@@ -116,6 +117,7 @@ typedef struct Core {
   char * out;
   int outlen;
   int outcur;
+  jmp_buf jb;
 } Core;
 
 #include "ops.cc"
@@ -138,16 +140,29 @@ uint8_t pIP(Core * pC, Doit doit) { // doit just for debugging
   }
 }
 
-Inst * getInst(Core * pC, Doit doit) { return funcsForInsts[pIP(pC, doit)]; }
-                                              
-void doInst(Core * pC, Doit doit) { Inst * i = getInst(pC, doit); incIP(pC, 1); i(pC, doit); }
+Inst * getInst     (Core * pC, Doit doit) { return funcsForInsts[pIP(pC, doit)]; }
+Cash getInstCpuCost(Core * pC, Doit doit) { return (doit==doingit) ? cpuCostOfInst[pIP(pC, doit)] : 1; }
+
+void chargeCpuCost(Core * pC, Cash cost) {
+  if (pC->msgCash <= cost) longjmp(pC->jb, 1);
+  pC->msgCash -= cost;
+}
+
+void doInst(Core * pC, Doit doit) { 
+  Inst * i     = getInst       (pC, doit); 
+  chargeCpuCost(pC, getInstCpuCost(pC, doit));
+  incIP(pC, 1); 
+  i(pC, doit); 
+}
 
 //////////////////////////////////////////////////////////
 /// INSTRUCTIONS : FLOATS  ///////////////////////////////
 //////////////////////////////////////////////////////////
 
+Cash getFloatCpuCost(Core * pC, Doit doit) { return (doit==doingit) ? cpuCostOfFloat[pIP(pC, doit)] : 1; }
 float getFloat(Core * pC, Doit doit) {
   uint8_t o = pIP(pC, doit);
+  chargeCpuCost(pC, getFloatCpuCost(pC, doit));
   incIP(pC, 1);
   return funcsForFloats[o](pC, doit);
 }
@@ -166,9 +181,8 @@ float doBinop (Core * pC, Doit doit, Binop bop) {
   float a = getFloat(pC, doit);
   float b = getFloat(pC, doit);
   return bop(a, b); }
-float rndl (Core * pC, Doit doit) { return randFloatBelow (   getFloat(pC, doit)); }
-float rndl_(Core * pC, Doit doit) { return randFloatWithin(0, getFloat(pC, doit)); }
-float rndg (Core * pC, Doit doit) { return randGaussian(0, getFloat(pC, doit)); }
+float rndl (Core * pC, Doit doit) { return randFloatWithin(getFloat(pC, doit), getFloat(pC, doit)); }
+float rndg (Core * pC, Doit doit) { return randGaussian(getFloat(pC, doit), getFloat(pC, doit)); }
 float add  (Core * pC, Doit doit) { float op(float a, float b) {return a+b;} return doBinop(pC, doit, op); }
 float mul  (Core * pC, Doit doit) { float op(float a, float b) {return a*b;} return doBinop(pC, doit, op); }
 float neg  (Core * pC, Doit doit) { return   0 - getFloat(pC, doit); }
@@ -179,8 +193,10 @@ float reg  (Core * pC, Doit doit) { return 0; }
 /// INSTRUCTIONS : PEERS  ///////////////////////////////
 //////////////////////////////////////////////////////////
 
+Cash getPeerCpuCost(Core * pC, Doit doit) { return (doit==doingit) ? cpuCostOfPeer[pIP(pC, doit)] : 1; }
 MobTact getPeer(Core * pC, Doit doit) {
   uint8_t o = pIP(pC, doit);
+  chargeCpuCost(pC, getPeerCpuCost(pC, doit));
   incIP(pC, 1);
   return funcsForPeers[o](pC, doit);
 }
@@ -199,7 +215,9 @@ MobTact peer3  (Core * pC, Doit doit) { return (MobTact){(MobIx){3},0}; }
 
 void prs(Core * pC, Doit doit) { 
   int len = strlen((char*)getRawOpCodeP(pC));
+  chargeCpuCost(pC, len);
   if (doit==doingit) {
+    chargeCpuCost(pC, 3*len);
     //printf("Print %s\n", (char*)getRawOpCodeP(pC));
     int n = snprintf(pC->out+pC->outcur, pC->outlen-pC->outcur, "%s", getRawOpCodeP(pC));
     pC->outcur += n;
@@ -231,8 +249,10 @@ Doit onElsif[3][2] = { { doneit, doneit  } // Already doing something, this ifel
                      , { todoit, doingit } // Still looking for matching ifels, so do it or stay in same state 
                      };
 
+Cash getTestCpuCost(Core * pC, Doit doit) { return (doit==doingit) ? cpuCostOfTest[pIP(pC, doit)] : 1; }
 bool runTest(Core * pC, Doit doit) {
   uint8_t o = pIP(pC, doit);
+  chargeCpuCost(pC, getTestCpuCost(pC, doit));
   incIP(pC, 1);
   return funcsForTests[o](pC, doit); }
 bool yes   (Core * pC, Doit doit) { return true;  }
@@ -250,9 +270,8 @@ void post(Core * pC, Doit doit) {
   MobTact rcvr = getPeer(pC, doit);
   float cash = getFloat(pC, doit);
   if (doit != doingit) return;
-  Cash bill = POST_COST + cash;
-  if (pC->mobCash < bill) return;
-  pC->mobCash -= bill;
+  if (pC->mobCash < cash) return;
+  pC->mobCash -= cash;
   void stuffMsg(Msg * p) { p->cpuBid = 0; p->sndr = pC->tMob; p->rcvr = rcvr; }
   raffleOfMsgs_play(cash, 100, stuffMsg); 
 }
@@ -285,7 +304,6 @@ void mutate(Mob * pChild, Mob * pParent) {
 
 void spawn(Core * pC, Doit doit) { 
   if (doit != doingit) return;
-  pC->mobCash -= SPAWN_COST;
   //printf("Spawned: %'ld\n", pC->cash);
   Cash childCash = pC->mobCash/2;
   pC->mobCash -= childCash;
@@ -300,7 +318,8 @@ void spawn(Core * pC, Doit doit) {
 Cash runInCore(Cash mobCash, Cash msgCash, MobTact tMob, Mob * pMob, Msg * pMsg) {
   memset(out, 0, outlen);
   Core core = (Core){mobCash, msgCash, tMob, pMob, pMsg, 0, 0, 0, out, outlen, 0};
-  doInst(&core, doingit); 
+  if (0==setjmp(core.jb)) doInst(&core, doingit); 
+  else ; //Ran out of msgCash
   return core.mobCash + core.msgCash;
 }
 

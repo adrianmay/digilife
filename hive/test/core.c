@@ -64,13 +64,14 @@ void injectFloatPair(char ** p, float mu, float amgis)  {
 }
 
 static bool testSomeCases(const char * tag, Cash mobCash, Cash msgCash, Case cases[], int numCases) {
+  Msg msg = {1};
   Mob mob;
   MobTact tMob = (MobTact){{8}, 0x12345678};
   bool res = true;
   for (int t=0;t<numCases;t++) {
     printf("####### test%s: #%d\n", tag, t);
     memcpy((char*)mob._.mortal.program, (char*)cases[t].t, sizeof(mob._.mortal.program));
-    runInCore(mobCash, msgCash, tMob, &mob, 0);
+    runInCore(mobCash, msgCash, tMob, &mob, &msg);
     if (0!=strcmp(out, cases[t].e)) {
       printf("testCode #%d Failed: want: '%s', got: '%s'\n", t, cases[t].e, out);
       res = false;
@@ -106,9 +107,9 @@ static bool testCode() {
 
 static bool testBrokeMsg() {
   Case cases[] = {
-    { PRF CMSG END,                          "15.000000"}, 
-    { PRF CMSG PRF CMSG END,                 "15.0000005.000000"}, 
-    { PRF CMSG PRF CMSG PRF CMSG END,        "15.0000005.000000"}, 
+    { PRF CYC END,                       "15.000000"}, 
+    { PRF CYC PRF CYC END,               "15.0000005.000000"}, 
+    { PRF CYC PRF CYC PRF CYC END,       "15.0000005.000000"}, 
   };
   return testSomeCases("BrokeMsg", 25, 25, cases, sizeof(cases)/sizeof(Case));
 }

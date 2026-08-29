@@ -50,7 +50,7 @@ typedef double TockPrice; // The currency unit can be tiny.
 typedef int64_t Weight; // We use negative ones when removing stuff. TODO: 32 bit
 // These are the self and subtree weights. The total weight is the sum of these:
 typedef struct {Weight s; Weight l; Weight r;} Weights;
-typedef double CpuBid; // Float or int?
+typedef float CpuBid; // Groats per cycle
 
 typedef void   (*V)(void);
 typedef bool   (*B)(void);

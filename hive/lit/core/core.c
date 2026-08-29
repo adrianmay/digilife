@@ -106,8 +106,8 @@ bool draw() { return raffleOfMsgs_draw(); }
 //////////////////////////////////////////////////////////
 
 typedef struct Core {
+  Cycles cyclesLeft;
   Cash mobCash;
-  Cash msgCash;
   MobTact tMob;
   Mob * pMob;
   Msg * pMsg;
@@ -141,16 +141,21 @@ uint8_t pIP(Core * pC, Doit doit) { // doit just for debugging
 }
 
 Inst * getInst     (Core * pC, Doit doit) { return funcsForInsts[pIP(pC, doit)]; }
-Cash getInstCpuCost(Core * pC, Doit doit) { return (doit==doingit) ? cpuCostOfInst[pIP(pC, doit)] : 1; }
+Cycles getInstCpuCycles(Core * pC, Doit doit) { return (doit==doingit) ? cpuCyclesOfInst[pIP(pC, doit)] : 1; }
 
-void chargeCpuCost(Core * pC, Cash cost) {
-  if (pC->msgCash <= cost) longjmp(pC->jb, 1);
-  pC->msgCash -= cost;
+void chargeCpuTime(Core * pC, Cycles cycles) {
+  if (pC->cyclesLeft <= cycles) longjmp(pC->jb, 1); //TODO: fixme
+  pC->cyclesLeft -= cycles;
+}
+
+void chargeMobCash(Core * pC, Cash cost) {
+  if (pC->mobCash <= cost) longjmp(pC->jb, 2);
+  pC->mobCash -= cost;
 }
 
 void doInst(Core * pC, Doit doit) { 
   Inst * i     = getInst       (pC, doit); 
-  chargeCpuCost(pC, getInstCpuCost(pC, doit));
+  chargeCpuTime(pC, getInstCpuCycles(pC, doit));
   incIP(pC, 1); 
   i(pC, doit); 
 }
@@ -159,10 +164,10 @@ void doInst(Core * pC, Doit doit) {
 /// INSTRUCTIONS : FLOATS  ///////////////////////////////
 //////////////////////////////////////////////////////////
 
-Cash getFloatCpuCost(Core * pC, Doit doit) { return (doit==doingit) ? cpuCostOfFloat[pIP(pC, doit)] : 1; }
+Cash getFloatCpuCycles(Core * pC, Doit doit) { return (doit==doingit) ? cpuCyclesOfFloat[pIP(pC, doit)] : 1; }
 float getFloat(Core * pC, Doit doit) {
   uint8_t o = pIP(pC, doit);
-  chargeCpuCost(pC, getFloatCpuCost(pC, doit));
+  chargeCpuTime(pC, getFloatCpuCycles(pC, doit));
   incIP(pC, 1);
   return funcsForFloats[o](pC, doit);
 }
@@ -174,8 +179,8 @@ float imm (Core * pC, Doit doit) {
   memcpy((char*)&f, (char*)&pC->pMob->_.mortal.program[pC->ip], sizeof(f));
   incIP(pC, sizeof(float));
   return f; }
-float cmob(Core * pC, Doit doit) { return (float) pC->mobCash; }
-float cmsg(Core * pC, Doit doit) { return (float) pC->msgCash; }
+float csh(Core * pC, Doit doit) { return (float) pC->mobCash; }
+float cyc(Core * pC, Doit doit) { return (float) pC->cyclesLeft; }
 typedef float Binop(float, float);
 float doBinop (Core * pC, Doit doit, Binop bop) { 
   float a = getFloat(pC, doit);
@@ -193,10 +198,10 @@ float reg  (Core * pC, Doit doit) { return 0; }
 /// INSTRUCTIONS : PEERS  ///////////////////////////////
 //////////////////////////////////////////////////////////
 
-Cash getPeerCpuCost(Core * pC, Doit doit) { return (doit==doingit) ? cpuCostOfPeer[pIP(pC, doit)] : 1; }
+Cash getPeerCpuCycles(Core * pC, Doit doit) { return (doit==doingit) ? cpuCyclesOfPeer[pIP(pC, doit)] : 1; }
 MobTact getPeer(Core * pC, Doit doit) {
   uint8_t o = pIP(pC, doit);
-  chargeCpuCost(pC, getPeerCpuCost(pC, doit));
+  chargeCpuTime(pC, getPeerCpuCycles(pC, doit));
   incIP(pC, 1);
   return funcsForPeers[o](pC, doit);
 }
@@ -215,9 +220,9 @@ MobTact peer3  (Core * pC, Doit doit) { return (MobTact){(MobIx){3},0}; }
 
 void prs(Core * pC, Doit doit) { 
   int len = strlen((char*)getRawOpCodeP(pC));
-  chargeCpuCost(pC, len);
+  chargeCpuTime(pC, len);
   if (doit==doingit) {
-    chargeCpuCost(pC, 3*len);
+    chargeCpuTime(pC, 3*len);
     //printf("Print %s\n", (char*)getRawOpCodeP(pC));
     int n = snprintf(pC->out+pC->outcur, pC->outlen-pC->outcur, "%s", getRawOpCodeP(pC));
     pC->outcur += n;
@@ -249,10 +254,10 @@ Doit onElsif[3][2] = { { doneit, doneit  } // Already doing something, this ifel
                      , { todoit, doingit } // Still looking for matching ifels, so do it or stay in same state 
                      };
 
-Cash getTestCpuCost(Core * pC, Doit doit) { return (doit==doingit) ? cpuCostOfTest[pIP(pC, doit)] : 1; }
+Cash getTestCpuCycles(Core * pC, Doit doit) { return (doit==doingit) ? cpuCyclesOfTest[pIP(pC, doit)] : 1; }
 bool runTest(Core * pC, Doit doit) {
   uint8_t o = pIP(pC, doit);
-  chargeCpuCost(pC, getTestCpuCost(pC, doit));
+  chargeCpuTime(pC, getTestCpuCycles(pC, doit));
   incIP(pC, 1);
   return funcsForTests[o](pC, doit); }
 bool yes   (Core * pC, Doit doit) { return true;  }
@@ -270,8 +275,7 @@ void post(Core * pC, Doit doit) {
   MobTact rcvr = getPeer(pC, doit);
   float cash = getFloat(pC, doit);
   if (doit != doingit) return;
-  if (pC->mobCash < cash) return;
-  pC->mobCash -= cash;
+  chargeMobCash(pC, cash);
   void stuffMsg(Msg * p) { p->cpuBid = 0; p->sndr = pC->tMob; p->rcvr = rcvr; }
   raffleOfMsgs_play(cash, 100, stuffMsg); 
 }
@@ -306,21 +310,22 @@ void spawn(Core * pC, Doit doit) {
   if (doit != doingit) return;
   //printf("Spawned: %'ld\n", pC->cash);
   Cash childCash = pC->mobCash/2;
-  pC->mobCash -= childCash;
+  chargeMobCash(pC, childCash);
   Cash chMobCash = childCash * MOB_PROP;
   Cash chMsgCash = childCash - chMobCash;
   void stuffMob(Mob * p) { mutate(p, pC->pMob); }
   MobTact tNewMob = hotelOfMobs_admit(chMobCash, false, stuffMob, 0, 0);
-  void stuffMsg(Msg * p) { p->cpuBid = 0; p->sndr = pC->tMob; p->rcvr = tNewMob; }
+  void stuffMsg(Msg * p) { p->cpuBid = 1; p->sndr = pC->tMob; p->rcvr = tNewMob; }
   raffleOfMsgs_play(chMsgCash, 100, stuffMsg); 
 }
 
 Cash runInCore(Cash mobCash, Cash msgCash, MobTact tMob, Mob * pMob, Msg * pMsg) {
   memset(out, 0, outlen);
-  Core core = (Core){mobCash, msgCash, tMob, pMob, pMsg, 0, 0, 0, out, outlen, 0};
+  Cycles cyc = msgCash / pMsg->cpuBid; 
+  Core core = (Core){cyc, mobCash, tMob, pMob, pMsg, 0, 0, 0, out, outlen, 0};
   if (0==setjmp(core.jb)) doInst(&core, doingit); 
   else ; //Ran out of msgCash
-  return core.mobCash + core.msgCash;
+  return core.mobCash + core.cyclesLeft * pMsg->cpuBid;
 }
 
 void run(MobTact tMob, Mob * pMob, Msg * pMsg, Cash mobCash, Cash msgCash) {

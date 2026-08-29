@@ -3,8 +3,8 @@
  InstCpu="  1   1   3     3   0   9  200  1000"
    Tests="no yes like gt not"
  TestCpu=" 1   1   10  3   1"
-  Floats="zero one two imm cmob cmsg rndl rndg add mul inv neg"
-FloatCpu="   1   1   1   3    1    1   20   50   5  10  15   3"
+  Floats="zero one two imm csh cyc rndl rndg add mul inv neg"
+FloatCpu="   1   1   1   3   1   1   20   50   5  10  15   3"
    Peers="me sndr child peer0 peer1 peer2 peer3"
  PeerCpu=" 1    1     1     1     1     1     1"
 
@@ -41,7 +41,7 @@ function make_c_tables() {
   for X in ${!V}; do echo "  \"${X}\","; done
   echo "};"; echo
   V="${1}Cpu"
-  echo "Cash cpuCostOf${1}[Num${1}s] = {"
+  echo "Cycles cpuCyclesOf${1}[Num${1}s] = {"
   for X in ${!V}; do echo "  ${X},"; done
   echo "};"; echo
 }

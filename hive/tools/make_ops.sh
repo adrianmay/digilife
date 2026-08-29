@@ -30,20 +30,31 @@ function make_c_tables() {
   echo "typedef $2 $1(Core *, Doit);"
   echo "extern $1 * funcsFor${1}s[Num${1}s];"
   echo "extern char namesOf${1}s[Num${1}s][16];"
+  echo "typedef void $1Quiner(Core *);"
+  echo "extern $1Quiner * quinersFor${1}s[Num${1}s];"
   echo
   V="${1}s"
   for X in ${!V}; do echo "$1 ${X};"; done
   echo
+  for X in ${!V}; do echo "$1Quiner ${X}Q;"; done
+  echo
   echo "$1 * funcsFor${1}s[Num${1}s] = {"
   for X in ${!V}; do echo "  ${X},"; done
-  echo "};"; echo
+  echo "};" 
+  echo
+  echo "$1Quiner * quinersFor${1}s[Num${1}s] = {"
+  for X in ${!V}; do echo "  ${X}Q,"; done
+  echo "};" 
+  echo
   echo "char namesOf${1}s[Num${1}s][16] = {"
   for X in ${!V}; do echo "  \"${X}\","; done
-  echo "};"; echo
+  echo "};"
+  echo
   V="${1}Cpu"
   echo "Cycles cpuCyclesOf${1}[Num${1}s] = {"
   for X in ${!V}; do echo "  ${X},"; done
-  echo "};"; echo
+  echo "};"
+  echo
 }
 
 function make_c() {

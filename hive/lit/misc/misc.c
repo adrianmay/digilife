@@ -135,3 +135,8 @@ bool rollCumGauss(float x, float mu, float amgis) {
   return randIntBelow(1000000) < thresh;
 }
 
+size_t strcpy_len(void *dst, const void *src) {
+    size_t n = strlen(src);
+    memcpy(dst, src, n+1);
+    return n;
+}

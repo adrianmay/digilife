@@ -37,3 +37,4 @@ void sleepNs(uint64_t ns);
 void sleepMs(uint64_t ms);
 bool rollCumGauss(float x, float mu, float sigma);
 
+size_t strcpy_len(void *dst, const void *src);

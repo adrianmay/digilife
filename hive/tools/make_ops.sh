@@ -1,6 +1,6 @@
 # Print instructions bill themselves by length
    Insts="nop end iff elsif prs prf post spawn"
- InstCpu="  1   1   3     3   0  10  200  1000"
+ InstCpu="  1   1   3     3   0   9  200  1000"
    Tests="no yes like gt not"
  TestCpu=" 1   1   10  3   1"
   Floats="zero one two imm cmob cmsg rndl rndg add mul inv neg"

@@ -44,51 +44,10 @@ static void cleanup(void) {
 char out[CORE_OUT_LEN];
 int outlen = CORE_OUT_LEN;
 
-Program testProgs[] = {
-  PRS "Foo" NOP PRS "Bar" NOP END,
-  IFF YES PRS "A" NOP ELSIF NO  PRS "B" NOP END END,
-  IFF YES PRS "A" NOP ELSIF YES PRS "B" NOP END END,
-  IFF NO  PRS "A" NOP ELSIF YES PRS "B" NOP END END,
-  IFF NO  PRS "A" NOP ELSIF NO  PRS "B" NOP ELSIF YES  PRS "C" NOP END END,
-  IFF YES PRS "A" NOP ELSIF NO  PRS "B" NOP ELSIF YES  PRS "C" NOP END END,
-  IFF YES PRS "A" NOP ELSIF NO  PRS "B" NOP END  PRS "Z" NOP END,
-  IFF YES PRS "A" NOP ELSIF NO  IFF YES PRS "C" NOP ELSIF NO  PRS "D" NOP END END  PRS "Z" NOP END,
-  IFF NO  PRS "A" NOP ELSIF YES IFF YES PRS "C" NOP ELSIF NO  PRS "D" NOP END END  PRS "Z" NOP END,
-  IFF NO  PRS "A" NOP ELSIF YES IFF NO  PRS "C" NOP ELSIF YES PRS "D" NOP END END  PRS "Z" NOP END,
-  IFF NOT YES PRS "A" NOP ELSIF YES PRS "B" NOP END END,
-  IFF NOT NOT YES PRS "A" NOP ELSIF YES PRS "B" NOP END END,
-  PRF ZERO END,
-  PRF ONE END,
-  PRF MUL TWO ADD TWO ONE END,
-  PRF MUL TWO INV ADD TWO ONE END,
-  PRF ADD TWO NEG ADD TWO ONE END,
-  IFF GT ZERO ONE PRS "A" NOP ELSIF YES PRS "B" NOP END END,
-  IFF LIKE MUL ONE INV ADD TWO TWO ONE TWO PRS "A" NOP ELSIF YES PRS "B" NOP END END,
-};
-
-#define NUM_TEST_PROGS (sizeof(testProgs)/sizeof(Program))
-
-char testExpectations[NUM_TEST_PROGS][CORE_OUT_LEN] = { 
-  "FooBar", 
-  "A",
-  "A",
-  "B",
-  "C",
-  "A",
-  "AZ",
-  "AZ",
-  "CZ",
-  "DZ",
-  "B",
-  "A",
-  "0.000000",
-  "1.000000",
-  "6.000000",
-  "0.666667",
-  "-1.000000",
-  "A",
-  "B",
-};
+typedef struct {
+  Program t;
+  char e[CORE_OUT_LEN];
+} Case;
 
 float bigAmgis = 1;
 float bigNegAmgis = -1;
@@ -104,66 +63,54 @@ void injectFloatPair(char ** p, float mu, float amgis)  {
   (*p)+=sizeof(float);
 }
 
-// #define YEAORNAY(YEA, NAY) injectOps(&p, _print YEA _nop _elsif _yes _print NAY _nop _end, 8);
-// 
-// void buildRollTest(int *t, float mu, float amgis, bool which) {
-//   char * p = (char*) &testProgs[*t];
-//   injectOp(&p, *_rollCash);
-//   injectFloatPair(&p, mu, amgis);
-//   YEAORNAY("H", "L")
-//   injectOp(&p, *_end);
-//   memcpy(testExpectations[*t], which ? "H" : "L", 2);
-//   (*t)++;
-// }
-// 
-// void buildNestedRollTest(int *t, int a, int b, int c, char e) {
-//   char * p = (char*) &testProgs[*t];
-//   injectOp(&p, *_roll);
-//   injectFloatPair(&p, a, 1000000);
-//     injectOp(&p, *_roll);
-//     injectFloatPair(&p, b, 1000000);
-//     YEAORNAY("A", "B")
-//   injectOp(&p, *_snd);
-//     injectOp(&p, *_roll);
-//     injectFloatPair(&p, c, 1000000);
-//     YEAORNAY("C", "D")
-//   injectOp(&p, *_end);
-//   injectOp(&p, *_end);
-//   char ex[2] = {e,0};  
-//   memcpy(testExpectations[*t], ex, 2);
-//   (*t)++;
-// }
-
-static bool testCode() {
-//  int t = 1;
-//  buildRollTest(&t, smallMu, bigAmgis, true);
-//  buildRollTest(&t, bigMu,   bigAmgis, false);
-//  buildRollTest(&t, smallMu, bigNegAmgis, false);
-//  buildRollTest(&t, bigMu,   bigNegAmgis, true);
-//
-//  buildNestedRollTest(&t, -1, -1, -1, 'A');
-//  buildNestedRollTest(&t, -1,  1, -1, 'B');
-//  buildNestedRollTest(&t, -1, -1,  1, 'A');
-//  buildNestedRollTest(&t, -1,  1,  1, 'B');
-//
-//  buildNestedRollTest(&t,  1, -1, -1, 'C');
-//  buildNestedRollTest(&t,  1,  1, -1, 'C');
-//  buildNestedRollTest(&t,  1, -1,  1, 'D');
-//  buildNestedRollTest(&t,  1,  1,  1, 'D');
-
+static bool testSomeCases(const char * tag, Cash mobCash, Cash msgCash, Case cases[], int numCases) {
   Mob mob;
   MobTact tMob = (MobTact){{8}, 0x12345678};
   bool res = true;
-  for (int t=0;t<NUM_TEST_PROGS;t++) {
-    printf("####### testCode: #%d\n", t);
-    memcpy((char*)mob._.mortal.program, (char*)testProgs[t], sizeof(mob._.mortal.program));
-    runInCore(500'000, 500'000, tMob, &mob, 0);
-    if (0!=strcmp(out, testExpectations[t])) {
-      printf("testCode #%d Failed: want: '%s', got: '%s'\n", t, testExpectations[t], out);
+  for (int t=0;t<numCases;t++) {
+    printf("####### test%s: #%d\n", tag, t);
+    memcpy((char*)mob._.mortal.program, (char*)cases[t].t, sizeof(mob._.mortal.program));
+    runInCore(mobCash, msgCash, tMob, &mob, 0);
+    if (0!=strcmp(out, cases[t].e)) {
+      printf("testCode #%d Failed: want: '%s', got: '%s'\n", t, cases[t].e, out);
       res = false;
     }
   }
   return res;
+}
+
+static bool testCode() {
+  Case cases[] = {
+    { PRS "Foo" NOP PRS "Bar" NOP END,                                                                         "FooBar"}, 
+    { IFF YES PRS "A" NOP ELSIF NO  PRS "B" NOP END END,                                                       "A"},                          
+    { IFF YES PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                                       "A"},                          
+    { IFF NO  PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                                       "B"},                          
+    { IFF NO  PRS "A" NOP ELSIF NO  PRS "B" NOP ELSIF YES  PRS "C" NOP END END,                                "C"},                                                 
+    { IFF YES PRS "A" NOP ELSIF NO  PRS "B" NOP ELSIF YES  PRS "C" NOP END END,                                "A"},                                                 
+    { IFF YES PRS "A" NOP ELSIF NO  PRS "B" NOP END  PRS "Z" NOP END,                                          "AZ"},                                      
+    { IFF YES PRS "A" NOP ELSIF NO  IFF YES PRS "C" NOP ELSIF NO  PRS "D" NOP END END  PRS "Z" NOP END,        "AZ"},                                                                        
+    { IFF NO  PRS "A" NOP ELSIF YES IFF YES PRS "C" NOP ELSIF NO  PRS "D" NOP END END  PRS "Z" NOP END,        "CZ"},                                                                        
+    { IFF NO  PRS "A" NOP ELSIF YES IFF NO  PRS "C" NOP ELSIF YES PRS "D" NOP END END  PRS "Z" NOP END,        "DZ"},                                                                        
+    { IFF NOT YES PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                                   "B"},                              
+    { IFF NOT NOT YES PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                               "A"},                                  
+    { PRF ZERO END,                                                                                            "0.000000"},                                                      
+    { PRF ONE END,                                                                                             "1.000000"},                                                     
+    { PRF MUL TWO ADD TWO ONE END,                                                                             "6.000000"},                                                                     
+    { PRF MUL TWO INV ADD TWO ONE END,                                                                         "0.666667"},                                                                         
+    { PRF ADD TWO NEG ADD TWO ONE END,                                                                         "-1.000000"},                                                                        
+    { IFF GT ZERO ONE PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                               "A"},                                  
+    { IFF LIKE MUL ONE INV ADD TWO TWO ONE TWO PRS "A" NOP ELSIF YES PRS "B" NOP END END,                      "B"},                                                           
+  };
+  return testSomeCases("Code", 500'000, 500'000, cases, sizeof(cases)/sizeof(Case));
+}
+
+static bool testBrokeMsg() {
+  Case cases[] = {
+    { PRF CMSG END,                          "15.000000"}, 
+    { PRF CMSG PRF CMSG END,                 "15.0000005.000000"}, 
+    { PRF CMSG PRF CMSG PRF CMSG END,        "15.0000005.000000"}, 
+  };
+  return testSomeCases("BrokeMsg", 25, 25, cases, sizeof(cases)/sizeof(Case));
 }
 
 static bool testSpawnAndPost() {
@@ -250,6 +197,7 @@ void * work(void * p) {
 bool testCore() {
   return 
     testCode() &&
+    testBrokeMsg() &&
 //    testForever() && 
     true || (showCore(), false);
 }

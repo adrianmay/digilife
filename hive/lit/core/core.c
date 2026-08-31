@@ -252,13 +252,13 @@ void prf(Core * pC, Doit doit) {
 //////////////////////////////////////////////////////////
 
 // New if block, maybe already passive cos of surrounding ifels stuff
-Doit onIff  [3][2] = { { todoit, doingit } // Surroundings normal, do it if true, or allow future ifels
-                     , { doneit, doneit  } // Surroundings inhibitory, keep whole block inhibited
-                     , { doneit, doneit  } // Surroundings inhibitory, keep whole block inhibited
+Doit onIff  [3][2] = { { todoit, doingit } // doingit: Surroundings normal, do it if true, or allow future ifels
+                     , { doneit, doneit  } // doneit:  Surroundings inhibitory, keep whole block inhibited
+                     , { doneit, doneit  } // todoit:  Surroundings inhibitory, keep whole block inhibited
                      };
-Doit onElsif[3][2] = { { doneit, doneit  } // Already doing something, this ifels is ruled out
-                     , { doneit, doneit  } // Already done it, also ruled out
-                     , { todoit, doingit } // Still looking for matching ifels, so do it or stay in same state 
+Doit onElsif[3][2] = { { doneit, doneit  } // doingit: Already doing something, this ifels is ruled out
+                     , { doneit, doneit  } // doneit:  Already done it, also ruled out
+                     , { todoit, doingit } // todoit:  Still looking for matching ifels, so do it or stay in same state 
 };
 
 Cash getTestCpuCycles(Core * pC, Doit doit) { return (doit==doingit) ? cpuCyclesOfTests[I(pC, doit)] : 1; }

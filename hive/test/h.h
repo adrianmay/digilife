@@ -12,3 +12,4 @@ bool meap(void);
 bool hotel(void);
 bool raffle(void);
 bool core(void);
+bool lang(void);

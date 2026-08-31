@@ -1,6 +1,6 @@
 # Print instructions bill themselves by length
-   Insts="nop end iff elsif prs prf post spawn"
- InstCpu="  1   1   3     3   0   9  200  1000"
+   Insts="nop end iff elsif disas prs prf post spawn"
+ InstCpu="  1   1   3     3     0   0   9  200  1000"
    Tests="no yes like gt not"
  TestCpu=" 1   1   10  3   1"
   Floats="zero one two imm csh cyc rndl rndg add mul inv neg"
@@ -31,6 +31,7 @@ function make_c_tables() {
   echo "extern $1 * funcsFor${1}s[Num${1}s];"
   echo "extern char namesOf${1}s[Num${1}s][16];"
   echo "typedef void $1Quiner(Core *);"
+  echo "void quine${1}(uint8_t, Core *);"
   echo "extern $1Quiner * quinersFor${1}s[Num${1}s];"
   echo
   V="${1}s"
@@ -51,7 +52,7 @@ function make_c_tables() {
   echo "};"
   echo
   V="${1}Cpu"
-  echo "Cycles cpuCyclesOf${1}[Num${1}s] = {"
+  echo "Cycles cpuCyclesOf${1}s[Num${1}s] = {"
   for X in ${!V}; do echo "  ${X},"; done
   echo "};"
   echo

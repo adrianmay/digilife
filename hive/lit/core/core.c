@@ -29,6 +29,7 @@
 #include "api.h"
 #include "ops.h"
 
+void onTockCore() {}
 TockPrice totRent() { return hotelOfMobs_rent() + raffleOfMsgs_rent(); }
 void onMobHotel_goDie(MobIx i, Mob * pT) { }
 void onMobHotel_rentCollected (Cash rent) {}
@@ -36,6 +37,7 @@ void onMobHotel_rentDefaulted (Cash rent) { printf("Mob rent defaulted: %'ld\n",
 void onMobHotel_extinct       (void) { raffleOfMsgs_quit(); }
 void onMobHotel_funeral(MobIx, Mob * pMob) {}
 void onMsgRaffle_extinct() { raffleOfMsgs_quit();  } // Not when we have external msg sources
+bool draw() { return raffleOfMsgs_draw(); }
 
 void showMob(MobIx i, Mob * p) {
   switch (p->phylum) { 
@@ -97,10 +99,6 @@ SAMPLER(spawned,   0.000000001)
   
 HISTOGRAM(spare, 30, -1000000.0, 100000.0)
 
-void onTockCore() {}
-
-bool draw() { return raffleOfMsgs_draw(); }
-
 //////////////////////////////////////////////////////////
 ///  THE CORE  ///////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -151,13 +149,13 @@ uint8_t I(Core * pC, Doit doit) { // doit just for debugging
   }
 }
 
-Cycles getInstCpuCycles(Core * pC, Doit doit) { return (doit==doingit) ? cpuCyclesOfInst[I(pC, doit)] : 1; }
+Cycles getInstCpuCycles(Core * pC, Doit doit) { return (doit==doingit) ? cpuCyclesOfInsts[I(pC, doit)] : 1; }
 
 void doInst(Core * pC, Doit doit) { 
-  uint8_t i = I(pC, doit);
-  Inst * f = funcsForInsts[i]; 
+  uint8_t x = I(pC, doit);
+  Inst * f = funcsForInsts[x]; 
   chargeCpuTime(pC, getInstCpuCycles(pC, doit));
-  if (doit==quiningit) quinersForInsts[i](pC);
+  if (doit==quiningit) quineInst(x, pC);
   incIP(pC, 1); 
   f(pC, doit); 
 }
@@ -166,13 +164,14 @@ void doInst(Core * pC, Doit doit) {
 /// INSTRUCTIONS : FLOATS  ///////////////////////////////
 //////////////////////////////////////////////////////////
 
-Cash getFloatCpuCycles(Core * pC, Doit doit) { return (doit==doingit) ? cpuCyclesOfFloat[I(pC, doit)] : 1; }
+Cash getFloatCpuCycles(Core * pC, Doit doit) { return (doit==doingit) ? cpuCyclesOfFloats[I(pC, doit)] : 1; }
+
 float doFloat(Core * pC, Doit doit) {
-  uint8_t o = I(pC, doit);
+  uint8_t x = I(pC, doit);
   chargeCpuTime(pC, getFloatCpuCycles(pC, doit));
-  if (doit==quiningit) quinersForFloats[o](pC);
+  if (doit==quiningit) quineFloat(x, pC);
   incIP(pC, 1);
-  return funcsForFloats[o](pC, doit);
+  return funcsForFloats[x](pC, doit);
 }
 float zero(Core * pC, Doit doit) { return 0; }
 float one (Core * pC, Doit doit) { return 1; }
@@ -201,13 +200,14 @@ float reg  (Core * pC, Doit doit) { return 0; }
 /// INSTRUCTIONS : PEERS  ///////////////////////////////
 //////////////////////////////////////////////////////////
 
-Cash getPeerCpuCycles(Core * pC, Doit doit) { return (doit==doingit) ? cpuCyclesOfPeer[I(pC, doit)] : 1; }
+Cash getPeerCpuCycles(Core * pC, Doit doit) { return (doit==doingit) ? cpuCyclesOfPeers[I(pC, doit)] : 1; }
+
 MobTact doPeer(Core * pC, Doit doit) {
-  uint8_t o = I(pC, doit);
+  uint8_t x = I(pC, doit);
   chargeCpuTime(pC, getPeerCpuCycles(pC, doit));
-  if (doit==quiningit) quinersForPeers[o](pC);
+  if (doit==quiningit) quinePeer(x, pC);
   incIP(pC, 1);
-  return funcsForPeers[o](pC, doit);
+  return funcsForPeers[x](pC, doit);
 }
 MobTact me     (Core * pC, Doit doit) { return pC->tMob; }
 MobTact sndr   (Core * pC, Doit doit) { return pC->pMsg->sndr; }
@@ -235,6 +235,9 @@ void prs(Core * pC, Doit doit) {
   doInst(pC, doit);
 }
 
+void disas(Core * pC, Doit doit) { 
+}
+
 void prf(Core * pC, Doit doit) { 
   float f = doFloat(pC, doit);
   if (doit==doingit) {
@@ -258,13 +261,14 @@ Doit onElsif[3][2] = { { doneit, doneit  } // Already doing something, this ifel
                      , { todoit, doingit } // Still looking for matching ifels, so do it or stay in same state 
 };
 
-Cash getTestCpuCycles(Core * pC, Doit doit) { return (doit==doingit) ? cpuCyclesOfTest[I(pC, doit)] : 1; }
+Cash getTestCpuCycles(Core * pC, Doit doit) { return (doit==doingit) ? cpuCyclesOfTests[I(pC, doit)] : 1; }
 bool doTest(Core * pC, Doit doit) {
-  uint8_t i = I(pC, doit);
+  uint8_t x = I(pC, doit);
   chargeCpuTime(pC, getTestCpuCycles(pC, doit));
-  if (doit==quiningit) quinersForTests[i](pC);
+  if (doit==quiningit) quineTest(x, pC);
   incIP(pC, 1);
-  return funcsForTests[i](pC, doit); }
+  return funcsForTests[x](pC, doit);
+}
 void nop   (Core * pC, Doit doit) { doInst(pC, doit); } // Tail-recurse to next instruction
 void end   (Core * pC, Doit doit) { } // Return to calling block or end of program
 bool yes   (Core * pC, Doit doit) { return true;  }
@@ -289,22 +293,27 @@ void post(Core * pC, Doit doit) {
 }
 
 void Q(Core * pC)  { pC->pChildProg[pC->childIP++] = I(pC, quiningit); }
+
+void quineInst(uint8_t inst, Core * pC) { quinersForInsts[inst](pC); }
 void nopQ    (Core * pC) { Q(pC); }
 void endQ    (Core * pC) { Q(pC); }
 void iffQ    (Core * pC) { Q(pC); }
 void elsifQ  (Core * pC) { Q(pC); }
 void   sQ    (Core * pC) { pC->childIP += 1+strcpy_len(pC->pChildProg+pC->childIP, getRawOpCodeP(pC)); }
 void prsQ    (Core * pC) { Q(pC); sQ(pC); }
+void disasQ  (Core * pC) { Q(pC); } // TODO: ?
 void prfQ    (Core * pC) { Q(pC); }
 void postQ   (Core * pC) { Q(pC); }
 void spawnQ  (Core * pC) { Q(pC); }
 
+void quineTest(uint8_t x, Core * pC) { quinersForTests[x](pC); }
 void noQ     (Core * pC) { Q(pC); }  
 void yesQ    (Core * pC) { Q(pC); }   
 void likeQ   (Core * pC) { Q(pC); }    
 void gtQ     (Core * pC) { Q(pC); }  
 void notQ    (Core * pC) { Q(pC); }   
 
+void quineFloat(uint8_t x, Core * pC) { quinersForFloats[x](pC); }
 void zeroQ   (Core * pC) { Q(pC); }         
 void oneQ    (Core * pC) { Q(pC); }         
 void twoQ    (Core * pC) { Q(pC); }         
@@ -318,6 +327,7 @@ void mulQ    (Core * pC) { Q(pC); }
 void invQ    (Core * pC) { Q(pC); }         
 void negQ    (Core * pC) { Q(pC); }         
 
+void quinePeer(uint8_t x, Core * pC) { quinersForPeers[x](pC); }
 void meQ     (Core * pC) { Q(pC); }               
 void sndrQ   (Core * pC) { Q(pC); }               
 void childQ  (Core * pC) { Q(pC); }                
@@ -327,7 +337,6 @@ void peer2Q  (Core * pC) { Q(pC); }
 void peer3Q  (Core * pC) { Q(pC); }                
            
 void quine(Core * pC, Mob * pChild) {
-  //memcpy(pChild, pParent, sizeof(Mob)); 
   int saveIP = pC->IP;
   pC->pChildProg = (uint8_t*)&pChild->_.mortal.program;
   pC->childIP = 0;

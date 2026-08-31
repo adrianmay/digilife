@@ -114,6 +114,10 @@ static bool testBrokeMsg() {
   return testSomeCases("BrokeMsg", 25, 25, cases, sizeof(cases)/sizeof(Case));
 }
 
+static bool testQuine() {
+  return true;
+}
+
 static bool testSpawnAndPost() {
   printf("testSpawnAndPost\n");
   Cash birthCash = BIRTH_CASH + randIntBelow(BIRTH_CASH);

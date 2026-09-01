@@ -118,7 +118,7 @@ Woth hotelOfXXs_grab(XXTact * pTact, XX ** ppXX, Cash * pCash) {
 }
  
 int hotelOfXXs_showsTact(char * cursor, XXTact t) {
-  return sprintf(cursor, "%-8x=%d", t.n, t.i.i);
+  return sprintf(cursor, "%8x=%d", t.n, t.i.i);
 }
 
 void showXXBlob(XXBlobIx i, XXBlob * p) {
@@ -191,7 +191,9 @@ XXTact hotelOfXXs_admit(Cash cash, bool isGod, V_XXP stuff, XX ** pp, bool * pRe
     rebomb(&pBlob->rent, iBlob);
   }
   if (pp) *pp = &pBlob->body;
-  //printf("admit:nick=%d\n", p->rent.nick);
+  char buf[20];
+  hotelOfXXs_showsTact(buf, t);
+//  printf("hotelOfXXs_admit returning %s\n", buf);
   return t;
 }
 

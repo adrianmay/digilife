@@ -1,6 +1,6 @@
 # Print instructions bill themselves by length
-   Insts="nop end iff elsif post spawn prs prf disas"
- InstCpu="  1   1   3     3  200  1000   0   9     0"
+   Insts="nop end iff elsif post spawn prs prf prp disas"
+ InstCpu="  1   1   3     3  200  1000   0   9  20     0"
    Tests="no yes not like gt"
  TestCpu=" 1   1   1   10  3"
   Floats="zero one two imm csh cyc rndl rndg add mul inv neg"
@@ -54,7 +54,7 @@ HERE
 #  echo "};" 
   echo
   echo "char namesOf${1}s[Num${1}s][16] = {"
-  for X in ${!V}; do echo "  \"${X}\","; done
+  for X in ${!V}; do echo "  \"${X^^}\","; done
   echo "};"
   echo
   V="${1}Cpu"

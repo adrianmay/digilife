@@ -80,6 +80,9 @@ static bool testSomeCases(const char * tag, Cash mobCash, Cash msgCash, Case cas
   return res;
 }
 
+// 4660 decimal:
+#define OX1234f "\x00\xA0\x91\x45"
+
 static bool testCode() {
   Case cases[] = {
     { PRS "Foo" NOP PRS "Bar" NOP END,                                                                         "FooBar"}, 
@@ -96,6 +99,7 @@ static bool testCode() {
     { IFF NOT NOT YES PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                               "A"},                                  
     { PRF ZERO END,                                                                                            "0.000000"},                                                      
     { PRF ONE END,                                                                                             "1.000000"},
+    { PRF IMM OX1234f END,                                                                                     "4660.000000"},
     { PRF ADD TWO TWO END,                                                                                     "4.000000"},
     { PRF MUL TWO TWO END,                                                                                     "4.000000"},
     { PRF MUL TWO ADD TWO ONE END,                                                                             "6.000000"},                                                                     
@@ -103,6 +107,9 @@ static bool testCode() {
     { PRF ADD TWO NEG ADD TWO ONE END,                                                                         "-1.000000"},                                                                        
     { IFF GT ZERO ONE PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                               "A"},                                  
     { IFF LIKE MUL ONE INV ADD TWO TWO ONE TWO PRS "A" NOP ELSIF YES PRS "B" NOP END END,                      "B"},                                                           
+    { PRP ME END,                                                                                              "12345678=8"},
+    { PRP PEER3 END,                                                                                           "       0=3"},
+    { SPAWN PRP CHILD SPAWN PRP CHILD END,                                                                     " 7afc3a1=0 9fe2471=1"},
   };
   return testSomeCases("Code", 500'000, 500'000, cases, sizeof(cases)/sizeof(Case));
 }
@@ -116,8 +123,12 @@ static bool testBrokeMsg() {
   return testSomeCases("BrokeMsg", 25, 25, cases, sizeof(cases)/sizeof(Case));
 }
 
-static bool testQuine() {
-  return true;
+static bool testDisas() {
+  Case cases[] = {
+    { DISAS ME END,                   "DISAS ME END "}, 
+    { IFF NO PRF IMM OX1234f ELSIF YES DISAS ME END END,   "IFF NO PRF IMM 4660.000000 ELSIF YES DISAS ME END END "}, 
+  };
+  return testSomeCases("Disas", 1000, 1000, cases, sizeof(cases)/sizeof(Case));
 }
 
 static bool testSpawnAndPost() {
@@ -205,6 +216,7 @@ bool testCore() {
   return 
     testCode() &&
     testBrokeMsg() &&
+    testDisas() &&
 //    testForever() && 
     true || (showCore(), false);
 }

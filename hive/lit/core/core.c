@@ -121,9 +121,17 @@ typedef struct Core {
 
 typedef struct Mode Mode;
 struct Mode {
-  int (*cpuCost)(Proto proto, int i); // In cpu tokens
   Mode * onIff  [2];
   Mode * onElsif[2];
+  void (*onOp)(Core *, Mode *, Proto proto, int i);
+  int  (*cpuCost)(Proto proto, int i); // In cpu tokens
+  void (*onPrs)(Core *, int len);
+  void (*onPrf)(Core *, float f);
+  void (*onPrp)(Core *, MobTact peer);
+  void (*onImmFloat)(Core *, float f);
+  void (*onDisas)(Core *, MobTact peer);
+  void (*onPost)(Core *, MobTact rcvr, Cash cash);
+  void (*onSpawn)(Core *);
 };
 extern Mode doingit, doneit, todoit, quiningit, dissingit;
 
@@ -166,8 +174,7 @@ uint8_t I(Core * pC) {
 void doInst(Core * pC, Mode * mode) { 
   uint8_t x = I(pC);
   Inst * f = funcsForInsts[x]; 
-  chargeCpuTime(pC, mode->cpuCost(InstProto, x));
-  //if (mode==quiningit) quineInst(x, pC);
+  mode->onOp(pC, mode, InstProto, x);
   incIP(pC, 1); 
   f(pC, mode); 
 }
@@ -182,50 +189,37 @@ void elsif (Core * pC, Mode * mode) { bool b = doTest(pC, mode); doInst(pC, mode
 void post(Core * pC, Mode * mode) {
   MobTact rcvr = doPeer(pC, mode);
   float cash = doFloat(pC, mode);
-  if (mode != &doingit) return;
-  chargeMobCash(pC, cash);
-  void stuffMsg(Msg * p) { p->cpuBid = 0; p->sndr = pC->tMob; p->rcvr = rcvr; }
-  raffleOfMsgs_play(cash, 100, stuffMsg); 
+  mode->onPost(pC, rcvr, cash);
 }
 
+
 void quine(Core * pC, Mob * pChild) { memcpy(pChild, pC->pMob, sizeof(Mob)); }
-void spawn(Core * pC, Mode * mode) { 
-  if (mode != &doingit) return;
-  //printf("Spawned: %'ld\n", pC->cash);
-  Cash childCash = pC->mobCash/2;
-  chargeMobCash(pC, childCash);
-  Cash chMobCash = childCash * MOB_PROP;
-  Cash chMsgCash = childCash - chMobCash;
-  void stuffMob(Mob * p) { quine(pC, p); }
-  pC->tChild = hotelOfMobs_admit(chMobCash, false, stuffMob, 0, 0);
-  void stuffMsg(Msg * p) { p->cpuBid = 1; p->sndr = pC->tMob; p->rcvr = pC->tChild; }
-  raffleOfMsgs_play(chMsgCash, 100, stuffMsg); 
-}
+void spawn(Core * pC, Mode * mode)  { mode->onSpawn(pC); doInst(pC, mode); }
 
 /////// OUTPUT
 void prs(Core * pC, Mode * mode) { 
   int len = strlen((char*)getRawOpCodeP(pC));
-  chargeCpuTime(pC, len);
-  if (mode==&doingit) {
-    chargeCpuTime(pC, 3*len);
-    //printf("Print %s\n", (char*)getRawOpCodeP(pC));
-    int n = snprintf(pC->out+pC->outcur, pC->outlen-pC->outcur, "%s", getRawOpCodeP(pC));
-    pC->outcur += n;
-  }
+  mode->onPrs(pC, len);
   incIP(pC, len+1); // Terminator
   doInst(pC, mode);
 }
 
 void prf(Core * pC, Mode * mode) { 
   float f = doFloat(pC, mode);
-  if (mode==&doingit) {
-    int n = snprintf(pC->out+pC->outcur, pC->outlen-pC->outcur, "%f", f);
-    pC->outcur += n;
-  }
+  mode->onPrf(pC, f);
   doInst(pC, mode);
 }
  
-void disas(Core * pC, Mode * mode) { }
+void prp(Core * pC, Mode * mode) { 
+  MobTact peer = doPeer(pC, mode);
+  mode->onPrp(pC, peer);
+  doInst(pC, mode);
+}
+void disas(Core * pC, Mode * mode) { 
+  MobTact peer = doPeer(pC, mode);
+  mode->onDisas(pC, peer);
+  doInst(pC, mode);
+}
 
 //////////////////////////////////////////////////////////
 /// TESTS  ///////////////////////////////////////////////
@@ -233,8 +227,7 @@ void disas(Core * pC, Mode * mode) { }
 
 bool doTest(Core * pC, Mode * mode) {
   uint8_t x = I(pC);
-  chargeCpuTime(pC, mode->cpuCost(TestProto, x));
-  //if (mode==quiningit) quineTest(x, pC);
+  mode->onOp(pC, mode, TestProto, x);
   incIP(pC, 1);
   return funcsForTests[x](pC, mode);
 }
@@ -254,8 +247,7 @@ bool like  (Core * pC, Mode * mode) {
 
 float doFloat(Core * pC, Mode * mode) {
   uint8_t x = I(pC);
-  chargeCpuTime(pC, mode->cpuCost(FloatProto, x));
-  //if (mode==quiningit) quineFloat(x, pC);
+  mode->onOp(pC, mode, FloatProto, x);
   incIP(pC, 1);
   return funcsForFloats[x](pC, mode);
 }
@@ -269,8 +261,10 @@ float two (Core * pC, Mode * mode) { return 2; }
 float imm (Core * pC, Mode * mode) { 
   float f;  // Inverse of sigma, -ve for if (!...)
   memcpy((char*)&f, (char*)&pC->pMob->_.mortal.program[pC->IP], sizeof(f));
+  mode->onImmFloat(pC, f);
   incIP(pC, sizeof(float));
-  return f; }
+  return f;
+}
 
 /////// READ REGISTERS  
 float csh(Core * pC, Mode * mode) { return (float) pC->mobCash; }
@@ -287,10 +281,8 @@ float inv  (Core * pC, Mode * mode) { return 1.0 / doFloat(pC, mode); }
 typedef float Binop(float, float);
 float doBinop (Core * pC, Mode * mode, Binop * bop) { 
   float a = doFloat(pC, mode); float b = doFloat(pC, mode); return (*bop)(a, b); }
-float plus (float a, float b) {return a+b;} 
-float times(float a, float b) {return a*b;} 
-float add  (Core * pC, Mode * mode) { return doBinop(pC, mode, plus); }
-float mul  (Core * pC, Mode * mode) { return doBinop(pC, mode, times); }
+float add  (Core * pC, Mode * mode) { float op(float a, float b) {return a+b;}; return doBinop(pC, mode, op); }
+float mul  (Core * pC, Mode * mode) { float op(float a, float b) {return a*b;}; return doBinop(pC, mode, op); }
 
 //////////////////////////////////////////////////////////
 /// PEERS  ///////////////////////////////////////////////
@@ -298,8 +290,7 @@ float mul  (Core * pC, Mode * mode) { return doBinop(pC, mode, times); }
 
 MobTact doPeer(Core * pC, Mode * mode) {
   uint8_t x = I(pC);
-  chargeCpuTime(pC, mode->cpuCost(PeerProto, x));
-  //if (mode==quiningit) quinePeer(x, pC);
+  mode->onOp(pC, mode, PeerProto, x);
   incIP(pC, 1);
   return funcsForPeers[x](pC, mode);
 }
@@ -325,12 +316,81 @@ int cpuCheap(Proto proto, int x) { return 1; }
 int * costTables[NumProtos] = { cpuCyclesOfInsts, cpuCyclesOfTests, cpuCyclesOfFloats, cpuCyclesOfPeers };
 int cpuDear (Proto proto, int x) { return costTables[proto][x]; }
 
-//                           onIff{false,true}        onElsif{false,true}
-Mode doingit    = {cpuDear,  {&todoit,   &doingit  }, {&doneit,   &doneit   },  };
-Mode doneit     = {cpuCheap, {&doneit,   &doneit   }, {&doneit,   &doneit   },  };
-Mode todoit     = {cpuCheap, {&doneit,   &doneit   }, {&todoit,   &doingit  },  };
-Mode quiningit  = {cpuFree,  {&quiningit,&quiningit}, {&quiningit,&quiningit},  };
-Mode dissingit  = {cpuFree,  {&dissingit,&dissingit}, {&dissingit,&dissingit},  };
+void onOpCharge(Core *pC , Mode * mode, Proto proto, int x) { chargeCpuTime(pC, mode->cpuCost(proto, x)); }
+void onOpQuine (Core *pC , Mode * mode, Proto proto, int x) { }
+typedef char (*NameTable)[16];
+NameTable nameTables[NumProtos] = { namesOfInsts, namesOfTests, namesOfFloats, namesOfPeers };
+void onOpDisas (Core * pC, Mode * mode, Proto proto, int x) { 
+  char * name = nameTables[proto][x];
+  int n = snprintf(pC->out+pC->outcur, pC->outlen-pC->outcur, "%s ", name);
+  pC->outcur += n;
+  chargeCpuTime(pC, 4*n); 
+}
+
+void onPrsQuining (Core * pC, int len) { }
+void onPrsDissing (Core * pC, int len) { }
+void onPrsSkipping(Core * pC, int len) { chargeCpuTime(pC, len); }
+void onPrsPrinting(Core * pC, int len) { 
+  chargeCpuTime(pC, 4*len); 
+  int n = snprintf(pC->out+pC->outcur, pC->outlen-pC->outcur, "%s", getRawOpCodeP(pC));
+  pC->outcur += n;
+}
+
+void onPrfQuining (Core * pC, float f) { }
+void onPrfDissing (Core * pC, float f) { }
+void onPrfSkipping(Core * pC, float f) { }
+void onPrfPrinting(Core * pC, float f) { int n = snprintf(pC->out+pC->outcur, pC->outlen-pC->outcur, "%f", f); pC->outcur += n; }
+
+void onPrpQuining (Core * pC, MobTact peer) { }
+void onPrpDissing (Core * pC, MobTact peer) { }
+void onPrpSkipping(Core * pC, MobTact peer) { }
+void onPrpPrinting(Core * pC, MobTact peer) { int n = hotelOfMobs_showsTact(pC->out+pC->outcur, peer); pC->outcur += n; }
+
+void onDisasDont(Core * pC, MobTact peer) { }
+void onDisasDo  (Core * pC, MobTact peer) {
+  int saveIP = pC->IP;
+  pC->IP = 0;
+  doInst(pC, &dissingit);
+  pC->IP = saveIP;
+}
+
+void ignoreFloat(Core * pC, float f) {}
+void disasFloat (Core * pC, float f) {
+  int n = snprintf(pC->out+pC->outcur, pC->outlen-pC->outcur, "%f ", f);
+  pC->outcur += n;
+}
+
+void onPostDont(Core * pC, MobTact rcvr, Cash cash) { }
+void onPostDo(Core * pC, MobTact rcvr, Cash cash) {
+  chargeMobCash(pC, cash);
+  void stuffMsg(Msg * p) { p->cpuBid = 0; p->sndr = pC->tMob; p->rcvr = rcvr; }
+  raffleOfMsgs_play(cash, 100, stuffMsg); 
+}
+
+void onSpawnDont(Core * pC) { }
+void onSpawnDo(Core * pC) { 
+  Cash childCash = pC->mobCash/2;
+  chargeMobCash(pC, childCash);
+  Cash chMobCash = childCash * MOB_PROP;
+  Cash chMsgCash = childCash - chMobCash;
+  void stuffSpawnedMob(Mob * p) { quine(pC, p); }
+  pC->tChild = hotelOfMobs_admit(chMobCash, false, stuffSpawnedMob, 0, 0);
+  //char buf[20]; hotelOfMobs_showsTact(buf, pC->tChild); printf("Spawned: %s\n", buf);
+  void stuffMsg(Msg * p) { p->cpuBid = 1; p->sndr = pC->tMob; p->rcvr = pC->tChild; }
+  raffleOfMsgs_play(chMsgCash, 100, stuffMsg); 
+}
+
+//                 onIff{false,true}        onElsif{false,true}
+Mode doingit    = {{&todoit,   &doingit  }, {&doneit,   &doneit   }, onOpCharge, cpuDear,  
+                   onPrsPrinting, onPrfPrinting, onPrpPrinting, ignoreFloat, onDisasDo, onPostDo,     onSpawnDo,  };
+Mode doneit     = {{&doneit,   &doneit   }, {&doneit,   &doneit   }, onOpCharge, cpuCheap, 
+                   onPrsSkipping, onPrfSkipping, onPrpSkipping, ignoreFloat, onDisasDont, onPostDont, onSpawnDont, };
+Mode todoit     = {{&doneit,   &doneit   }, {&todoit,   &doingit  }, onOpCharge, cpuCheap, 
+                   onPrsSkipping, onPrfSkipping, onPrpSkipping, ignoreFloat, onDisasDont, onPostDont, onSpawnDont, };
+Mode quiningit  = {{&quiningit,&quiningit}, {&quiningit,&quiningit}, onOpQuine,  cpuFree,  
+                   onPrsQuining,  onPrfQuining,  onPrpQuining,  ignoreFloat, onDisasDont, onPostDont, onSpawnDont, };
+Mode dissingit  = {{&dissingit,&dissingit}, {&dissingit,&dissingit}, onOpDisas,  cpuFree,  
+                   onPrsDissing,  onPrfDissing,  onPrpDissing,  disasFloat, onDisasDont, onPostDont, onSpawnDont, };
 
 //////////////////////////////////////////////////////////
 /// RUNNING   ///////////////////////////////////////

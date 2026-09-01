@@ -284,10 +284,13 @@ float rndg (Core * pC, Mode * mode) { return randGaussian(doFloat(pC, mode), doF
 /////// ARITHMETIC
 float neg  (Core * pC, Mode * mode) { return   0 - doFloat(pC, mode); }
 float inv  (Core * pC, Mode * mode) { return 1.0 / doFloat(pC, mode); }
-float doBinop (Core * pC, Mode * mode, float bop(float, float)) { 
-  float a = doFloat(pC, mode); float b = doFloat(pC, mode); return bop(a, b); }
-float add  (Core * pC, Mode * mode) { float op(float a, float b) {return a+b;} return doBinop(pC, mode, op); }
-float mul  (Core * pC, Mode * mode) { float op(float a, float b) {return a*b;} return doBinop(pC, mode, op); }
+typedef float Binop(float, float);
+float doBinop (Core * pC, Mode * mode, Binop * bop) { 
+  float a = doFloat(pC, mode); float b = doFloat(pC, mode); return (*bop)(a, b); }
+float plus (float a, float b) {return a+b;} 
+float times(float a, float b) {return a*b;} 
+float add  (Core * pC, Mode * mode) { return doBinop(pC, mode, plus); }
+float mul  (Core * pC, Mode * mode) { return doBinop(pC, mode, times); }
 
 //////////////////////////////////////////////////////////
 /// PEERS  ///////////////////////////////////////////////

@@ -201,9 +201,9 @@ bool raffleOfXXs_draw() {
   lock();
   raid();
   //checkM("draw 1");
-  if (gottaQuitXX)  { gottaQuitXX=false; unlock(); return false; }
+  if (gottaQuitXX)  { gottaQuitXX=false; unlock(); printf("raffleOfXXs_draw: bail 1\n"); return false; }
   if (raffleOfXXs_empty()) { pthread_cond_wait(&cond, &mutex); }
-  if (gottaQuitXX)  { gottaQuitXX=false; unlock(); return false; }
+  if (gottaQuitXX)  { gottaQuitXX=false; unlock(); printf("raffleOfXXs_draw: bail 2\n"); return false; }
   // Can't be empty
   drawAssumeNotEmpty(); //unlocks
   //checkM("draw 2");

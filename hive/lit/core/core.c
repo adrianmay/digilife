@@ -36,7 +36,8 @@ void onMobHotel_rentCollected (Cash rent) {}
 void onMobHotel_rentDefaulted (Cash rent) { printf("Mob rent defaulted: %'ld\n", rent); }
 void onMobHotel_extinct       (void) { raffleOfMsgs_quit(); }
 void onMobHotel_funeral(MobIx, Mob * pMob) {}
-void onMsgRaffle_extinct() { raffleOfMsgs_quit();  } // Not when we have external msg sources
+void onMsgRaffle_extinct() { //raffleOfMsgs_quit();
+} // Not when we have external msg sources
 bool draw() { return raffleOfMsgs_draw(); }
 
 void showMob(MobIx i, Mob * p) {
@@ -118,6 +119,20 @@ typedef struct Core {
   int outcur;
   jmp_buf jb;
 } Core;
+
+static void showCore(Core * pC) {
+  printf("CORE: cyclesLeft=%'ld ", pC->cyclesLeft);
+  printf("mobCash=%'ld ", pC->mobCash);
+  char buf[20];
+  hotelOfMobs_showsTact(buf, pC->tMob);
+  printf("tMob=%s ", buf);
+  //printf("", pC->pMob);
+  //printf("", pC->pMsg);
+  printf("IP=%d ", pC->IP);
+  hotelOfMobs_showsTact(buf, pC->tChild);
+  printf("tChild=%s ", buf);
+  printf("out='%s'\n", pC->out);
+}
 
 typedef struct Mode Mode;
 struct Mode {
@@ -396,11 +411,13 @@ Mode dissingit  = {{&dissingit,&dissingit}, {&dissingit,&dissingit}, onOpDisas, 
 //////////////////////////////////////////////////////////
 
 Cash runInCore(Cash mobCash, Cash msgCash, MobTact tMob, Mob * pMob, Msg * pMsg) {
-  memset(out, 0, outlen);
+  memset(out, 0, outlen); // The linker has to find these
   Cycles cyc = msgCash / pMsg->cpuBid; 
   Core core = (Core){cyc, mobCash, tMob, pMob, pMsg, 0, tMob, 0, 0, out, outlen, 0};
+  showCore(&core);
   if (0==setjmp(core.jb)) doInst(&core, &doingit); 
-  else ; //Ran out of msgCash
+  else printf("Overran!\n"); //Ran out of msgCash
+  showCore(&core);
   return core.mobCash + core.cyclesLeft * pMsg->cpuBid;
 }
 
@@ -408,8 +425,10 @@ void run(MobTact tMob, Mob * pMob, Msg * pMsg, Cash mobCash, Cash msgCash) {
   msgcashSample(msgCash);
   mobcashSample(mobCash);
   mobCash += DOLE;
-  mobCash -= totRent(); // Cos both msg and mob will miss out on the tock we expend in here
+  //mobCash -= totRent(); // Cos both msg and mob will miss out on the tock we expend in here
+  printf("HERE 1\n");
   Cash finalCash = runInCore(mobCash, msgCash, tMob, pMob, pMsg);
+  printf("HERE 2\n");
   hotelOfMobs_drop(pMsg->rcvr.i, finalCash);
   Program * pProg = &pMob->_.mortal.program;          
   void * pVoid = (void *) pProg;
@@ -423,19 +442,26 @@ void run(MobTact tMob, Mob * pMob, Msg * pMsg, Cash mobCash, Cash msgCash) {
 }
 
 Cash onMsgRaffle_dispatch(MsgTicketTact t, Msg * pMsg, Cash msgCash, V claim, V unlock) {
-  //printf("Raffle dispatch msg %d\n", t.i.i);
-  Mob * pMob;
-  Cash mobCash;
+  printf("Raffle dispatch msg %d\n", t.i.i);
+  printf("Msg cash=%'ld\n", msgCash);
+  showMsg((MsgIx){0}, pMsg);
+  Mob * pMob=0;
+  Cash mobCash=0;
   Woth w = hotelOfMobs_grab(&pMsg->rcvr, &pMob, &mobCash);
-  if (w==Dead) { unlock(); return 0; }       // Bankrupt msg
-  if (w==Busy) { unlock(); return msgCash; } // Leave msg alone
+  if (w==Dead) { unlock(); printf("Dead\n"); return 0; }       // Bankrupt msg
+  if (w==Busy) { unlock(); printf("Busy\n"); return msgCash; } // Leave msg alone
+  showMob((MobIx){0}, pMob);
   // So we got it
   claim();
   unlock();
-  if (randIntBelow(MURDER_RATE)==0) 
+  if (randIntBelow(MURDER_RATE)==0) {
+    printf("Murder\n");
     hotelOfMobs_drop(pMsg->rcvr.i, 0);
-  else
+  }
+  else {
+    printf("Running\n");
     run(pMsg->rcvr, pMob, pMsg, mobCash, msgCash);
+  }
   return 0; 
 }
 
@@ -443,10 +469,9 @@ void create(Cash c, ProgStuffer stuffProg) {
   void stuffMob(Mob * p) { 
     p->phylum = PhyMortal;
     stuffProg(&p->_.mortal.program);
-    //memcpy((char*)p->_.mortal.program, code, sizeof(code));
   }
   MobTact tNewMob = hotelOfMobs_admit(c*MOB_PROP, false, stuffMob, 0, 0);
-  void stuffMsg(Msg * p) { p->cpuBid = 0; p->sndr = p->rcvr = tNewMob; }
+  void stuffMsg(Msg * p) { p->cpuBid = 1; p->sndr = p->rcvr = tNewMob; }
   raffleOfMsgs_play(c*MSG_PROP, 100, stuffMsg); 
 }
 

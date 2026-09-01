@@ -26,15 +26,13 @@ void showCore() {
 
 static bool init(void) {
   onTestTock = onTockCore;
-  openGlobals(); hotelOfMobs_open(); raffleOfMsgs_open();
-  printf("Sizes: mob=%f,msg=%f,tot=%f; Props: mob=%f,msg=%f\n", SIZE_MOB, SIZE_MSG, SIZE_BOTH, MOB_PROP, MSG_PROP);
+    openGlobals(); hotelOfMobs_open(); raffleOfMsgs_open();
+  //printf("Sizes: mob=%f,msg=%f,tot=%f; Props: mob=%f,msg=%f\n", SIZE_MOB, SIZE_MSG, SIZE_BOTH, MOB_PROP, MSG_PROP);
   return true;
 }
 
 static void cleanup(void) {
-  closeGlobals(Hide);
-  raffleOfMsgs_close(Hide);
-  hotelOfMobs_close(Hide);
+  raffleOfMsgs_close(Hide); hotelOfMobs_close(Hide); closeGlobals(Hide);
 }
 
 //#define NUM_THREADS 2
@@ -64,6 +62,22 @@ void injectFloatPair(char ** p, float mu, float amgis)  {
 }
 
 static bool testSomeCases(const char * tag, Cash mobCash, Cash msgCash, Case cases[], int numCases) {
+  bool res = true;
+  for (int t=0;t<numCases;t++) {
+    printf("####### test%s: #%d\n", tag, t);
+    void progStuffer(Program * prog) { memcpy((void*)prog, (void*)cases[t].t, sizeof(*prog)); };
+    create(mobCash, progStuffer);
+    printf("Created\n");
+    draw();
+    if (0!=strcmp(out, cases[t].e)) {
+      printf("testCode #%d Failed: want: '%s', got: '%s'\n", t, cases[t].e, out);
+      res = false;
+    }
+  }
+  return res;
+}
+
+static bool testSomeCases_(const char * tag, Cash mobCash, Cash msgCash, Case cases[], int numCases) {
   Msg msg = {1};
   Mob mob;
   MobTact tMob = (MobTact){{8}, 0x1234abcd};

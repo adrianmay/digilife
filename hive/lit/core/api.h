@@ -12,6 +12,7 @@
 
 typedef void (*ProgStuffer)(Program * pProg);
 void seed(int n, Cash c, ProgStuffer stuffProg);
+void create(Cash c, ProgStuffer stuffProg) ;
 bool draw(void);
 void onTockCore();
 Cash runInCore(Cash mobCash, Cash msgCash, MobTact tMob, Mob * pMob, Msg * pMsg);

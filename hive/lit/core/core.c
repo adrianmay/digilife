@@ -119,6 +119,13 @@ typedef struct Core {
   jmp_buf jb;
 } Core;
 
+typedef struct Mode Mode;
+struct Mode {
+  Mode * onIff  [2];
+  Mode * onElsif[2];
+};
+extern Mode doingit, doneit, todoit, quiningit, dissingit;
+
 #include "ops.cc"
 
 void incIP(Core * pC, int n) { pC->IP += n; }
@@ -138,10 +145,10 @@ uint8_t * getRawOpCodeP(Core * pC) {
   return pI; 
 }
 
-uint8_t I(Core * pC) { // doit just for debugging
+uint8_t I(Core * pC) { 
   sleepNs(10000); // So I can hit Ctrl-C
   if (pC->IP < sizeof(Program)) {
-    //printf("I with ip=%d and doit=%d returning: %s/%s\n", pC->ip, doit, opnames[*getRawOpCodeP(pC)], testnames[*getRawOpCodeP(pC)]);
+    //printf("I with ip=%d and mode=%d returning: %s/%s\n", pC->ip, mode, opnames[*getRawOpCodeP(pC)], testnames[*getRawOpCodeP(pC)]);
     return *getRawOpCodeP(pC); 
   } else {
     printf("I with ip=%d returning auto end\n", pC->IP);
@@ -153,45 +160,45 @@ uint8_t I(Core * pC) { // doit just for debugging
 /// INSTRUCTIONS   ///////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-Cycles getInstCpuCycles(Core * pC, Doit doit) { return (doit==doingit) ? cpuCyclesOfInsts[I(pC)] : 1; }
+Cycles getInstCpuCycles(Core * pC, Mode * mode) { return (mode==&doingit) ? cpuCyclesOfInsts[I(pC)] : 1; }
 
-void doInst(Core * pC, Doit doit) { 
+void doInst(Core * pC, Mode * mode) { 
   uint8_t x = I(pC);
   Inst * f = funcsForInsts[x]; 
-  chargeCpuTime(pC, getInstCpuCycles(pC, doit));
-  //if (doit==quiningit) quineInst(x, pC);
+  chargeCpuTime(pC, getInstCpuCycles(pC, mode));
+  //if (mode==quiningit) quineInst(x, pC);
   incIP(pC, 1); 
-  f(pC, doit); 
+  f(pC, mode); 
 }
 
 /////// FLOW CONTROL
-void nop   (Core * pC, Doit doit) { doInst(pC, doit); } // Tail-recurse to next instruction
-void end   (Core * pC, Doit doit) { } // Return to calling block or end of program
+void nop   (Core * pC, Mode * mode) { doInst(pC, mode); } // Tail-recurse to next instruction
+void end   (Core * pC, Mode * mode) { } // Return to calling block or end of program
 // New if block, maybe already passive cos of surrounding ifels stuff
-Doit onIff  [3][2] = { { todoit, doingit } // doingit: Surroundings normal, do it if true, or allow future ifels
-                     , { doneit, doneit  } // doneit:  Surroundings inhibitory, keep whole block inhibited
-                     , { doneit, doneit  } // todoit:  Surroundings inhibitory, keep whole block inhibited
-                     };
-Doit onElsif[3][2] = { { doneit, doneit  } // doingit: Already doing something, this ifels is ruled out
-                     , { doneit, doneit  } // doneit:  Already done it, also ruled out
-                     , { todoit, doingit } // todoit:  Still looking for matching ifels, so do it or stay in same state 
+Mode * onIff  [3][2] = { { &todoit, &doingit } // doingit: Surroundings normal, do it if true, or allow future ifels
+                       , { &doneit, &doneit  } // doneit:  Surroundings inhibitory, keep whole block inhibited
+                       , { &doneit, &doneit  } // todoit:  Surroundings inhibitory, keep whole block inhibited
+                       };
+Mode * onElsif[3][2] = { { &doneit, &doneit  } // doingit: Already doing something, this ifels is ruled out
+                       , { &doneit, &doneit  } // doneit:  Already done it, also ruled out
+                       , { &todoit, &doingit } // todoit:  Still looking for matching ifels, so do it or stay in same state 
 };
-void iff   (Core * pC, Doit doit) { bool b = doTest(pC, doit); doInst(pC, onIff[doit][b]); doInst(pC, doit); }
-void elsif (Core * pC, Doit doit) { bool b = doTest(pC, doit); doInst(pC, onElsif[doit][b]); } // Fall back to the iff which does next instruction
+void iff   (Core * pC, Mode * mode) { bool b = doTest(pC, mode); doInst(pC, mode->onIff[b]); doInst(pC, mode); }
+void elsif (Core * pC, Mode * mode) { bool b = doTest(pC, mode); doInst(pC, mode->onElsif[b]); } // Fall back to the iff which does next instruction
 
 /////// WORLD
-void post(Core * pC, Doit doit) {
-  MobTact rcvr = doPeer(pC, doit);
-  float cash = doFloat(pC, doit);
-  if (doit != doingit) return;
+void post(Core * pC, Mode * mode) {
+  MobTact rcvr = doPeer(pC, mode);
+  float cash = doFloat(pC, mode);
+  if (mode != &doingit) return;
   chargeMobCash(pC, cash);
   void stuffMsg(Msg * p) { p->cpuBid = 0; p->sndr = pC->tMob; p->rcvr = rcvr; }
   raffleOfMsgs_play(cash, 100, stuffMsg); 
 }
 
 void quine(Core * pC, Mob * pChild) { memcpy(pChild, pC->pMob, sizeof(Mob)); }
-void spawn(Core * pC, Doit doit) { 
-  if (doit != doingit) return;
+void spawn(Core * pC, Mode * mode) { 
+  if (mode != &doingit) return;
   //printf("Spawned: %'ld\n", pC->cash);
   Cash childCash = pC->mobCash/2;
   chargeMobCash(pC, childCash);
@@ -204,121 +211,131 @@ void spawn(Core * pC, Doit doit) {
 }
 
 /////// OUTPUT
-void prs(Core * pC, Doit doit) { 
+void prs(Core * pC, Mode * mode) { 
   int len = strlen((char*)getRawOpCodeP(pC));
   chargeCpuTime(pC, len);
-  if (doit==doingit) {
+  if (mode==&doingit) {
     chargeCpuTime(pC, 3*len);
     //printf("Print %s\n", (char*)getRawOpCodeP(pC));
     int n = snprintf(pC->out+pC->outcur, pC->outlen-pC->outcur, "%s", getRawOpCodeP(pC));
     pC->outcur += n;
   }
   incIP(pC, len+1); // Terminator
-  doInst(pC, doit);
+  doInst(pC, mode);
 }
 
-void prf(Core * pC, Doit doit) { 
-  float f = doFloat(pC, doit);
-  if (doit==doingit) {
+void prf(Core * pC, Mode * mode) { 
+  float f = doFloat(pC, mode);
+  if (mode==&doingit) {
     int n = snprintf(pC->out+pC->outcur, pC->outlen-pC->outcur, "%f", f);
     pC->outcur += n;
   }
-  doInst(pC, doit);
+  doInst(pC, mode);
 }
  
-void disas(Core * pC, Doit doit) { }
+void disas(Core * pC, Mode * mode) { }
 
 //////////////////////////////////////////////////////////
 /// TESTS  ///////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-Cash getTestCpuCycles(Core * pC, Doit doit) { return (doit==doingit) ? cpuCyclesOfTests[I(pC)] : 1; }
+Cash getTestCpuCycles(Core * pC, Mode * mode) { return (mode==&doingit) ? cpuCyclesOfTests[I(pC)] : 1; }
 
-bool doTest(Core * pC, Doit doit) {
+bool doTest(Core * pC, Mode * mode) {
   uint8_t x = I(pC);
-  chargeCpuTime(pC, getTestCpuCycles(pC, doit));
-  //if (doit==quiningit) quineTest(x, pC);
+  chargeCpuTime(pC, getTestCpuCycles(pC, mode));
+  //if (mode==quiningit) quineTest(x, pC);
   incIP(pC, 1);
-  return funcsForTests[x](pC, doit);
+  return funcsForTests[x](pC, mode);
 }
 
-bool yes   (Core * pC, Doit doit) { return true;  }
-bool no    (Core * pC, Doit doit) { return false; }
-bool not   (Core * pC, Doit doit) { return !doTest(pC, doit); }
-bool gt    (Core * pC, Doit doit) { 
-  float a = doFloat(pC, doit); float b = doFloat(pC, doit); return b > a; } // Ordering deliberate
-bool like  (Core * pC, Doit doit) {
-  float a = doFloat(pC, doit); float b = doFloat(pC, doit); float c = doFloat(pC, doit); 
+bool yes   (Core * pC, Mode * mode) { return true;  }
+bool no    (Core * pC, Mode * mode) { return false; }
+bool not   (Core * pC, Mode * mode) { return !doTest(pC, mode); }
+bool gt    (Core * pC, Mode * mode) { 
+  float a = doFloat(pC, mode); float b = doFloat(pC, mode); return b > a; } // Ordering deliberate
+bool like  (Core * pC, Mode * mode) {
+  float a = doFloat(pC, mode); float b = doFloat(pC, mode); float c = doFloat(pC, mode); 
   return abs(c-b) <= a; }
 
 //////////////////////////////////////////////////////////
 /// FLOATS  //////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-Cash getFloatCpuCycles(Core * pC, Doit doit) { return (doit==doingit) ? cpuCyclesOfFloats[I(pC)] : 1; }
+Cash getFloatCpuCycles(Core * pC, Mode * mode) { return (mode==&doingit) ? cpuCyclesOfFloats[I(pC)] : 1; }
 
-float doFloat(Core * pC, Doit doit) {
+float doFloat(Core * pC, Mode * mode) {
   uint8_t x = I(pC);
-  chargeCpuTime(pC, getFloatCpuCycles(pC, doit));
-  //if (doit==quiningit) quineFloat(x, pC);
+  chargeCpuTime(pC, getFloatCpuCycles(pC, mode));
+  //if (mode==quiningit) quineFloat(x, pC);
   incIP(pC, 1);
-  return funcsForFloats[x](pC, doit);
+  return funcsForFloats[x](pC, mode);
 }
 
 /////// CONSTANTS
-float zero(Core * pC, Doit doit) { return 0; }
-float one (Core * pC, Doit doit) { return 1; }
-float two (Core * pC, Doit doit) { return 2; }
+float zero(Core * pC, Mode * mode) { return 0; }
+float one (Core * pC, Mode * mode) { return 1; }
+float two (Core * pC, Mode * mode) { return 2; }
 
 /////// IMMEDIATE
-float imm (Core * pC, Doit doit) { 
+float imm (Core * pC, Mode * mode) { 
   float f;  // Inverse of sigma, -ve for if (!...)
   memcpy((char*)&f, (char*)&pC->pMob->_.mortal.program[pC->IP], sizeof(f));
   incIP(pC, sizeof(float));
   return f; }
 
 /////// READ REGISTERS  
-float csh(Core * pC, Doit doit) { return (float) pC->mobCash; }
-float cyc(Core * pC, Doit doit) { return (float) pC->cyclesLeft; }
-float reg  (Core * pC, Doit doit) { return 0; }
+float csh(Core * pC, Mode * mode) { return (float) pC->mobCash; }
+float cyc(Core * pC, Mode * mode) { return (float) pC->cyclesLeft; }
+float reg  (Core * pC, Mode * mode) { return 0; }
 
 /////// RANDOM
-float rndl (Core * pC, Doit doit) { return randFloatWithin(doFloat(pC, doit), doFloat(pC, doit)); }
-float rndg (Core * pC, Doit doit) { return randGaussian(doFloat(pC, doit), doFloat(pC, doit)); }
+float rndl (Core * pC, Mode * mode) { return randFloatWithin(doFloat(pC, mode), doFloat(pC, mode)); }
+float rndg (Core * pC, Mode * mode) { return randGaussian(doFloat(pC, mode), doFloat(pC, mode)); }
 
 /////// ARITHMETIC
-float neg  (Core * pC, Doit doit) { return   0 - doFloat(pC, doit); }
-float inv  (Core * pC, Doit doit) { return 1.0 / doFloat(pC, doit); }
-float doBinop (Core * pC, Doit doit, float bop(float, float)) { 
-  float a = doFloat(pC, doit); float b = doFloat(pC, doit); return bop(a, b); }
-float add  (Core * pC, Doit doit) { float op(float a, float b) {return a+b;} return doBinop(pC, doit, op); }
-float mul  (Core * pC, Doit doit) { float op(float a, float b) {return a*b;} return doBinop(pC, doit, op); }
+float neg  (Core * pC, Mode * mode) { return   0 - doFloat(pC, mode); }
+float inv  (Core * pC, Mode * mode) { return 1.0 / doFloat(pC, mode); }
+float doBinop (Core * pC, Mode * mode, float bop(float, float)) { 
+  float a = doFloat(pC, mode); float b = doFloat(pC, mode); return bop(a, b); }
+float add  (Core * pC, Mode * mode) { float op(float a, float b) {return a+b;} return doBinop(pC, mode, op); }
+float mul  (Core * pC, Mode * mode) { float op(float a, float b) {return a*b;} return doBinop(pC, mode, op); }
 
 //////////////////////////////////////////////////////////
 /// PEERS  ///////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-Cash getPeerCpuCycles(Core * pC, Doit doit) { return (doit==doingit) ? cpuCyclesOfPeers[I(pC)] : 1; }
+Cash getPeerCpuCycles(Core * pC, Mode * mode) { return (mode==&doingit) ? cpuCyclesOfPeers[I(pC)] : 1; }
 
-MobTact doPeer(Core * pC, Doit doit) {
+MobTact doPeer(Core * pC, Mode * mode) {
   uint8_t x = I(pC);
-  chargeCpuTime(pC, getPeerCpuCycles(pC, doit));
-  //if (doit==quiningit) quinePeer(x, pC);
+  chargeCpuTime(pC, getPeerCpuCycles(pC, mode));
+  //if (mode==quiningit) quinePeer(x, pC);
   incIP(pC, 1);
-  return funcsForPeers[x](pC, doit);
+  return funcsForPeers[x](pC, mode);
 }
 
 /////// READ REGISTERS
-MobTact me     (Core * pC, Doit doit) { return pC->tMob; }
-MobTact sndr   (Core * pC, Doit doit) { return pC->pMsg->sndr; }
-MobTact child  (Core * pC, Doit doit) { return pC->tChild; }
+MobTact me     (Core * pC, Mode * mode) { return pC->tMob; }
+MobTact sndr   (Core * pC, Mode * mode) { return pC->pMsg->sndr; }
+MobTact child  (Core * pC, Mode * mode) { return pC->tChild; }
 
 /////// GODS
-MobTact peer0  (Core * pC, Doit doit) { return (MobTact){(MobIx){0},0}; }
-MobTact peer1  (Core * pC, Doit doit) { return (MobTact){(MobIx){1},0}; }
-MobTact peer2  (Core * pC, Doit doit) { return (MobTact){(MobIx){2},0}; }
-MobTact peer3  (Core * pC, Doit doit) { return (MobTact){(MobIx){3},0}; }
-//MobTact rndpeer(Core * pC, Doit doit) { return (MobTact){(MobIx){0},0}; }
+MobTact peer0  (Core * pC, Mode * mode) { return (MobTact){(MobIx){0},0}; }
+MobTact peer1  (Core * pC, Mode * mode) { return (MobTact){(MobIx){1},0}; }
+MobTact peer2  (Core * pC, Mode * mode) { return (MobTact){(MobIx){2},0}; }
+MobTact peer3  (Core * pC, Mode * mode) { return (MobTact){(MobIx){3},0}; }
+//MobTact rndpeer(Core * pC, Mode * mode) { return (MobTact){(MobIx){0},0}; }
+
+//////////////////////////////////////////////////////////
+///  MODES  ///////////////////////////////////////
+//////////////////////////////////////////////////////////
+//                 onIff                    onElsif
+Mode doingit    = {{&todoit,   &doingit  }, {&doneit,   &doneit   },  };
+Mode doneit     = {{&doneit,   &doneit   }, {&doneit,   &doneit   },  };
+Mode todoit     = {{&doneit,   &doneit   }, {&todoit,   &doingit  },  };
+Mode quiningit  = {{&quiningit,&quiningit}, {&quiningit,&quiningit},  };
+Mode dissingit  = {{&dissingit,&dissingit}, {&dissingit,&dissingit},  };
 
 //////////////////////////////////////////////////////////
 /// RUNNING   ///////////////////////////////////////
@@ -328,7 +345,7 @@ Cash runInCore(Cash mobCash, Cash msgCash, MobTact tMob, Mob * pMob, Msg * pMsg)
   memset(out, 0, outlen);
   Cycles cyc = msgCash / pMsg->cpuBid; 
   Core core = (Core){cyc, mobCash, tMob, pMob, pMsg, 0, tMob, 0, 0, out, outlen, 0};
-  if (0==setjmp(core.jb)) doInst(&core, doingit); 
+  if (0==setjmp(core.jb)) doInst(&core, &doingit); 
   else ; //Ran out of msgCash
   return core.mobCash + core.cyclesLeft * pMsg->cpuBid;
 }

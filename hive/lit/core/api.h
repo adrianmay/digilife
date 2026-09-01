@@ -17,5 +17,4 @@ void onTockCore();
 Cash runInCore(Cash mobCash, Cash msgCash, MobTact tMob, Mob * pMob, Msg * pMsg);
 extern char out[];
 extern int outlen;
-typedef enum { doingit, doneit, todoit, quiningit } Doit;
 

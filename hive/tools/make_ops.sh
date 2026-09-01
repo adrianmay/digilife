@@ -8,7 +8,9 @@ FloatCpu="   1   1   1   3   1   1   20   50   5  10  15   3"
    Peers="me sndr child peer0 peer1 peer2 peer3"
  PeerCpu=" 1    1     1     1     1     1     1"
 
+PROTOS="typedef enum { " 
 function make_h_tables() {
+  PROTOS="${PROTOS}${1}Proto, "
   V="${1}s"
   echo typedef enum {
   for X in ${!V}; do echo "  __${X},"; done
@@ -24,17 +26,20 @@ function make_h() {
   make_h_tables Test bool
   make_h_tables Float float
   make_h_tables Peer MobTact 
+  echo "$PROTOS NumProtos } Proto;"
 }
 
 function make_c_tables() {
-  echo "typedef $2 $1(Core *, Doit);"
-  echo "$1 do$1;"
-  echo "extern $1 * funcsFor${1}s[Num${1}s];"
-  echo "extern char namesOf${1}s[Num${1}s][16];"
+  cat <<HERE
+typedef $2 $1(Core *, Mode *);
+$1 do$1;
+extern $1 * funcsFor${1}s[Num${1}s];
+extern char namesOf${1}s[Num${1}s][16];
+
+HERE
 #  echo "typedef void $1Quiner(Core *);"
 #  echo "void quine${1}(uint8_t, Core *);"
 #  echo "extern $1Quiner * quinersFor${1}s[Num${1}s];"
-  echo
   V="${1}s"
   for X in ${!V}; do echo "$1 ${X};"; done
   echo

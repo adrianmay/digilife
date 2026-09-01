@@ -121,6 +121,7 @@ typedef struct Core {
 
 typedef struct Mode Mode;
 struct Mode {
+  int (*cpuCost)(Proto proto, int i); // In cpu tokens
   Mode * onIff  [2];
   Mode * onElsif[2];
 };
@@ -130,7 +131,9 @@ extern Mode doingit, doneit, todoit, quiningit, dissingit;
 
 void incIP(Core * pC, int n) { pC->IP += n; }
 
-void chargeCpuTime(Core * pC, Cycles cycles) {
+Cycles cpuTokensToCycles(int v) { return v; }
+void chargeCpuTime(Core * pC, int tokens) {
+  Cycles cycles = cpuTokensToCycles(tokens);
   if (pC->cyclesLeft <= cycles) longjmp(pC->jb, 1); //TODO: fixme
   pC->cyclesLeft -= cycles;
 }
@@ -160,12 +163,10 @@ uint8_t I(Core * pC) {
 /// INSTRUCTIONS   ///////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-Cycles getInstCpuCycles(Core * pC, Mode * mode) { return (mode==&doingit) ? cpuCyclesOfInsts[I(pC)] : 1; }
-
 void doInst(Core * pC, Mode * mode) { 
   uint8_t x = I(pC);
   Inst * f = funcsForInsts[x]; 
-  chargeCpuTime(pC, getInstCpuCycles(pC, mode));
+  chargeCpuTime(pC, mode->cpuCost(InstProto, x));
   //if (mode==quiningit) quineInst(x, pC);
   incIP(pC, 1); 
   f(pC, mode); 
@@ -174,15 +175,6 @@ void doInst(Core * pC, Mode * mode) {
 /////// FLOW CONTROL
 void nop   (Core * pC, Mode * mode) { doInst(pC, mode); } // Tail-recurse to next instruction
 void end   (Core * pC, Mode * mode) { } // Return to calling block or end of program
-// New if block, maybe already passive cos of surrounding ifels stuff
-Mode * onIff  [3][2] = { { &todoit, &doingit } // doingit: Surroundings normal, do it if true, or allow future ifels
-                       , { &doneit, &doneit  } // doneit:  Surroundings inhibitory, keep whole block inhibited
-                       , { &doneit, &doneit  } // todoit:  Surroundings inhibitory, keep whole block inhibited
-                       };
-Mode * onElsif[3][2] = { { &doneit, &doneit  } // doingit: Already doing something, this ifels is ruled out
-                       , { &doneit, &doneit  } // doneit:  Already done it, also ruled out
-                       , { &todoit, &doingit } // todoit:  Still looking for matching ifels, so do it or stay in same state 
-};
 void iff   (Core * pC, Mode * mode) { bool b = doTest(pC, mode); doInst(pC, mode->onIff[b]); doInst(pC, mode); }
 void elsif (Core * pC, Mode * mode) { bool b = doTest(pC, mode); doInst(pC, mode->onElsif[b]); } // Fall back to the iff which does next instruction
 
@@ -239,11 +231,9 @@ void disas(Core * pC, Mode * mode) { }
 /// TESTS  ///////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-Cash getTestCpuCycles(Core * pC, Mode * mode) { return (mode==&doingit) ? cpuCyclesOfTests[I(pC)] : 1; }
-
 bool doTest(Core * pC, Mode * mode) {
   uint8_t x = I(pC);
-  chargeCpuTime(pC, getTestCpuCycles(pC, mode));
+  chargeCpuTime(pC, mode->cpuCost(TestProto, x));
   //if (mode==quiningit) quineTest(x, pC);
   incIP(pC, 1);
   return funcsForTests[x](pC, mode);
@@ -262,11 +252,9 @@ bool like  (Core * pC, Mode * mode) {
 /// FLOATS  //////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-Cash getFloatCpuCycles(Core * pC, Mode * mode) { return (mode==&doingit) ? cpuCyclesOfFloats[I(pC)] : 1; }
-
 float doFloat(Core * pC, Mode * mode) {
   uint8_t x = I(pC);
-  chargeCpuTime(pC, getFloatCpuCycles(pC, mode));
+  chargeCpuTime(pC, mode->cpuCost(FloatProto, x));
   //if (mode==quiningit) quineFloat(x, pC);
   incIP(pC, 1);
   return funcsForFloats[x](pC, mode);
@@ -305,11 +293,9 @@ float mul  (Core * pC, Mode * mode) { float op(float a, float b) {return a*b;} r
 /// PEERS  ///////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-Cash getPeerCpuCycles(Core * pC, Mode * mode) { return (mode==&doingit) ? cpuCyclesOfPeers[I(pC)] : 1; }
-
 MobTact doPeer(Core * pC, Mode * mode) {
   uint8_t x = I(pC);
-  chargeCpuTime(pC, getPeerCpuCycles(pC, mode));
+  chargeCpuTime(pC, mode->cpuCost(PeerProto, x));
   //if (mode==quiningit) quinePeer(x, pC);
   incIP(pC, 1);
   return funcsForPeers[x](pC, mode);
@@ -331,11 +317,17 @@ MobTact peer3  (Core * pC, Mode * mode) { return (MobTact){(MobIx){3},0}; }
 ///  MODES  ///////////////////////////////////////
 //////////////////////////////////////////////////////////
 //                 onIff                    onElsif
-Mode doingit    = {{&todoit,   &doingit  }, {&doneit,   &doneit   },  };
-Mode doneit     = {{&doneit,   &doneit   }, {&doneit,   &doneit   },  };
-Mode todoit     = {{&doneit,   &doneit   }, {&todoit,   &doingit  },  };
-Mode quiningit  = {{&quiningit,&quiningit}, {&quiningit,&quiningit},  };
-Mode dissingit  = {{&dissingit,&dissingit}, {&dissingit,&dissingit},  };
+
+int cpuFree (Proto proto, int x) { return 0; }
+int cpuCheap(Proto proto, int x) { return 1; }
+int * costTables[NumProtos] = { cpuCyclesOfInsts, cpuCyclesOfTests, cpuCyclesOfFloats, cpuCyclesOfPeers };
+int cpuDear (Proto proto, int x) { return costTables[proto][x]; }
+
+Mode doingit    = {cpuDear,  {&todoit,   &doingit  }, {&doneit,   &doneit   },  };
+Mode doneit     = {cpuCheap, {&doneit,   &doneit   }, {&doneit,   &doneit   },  };
+Mode todoit     = {cpuCheap, {&doneit,   &doneit   }, {&todoit,   &doingit  },  };
+Mode quiningit  = {cpuFree,  {&quiningit,&quiningit}, {&quiningit,&quiningit},  };
+Mode dissingit  = {cpuFree,  {&dissingit,&dissingit}, {&dissingit,&dissingit},  };
 
 //////////////////////////////////////////////////////////
 /// RUNNING   ///////////////////////////////////////

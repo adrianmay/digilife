@@ -21,7 +21,7 @@ function make_h_tables() {
 }
 
 function make_h() {
-  echo
+  echo "#define MAX_IN_PROTO 20"
   make_h_tables Inst void
   make_h_tables Test bool
   make_h_tables Float float
@@ -58,7 +58,7 @@ HERE
   echo "};"
   echo
   V="${1}Cpu"
-  echo "Cycles cpuCyclesOf${1}s[Num${1}s] = {"
+  echo "int cpuCyclesOf${1}s[Num${1}s] = {"
   for X in ${!V}; do echo "  ${X},"; done
   echo "};"
   echo

@@ -36,8 +36,8 @@ int main(int argc, char **argv) {
 //    meap() &&
 //    hotel() &&
 //    raffle() &&
-//    core() &&
-    lang() &&
+    core() &&
+//    lang() &&
 //    exec() &&
 //    equi() &&
     true; 

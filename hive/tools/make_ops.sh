@@ -1,8 +1,8 @@
 # Print instructions bill themselves by length
-   Insts="nop end iff elsif disas prs prf post spawn"
- InstCpu="  1   1   3     3     0   0   9  200  1000"
-   Tests="no yes like gt not"
- TestCpu=" 1   1   10  3   1"
+   Insts="nop end iff elsif post spawn prs prf disas"
+ InstCpu="  1   1   3     3  200  1000   0   9     0"
+   Tests="no yes not like gt"
+ TestCpu=" 1   1   1   10  3"
   Floats="zero one two imm csh cyc rndl rndg add mul inv neg"
 FloatCpu="   1   1   1   3   1   1   20   50   5  10  15   3"
    Peers="me sndr child peer0 peer1 peer2 peer3"
@@ -28,24 +28,25 @@ function make_h() {
 
 function make_c_tables() {
   echo "typedef $2 $1(Core *, Doit);"
+  echo "$1 do$1;"
   echo "extern $1 * funcsFor${1}s[Num${1}s];"
   echo "extern char namesOf${1}s[Num${1}s][16];"
-  echo "typedef void $1Quiner(Core *);"
-  echo "void quine${1}(uint8_t, Core *);"
-  echo "extern $1Quiner * quinersFor${1}s[Num${1}s];"
+#  echo "typedef void $1Quiner(Core *);"
+#  echo "void quine${1}(uint8_t, Core *);"
+#  echo "extern $1Quiner * quinersFor${1}s[Num${1}s];"
   echo
   V="${1}s"
   for X in ${!V}; do echo "$1 ${X};"; done
   echo
-  for X in ${!V}; do echo "$1Quiner ${X}Q;"; done
-  echo
+#  for X in ${!V}; do echo "$1Quiner ${X}Q;"; done
+#  echo
   echo "$1 * funcsFor${1}s[Num${1}s] = {"
   for X in ${!V}; do echo "  ${X},"; done
   echo "};" 
   echo
-  echo "$1Quiner * quinersFor${1}s[Num${1}s] = {"
-  for X in ${!V}; do echo "  ${X}Q,"; done
-  echo "};" 
+#  echo "$1Quiner * quinersFor${1}s[Num${1}s] = {"
+#  for X in ${!V}; do echo "  ${X}Q,"; done
+#  echo "};" 
   echo
   echo "char namesOf${1}s[Num${1}s][16] = {"
   for X in ${!V}; do echo "  \"${X}\","; done

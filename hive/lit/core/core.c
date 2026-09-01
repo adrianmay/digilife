@@ -120,7 +120,7 @@ typedef struct Core {
   jmp_buf jb;
 } Core;
 
-static void showCore(Core * pC) {
+void showCore(Core * pC) {
   printf("CORE: cyclesLeft=%'ld ", pC->cyclesLeft);
   printf("mobCash=%'ld ", pC->mobCash);
   char buf[20];
@@ -414,10 +414,10 @@ Cash runInCore(Cash mobCash, Cash msgCash, MobTact tMob, Mob * pMob, Msg * pMsg)
   memset(out, 0, outlen); // The linker has to find these
   Cycles cyc = msgCash / pMsg->cpuBid; 
   Core core = (Core){cyc, mobCash, tMob, pMob, pMsg, 0, tMob, 0, 0, out, outlen, 0};
-  showCore(&core);
+  //showCore(&core);
   if (0==setjmp(core.jb)) doInst(&core, &doingit); 
   else printf("Overran!\n"); //Ran out of msgCash
-  showCore(&core);
+  //showCore(&core);
   return core.mobCash + core.cyclesLeft * pMsg->cpuBid;
 }
 
@@ -426,46 +426,43 @@ void run(MobTact tMob, Mob * pMob, Msg * pMsg, Cash mobCash, Cash msgCash) {
   mobcashSample(mobCash);
   mobCash += DOLE;
   //mobCash -= totRent(); // Cos both msg and mob will miss out on the tock we expend in here
-  printf("HERE 1\n");
   Cash finalCash = runInCore(mobCash, msgCash, tMob, pMob, pMsg);
-  printf("HERE 2\n");
   hotelOfMobs_drop(pMsg->rcvr.i, finalCash);
   Program * pProg = &pMob->_.mortal.program;          
   void * pVoid = (void *) pProg;
   float * pThresh = (float*) (pVoid+1);
   threshSample(*pThresh);
   popSample(hotelOfMobs_count());
-  if (iterations < 1000 || iterations % 1000 == 0) {
-    printf("Its=%'ld, Rent=%'.0f, threshMean=%'.0f; Means: pop=%'.2f, spawnOdds=%'.5f, childCash=%'.0f msgCash=%'.0f, mobCash=%'.0f, totCash=%'.0f\n",
-        iterations, totRent(), threshMean, popMean, 1.0/spawnedMean, childcashMean, msgcashMean, mobcashMean, msgcashMean+mobcashMean);
-  }
+//  if (iterations < 1000 || iterations % 1000 == 0) {
+//    printf("Its=%'ld, Rent=%'.0f, threshMean=%'.0f; Means: pop=%'.2f, spawnOdds=%'.5f, childCash=%'.0f msgCash=%'.0f, mobCash=%'.0f, totCash=%'.0f\n",
+//        iterations, totRent(), threshMean, popMean, 1.0/spawnedMean, childcashMean, msgcashMean, mobcashMean, msgcashMean+mobcashMean);
+//  }
 }
 
 Cash onMsgRaffle_dispatch(MsgTicketTact t, Msg * pMsg, Cash msgCash, V claim, V unlock) {
-  printf("Raffle dispatch msg %d\n", t.i.i);
-  printf("Msg cash=%'ld\n", msgCash);
-  showMsg((MsgIx){0}, pMsg);
+  //printf("Raffle dispatch msg %d\n", t.i.i);
+  //printf("Msg cash=%'ld\n", msgCash);
+  //showMsg((MsgIx){0}, pMsg);
   Mob * pMob=0;
   Cash mobCash=0;
   Woth w = hotelOfMobs_grab(&pMsg->rcvr, &pMob, &mobCash);
   if (w==Dead) { unlock(); printf("Dead\n"); return 0; }       // Bankrupt msg
   if (w==Busy) { unlock(); printf("Busy\n"); return msgCash; } // Leave msg alone
-  showMob((MobIx){0}, pMob);
+  //showMob((MobIx){0}, pMob);
   // So we got it
   claim();
   unlock();
-  if (randIntBelow(MURDER_RATE)==0) {
+  if (randIntBelow(MURDER_RATE)==0) { // Should busier mobs get killed more, as in this placement?
     printf("Murder\n");
     hotelOfMobs_drop(pMsg->rcvr.i, 0);
   }
   else {
-    printf("Running\n");
     run(pMsg->rcvr, pMob, pMsg, mobCash, msgCash);
   }
   return 0; 
 }
 
-void create(Cash c, ProgStuffer stuffProg) {
+MobTact create(Cash c, ProgStuffer stuffProg) {
   void stuffMob(Mob * p) { 
     p->phylum = PhyMortal;
     stuffProg(&p->_.mortal.program);
@@ -473,6 +470,7 @@ void create(Cash c, ProgStuffer stuffProg) {
   MobTact tNewMob = hotelOfMobs_admit(c*MOB_PROP, false, stuffMob, 0, 0);
   void stuffMsg(Msg * p) { p->cpuBid = 1; p->sndr = p->rcvr = tNewMob; }
   raffleOfMsgs_play(c*MSG_PROP, 100, stuffMsg); 
+  return tNewMob;
 }
 
 void seed(int n, Cash c, ProgStuffer stuffProg) {

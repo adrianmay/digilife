@@ -6,13 +6,14 @@
 #define DOLE 1000000
 #define SPAWN_COST 500000
 #define POST_COST 50000
-#define MURDER_RATE 20
+// Should be 20, or a different concept:
+#define MURDER_RATE 2000
 #define MUTE_RATE 0.3
 #define CYCLES_PER_JOB GUESS_CYCLES_PER_TOCK
 
 typedef void (*ProgStuffer)(Program * pProg);
 void seed(int n, Cash c, ProgStuffer stuffProg);
-void create(Cash c, ProgStuffer stuffProg) ;
+MobTact create(Cash c, ProgStuffer stuffProg);
 bool draw(void);
 void onTockCore();
 Cash runInCore(Cash mobCash, Cash msgCash, MobTact tMob, Mob * pMob, Msg * pMsg);

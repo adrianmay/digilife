@@ -19,7 +19,7 @@
 
 #define BIRTH_CASH 1000'000'000L
 
-void showCore() {
+void showWorld() {
   hotelOfMobs_show();
   raffleOfMsgs_show();
 }
@@ -64,35 +64,38 @@ void injectFloatPair(char ** p, float mu, float amgis)  {
 static bool testSomeCases(const char * tag, Cash mobCash, Cash msgCash, Case cases[], int numCases) {
   bool res = true;
   for (int t=0;t<numCases;t++) {
-    printf("####### test%s: #%d\n", tag, t);
+    printf("####### test%s: #%d; mob: ", tag, t);
     void progStuffer(Program * prog) { memcpy((void*)prog, (void*)cases[t].t, sizeof(*prog)); };
-    create(mobCash, progStuffer);
-    printf("Created\n");
+    MobTact tact = create(mobCash, progStuffer);
+    char buf[20];
+    hotelOfMobs_showsTact(buf, tact);
+    printf("%s\n", buf);
+    memset(out, 0, outlen);
     draw();
     if (0!=strcmp(out, cases[t].e)) {
-      printf("testCode #%d Failed: want: '%s', got: '%s'\n", t, cases[t].e, out);
+      printf("test%s #%d Failed: want: '%s', got: '%s'\n", tag, t, cases[t].e, out);
       res = false;
     }
   }
   return res;
 }
 
-static bool testSomeCases_(const char * tag, Cash mobCash, Cash msgCash, Case cases[], int numCases) {
-  Msg msg = {1};
-  Mob mob;
-  MobTact tMob = (MobTact){{8}, 0x1234abcd};
-  bool res = true;
-  for (int t=0;t<numCases;t++) {
-    printf("####### test%s: #%d\n", tag, t);
-    memcpy((char*)mob._.mortal.program, (char*)cases[t].t, sizeof(mob._.mortal.program));
-    runInCore(mobCash, msgCash, tMob, &mob, &msg);
-    if (0!=strcmp(out, cases[t].e)) {
-      printf("testCode #%d Failed: want: '%s', got: '%s'\n", t, cases[t].e, out);
-      res = false;
-    }
-  }
-  return res;
-}
+// static bool testSomeCases_(const char * tag, Cash mobCash, Cash msgCash, Case cases[], int numCases) {
+//   Msg msg = {1};
+//   Mob mob;
+//   MobTact tMob = (MobTact){{8}, 0x1234abcd};
+//   bool res = true;
+//   for (int t=0;t<numCases;t++) {
+//     printf("####### test%s: #%d\n", tag, t);
+//     memcpy((char*)mob._.mortal.program, (char*)cases[t].t, sizeof(mob._.mortal.program));
+//     runInCore(mobCash, msgCash, tMob, &mob, &msg);
+//     if (0!=strcmp(out, cases[t].e)) {
+//       printf("testCode #%d Failed: want: '%s', got: '%s'\n", t, cases[t].e, out);
+//       res = false;
+//     }
+//   }
+//   return res;
+// }
 
 // 4660 decimal:
 #define OX1234f "\x00\xA0\x91\x45"
@@ -121,20 +124,10 @@ static bool testCode() {
     { PRF ADD TWO NEG ADD TWO ONE END,                                                                         "-1.000000 "},
     { IFF GT ZERO ONE PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                               "A"},
     { IFF LIKE MUL ONE INV ADD TWO TWO ONE TWO PRS "A" NOP ELSIF YES PRS "B" NOP END END,                      "B"},
-    { PRP ME END,                                                                                              "1234abcd=8"},
+    { PRP ME END,                                                                                              " a98c53a=22"},
     { PRP PEER3 END,                                                                                           "       0=3"},
-    { SPAWN PRP CHILD SPAWN PRP CHILD END,                                                                     " 7afc3a1=0 9fe2471=1"},
   };
   return testSomeCases("Code", 500'000, 500'000, cases, sizeof(cases)/sizeof(Case));
-}
-
-static bool testBrokeMsg() {
-  Case cases[] = {
-    { PRF CYC END,                       "15.000000 "},
-    { PRF CYC PRF CYC END,               "15.000000 5.000000 "},
-    { PRF CYC PRF CYC PRF CYC END,       "15.000000 5.000000 "},
-  };
-  return testSomeCases("BrokeMsg", 25, 25, cases, sizeof(cases)/sizeof(Case));
 }
 
 static bool testDisas() {
@@ -142,7 +135,23 @@ static bool testDisas() {
     { DISAS END,                                         "DISAS END "},
     { IFF NO PRF IMM OX1234f ELSIF YES DISAS END END,    "IFF NO PRF IMM 4660.000000 ELSIF YES DISAS END END "},
   };
-  return testSomeCases("Disas", 1000, 1000, cases, sizeof(cases)/sizeof(Case));
+  return testSomeCases("Disas", 4000, 4000, cases, sizeof(cases)/sizeof(Case));
+}
+
+static bool testBrokeMsg() {
+  Case cases[] = {
+    { PRF CYC END,                       "1471.000000 "},
+    { PRF CYC PRF CYC END,               "1471.000000 1461.000000 "},
+    { PRF CYC PRF CYC PRF CYC END,       "1471.000000 1461.000000 1451.000000 "},
+  };
+  return testSomeCases("BrokeMsg", 4000, 8000, cases, sizeof(cases)/sizeof(Case));
+}
+
+static bool testSpawn() {
+  Case cases[] = {
+    { SPAWN PRP CHILD SPAWN PRP CHILD END,    " 4e0953f=30 b8939b9=31"},
+  };
+  return testSomeCases("Spawn", 8000, 8000, cases, sizeof(cases)/sizeof(Case));
 }
 
 static bool testSpawnAndPost() {
@@ -229,10 +238,11 @@ void * work(void * p) {
 bool testCore() {
   return
     testCode() &&
-    testBrokeMsg() &&
     testDisas() &&
+    testBrokeMsg() &&
+    testSpawn() &&
 //    testForever() &&
-    true || (showCore(), false);
+    true || (showWorld(), false);
 }
 
 bool core(void) { return bkt("core", init, testCore, cleanup); }

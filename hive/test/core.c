@@ -24,17 +24,17 @@ void showCore() {
   raffleOfMsgs_show();
 }
 
-static bool init(void) { 
+static bool init(void) {
   onTestTock = onTockCore;
-  openGlobals(); hotelOfMobs_open(); raffleOfMsgs_open(); 
+  openGlobals(); hotelOfMobs_open(); raffleOfMsgs_open();
   printf("Sizes: mob=%f,msg=%f,tot=%f; Props: mob=%f,msg=%f\n", SIZE_MOB, SIZE_MSG, SIZE_BOTH, MOB_PROP, MSG_PROP);
   return true;
 }
 
-static void cleanup(void) { 
-  closeGlobals(Hide); 
-  raffleOfMsgs_close(Hide); 
-  hotelOfMobs_close(Hide); 
+static void cleanup(void) {
+  closeGlobals(Hide);
+  raffleOfMsgs_close(Hide);
+  hotelOfMobs_close(Hide);
 }
 
 //#define NUM_THREADS 2
@@ -66,7 +66,7 @@ void injectFloatPair(char ** p, float mu, float amgis)  {
 static bool testSomeCases(const char * tag, Cash mobCash, Cash msgCash, Case cases[], int numCases) {
   Msg msg = {1};
   Mob mob;
-  MobTact tMob = (MobTact){{8}, 0x12345678};
+  MobTact tMob = (MobTact){{8}, 0x1234abcd};
   bool res = true;
   for (int t=0;t<numCases;t++) {
     printf("####### test%s: #%d\n", tag, t);
@@ -85,29 +85,29 @@ static bool testSomeCases(const char * tag, Cash mobCash, Cash msgCash, Case cas
 
 static bool testCode() {
   Case cases[] = {
-    { PRS "Foo" NOP PRS "Bar" NOP END,                                                                         "FooBar"}, 
-    { IFF YES PRS "A" NOP ELSIF NO  PRS "B" NOP END END,                                                       "A"},                          
-    { IFF YES PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                                       "A"},                          
-    { IFF NO  PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                                       "B"},                          
-    { IFF NO  PRS "A" NOP ELSIF NO  PRS "B" NOP ELSIF YES  PRS "C" NOP END END,                                "C"},                                                 
-    { IFF YES PRS "A" NOP ELSIF NO  PRS "B" NOP ELSIF YES  PRS "C" NOP END END,                                "A"},                                                 
-    { IFF YES PRS "A" NOP ELSIF NO  PRS "B" NOP END  PRS "Z" NOP END,                                          "AZ"},                                      
-    { IFF YES PRS "A" NOP ELSIF NO  IFF YES PRS "C" NOP ELSIF NO  PRS "D" NOP END END  PRS "Z" NOP END,        "AZ"},                                                                        
-    { IFF NO  PRS "A" NOP ELSIF YES IFF YES PRS "C" NOP ELSIF NO  PRS "D" NOP END END  PRS "Z" NOP END,        "CZ"},                                                                        
-    { IFF NO  PRS "A" NOP ELSIF YES IFF NO  PRS "C" NOP ELSIF YES PRS "D" NOP END END  PRS "Z" NOP END,        "DZ"},                                                                        
-    { IFF NOT YES PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                                   "B"},                              
-    { IFF NOT NOT YES PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                               "A"},                                  
-    { PRF ZERO END,                                                                                            "0.000000"},                                                      
-    { PRF ONE END,                                                                                             "1.000000"},
-    { PRF IMM OX1234f END,                                                                                     "4660.000000"},
-    { PRF ADD TWO TWO END,                                                                                     "4.000000"},
-    { PRF MUL TWO TWO END,                                                                                     "4.000000"},
-    { PRF MUL TWO ADD TWO ONE END,                                                                             "6.000000"},                                                                     
-    { PRF MUL TWO INV ADD TWO ONE END,                                                                         "0.666667"},                                                                         
-    { PRF ADD TWO NEG ADD TWO ONE END,                                                                         "-1.000000"},                                                                        
-    { IFF GT ZERO ONE PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                               "A"},                                  
-    { IFF LIKE MUL ONE INV ADD TWO TWO ONE TWO PRS "A" NOP ELSIF YES PRS "B" NOP END END,                      "B"},                                                           
-    { PRP ME END,                                                                                              "12345678=8"},
+    { PRS "Foo" NOP PRS "Bar" NOP END,                                                                         "FooBar"},
+    { IFF YES PRS "A" NOP ELSIF NO  PRS "B" NOP END END,                                                       "A"},
+    { IFF YES PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                                       "A"},
+    { IFF NO  PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                                       "B"},
+    { IFF NO  PRS "A" NOP ELSIF NO  PRS "B" NOP ELSIF YES  PRS "C" NOP END END,                                "C"},
+    { IFF YES PRS "A" NOP ELSIF NO  PRS "B" NOP ELSIF YES  PRS "C" NOP END END,                                "A"},
+    { IFF YES PRS "A" NOP ELSIF NO  PRS "B" NOP END  PRS "Z" NOP END,                                          "AZ"},
+    { IFF YES PRS "A" NOP ELSIF NO  IFF YES PRS "C" NOP ELSIF NO  PRS "D" NOP END END  PRS "Z" NOP END,        "AZ"},
+    { IFF NO  PRS "A" NOP ELSIF YES IFF YES PRS "C" NOP ELSIF NO  PRS "D" NOP END END  PRS "Z" NOP END,        "CZ"},
+    { IFF NO  PRS "A" NOP ELSIF YES IFF NO  PRS "C" NOP ELSIF YES PRS "D" NOP END END  PRS "Z" NOP END,        "DZ"},
+    { IFF NOT YES PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                                   "B"},
+    { IFF NOT NOT YES PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                               "A"},
+    { PRF ZERO END,                                                                                            "0.000000 "},
+    { PRF ONE END,                                                                                             "1.000000 "},
+    { PRF IMM OX1234f END,                                                                                     "4660.000000 "},
+    { PRF ADD TWO TWO END,                                                                                     "4.000000 "},
+    { PRF MUL TWO TWO END,                                                                                     "4.000000 "},
+    { PRF MUL TWO ADD TWO ONE END,                                                                             "6.000000 "},
+    { PRF MUL TWO INV ADD TWO ONE END,                                                                         "0.666667 "},
+    { PRF ADD TWO NEG ADD TWO ONE END,                                                                         "-1.000000 "},
+    { IFF GT ZERO ONE PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                               "A"},
+    { IFF LIKE MUL ONE INV ADD TWO TWO ONE TWO PRS "A" NOP ELSIF YES PRS "B" NOP END END,                      "B"},
+    { PRP ME END,                                                                                              "1234abcd=8"},
     { PRP PEER3 END,                                                                                           "       0=3"},
     { SPAWN PRP CHILD SPAWN PRP CHILD END,                                                                     " 7afc3a1=0 9fe2471=1"},
   };
@@ -116,17 +116,17 @@ static bool testCode() {
 
 static bool testBrokeMsg() {
   Case cases[] = {
-    { PRF CYC END,                       "15.000000"}, 
-    { PRF CYC PRF CYC END,               "15.0000005.000000"}, 
-    { PRF CYC PRF CYC PRF CYC END,       "15.0000005.000000"}, 
+    { PRF CYC END,                       "15.000000 "},
+    { PRF CYC PRF CYC END,               "15.000000 5.000000 "},
+    { PRF CYC PRF CYC PRF CYC END,       "15.000000 5.000000 "},
   };
   return testSomeCases("BrokeMsg", 25, 25, cases, sizeof(cases)/sizeof(Case));
 }
 
 static bool testDisas() {
   Case cases[] = {
-    { DISAS ME END,                   "DISAS ME END "}, 
-    { IFF NO PRF IMM OX1234f ELSIF YES DISAS ME END END,   "IFF NO PRF IMM 4660.000000 ELSIF YES DISAS ME END END "}, 
+    { DISAS END,                                         "DISAS END "},
+    { IFF NO PRF IMM OX1234f ELSIF YES DISAS END END,    "IFF NO PRF IMM 4660.000000 ELSIF YES DISAS END END "},
   };
   return testSomeCases("Disas", 1000, 1000, cases, sizeof(cases)/sizeof(Case));
 }
@@ -177,7 +177,7 @@ void * work(void * p) {
   while(iterations < 100000000 && draw())  {
 //  while(draw())  {
     //if (iterations < 1000 || iterations % 1000 == 0)
-    //  printf("Its=%d, Tocks=%d Mobs=%d Msgs=%d\n", iterations, tocksNow(), hotelOfMobs_count(), raffleOfMsgs_count()); 
+    //  printf("Its=%d, Tocks=%d Mobs=%d Msgs=%d\n", iterations, tocksNow(), hotelOfMobs_count(), raffleOfMsgs_count());
     atomic_fetch_add(&iterations,1);
   }
   return 0;
@@ -213,11 +213,11 @@ void * work(void * p) {
 
 
 bool testCore() {
-  return 
+  return
     testCode() &&
     testBrokeMsg() &&
     testDisas() &&
-//    testForever() && 
+//    testForever() &&
     true || (showCore(), false);
 }
 

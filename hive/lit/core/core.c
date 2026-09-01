@@ -129,7 +129,7 @@ struct Mode {
   void (*onPrf)(Core *, float f);
   void (*onPrp)(Core *, MobTact peer);
   void (*onImmFloat)(Core *, float f);
-  void (*onDisas)(Core *, MobTact peer);
+  void (*onDisas)(Core *);
   void (*onPost)(Core *, MobTact rcvr, Cash cash);
   void (*onSpawn)(Core *);
 };
@@ -216,8 +216,7 @@ void prp(Core * pC, Mode * mode) {
   doInst(pC, mode);
 }
 void disas(Core * pC, Mode * mode) { 
-  MobTact peer = doPeer(pC, mode);
-  mode->onDisas(pC, peer);
+  mode->onDisas(pC);
   doInst(pC, mode);
 }
 
@@ -339,15 +338,15 @@ void onPrsPrinting(Core * pC, int len) {
 void onPrfQuining (Core * pC, float f) { }
 void onPrfDissing (Core * pC, float f) { }
 void onPrfSkipping(Core * pC, float f) { }
-void onPrfPrinting(Core * pC, float f) { int n = snprintf(pC->out+pC->outcur, pC->outlen-pC->outcur, "%f", f); pC->outcur += n; }
+void onPrfPrinting(Core * pC, float f) { int n = snprintf(pC->out+pC->outcur, pC->outlen-pC->outcur, "%f ", f); pC->outcur += n; }
 
 void onPrpQuining (Core * pC, MobTact peer) { }
 void onPrpDissing (Core * pC, MobTact peer) { }
 void onPrpSkipping(Core * pC, MobTact peer) { }
 void onPrpPrinting(Core * pC, MobTact peer) { int n = hotelOfMobs_showsTact(pC->out+pC->outcur, peer); pC->outcur += n; }
 
-void onDisasDont(Core * pC, MobTact peer) { }
-void onDisasDo  (Core * pC, MobTact peer) {
+void onDisasDont(Core * pC) { }
+void onDisasDo  (Core * pC) {
   int saveIP = pC->IP;
   pC->IP = 0;
   doInst(pC, &dissingit);
@@ -390,7 +389,7 @@ Mode todoit     = {{&doneit,   &doneit   }, {&todoit,   &doingit  }, onOpCharge,
 Mode quiningit  = {{&quiningit,&quiningit}, {&quiningit,&quiningit}, onOpQuine,  cpuFree,  
                    onPrsQuining,  onPrfQuining,  onPrpQuining,  ignoreFloat, onDisasDont, onPostDont, onSpawnDont, };
 Mode dissingit  = {{&dissingit,&dissingit}, {&dissingit,&dissingit}, onOpDisas,  cpuFree,  
-                   onPrsDissing,  onPrfDissing,  onPrpDissing,  disasFloat, onDisasDont, onPostDont, onSpawnDont, };
+                   onPrsDissing,  onPrfDissing,  onPrpDissing,  disasFloat,  onDisasDont, onPostDont, onSpawnDont, };
 
 //////////////////////////////////////////////////////////
 /// RUNNING   ///////////////////////////////////////

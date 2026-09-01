@@ -138,7 +138,7 @@ uint8_t * getRawOpCodeP(Core * pC) {
   return pI; 
 }
 
-uint8_t I(Core * pC, Doit doit) { // doit just for debugging
+uint8_t I(Core * pC) { // doit just for debugging
   sleepNs(10000); // So I can hit Ctrl-C
   if (pC->IP < sizeof(Program)) {
     //printf("I with ip=%d and doit=%d returning: %s/%s\n", pC->ip, doit, opnames[*getRawOpCodeP(pC)], testnames[*getRawOpCodeP(pC)]);
@@ -153,10 +153,10 @@ uint8_t I(Core * pC, Doit doit) { // doit just for debugging
 /// INSTRUCTIONS   ///////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-Cycles getInstCpuCycles(Core * pC, Doit doit) { return (doit==doingit) ? cpuCyclesOfInsts[I(pC, doit)] : 1; }
+Cycles getInstCpuCycles(Core * pC, Doit doit) { return (doit==doingit) ? cpuCyclesOfInsts[I(pC)] : 1; }
 
 void doInst(Core * pC, Doit doit) { 
-  uint8_t x = I(pC, doit);
+  uint8_t x = I(pC);
   Inst * f = funcsForInsts[x]; 
   chargeCpuTime(pC, getInstCpuCycles(pC, doit));
   //if (doit==quiningit) quineInst(x, pC);
@@ -232,10 +232,10 @@ void disas(Core * pC, Doit doit) { }
 /// TESTS  ///////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-Cash getTestCpuCycles(Core * pC, Doit doit) { return (doit==doingit) ? cpuCyclesOfTests[I(pC, doit)] : 1; }
+Cash getTestCpuCycles(Core * pC, Doit doit) { return (doit==doingit) ? cpuCyclesOfTests[I(pC)] : 1; }
 
 bool doTest(Core * pC, Doit doit) {
-  uint8_t x = I(pC, doit);
+  uint8_t x = I(pC);
   chargeCpuTime(pC, getTestCpuCycles(pC, doit));
   //if (doit==quiningit) quineTest(x, pC);
   incIP(pC, 1);
@@ -255,10 +255,10 @@ bool like  (Core * pC, Doit doit) {
 /// FLOATS  //////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-Cash getFloatCpuCycles(Core * pC, Doit doit) { return (doit==doingit) ? cpuCyclesOfFloats[I(pC, doit)] : 1; }
+Cash getFloatCpuCycles(Core * pC, Doit doit) { return (doit==doingit) ? cpuCyclesOfFloats[I(pC)] : 1; }
 
 float doFloat(Core * pC, Doit doit) {
-  uint8_t x = I(pC, doit);
+  uint8_t x = I(pC);
   chargeCpuTime(pC, getFloatCpuCycles(pC, doit));
   //if (doit==quiningit) quineFloat(x, pC);
   incIP(pC, 1);
@@ -298,10 +298,10 @@ float mul  (Core * pC, Doit doit) { float op(float a, float b) {return a*b;} ret
 /// PEERS  ///////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-Cash getPeerCpuCycles(Core * pC, Doit doit) { return (doit==doingit) ? cpuCyclesOfPeers[I(pC, doit)] : 1; }
+Cash getPeerCpuCycles(Core * pC, Doit doit) { return (doit==doingit) ? cpuCyclesOfPeers[I(pC)] : 1; }
 
 MobTact doPeer(Core * pC, Doit doit) {
-  uint8_t x = I(pC, doit);
+  uint8_t x = I(pC);
   chargeCpuTime(pC, getPeerCpuCycles(pC, doit));
   //if (doit==quiningit) quinePeer(x, pC);
   incIP(pC, 1);
@@ -384,7 +384,7 @@ void seed(int n, Cash c, ProgStuffer stuffProg) {
   for (int a=0;a<n;a++) create(c, stuffProg);
 }
 
-// void Q(Core * pC)  { pC->pChildProg[pC->childIP++] = I(pC, quiningit); }
+// void Q(Core * pC)  { pC->pChildProg[pC->childIP++] = I(pC); }
 // void quineInst(uint8_t inst, Core * pC) { quinersForInsts[inst](pC); }
 // void nopQ    (Core * pC) { Q(pC); }
 // void endQ    (Core * pC) { Q(pC); }

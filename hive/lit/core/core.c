@@ -36,7 +36,9 @@ void onMobHotel_rentCollected (Cash rent) {}
 void onMobHotel_rentDefaulted (Cash rent) { printf("Mob rent defaulted: %'ld\n", rent); }
 void onMobHotel_extinct       (void) { raffleOfMsgs_quit(); }
 void onMobHotel_funeral(MobIx, Mob * pMob) {}
-void onMsgRaffle_extinct() { //raffleOfMsgs_quit();
+void onMsgRaffle_extinct() { 
+  printf("onMsgRaffle_extinct\n");
+  //raffleOfMsgs_quit();
 } // Not when we have external msg sources
 bool draw() { return raffleOfMsgs_draw(); }
 
@@ -424,7 +426,7 @@ Cash runInCore(Cash mobCash, Cash msgCash, MobTact tMob, Mob * pMob, Msg * pMsg)
 void run(MobTact tMob, Mob * pMob, Msg * pMsg, Cash mobCash, Cash msgCash) {
   msgcashSample(msgCash);
   mobcashSample(mobCash);
-  mobCash += DOLE;
+  //mobCash += DOLE;
   //mobCash -= totRent(); // Cos both msg and mob will miss out on the tock we expend in here
   Cash finalCash = runInCore(mobCash, msgCash, tMob, pMob, pMsg);
   hotelOfMobs_drop(pMsg->rcvr.i, finalCash);
@@ -440,9 +442,9 @@ void run(MobTact tMob, Mob * pMob, Msg * pMsg, Cash mobCash, Cash msgCash) {
 }
 
 Cash onMsgRaffle_dispatch(MsgTicketTact t, Msg * pMsg, Cash msgCash, V claim, V unlock) {
-  //printf("Raffle dispatch msg %d\n", t.i.i);
-  //printf("Msg cash=%'ld\n", msgCash);
-  //showMsg((MsgIx){0}, pMsg);
+  printf("Raffle dispatch msg %d\n", t.i.i);
+  printf("Msg cash=%'ld\n", msgCash);
+  showMsg((MsgIx){0}, pMsg);
   Mob * pMob=0;
   Cash mobCash=0;
   Woth w = hotelOfMobs_grab(&pMsg->rcvr, &pMob, &mobCash);
@@ -462,21 +464,21 @@ Cash onMsgRaffle_dispatch(MsgTicketTact t, Msg * pMsg, Cash msgCash, V claim, V 
   return 0; 
 }
 
-MobTact create(Cash c, ProgStuffer stuffProg) {
+MobTact create(Cash mobcash, Cash msgcash, ProgStuffer stuffProg) {
   void stuffMob(Mob * p) { 
     p->phylum = PhyMortal;
     stuffProg(&p->_.mortal.program);
   }
-  MobTact tNewMob = hotelOfMobs_admit(c*MOB_PROP, false, stuffMob, 0, 0);
+  MobTact tNewMob = hotelOfMobs_admit(mobcash, false, stuffMob, 0, 0);
   void stuffMsg(Msg * p) { p->cpuBid = 1; p->sndr = p->rcvr = tNewMob; }
-  raffleOfMsgs_play(c*MSG_PROP, 100, stuffMsg); 
+  raffleOfMsgs_play(msgcash, 100, stuffMsg); 
   return tNewMob;
 }
 
-void seed(int n, Cash c, ProgStuffer stuffProg) {
-  //hotelOfMobs_admit(0, true, 0, 0, 0);
-  for (int a=0;a<n;a++) create(c, stuffProg);
-}
+//void seed(int n, Cash c, ProgStuffer stuffProg) {
+//  //hotelOfMobs_admit(0, true, 0, 0, 0);
+//  for (int a=0;a<n;a++) create(c, stuffProg);
+//}
 
 // void Q(Core * pC)  { pC->pChildProg[pC->childIP++] = I(pC); }
 // void quineInst(uint8_t inst, Core * pC) { quinersForInsts[inst](pC); }

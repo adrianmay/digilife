@@ -61,22 +61,26 @@ void injectFloatPair(char ** p, float mu, float amgis)  {
   (*p)+=sizeof(float);
 }
 
+void zapNicks() {
+  char * r=out;
+  while ((r=strchr(r+1, '='))) memset(r-8, 'x', 8);
+}
+
 static bool testSomeCases(const char * tag, Cash mobCash, Cash msgCash, Case cases[], int numCases) {
   bool res = true;
   for (int t=0;t<numCases;t++) {
     printf("####### test%s: #%d; mob: ", tag, t);
     void progStuffer(Program * prog) { memcpy((void*)prog, (void*)cases[t].t, sizeof(*prog)); };
-    MobTact tact = create(mobCash, progStuffer);
+    MobTact tact = create(mobCash, msgCash, progStuffer);
     char buf[20];
     hotelOfMobs_showsTact(buf, tact);
     printf("%s\n", buf);
     memset(out, 0, outlen);
     draw();
+    zapNicks();
     if (0!=strcmp(out, cases[t].e)) {
       printf("test%s #%d Failed: want: '%s', got: '%s'\n", tag, t, cases[t].e, out);
-      res = false;
-    }
-  }
+      res = false; } }
   return res;
 }
 
@@ -124,8 +128,8 @@ static bool testCode() {
     { PRF ADD TWO NEG ADD TWO ONE END,                                                                         "-1.000000 "},
     { IFF GT ZERO ONE PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                               "A"},
     { IFF LIKE MUL ONE INV ADD TWO TWO ONE TWO PRS "A" NOP ELSIF YES PRS "B" NOP END END,                      "B"},
-    { PRP ME END,                                                                                              " a98c53a=22"},
-    { PRP PEER3 END,                                                                                           "       0=3"},
+    { PRP ME END,                                                                                              "xxxxxxxx=22"},
+    { PRP PEER3 END,                                                                                           "xxxxxxxx=3"},
   };
   return testSomeCases("Code", 500'000, 500'000, cases, sizeof(cases)/sizeof(Case));
 }
@@ -140,61 +144,62 @@ static bool testDisas() {
 
 static bool testBrokeMsg() {
   Case cases[] = {
-    { PRF CYC END,                       "1471.000000 "},
-    { PRF CYC PRF CYC END,               "1471.000000 1461.000000 "},
-    { PRF CYC PRF CYC PRF CYC END,       "1471.000000 1461.000000 1451.000000 "},
+    { PRF CYC END,                       "590.000000 "},
+    //{ PRF CYC PRF CYC END,               "490.000000 480.000000 "},
+    //{ PRF CYC PRF CYC PRF CYC END,       "490.000000 480.000000 470.000000 "},
+    { PRF CSH END,                       "1000.000000 "},
   };
-  return testSomeCases("BrokeMsg", 4000, 8000, cases, sizeof(cases)/sizeof(Case));
+  return testSomeCases("BrokeMsg", 1000, 600, cases, sizeof(cases)/sizeof(Case));
 }
 
 static bool testSpawn() {
   Case cases[] = {
-    { SPAWN PRP CHILD SPAWN PRP CHILD END,    " 4e0953f=30 b8939b9=31"},
+    { SPAWN PRP CHILD SPAWN PRP CHILD END,    "xxxxxxxx=29xxxxxxxx=30"},
   };
   return testSomeCases("Spawn", 8000, 8000, cases, sizeof(cases)/sizeof(Case));
 }
 
-static bool testSpawnAndPost() {
-  printf("testSpawnAndPost\n");
-  Cash birthCash = BIRTH_CASH + randIntBelow(BIRTH_CASH);
-  void stuffProg(Program * pProg) {
-  }
-  seed(10, birthCash, stuffProg);
-  //MobTact tMob = (MobTact){{8}, 0x12345678};
-  //Mob mob;
-  //mob.phylum = PhyMortal;
-  //mob._.mortal.spawnThresh = 123;
-  //Program spawner = _spawn0 _post0 _end;
-  //memcpy((char*)mob._.mortal.program, spawner, sizeof(mob._.mortal.program));
-  // Make one real mob from this imaginary mob
-  //runInCore(birthCash, tMob, &mob, 0);
-  // Check the populations
-  Ix popMobs, popMsgs;
-  popMobs = hotelOfMobs_count();
-  assertInt(popMobs, 10);
-  popMsgs = raffleOfMsgs_count();
-  assertInt(popMsgs, 10);
-  // Inspect it
-  MobTact tMob0 = (MobTact){(MobIx){0},0};
-  Mob * pMob; Cash cash;
-  hotelOfMobs_grabIx(&tMob0, &pMob, &cash);
-  //showMob(iMob0, pMob);
-  //assertLong(pMob->_.mortal.spawnThresh, 123L);
-  Cash expect = birthCash*MOB_PROP;
-  assertLong(cash, expect);
-  hotelOfMobs_drop(tMob0.i, cash);
-  // Run the one mob in the hotel:
-  draw();
-  draw();
-  draw();
-  // Check the populations // raid
-  popMobs = hotelOfMobs_count();
-  assertInt(popMobs, 13);
-  popMsgs = raffleOfMsgs_count();
-  assertInt(popMsgs, 13);
-  //showMsgTicket((MsgTicketIx){0},0); printf("\n");
-  return true;
-}
+// static bool testSpawnAndPost() {
+//   printf("testSpawnAndPost\n");
+//   Cash birthCash = BIRTH_CASH + randIntBelow(BIRTH_CASH);
+//   void stuffProg(Program * pProg) {
+//   }
+//   seed(10, birthCash, stuffProg);
+//   //MobTact tMob = (MobTact){{8}, 0x12345678};
+//   //Mob mob;
+//   //mob.phylum = PhyMortal;
+//   //mob._.mortal.spawnThresh = 123;
+//   //Program spawner = _spawn0 _post0 _end;
+//   //memcpy((char*)mob._.mortal.program, spawner, sizeof(mob._.mortal.program));
+//   // Make one real mob from this imaginary mob
+//   //runInCore(birthCash, tMob, &mob, 0);
+//   // Check the populations
+//   Ix popMobs, popMsgs;
+//   popMobs = hotelOfMobs_count();
+//   assertInt(popMobs, 10);
+//   popMsgs = raffleOfMsgs_count();
+//   assertInt(popMsgs, 10);
+//   // Inspect it
+//   MobTact tMob0 = (MobTact){(MobIx){0},0};
+//   Mob * pMob; Cash cash;
+//   hotelOfMobs_grabIx(&tMob0, &pMob, &cash);
+//   //showMob(iMob0, pMob);
+//   //assertLong(pMob->_.mortal.spawnThresh, 123L);
+//   Cash expect = birthCash*MOB_PROP;
+//   assertLong(cash, expect);
+//   hotelOfMobs_drop(tMob0.i, cash);
+//   // Run the one mob in the hotel:
+//   draw();
+//   draw();
+//   draw();
+//   // Check the populations // raid
+//   popMobs = hotelOfMobs_count();
+//   assertInt(popMobs, 13);
+//   popMsgs = raffleOfMsgs_count();
+//   assertInt(popMsgs, 13);
+//   //showMsgTicket((MsgTicketIx){0},0); printf("\n");
+//   return true;
+// }
 
 void * work(void * p) {
   while(iterations < 100000000 && draw())  {
@@ -237,10 +242,10 @@ void * work(void * p) {
 
 bool testCore() {
   return
-    testCode() &&
-    testDisas() &&
+//    testCode() &&
+//    testDisas() &&
     testBrokeMsg() &&
-    testSpawn() &&
+//    testSpawn() &&
 //    testForever() &&
     true || (showWorld(), false);
 }

@@ -316,13 +316,13 @@ MobTact peer3  (Core * pC, Mode * mode) { return (MobTact){(MobIx){3},0}; }
 //////////////////////////////////////////////////////////
 ///  MODES  ///////////////////////////////////////
 //////////////////////////////////////////////////////////
-//                 onIff                    onElsif
 
 int cpuFree (Proto proto, int x) { return 0; }
 int cpuCheap(Proto proto, int x) { return 1; }
 int * costTables[NumProtos] = { cpuCyclesOfInsts, cpuCyclesOfTests, cpuCyclesOfFloats, cpuCyclesOfPeers };
 int cpuDear (Proto proto, int x) { return costTables[proto][x]; }
 
+//                           onIff{false,true}        onElsif{false,true}
 Mode doingit    = {cpuDear,  {&todoit,   &doingit  }, {&doneit,   &doneit   },  };
 Mode doneit     = {cpuCheap, {&doneit,   &doneit   }, {&doneit,   &doneit   },  };
 Mode todoit     = {cpuCheap, {&doneit,   &doneit   }, {&todoit,   &doingit  },  };

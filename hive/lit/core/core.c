@@ -38,7 +38,7 @@ void onMobHotel_extinct(void) { raffleOfMsgs_quit(); }
 void onMobHotel_funeral(MobIx, Mob * pMob) {}
 void onMsgRaffle_extinct() { 
   printf("onMsgRaffle_extinct\n");
-  DIE("Here");
+  //DIE("Here");
   //raffleOfMsgs_quit();
 } // Not when we have external msg sources
 bool draw() { return raffleOfMsgs_draw(); }
@@ -133,8 +133,8 @@ void showCore(Core * pC) {
   //printf("", pC->pMsg);
   printf("IP=%d ", pC->IP);
   hotelOfMobs_showsTact(buf, pC->tChild);
-  printf("tChild=%s ", buf);
-  printf("out='%s'\n", pC->out);
+  //printf("tChild=%s ", buf);
+  //printf("out='%s'\n", pC->out);
 }
 
 typedef struct Mode Mode;
@@ -149,7 +149,7 @@ struct Mode {
   void (*onImmFloat)(Core *, float f);
   void (*onDisas)(Core *);
   void (*onPost)(Core *, MobTact rcvr, Cash cash);
-  void (*onSpawn)(Core *);
+  void (*onSpawn)(Core *, Cash cash);
 };
 extern Mode doingit, doneit, todoit, quiningit, dissingit;
 
@@ -212,7 +212,7 @@ void post(Core * pC, Mode * mode) {
 
 
 void quine(Core * pC, Mob * pChild) { memcpy(pChild, pC->pMob, sizeof(Mob)); }
-void spawn(Core * pC, Mode * mode)  { mode->onSpawn(pC); doInst(pC, mode); }
+void spawn(Core * pC, Mode * mode)  { float cash = doFloat(pC, mode); mode->onSpawn(pC, cash); doInst(pC, mode); }
 
 /////// OUTPUT
 void prs(Core * pC, Mode * mode) { 
@@ -380,21 +380,16 @@ void disasFloat (Core * pC, float f) {
 void onPostDont(Core * pC, MobTact rcvr, Cash cash) { }
 void onPostDo(Core * pC, MobTact rcvr, Cash cash) {
   chargeMobCash(pC, cash);
-  void stuffMsg(Msg * p) { p->cpuBid = 0; p->sndr = pC->tMob; p->rcvr = rcvr; }
-  raffleOfMsgs_play(cash, 100, stuffMsg); 
+  void stuffMsg(Msg * p) { p->cpuBid = 1; p->sndr = pC->tMob; p->rcvr = rcvr; }
+  raffleOfMsgs_play(cash, 1, stuffMsg); 
 }
 
-void onSpawnDont(Core * pC) { }
-void onSpawnDo(Core * pC) { 
-  Cash childCash = pC->mobCash/2;
-  chargeMobCash(pC, childCash);
-  Cash chMobCash = childCash * MOB_PROP;
-  Cash chMsgCash = childCash - chMobCash;
+void onSpawnDont(Core * pC, Cash c) { }
+void onSpawnDo(Core * pC, Cash cash) { 
+  chargeMobCash(pC, cash);
   void stuffSpawnedMob(Mob * p) { quine(pC, p); }
-  pC->tChild = hotelOfMobs_admit(chMobCash, false, stuffSpawnedMob, 0, 0);
-  //char buf[20]; hotelOfMobs_showsTact(buf, pC->tChild); printf("Spawned: %s\n", buf);
-  void stuffMsg(Msg * p) { p->cpuBid = 1; p->sndr = pC->tMob; p->rcvr = pC->tChild; }
-  raffleOfMsgs_play(chMsgCash, 100, stuffMsg); 
+  pC->tChild = hotelOfMobs_admit(cash, false, stuffSpawnedMob, 0, 0);
+  //printf("Child=%d\n", pC->tChild.i.i);
 }
 
 //                 onIff{false,true}        onElsif{false,true}
@@ -416,11 +411,21 @@ Mode dissingit  = {{&dissingit,&dissingit}, {&dissingit,&dissingit}, onOpDisas, 
 Cash runInCore(Cash mobCash, Cash msgCash, MobTact tMob, Mob * pMob, Msg * pMsg) {
   memset(out, 0, outlen); // The linker has to find these
   Cycles cyc = msgCash / pMsg->cpuBid; 
-  Core core = (Core){cyc, mobCash, tMob, pMob, pMsg, 0, tMob, 0, 0, out, outlen, 0};
+  MobTact badtact = {(MobIx){-1}, -1};
+  Core core = (Core){cyc, mobCash, tMob, pMob, pMsg, 0, badtact, 0, 0, out, outlen, 0};
   //showCore(&core);
-  if (0==setjmp(core.jb)) doInst(&core, &doingit); 
-  else printf("Overran!\n"); //Ran out of msgCash
-  //showCore(&core);
+  int res = setjmp(core.jb); 
+  switch (res) {
+    case 0: 
+      doInst(&core, &doingit);
+      break;
+    case 1: 
+      printf("Overran msg!\n");
+      break;
+    case 2: 
+      printf("Overran mob!\n");
+      break;
+  }
   return core.mobCash + core.cyclesLeft * pMsg->cpuBid;
 }
 
@@ -443,9 +448,9 @@ void run(MobTact tMob, Mob * pMob, Msg * pMsg, Cash mobCash, Cash msgCash) {
 }
 
 Cash onMsgRaffle_dispatch(MsgTicketTact t, Msg * pMsg, Cash msgCash, V claim, V unlock) {
-  printf("Raffle dispatch msg %d\n", t.i.i);
-  printf("Msg cash=%'ld\n", msgCash);
-  showMsg((MsgIx){0}, pMsg);
+  //printf("Raffle dispatch msg %d\n", t.i.i);
+  //printf("Msg cash=%'ld\n", msgCash);
+  //showMsg((MsgIx){0}, pMsg);
   Mob * pMob=0;
   Cash mobCash=0;
   Woth w = hotelOfMobs_grab(&pMsg->rcvr, &pMob, &mobCash);

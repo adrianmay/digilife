@@ -8,6 +8,8 @@ FloatCpu="   1   1   1   3   1   1   20   50   5  10  15   3"
    Peers="me sndr child peer0 peer1 peer2 peer3"
  PeerCpu=" 1    1     1     1     1     1     1"
 
+Values="10 100 1000 10000 100000 1000000 2 3 4 5 6 7 8 9" 
+
 PROTOS="typedef enum { " 
 function make_h_tables() {
   PROTOS="${PROTOS}${1}Proto, "
@@ -27,6 +29,11 @@ function make_h() {
   make_h_tables Float float
   make_h_tables Peer MobTact 
   echo "$PROTOS NumProtos } Proto;"
+  echo
+  for V in $Values; do
+    B=`python3 -c 'import struct,sys; print("".join(f"\\\\x{x:02X}" for x in struct.pack("<f", float(sys.argv[1]))))' ${V}`
+    echo "#define  V_${V} \"$B\""
+  done
 }
 
 function make_c_tables() {
@@ -75,3 +82,4 @@ function make_c() {
 
 make_h > gen/core/ops.h
 make_c > gen/core/ops.cc
+

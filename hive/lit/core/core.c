@@ -29,15 +29,16 @@
 #include "api.h"
 #include "ops.h"
 
-void onTockCore() {}
+void onTockCore() { printf("Tock: %d\n", tocksNow()); }
 TockPrice totRent() { return hotelOfMobs_rent() + raffleOfMsgs_rent(); }
 void onMobHotel_goDie(MobIx i, Mob * pT) { }
 void onMobHotel_rentCollected (Cash rent) {}
 void onMobHotel_rentDefaulted (Cash rent) { printf("Mob rent defaulted: %'ld\n", rent); }
-void onMobHotel_extinct       (void) { raffleOfMsgs_quit(); }
+void onMobHotel_extinct(void) { raffleOfMsgs_quit(); }
 void onMobHotel_funeral(MobIx, Mob * pMob) {}
 void onMsgRaffle_extinct() { 
   printf("onMsgRaffle_extinct\n");
+  DIE("Here");
   //raffleOfMsgs_quit();
 } // Not when we have external msg sources
 bool draw() { return raffleOfMsgs_draw(); }

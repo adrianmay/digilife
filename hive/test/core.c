@@ -26,7 +26,7 @@ void showWorld() {
 
 static bool init(void) {
   onTestTock = onTockCore;
-    openGlobals(); hotelOfMobs_open(); raffleOfMsgs_open();
+  openGlobals(); hotelOfMobs_open(); raffleOfMsgs_open();
   //printf("Sizes: mob=%f,msg=%f,tot=%f; Props: mob=%f,msg=%f\n", SIZE_MOB, SIZE_MSG, SIZE_BOTH, MOB_PROP, MSG_PROP);
   return true;
 }

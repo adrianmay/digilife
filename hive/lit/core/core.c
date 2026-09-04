@@ -356,7 +356,7 @@ void onPrsPrinting(Core * pC, int len) {
 void onPrfQuining (Core * pC, float f) { }
 void onPrfDissing (Core * pC, float f) { }
 void onPrfSkipping(Core * pC, float f) { }
-void onPrfPrinting(Core * pC, float f) { int n = snprintf(pC->out+pC->outcur, pC->outlen-pC->outcur, "%f ", f); pC->outcur += n; }
+void onPrfPrinting(Core * pC, float f) { int n = snprintf(pC->out+pC->outcur, pC->outlen-pC->outcur, "%.2f ", f); pC->outcur += n; }
 
 void onPrpQuining (Core * pC, MobTact peer) { }
 void onPrpDissing (Core * pC, MobTact peer) { }
@@ -373,7 +373,7 @@ void onDisasDo  (Core * pC) {
 
 void ignoreFloat(Core * pC, float f) {}
 void disasFloat (Core * pC, float f) {
-  int n = snprintf(pC->out+pC->outcur, pC->outlen-pC->outcur, "%f ", f);
+  int n = snprintf(pC->out+pC->outcur, pC->outlen-pC->outcur, "%.2f ", f);
   pC->outcur += n;
 }
 

@@ -139,7 +139,7 @@ static bool testBrokeMsg() {
 
 static bool testSpawn() {
   Case cases[] = {
-    { 1, PRP ME SPAWN IMM V_1000000 PRP CHILD POST CHILD IMM V_100000 END,    "xxxxxxxx=1"},
+    { 1, DISAS SPAWN IMM V_1000000 PRP CHILD POST CHILD IMM V_100000 END,    "DISAS SPAWN IMM 1000000.00 PRP CHILD POST CHILD IMM 100000.00 "},
   };
   return testSomeCases("Spawn", 8000000, 8000000, cases, sizeof(cases)/sizeof(Case));
 }

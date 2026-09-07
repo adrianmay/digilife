@@ -73,7 +73,7 @@ The "meap" is a "min-heap" (like an ordered list but we only care about the firs
 
 The "hotel" combines both of the above, housing animals in the pile and "bombs" in the meap. Bombs delete animals for failure to pay memory rent. The memory price is global and varies to enforce a quota.
 
-Another hotel contains "messages" which are requests to run some animal's code in some data environment paying a certain rate for CPU time. Messages incur memory rent and might be bombed. Not all messages will run. The OS selects messages at random preferring those that bid higher for CPU. If the receiver code yields, it keeps the change in the message. That's the only payment system.
+Another hotel contains "messages" which are requests to run some animal's code in some data environment paying a certain rate for CPU time. Messages incur memory rent and might be bombed. Not all messages will run. The OS selects messages at random preferring those that bid higher for CPU. The CPU bill is met by the balance left in the message after paying memory rent for the time it was waiting in the queue. The receiving animal can't use it's own money to keep the processing of a message running after the message balance is exhausted. If the receiver code yields before the message runs out of money, the receiver receives the balance left in the message. That's the only payment system.
 
 The language allows animals to reserve, finance and populate new messages and animal blocks.  
 

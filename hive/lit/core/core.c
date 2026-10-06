@@ -29,14 +29,17 @@
 #include "api.h"
 #include "ops.h"
 
-void onTockCore() {}
+void onTockCore() { printf("Tock: %d\n", tocksNow()); }
 TockPrice totRent() { return hotelOfMobs_rent() + raffleOfMsgs_rent(); }
 void onMobHotel_goDie(MobIx i, Mob * pT) { }
 void onMobHotel_rentCollected (Cash rent) {}
 void onMobHotel_rentDefaulted (Cash rent) { printf("Mob rent defaulted: %'ld\n", rent); }
-void onMobHotel_extinct       (void) { raffleOfMsgs_quit(); }
+void onMobHotel_extinct(void) { raffleOfMsgs_quit(); }
 void onMobHotel_funeral(MobIx, Mob * pMob) {}
-void onMsgRaffle_extinct() { //raffleOfMsgs_quit();
+void onMsgRaffle_extinct() { 
+  printf("onMsgRaffle_extinct\n");
+  //DIE("Here");
+  //raffleOfMsgs_quit();
 } // Not when we have external msg sources
 bool draw() { return raffleOfMsgs_draw(); }
 
@@ -120,7 +123,7 @@ typedef struct Core {
   jmp_buf jb;
 } Core;
 
-static void showCore(Core * pC) {
+void showCore(Core * pC) {
   printf("CORE: cyclesLeft=%'ld ", pC->cyclesLeft);
   printf("mobCash=%'ld ", pC->mobCash);
   char buf[20];
@@ -130,8 +133,8 @@ static void showCore(Core * pC) {
   //printf("", pC->pMsg);
   printf("IP=%d ", pC->IP);
   hotelOfMobs_showsTact(buf, pC->tChild);
-  printf("tChild=%s ", buf);
-  printf("out='%s'\n", pC->out);
+  //printf("tChild=%s ", buf);
+  //printf("out='%s'\n", pC->out);
 }
 
 typedef struct Mode Mode;
@@ -146,7 +149,7 @@ struct Mode {
   void (*onImmFloat)(Core *, float f);
   void (*onDisas)(Core *);
   void (*onPost)(Core *, MobTact rcvr, Cash cash);
-  void (*onSpawn)(Core *);
+  void (*onSpawn)(Core *, Cash cash);
 };
 extern Mode doingit, doneit, todoit, quiningit, dissingit;
 
@@ -209,7 +212,7 @@ void post(Core * pC, Mode * mode) {
 
 
 void quine(Core * pC, Mob * pChild) { memcpy(pChild, pC->pMob, sizeof(Mob)); }
-void spawn(Core * pC, Mode * mode)  { mode->onSpawn(pC); doInst(pC, mode); }
+void spawn(Core * pC, Mode * mode)  { float cash = doFloat(pC, mode); mode->onSpawn(pC, cash); doInst(pC, mode); }
 
 /////// OUTPUT
 void prs(Core * pC, Mode * mode) { 
@@ -353,7 +356,7 @@ void onPrsPrinting(Core * pC, int len) {
 void onPrfQuining (Core * pC, float f) { }
 void onPrfDissing (Core * pC, float f) { }
 void onPrfSkipping(Core * pC, float f) { }
-void onPrfPrinting(Core * pC, float f) { int n = snprintf(pC->out+pC->outcur, pC->outlen-pC->outcur, "%f ", f); pC->outcur += n; }
+void onPrfPrinting(Core * pC, float f) { int n = snprintf(pC->out+pC->outcur, pC->outlen-pC->outcur, "%.2f ", f); pC->outcur += n; }
 
 void onPrpQuining (Core * pC, MobTact peer) { }
 void onPrpDissing (Core * pC, MobTact peer) { }
@@ -370,28 +373,23 @@ void onDisasDo  (Core * pC) {
 
 void ignoreFloat(Core * pC, float f) {}
 void disasFloat (Core * pC, float f) {
-  int n = snprintf(pC->out+pC->outcur, pC->outlen-pC->outcur, "%f ", f);
+  int n = snprintf(pC->out+pC->outcur, pC->outlen-pC->outcur, "%.2f ", f);
   pC->outcur += n;
 }
 
 void onPostDont(Core * pC, MobTact rcvr, Cash cash) { }
 void onPostDo(Core * pC, MobTact rcvr, Cash cash) {
   chargeMobCash(pC, cash);
-  void stuffMsg(Msg * p) { p->cpuBid = 0; p->sndr = pC->tMob; p->rcvr = rcvr; }
-  raffleOfMsgs_play(cash, 100, stuffMsg); 
+  void stuffMsg(Msg * p) { p->cpuBid = 1; p->sndr = pC->tMob; p->rcvr = rcvr; }
+  raffleOfMsgs_play(cash, 1, stuffMsg); 
 }
 
-void onSpawnDont(Core * pC) { }
-void onSpawnDo(Core * pC) { 
-  Cash childCash = pC->mobCash/2;
-  chargeMobCash(pC, childCash);
-  Cash chMobCash = childCash * MOB_PROP;
-  Cash chMsgCash = childCash - chMobCash;
+void onSpawnDont(Core * pC, Cash c) { }
+void onSpawnDo(Core * pC, Cash cash) { 
+  chargeMobCash(pC, cash);
   void stuffSpawnedMob(Mob * p) { quine(pC, p); }
-  pC->tChild = hotelOfMobs_admit(chMobCash, false, stuffSpawnedMob, 0, 0);
-  //char buf[20]; hotelOfMobs_showsTact(buf, pC->tChild); printf("Spawned: %s\n", buf);
-  void stuffMsg(Msg * p) { p->cpuBid = 1; p->sndr = pC->tMob; p->rcvr = pC->tChild; }
-  raffleOfMsgs_play(chMsgCash, 100, stuffMsg); 
+  pC->tChild = hotelOfMobs_admit(cash, false, stuffSpawnedMob, 0, 0);
+  //printf("Child=%d\n", pC->tChild.i.i);
 }
 
 //                 onIff{false,true}        onElsif{false,true}
@@ -413,72 +411,80 @@ Mode dissingit  = {{&dissingit,&dissingit}, {&dissingit,&dissingit}, onOpDisas, 
 Cash runInCore(Cash mobCash, Cash msgCash, MobTact tMob, Mob * pMob, Msg * pMsg) {
   memset(out, 0, outlen); // The linker has to find these
   Cycles cyc = msgCash / pMsg->cpuBid; 
-  Core core = (Core){cyc, mobCash, tMob, pMob, pMsg, 0, tMob, 0, 0, out, outlen, 0};
-  showCore(&core);
-  if (0==setjmp(core.jb)) doInst(&core, &doingit); 
-  else printf("Overran!\n"); //Ran out of msgCash
-  showCore(&core);
+  MobTact badtact = {(MobIx){-1}, -1};
+  Core core = (Core){cyc, mobCash, tMob, pMob, pMsg, 0, badtact, 0, 0, out, outlen, 0};
+  //showCore(&core);
+  int res = setjmp(core.jb); 
+  switch (res) {
+    case 0: 
+      doInst(&core, &doingit);
+      break;
+    case 1: 
+      printf("Overran msg!\n");
+      break;
+    case 2: 
+      printf("Overran mob!\n");
+      break;
+  }
   return core.mobCash + core.cyclesLeft * pMsg->cpuBid;
 }
 
 void run(MobTact tMob, Mob * pMob, Msg * pMsg, Cash mobCash, Cash msgCash) {
   msgcashSample(msgCash);
   mobcashSample(mobCash);
-  mobCash += DOLE;
+  //mobCash += DOLE;
   //mobCash -= totRent(); // Cos both msg and mob will miss out on the tock we expend in here
-  printf("HERE 1\n");
   Cash finalCash = runInCore(mobCash, msgCash, tMob, pMob, pMsg);
-  printf("HERE 2\n");
   hotelOfMobs_drop(pMsg->rcvr.i, finalCash);
   Program * pProg = &pMob->_.mortal.program;          
   void * pVoid = (void *) pProg;
   float * pThresh = (float*) (pVoid+1);
   threshSample(*pThresh);
   popSample(hotelOfMobs_count());
-  if (iterations < 1000 || iterations % 1000 == 0) {
-    printf("Its=%'ld, Rent=%'.0f, threshMean=%'.0f; Means: pop=%'.2f, spawnOdds=%'.5f, childCash=%'.0f msgCash=%'.0f, mobCash=%'.0f, totCash=%'.0f\n",
-        iterations, totRent(), threshMean, popMean, 1.0/spawnedMean, childcashMean, msgcashMean, mobcashMean, msgcashMean+mobcashMean);
-  }
+//  if (iterations < 1000 || iterations % 1000 == 0) {
+//    printf("Its=%'ld, Rent=%'.0f, threshMean=%'.0f; Means: pop=%'.2f, spawnOdds=%'.5f, childCash=%'.0f msgCash=%'.0f, mobCash=%'.0f, totCash=%'.0f\n",
+//        iterations, totRent(), threshMean, popMean, 1.0/spawnedMean, childcashMean, msgcashMean, mobcashMean, msgcashMean+mobcashMean);
+//  }
 }
 
 Cash onMsgRaffle_dispatch(MsgTicketTact t, Msg * pMsg, Cash msgCash, V claim, V unlock) {
-  printf("Raffle dispatch msg %d\n", t.i.i);
-  printf("Msg cash=%'ld\n", msgCash);
-  showMsg((MsgIx){0}, pMsg);
+  //printf("Raffle dispatch msg %d\n", t.i.i);
+  //printf("Msg cash=%'ld\n", msgCash);
+  //showMsg((MsgIx){0}, pMsg);
   Mob * pMob=0;
   Cash mobCash=0;
   Woth w = hotelOfMobs_grab(&pMsg->rcvr, &pMob, &mobCash);
   if (w==Dead) { unlock(); printf("Dead\n"); return 0; }       // Bankrupt msg
   if (w==Busy) { unlock(); printf("Busy\n"); return msgCash; } // Leave msg alone
-  showMob((MobIx){0}, pMob);
+  //showMob((MobIx){0}, pMob);
   // So we got it
   claim();
   unlock();
-  if (randIntBelow(MURDER_RATE)==0) {
+  if (randIntBelow(MURDER_RATE)==0) { // Should busier mobs get killed more, as in this placement?
     printf("Murder\n");
     hotelOfMobs_drop(pMsg->rcvr.i, 0);
   }
   else {
-    printf("Running\n");
     run(pMsg->rcvr, pMob, pMsg, mobCash, msgCash);
   }
   return 0; 
 }
 
-void create(Cash c, ProgStuffer stuffProg) {
+MobTact create(Cash mobcash, Cash msgcash, ProgStuffer stuffProg) {
   void stuffMob(Mob * p) { 
     p->phylum = PhyMortal;
     stuffProg(&p->_.mortal.program);
   }
-  MobTact tNewMob = hotelOfMobs_admit(c*MOB_PROP, false, stuffMob, 0, 0);
+  MobTact tNewMob = hotelOfMobs_admit(mobcash, false, stuffMob, 0, 0);
   void stuffMsg(Msg * p) { p->cpuBid = 1; p->sndr = p->rcvr = tNewMob; }
-  raffleOfMsgs_play(c*MSG_PROP, 100, stuffMsg); 
+  raffleOfMsgs_play(msgcash, 100, stuffMsg); 
+  return tNewMob;
 }
 
-void seed(int n, Cash c, ProgStuffer stuffProg) {
-  //hotelOfMobs_admit(0, true, 0, 0, 0);
-  for (int a=0;a<n;a++) create(c, stuffProg);
-}
+//void seed(int n, Cash c, ProgStuffer stuffProg) {
+//  //hotelOfMobs_admit(0, true, 0, 0, 0);
+//  for (int a=0;a<n;a++) create(c, stuffProg);
+//}
 
 // void Q(Core * pC)  { pC->pChildProg[pC->childIP++] = I(pC); }
 // void quineInst(uint8_t inst, Core * pC) { quinersForInsts[inst](pC); }

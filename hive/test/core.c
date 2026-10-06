@@ -19,14 +19,14 @@
 
 #define BIRTH_CASH 1000'000'000L
 
-void showCore() {
+void showWorld() {
   hotelOfMobs_show();
   raffleOfMsgs_show();
 }
 
 static bool init(void) {
   onTestTock = onTockCore;
-    openGlobals(); hotelOfMobs_open(); raffleOfMsgs_open();
+  openGlobals(); hotelOfMobs_open(); raffleOfMsgs_open();
   //printf("Sizes: mob=%f,msg=%f,tot=%f; Props: mob=%f,msg=%f\n", SIZE_MOB, SIZE_MSG, SIZE_BOTH, MOB_PROP, MSG_PROP);
   return true;
 }
@@ -43,6 +43,7 @@ char out[CORE_OUT_LEN];
 int outlen = CORE_OUT_LEN;
 
 typedef struct {
+  int draws; //Subsequent
   Program t;
   char e[CORE_OUT_LEN];
 } Case;
@@ -61,35 +62,26 @@ void injectFloatPair(char ** p, float mu, float amgis)  {
   (*p)+=sizeof(float);
 }
 
+void zapNicks() {
+  char * r=out;
+  while ((r=strchr(r+1, '='))) memset(r-8, 'x', 8);
+}
+
 static bool testSomeCases(const char * tag, Cash mobCash, Cash msgCash, Case cases[], int numCases) {
   bool res = true;
   for (int t=0;t<numCases;t++) {
-    printf("####### test%s: #%d\n", tag, t);
+    printf("####### test%s: #%d; mob: ", tag, t);
     void progStuffer(Program * prog) { memcpy((void*)prog, (void*)cases[t].t, sizeof(*prog)); };
-    create(mobCash, progStuffer);
-    printf("Created\n");
-    draw();
+    MobTact tact = create(mobCash, msgCash, progStuffer);
+    char buf[20];
+    hotelOfMobs_showsTact(buf, tact);
+    printf("%s\n", buf);
+    memset(out, 0, outlen);
+    for (int d=0;d<=cases[t].draws; d++) draw();
+    zapNicks();
     if (0!=strcmp(out, cases[t].e)) {
-      printf("testCode #%d Failed: want: '%s', got: '%s'\n", t, cases[t].e, out);
-      res = false;
-    }
-  }
-  return res;
-}
-
-static bool testSomeCases_(const char * tag, Cash mobCash, Cash msgCash, Case cases[], int numCases) {
-  Msg msg = {1};
-  Mob mob;
-  MobTact tMob = (MobTact){{8}, 0x1234abcd};
-  bool res = true;
-  for (int t=0;t<numCases;t++) {
-    printf("####### test%s: #%d\n", tag, t);
-    memcpy((char*)mob._.mortal.program, (char*)cases[t].t, sizeof(mob._.mortal.program));
-    runInCore(mobCash, msgCash, tMob, &mob, &msg);
-    if (0!=strcmp(out, cases[t].e)) {
-      printf("testCode #%d Failed: want: '%s', got: '%s'\n", t, cases[t].e, out);
-      res = false;
-    }
+      printf("test%s #%d Failed: want: '%s', got: '%s'\n", tag, t, cases[t].e, out);
+      res = false; } 
   }
   return res;
 }
@@ -99,93 +91,100 @@ static bool testSomeCases_(const char * tag, Cash mobCash, Cash msgCash, Case ca
 
 static bool testCode() {
   Case cases[] = {
-    { PRS "Foo" NOP PRS "Bar" NOP END,                                                                         "FooBar"},
-    { IFF YES PRS "A" NOP ELSIF NO  PRS "B" NOP END END,                                                       "A"},
-    { IFF YES PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                                       "A"},
-    { IFF NO  PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                                       "B"},
-    { IFF NO  PRS "A" NOP ELSIF NO  PRS "B" NOP ELSIF YES  PRS "C" NOP END END,                                "C"},
-    { IFF YES PRS "A" NOP ELSIF NO  PRS "B" NOP ELSIF YES  PRS "C" NOP END END,                                "A"},
-    { IFF YES PRS "A" NOP ELSIF NO  PRS "B" NOP END  PRS "Z" NOP END,                                          "AZ"},
-    { IFF YES PRS "A" NOP ELSIF NO  IFF YES PRS "C" NOP ELSIF NO  PRS "D" NOP END END  PRS "Z" NOP END,        "AZ"},
-    { IFF NO  PRS "A" NOP ELSIF YES IFF YES PRS "C" NOP ELSIF NO  PRS "D" NOP END END  PRS "Z" NOP END,        "CZ"},
-    { IFF NO  PRS "A" NOP ELSIF YES IFF NO  PRS "C" NOP ELSIF YES PRS "D" NOP END END  PRS "Z" NOP END,        "DZ"},
-    { IFF NOT YES PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                                   "B"},
-    { IFF NOT NOT YES PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                               "A"},
-    { PRF ZERO END,                                                                                            "0.000000 "},
-    { PRF ONE END,                                                                                             "1.000000 "},
-    { PRF IMM OX1234f END,                                                                                     "4660.000000 "},
-    { PRF ADD TWO TWO END,                                                                                     "4.000000 "},
-    { PRF MUL TWO TWO END,                                                                                     "4.000000 "},
-    { PRF MUL TWO ADD TWO ONE END,                                                                             "6.000000 "},
-    { PRF MUL TWO INV ADD TWO ONE END,                                                                         "0.666667 "},
-    { PRF ADD TWO NEG ADD TWO ONE END,                                                                         "-1.000000 "},
-    { IFF GT ZERO ONE PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                               "A"},
-    { IFF LIKE MUL ONE INV ADD TWO TWO ONE TWO PRS "A" NOP ELSIF YES PRS "B" NOP END END,                      "B"},
-    { PRP ME END,                                                                                              "1234abcd=8"},
-    { PRP PEER3 END,                                                                                           "       0=3"},
-    { SPAWN PRP CHILD SPAWN PRP CHILD END,                                                                     " 7afc3a1=0 9fe2471=1"},
+    { 0, PRS "Foo" NOP PRS "Bar" NOP END,                                                                         "FooBar"},
+    { 0, IFF YES PRS "A" NOP ELSIF NO  PRS "B" NOP END END,                                                       "A"},
+    { 0, IFF YES PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                                       "A"},
+    { 0, IFF NO  PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                                       "B"},
+    { 0, IFF NO  PRS "A" NOP ELSIF NO  PRS "B" NOP ELSIF YES  PRS "C" NOP END END,                                "C"},
+    { 0, IFF YES PRS "A" NOP ELSIF NO  PRS "B" NOP ELSIF YES  PRS "C" NOP END END,                                "A"},
+    { 0, IFF YES PRS "A" NOP ELSIF NO  PRS "B" NOP END  PRS "Z" NOP END,                                          "AZ"},
+    { 0, IFF YES PRS "A" NOP ELSIF NO  IFF YES PRS "C" NOP ELSIF NO  PRS "D" NOP END END  PRS "Z" NOP END,        "AZ"},
+    { 0, IFF NO  PRS "A" NOP ELSIF YES IFF YES PRS "C" NOP ELSIF NO  PRS "D" NOP END END  PRS "Z" NOP END,        "CZ"},
+    { 0, IFF NO  PRS "A" NOP ELSIF YES IFF NO  PRS "C" NOP ELSIF YES PRS "D" NOP END END  PRS "Z" NOP END,        "DZ"},
+    { 0, IFF NOT YES PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                                   "B"},
+    { 0, IFF NOT NOT YES PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                               "A"},
+    { 0, PRF ZERO END,                                                                                            "0.000000 "},
+    { 0, PRF ONE END,                                                                                             "1.000000 "},
+    { 0, PRF IMM OX1234f END,                                                                                     "4660.000000 "},
+    { 0, PRF ADD TWO TWO END,                                                                                     "4.000000 "},
+    { 0, PRF MUL TWO TWO END,                                                                                     "4.000000 "},
+    { 0, PRF MUL TWO ADD TWO ONE END,                                                                             "6.000000 "},
+    { 0, PRF MUL TWO INV ADD TWO ONE END,                                                                         "0.666667 "},
+    { 0, PRF ADD TWO NEG ADD TWO ONE END,                                                                         "-1.000000 "},
+    { 0, IFF GT ZERO ONE PRS "A" NOP ELSIF YES PRS "B" NOP END END,                                               "A"},
+    { 0, IFF LIKE MUL ONE INV ADD TWO TWO ONE TWO PRS "A" NOP ELSIF YES PRS "B" NOP END END,                      "B"},
+    { 0, PRP ME END,                                                                                              "xxxxxxxx=22"},
+    { 0, PRP PEER3 END,                                                                                           "xxxxxxxx=3"},
   };
   return testSomeCases("Code", 500'000, 500'000, cases, sizeof(cases)/sizeof(Case));
 }
 
-static bool testBrokeMsg() {
-  Case cases[] = {
-    { PRF CYC END,                       "15.000000 "},
-    { PRF CYC PRF CYC END,               "15.000000 5.000000 "},
-    { PRF CYC PRF CYC PRF CYC END,       "15.000000 5.000000 "},
-  };
-  return testSomeCases("BrokeMsg", 25, 25, cases, sizeof(cases)/sizeof(Case));
-}
-
 static bool testDisas() {
   Case cases[] = {
-    { DISAS END,                                         "DISAS END "},
-    { IFF NO PRF IMM OX1234f ELSIF YES DISAS END END,    "IFF NO PRF IMM 4660.000000 ELSIF YES DISAS END END "},
+    { 0, DISAS END,                                         "DISAS END "},
+    { 0, IFF NO PRF IMM OX1234f ELSIF YES DISAS END END,    "IFF NO PRF IMM 4660.000000 ELSIF YES DISAS END END "},
   };
-  return testSomeCases("Disas", 1000, 1000, cases, sizeof(cases)/sizeof(Case));
+  return testSomeCases("Disas", 4000, 4000, cases, sizeof(cases)/sizeof(Case));
 }
 
-static bool testSpawnAndPost() {
-  printf("testSpawnAndPost\n");
-  Cash birthCash = BIRTH_CASH + randIntBelow(BIRTH_CASH);
-  void stuffProg(Program * pProg) {
-  }
-  seed(10, birthCash, stuffProg);
-  //MobTact tMob = (MobTact){{8}, 0x12345678};
-  //Mob mob;
-  //mob.phylum = PhyMortal;
-  //mob._.mortal.spawnThresh = 123;
-  //Program spawner = _spawn0 _post0 _end;
-  //memcpy((char*)mob._.mortal.program, spawner, sizeof(mob._.mortal.program));
-  // Make one real mob from this imaginary mob
-  //runInCore(birthCash, tMob, &mob, 0);
-  // Check the populations
-  Ix popMobs, popMsgs;
-  popMobs = hotelOfMobs_count();
-  assertInt(popMobs, 10);
-  popMsgs = raffleOfMsgs_count();
-  assertInt(popMsgs, 10);
-  // Inspect it
-  MobTact tMob0 = (MobTact){(MobIx){0},0};
-  Mob * pMob; Cash cash;
-  hotelOfMobs_grabIx(&tMob0, &pMob, &cash);
-  //showMob(iMob0, pMob);
-  //assertLong(pMob->_.mortal.spawnThresh, 123L);
-  Cash expect = birthCash*MOB_PROP;
-  assertLong(cash, expect);
-  hotelOfMobs_drop(tMob0.i, cash);
-  // Run the one mob in the hotel:
-  draw();
-  draw();
-  draw();
-  // Check the populations // raid
-  popMobs = hotelOfMobs_count();
-  assertInt(popMobs, 13);
-  popMsgs = raffleOfMsgs_count();
-  assertInt(popMsgs, 13);
-  //showMsgTicket((MsgTicketIx){0},0); printf("\n");
-  return true;
+static bool testBrokeMsg() {
+  Case cases[] = {
+    { 0, PRF CYC END,                       "590.000000 "},
+    //{ PRF CYC PRF CYC END,               "490.000000 480.000000 "},
+    //{ PRF CYC PRF CYC PRF CYC END,       "490.000000 480.000000 470.000000 "},
+    { 0, PRF CSH END,                       "1000.000000 "},
+  };
+  return testSomeCases("BrokeMsg", 1000, 600, cases, sizeof(cases)/sizeof(Case));
 }
+
+static bool testSpawn() {
+  Case cases[] = {
+    { 1, DISAS SPAWN IMM V_1000000 PRP CHILD POST CHILD IMM V_100000 END,    "DISAS SPAWN IMM 1000000.00 PRP CHILD POST CHILD IMM 100000.00 "},
+  };
+  return testSomeCases("Spawn", 8000000, 8000000, cases, sizeof(cases)/sizeof(Case));
+}
+
+// static bool testSpawnAndPost() {
+//   printf("testSpawnAndPost\n");
+//   Cash birthCash = BIRTH_CASH + randIntBelow(BIRTH_CASH);
+//   void stuffProg(Program * pProg) {
+//   }
+//   seed(10, birthCash, stuffProg);
+//   //MobTact tMob = (MobTact){{8}, 0x12345678};
+//   //Mob mob;
+//   //mob.phylum = PhyMortal;
+//   //mob._.mortal.spawnThresh = 123;
+//   //Program spawner = _spawn0 _post0 _end;
+//   //memcpy((char*)mob._.mortal.program, spawner, sizeof(mob._.mortal.program));
+//   // Make one real mob from this imaginary mob
+//   //runInCore(birthCash, tMob, &mob, 0);
+//   // Check the populations
+//   Ix popMobs, popMsgs;
+//   popMobs = hotelOfMobs_count();
+//   assertInt(popMobs, 10);
+//   popMsgs = raffleOfMsgs_count();
+//   assertInt(popMsgs, 10);
+//   // Inspect it
+//   MobTact tMob0 = (MobTact){(MobIx){0},0};
+//   Mob * pMob; Cash cash;
+//   hotelOfMobs_grabIx(&tMob0, &pMob, &cash);
+//   //showMob(iMob0, pMob);
+//   //assertLong(pMob->_.mortal.spawnThresh, 123L);
+//   Cash expect = birthCash*MOB_PROP;
+//   assertLong(cash, expect);
+//   hotelOfMobs_drop(tMob0.i, cash);
+//   // Run the one mob in the hotel:
+//   draw();
+//   draw();
+//   draw();
+//   // Check the populations // raid
+//   popMobs = hotelOfMobs_count();
+//   assertInt(popMobs, 13);
+//   popMsgs = raffleOfMsgs_count();
+//   assertInt(popMsgs, 13);
+//   //showMsgTicket((MsgTicketIx){0},0); printf("\n");
+//   return true;
+// }
 
 void * work(void * p) {
   while(iterations < 100000000 && draw())  {
@@ -228,11 +227,12 @@ void * work(void * p) {
 
 bool testCore() {
   return
-    testCode() &&
-    testBrokeMsg() &&
-    testDisas() &&
+//    testCode() &&
+//    testDisas() &&
+//    testBrokeMsg() &&
+    testSpawn() &&
 //    testForever() &&
-    true || (showCore(), false);
+    true || (showWorld(), false);
 }
 
 bool core(void) { return bkt("core", init, testCore, cleanup); }

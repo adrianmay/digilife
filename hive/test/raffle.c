@@ -152,6 +152,7 @@ void * produce(void * p) {
     raffleOfMesss_play(10, 1+randIntBelow(10), stuffSerial);
   }
   bored = 1;
+  raffleOfMesss_quit(); // The drawer might be blocked waiting for us
   return 0;
 }
 

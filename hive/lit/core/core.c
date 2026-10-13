@@ -81,11 +81,14 @@ void dumpPiles(void) {
 #define SAMPLER(NAME, SPEED) \
   float NAME##Mean; \
   int NAME##Samples=0; \
+  static pthread_mutex_t NAME##Mutex=PTHREAD_MUTEX_INITIALIZER; \
   void NAME##Sample(float val) { \
     if (iterations < 0) return; \
+    pthread_mutex_lock(&NAME##Mutex); \
     NAME##Samples++; \
     float speed = MAX(SPEED, 1.0/NAME##Samples); \
     NAME##Mean = speed*val + (1.0-speed)*NAME##Mean; \
+    pthread_mutex_unlock(&NAME##Mutex); \
   }
 
 SAMPLER(msgcash,   0.000000001)

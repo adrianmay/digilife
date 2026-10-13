@@ -8,6 +8,7 @@
 #include "h.h"
 #include "misc/api.h"
 #include "globals/api.h"
+#include "args/api.h"
 #include "Msg_raffle/ix.h"
 #include "Mob_hotel/ix.h"
 #include "Msg_raffle/api.h"
@@ -39,7 +40,7 @@ static void cleanup(void) {
 //static pthread_t pids[NUM_THREADS] = {0};
 
 #define CORE_OUT_LEN 100
-char out[CORE_OUT_LEN];
+_Thread_local char out[CORE_OUT_LEN]; // Each worker prints to its own
 int outlen = CORE_OUT_LEN;
 
 typedef struct {
@@ -186,43 +187,46 @@ static bool testSpawn() {
 //   return true;
 // }
 
-void * work(void * p) {
-  while(iterations < 100000000 && draw())  {
-//  while(draw())  {
-    //if (iterations < 1000 || iterations % 1000 == 0)
-    //  printf("Its=%d, Tocks=%d Mobs=%d Msgs=%d\n", iterations, tocksNow(), hotelOfMobs_count(), raffleOfMsgs_count());
-    atomic_fetch_add(&iterations,1);
+#define MAX_ITS 300000
+static _Atomic int liveWorkers;
+static void quietTock(void) {}
+
+static void * work(void * p) {
+  while (draw()) {
+    notifyCycles(5);
+    if (atomic_fetch_add(&iterations,1) >= MAX_ITS) { raffleOfMsgs_quit(); break; }
   }
+  atomic_fetch_sub(&liveWorkers, 1);
   return 0;
 }
 
-// static bool testForever() {
-//   printf("testForever\n");
-//   assertInt (hotelOfMobs_bodyat(),  MOB_HEADER_SIZE);
-//   assertInt (hotelOfMobs_recBlob(), MOB_GROSS_SIZE);
-//   assertInt (hotelOfMobs_bodylen(), MOB_BODY_SIZE);
-//   //assertInt (MOB_GROSS_SIZE, MOB_HEADER_SIZE + MOB_CODE_SIZE);
-//   void stuffProg(Program * pProg) {
-//     char * p = (char *) pProg;
-//     injectOp(&p, *_rollCash);
-//     injectFloatPair(&p, 3000000, 0.00001);
-//     injectOp(&p, *_spawn);
-//     injectOp(&p, *_end);
-//     injectOp(&p, *_post);
-//     injectOp(&p, *_end);
-//   }
-//   seed(50, 1000000, stuffProg); // Number of mobs, starting cash, spawn threshold
-//   atomic_store(&iterations, 0);
-//   time_t start = time(NULL);
-//   work(0);
-//   //for (int64_t a=0;a<NUM_THREADS; a++) pthread_create(pids+a, 0, work, (void*)a);
-//   //for (int64_t a=0;a<NUM_THREADS; a++) pthread_join(pids[a], 0);
-//   time_t end = time(NULL);
-//   hotelOfMobs_show();
-//   raffleOfMsgs_show();
-//   printf("Took %'ld\n", end-start);
-//   return true;
-// }
+// Runs the core loop on several workers (-w) until everybody's dead or MAX_ITS draws.
+static bool testWorkers() {
+  int numWorkers = getNumWorkers();
+  printf("testWorkers with %d workers\n", numWorkers);
+  // Half the time spawn a child with half the cash and post to it. Always answer the sender.
+  static const char prog[] = IFF GT ONE RNDL ONE ONE SPAWN MUL CSH INV TWO POST CHILD IMM V_100000 POST SNDR IMM V_100000 END;
+  void stuffProg(Program * pProg) { memset(pProg, 0, sizeof(*pProg)); memcpy(pProg, prog, sizeof(prog)); }
+  for (int a=0;a<200;a++) create(20'000'000, 1'000'000, stuffProg);
+  atomic_store(&iterations, 0);
+  onTestTock = quietTock;
+  pthread_t pids[numWorkers];
+  atomic_store(&liveWorkers, numWorkers);
+  time_t start = time(NULL);
+  for (int64_t a=0;a<numWorkers; a++) pthread_create(pids+a, 0, work, (void*)a);
+  // This thread is the clock, otherwise nothing kills the idle mobs once the raffle is empty and all workers sleep
+  for (int k=0; atomic_load(&liveWorkers); k++) {
+    sleepMs(1);
+    notifyCycles(2000);
+    hotelOfMobs_raid();
+    if (k%3000==0) printf("Its=%'ld Tocks=%d Mobs=%d Msgs=%d\n", (long)atomic_load(&iterations), tocksNow(), hotelOfMobs_count(), raffleOfMsgs_count());
+  }
+  for (int64_t a=0;a<numWorkers; a++) pthread_join(pids[a], 0);
+  time_t end = time(NULL);
+  onTestTock = onTockCore;
+  printf("Workers done: Its=%'ld Tocks=%d Mobs=%d Msgs=%d Took %'ld\n", (long)atomic_load(&iterations), tocksNow(), hotelOfMobs_count(), raffleOfMsgs_count(), end-start);
+  return true;
+}
 
 
 bool testCore() {
@@ -231,7 +235,7 @@ bool testCore() {
 //    testDisas() &&
 //    testBrokeMsg() &&
     testSpawn() &&
-//    testForever() &&
+    testWorkers() &&
     true || (showWorld(), false);
 }
 

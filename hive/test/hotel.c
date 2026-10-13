@@ -217,7 +217,7 @@ void doit(int me, int dowhat, int it) {
         break; }
     case 1: // Poorer
       { int i = chSt(UsedBy+me, UsedBy+me);
-        if (i!=-1)
+        if (i!=-1 && ths[i].c > 0) // Gods can already be in debt
           ths[i].c -= randIntBelow(10+ths[i].c*1.1);
         break; }
     case 2: // Rob
@@ -250,7 +250,7 @@ void doit(int me, int dowhat, int it) {
     case 10:
       { int i = chSt(Free, Idle);
         if (i!=-1) {
-          Cash c = randIntBelow(1000);
+          Cash c = 1+randIntBelow(1000); // Admit refuses penniless mortals
           bool isGod = !randIntBelow(30);
           ths[i].t = hotelOfThings_admit(c, isGod, 0, 0, 0);
         }
@@ -287,7 +287,7 @@ bool testMonkey(void) {
   for (int64_t a=0;a<NUM_THREADS; a++) pthread_join(pids[a], 0);
   int i = atomic_load(&iterations);
   printf("Finished %'d iterations\n", i );
-  return 0;
+  return true;
 }
 
 bool testHotel(void) { printf("Tock price: %f\n", tockPrice());

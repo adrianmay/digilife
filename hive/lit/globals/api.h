@@ -8,7 +8,7 @@
 extern _Atomic uint64_t iterations;
 
 bool openGlobals(void);
-void closeGlobals(bool rm);
+void closeGlobals(Fate fate);
 
 TockPrice tockPrice(void);
 void notifyCycles(Cycles c);

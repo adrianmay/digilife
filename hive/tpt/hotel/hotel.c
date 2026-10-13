@@ -26,21 +26,20 @@ void onXXBombMeap_new(XXBomb * pBomb, XXBombIx i, Ix hint) {
 static uint64_t nb2i(Nick n, XXBombIx b) { XXInb inb; inb.nb.n = n; inb.nb.b = b; return inb.i; }
 static XXNb i2nb(uint64_t i ) { XXInb inb; inb.i = i; return inb.nb; }
 
-static Woth eraseBombForTact(XXTact t, V erase) {
-  XXBlob * pBlob = pileOfXXBlobs_get((XXBlobIx){t.i.i});
-  uint64_t set = nb2i(0, (XXBombIx){BAD_INDEX});
-  uint64_t wasi = atomic_fetch_or(&pBlob->rent.inb.i, set);
-  XXNb wasnb = i2nb(wasi);
-  if (wasnb.n != t.n) {
-    atomic_store(&pBlob->rent.inb.i, wasi);
-    return Dead;
+// Check the nick (if given), mark the blob busy and erase its bomb, all under the meap lock
+// cos that's what protects the bomb index from other threads' sifting.
+static Woth lockBlob(XXBlob * pBlob, Nick * pNick) {
+  meapOfXXBombs_lock();
+  XXNb nb = pBlob->rent.inb.nb;
+  Woth w = Ok;
+  if (pNick && nb.n != *pNick) w = Dead;
+  else if (nb.b.i == BAD_INDEX) w = Busy;
+  else {
+    pBlob->rent.inb.nb.b.i = BAD_INDEX;
+    if (nb.b.i != GOD_BOMB) meapOfXXBombs_erase(nb.b);
   }
-  if (wasnb.b.i == BAD_INDEX) {
-    return Busy;
-  }
-  if (wasnb.b.i != GOD_BOMB) 
-    erase();
-  return (Ok); // Got an exclusive lock
+  meapOfXXBombs_unlock();
+  return w; // Ok means we got an exclusive lock
 }
 
 static bool eraseBombForBlob(XXBlob * pBlob, V erase) {
@@ -91,13 +90,8 @@ void hotelOfXXs_collectRent(XXRent * pRent) {
 bool hotelOfXXs_grabIx(XXTact * pTact, XX ** ppXX, Cash * pCash) {
   if (ppXX) *ppXX = 0;
   XXBlob * pBlob = pileOfXXBlobs_get((XXBlobIx){pTact->i.i});
+  if (lockBlob(pBlob, 0) != Ok) return false;
   pTact->n = pBlob->rent.inb.nb.n;
-  XXBombIx iBomb = pBlob->rent.inb.nb.b;
-  void erase(void) { meapOfXXBombs_erase(iBomb); }
-
-  if (!eraseBombForBlob(pBlob, erase)) {
-    return false;
-  }
   if (ppXX) *ppXX = &pBlob->body;
   hotelOfXXs_collectRent(&pBlob->rent);
   *pCash = pBlob->rent.cash;
@@ -107,9 +101,7 @@ bool hotelOfXXs_grabIx(XXTact * pTact, XX ** ppXX, Cash * pCash) {
 Woth hotelOfXXs_grab(XXTact * pTact, XX ** ppXX, Cash * pCash) {
   if (ppXX) *ppXX = 0;
   XXBlob * pBlob = pileOfXXBlobs_get((XXBlobIx){pTact->i.i});
-  XXBombIx iBomb = pBlob->rent.inb.nb.b;
-  void erase(void) { meapOfXXBombs_erase(iBomb); }
-  Woth w = eraseBombForTact(*pTact, erase);
+  Woth w = lockBlob(pBlob, &pTact->n);
   if (w != Ok) return w;
   if (ppXX) *ppXX = &pBlob->body;
   hotelOfXXs_collectRent(&pBlob->rent);
@@ -187,6 +179,7 @@ XXTact hotelOfXXs_admit(Cash cash, bool isGod, V_XXP stuff, XX ** pp, bool * pRe
   XXTact t = (XXTact){(XXIx){iBlob.i}, n};
   if (isGod) { //God
     pileOfXXBlobs_modUsr(1); // This is the god count
+    pBlob->rent.inb.nb.b = (XXBombIx){GOD_BOMB}; // Not busy
   } else {
     rebomb(&pBlob->rent, iBlob);
   }

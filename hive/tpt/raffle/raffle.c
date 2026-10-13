@@ -164,7 +164,9 @@ static void drawBelow(Stack * pSt, XXTicketIx i) {
     tact.i = i;
     if (hotelOfXXTickets_grabIx(&tact, 0, &cash)) {
       cash = onXXRaffle_dispatch(tact, &pT->body, cash, claim, unlock); 
+      lock(); // Dropping can hold funerals, which change the weights
       hotelOfXXTickets_drop(i, cash);
+      unlock();
     } else {
       unlock();
     }
@@ -201,9 +203,10 @@ bool raffleOfXXs_draw() {
   lock();
   raid();
   //checkM("draw 1");
-  if (gottaQuitXX)  { gottaQuitXX=false; unlock(); printf("raffleOfXXs_draw: bail 1\n"); return false; }
-  if (raffleOfXXs_empty()) { pthread_cond_wait(&cond, &mutex); }
-  if (gottaQuitXX)  { gottaQuitXX=false; unlock(); printf("raffleOfXXs_draw: bail 2\n"); return false; }
+  // gottaQuitXX stays set until the next open so that every worker sees it
+  if (gottaQuitXX)  { unlock(); printf("raffleOfXXs_draw: bail 1\n"); return false; }
+  while (!gottaQuitXX && raffleOfXXs_empty()) { pthread_cond_wait(&cond, &mutex); }
+  if (gottaQuitXX)  { unlock(); printf("raffleOfXXs_draw: bail 2\n"); return false; }
   // Can't be empty
   drawAssumeNotEmpty(); //unlocks
   //checkM("draw 2");
@@ -212,6 +215,7 @@ bool raffleOfXXs_draw() {
 
 bool raffleOfXXs_open() {
   lock();
+  gottaQuitXX = false;
   bool ret = hotelOfXXTickets_open();
   unlock();
   return ret;
@@ -220,11 +224,14 @@ bool raffleOfXXs_open() {
 void raffleOfXXs_close(Fate f) {
   lock();
   hotelOfXXTickets_close(f);
+  unlock();
 }
 
 void raffleOfXXs_quit() {
+  lock();
   gottaQuitXX = true;
-  pthread_cond_signal(&cond);
+  pthread_cond_broadcast(&cond);
+  unlock();
 }
 
 

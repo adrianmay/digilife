@@ -55,10 +55,16 @@ void pileOfXXs_close(Fate fate) {
   lock(); 
   closePile(headOfXXs, fate);
   headOfXXs = 0; 
+  unlock(); 
 }
 
 bool pileOfXXs_ixValid(XXIx i)  { return (i.i & 0x7FFFFFFF) != 0x7FFFFFFF; }
-Ix pileOfXXs_count(void)       { return countPop(headOfXXs); }
+Ix pileOfXXs_count(void) { 
+  lock(); 
+  Ix n = countPop(headOfXXs); // Reads top and frn, which alloc and free change
+  unlock(); 
+  return n;
+}
 Ix pileOfXXs_top  (void)       { return topInPile(headOfXXs); }
 Ix pileOfXXs_rec  (void)       { return recInPile(headOfXXs); }
 

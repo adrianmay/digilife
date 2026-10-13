@@ -11,7 +11,7 @@ bool testGlobals(void) {
   vg.tocksReviewedAt = 2;
   pg->lastKnownTock = 1;
   pg->cyclesPerTock = 3;
-  closeGlobals(0);
+  closeGlobals(Nowt);
   v = openGlobals(); // Resets vg
   assertInt(v, false);
   i = pg->lastKnownTock + vg.tocksReviewedAt + pg->cyclesPerTock;
@@ -19,5 +19,5 @@ bool testGlobals(void) {
   return true;
 }
 
-void cleanupGlobals(void) { closeGlobals(1); }
+void cleanupGlobals(void) { closeGlobals(Delete); }
 bool globals(void) { return bkt("globals", nowt,testGlobals,cleanupGlobals); }

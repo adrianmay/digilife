@@ -17,6 +17,6 @@ MobTact create(Cash mobcash, Cash msgcash, ProgStuffer stuffProg);
 bool draw(void);
 void onTockCore();
 Cash runInCore(Cash mobCash, Cash msgCash, MobTact tMob, Mob * pMob, Msg * pMsg);
-extern char out[];
+extern _Thread_local char out[];
 extern int outlen;
 

@@ -19,7 +19,7 @@ static XXIx left  (XXIx i) {return ( XXIx ){ 2*i.i + 1 };}
 static XXIx right (XXIx i) {return ( XXIx ){ 2*i.i + 2 };}
 
 bool meapOfXXs_open(void)    { return pileOfXXs_open(); }
-void meapOfXXs_close(Fate f) { lock(__LINE__); pileOfXXs_close(f); }
+void meapOfXXs_close(Fate f) { lock(__LINE__); pileOfXXs_close(f); unlock(); }
 Ix   meapOfXXs_count(void)   { return pileOfXXs_getUsr(); }
 Ix   meapOfXXs_rec(void)     { return pileOfXXs_rec(); }
 void meapOfXXs_show(void)    { printf("MEAP: "); pileOfXXs_show(false);  }
@@ -148,19 +148,28 @@ static void erase_(XXIx iCur) {
   if (iCur.i >= cnt) DIE("Meap erase_ index out of bounds: %d", iCur.i);
   //bombee = pI[0];
   Ix iLast = cnt-1;
-  swap((XXIx){iLast}, iCur); // Calls on move for erasee but I think it's harmless
+  // Move the last one into the hole. Mustn't call onMove for the erasee cos that would unlock its owner.
+  if (iCur.i != iLast) {
+    XX * pCur = pileOfXXs_get(iCur);
+    memcpy(pCur, pileOfXXs_get((XXIx){iLast}), sizeof(XX));
+    onXXMeap_move(pCur, iCur);
+  }
   pileOfXXs_modUsr(-1);
-  siftDown(iCur); //Not calling review cos I'd need a recursive mutex
-  siftUp(iCur);
+  if (iCur.i != iLast) {
+    siftDown(iCur); //Not calling review cos I'd need a recursive mutex
+    siftUp(iCur);
+  }
   //  meapOfXXs_forAll(bombeeSafe);
   //  checkNoDupes();
 }
 
+// Caller must hold the meap lock, cos it has to read the index under the same lock.
 void meapOfXXs_erase(XXIx iCur) {
-  //  lock();
   erase_(iCur);
-  //  unlock();
 }
+
+void meapOfXXs_lock(void)   { lock(__LINE__); }
+void meapOfXXs_unlock(void) { unlock(); }
 
 Chomped meapOfXXs_chomp(Score thresh, XX * pCopyOut) {
   Chomped res;

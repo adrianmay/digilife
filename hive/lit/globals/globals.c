@@ -8,8 +8,10 @@
 #include "api.h"
 //#include "perf/api.h"
 #include "misc/api.h"
+#include "args/api.h"
 
 #define GLOBALS_FILENAME "Globals.pile"
+#define MAX_FULL_PATH (MAX_FILENAME+DATA_DIR_MAX)
 
 _Atomic uint64_t iterations;
 
@@ -31,19 +33,27 @@ static void initVolatileGlobals(void) {
   vg.shouldRun = true;
 }
 
+// Lives in the data dir with the other piles
+static void globalsPath(char * path, const char * prefix) {
+  snprintf(path, MAX_FULL_PATH, "%s/%s%s", getDataDir(), prefix, GLOBALS_FILENAME);
+}
+
 static void * openGlobals_(uint64_t len, bool * virgin) {
+  char filename[MAX_FULL_PATH];
+  globalsPath(filename, "");
   *virgin=false;
-  int fd = open(GLOBALS_FILENAME, O_RDWR | O_APPEND);
+  int fd = open(filename, O_RDWR | O_APPEND);
   if (fd<0) {
     *virgin=true;
-    fd = open(GLOBALS_FILENAME, O_RDWR | O_CREAT | O_APPEND, S_IRUSR|S_IWUSR);
+    fd = open(filename, O_RDWR | O_CREAT | O_APPEND, S_IRUSR|S_IWUSR);
     ftruncate(fd, len);
   }
-  if (fd<0) { fprintf(stdout, "Can't open file %s cos of %d\n", GLOBALS_FILENAME, fd); quit(1); }
+  if (fd<0) { fprintf(stdout, "Can't open file %s cos of %d\n", filename, fd); quit(1); }
   void * reserve = mmap(0, len, PROT_NONE, MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
   if (reserve == (void*)-1) { fprintf(stdout, "Can't make reserve mapping\n"); quit(1); }
   void * filemap = mmap(reserve, fileSize(fd), PROT_READ|PROT_WRITE, MAP_SHARED_VALIDATE|MAP_FIXED, fd, 0);
   if (filemap == (void*)-1) { fprintf(stdout, "Can't make file mapping\n"); quit(1);  }
+  ((PersistentGlobals*)filemap)->fd = fd;
   return filemap;
 }
 
@@ -52,12 +62,13 @@ static void closeGlobals_(int fd, Fate fate) {
   if (fd == -1) return;
   //munmap(ph); //TODO: I thought I needed this
   close(fd);
-  if (fate==Delete) unlink(GLOBALS_FILENAME);
+  char src[MAX_FULL_PATH];
+  globalsPath(src, "");
+  if (fate==Delete) unlink(src);
   if (fate==Hide) {
-    char dest[MAX_FILENAME+1];
-    *dest='.';
-    strcpy(dest+1,GLOBALS_FILENAME);
-    rename(GLOBALS_FILENAME, dest);
+    char dest[MAX_FULL_PATH];
+    globalsPath(dest, ".");
+    rename(src, dest);
   }
 }
 
@@ -69,8 +80,8 @@ bool openGlobals(void) {
   return v;
 }
 
-void closeGlobals(bool rm) {  // And that param should be enum
-  closeGlobals_(pg->fd, rm);
+void closeGlobals(Fate fate) {
+  closeGlobals_(pg->fd, fate);
 }
 
 TockPrice tockPrice(void) {return pg->groatsPerTockPerByte;}

@@ -11,7 +11,9 @@ Ix      meapOfXXs_rec       (void);
 void    meapOfXXs_show      (void);
 XX *    meapOfXXs_get       (XXIx i);
 void    meapOfXXs_insert    (Tocks expiry, Ix hint);
-void    meapOfXXs_erase     (XXIx i); // Danger - call after locking XXInb only
+void    meapOfXXs_lock      (void);
+void    meapOfXXs_unlock    (void);
+void    meapOfXXs_erase     (XXIx i); // Danger - call between meapOfXXs_lock and unlock only
 Chomped meapOfXXs_chomp     (Score thresh, XX * p);
 void    meapOfXXs_forAll    (V_I_P);
 //bool    meapOfXXs_check     (void);
